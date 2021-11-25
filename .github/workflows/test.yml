@@ -14,13 +14,14 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v1
-      - name: move
-        run: cd front
       - name: yarn install
+        working-directory: ./front
         run: yarn install --dev
       - name: Run gts
+        working-directory: ./front
         run: yarn lint
       - name: Build
+        working-directory: ./front
         run: yarn build
   go:
     name: go test
@@ -38,16 +39,14 @@ jobs:
       DATASTORE_PROJECT_ID: cateiru-sso-test
     steps:
     - uses: actions/checkout@v2
-    - name: move
-      run: cd core
-    - name: Set up Go
-      uses: actions/setup-go@v2
       with:
         go-version: 1.17
 
     - name: Build
+      working-directory: ./core
       run: go build -v ./...
 
     - name: Test
+      working-directory: ./core
       run: go test -v ./...
     
