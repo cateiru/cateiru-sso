@@ -1,0 +1,51 @@
+
+name: Lint
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  nextjs:
+    name: next test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v1
+      - name: move
+        run: cd front
+      - name: yarn install
+        run: yarn install --dev
+      - name: Run gts
+        run: yarn lint
+      - name: Build
+        run: yarn build
+  go:
+    name: go test
+    runs-on: ubuntu-latest
+    services:
+      datastore:
+        image: singularities/datastore-emulator
+        env:
+          DATASTORE_LISTEN_ADDRESS: 0.0.0.0:18001
+          DATASTORE_PROJECT_ID: cateiru-sso-test
+        ports:
+          - 18001:18001
+    env:
+      DATASTORE_EMULATOR_HOST: localhost:18001
+      DATASTORE_PROJECT_ID: cateiru-sso-test
+    steps:
+    - uses: actions/checkout@v2
+    - name: move
+      run: cd core
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+    
