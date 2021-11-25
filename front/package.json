@@ -3,12 +3,14 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
+        "dev:ssl": "HTTPS=true $(which node) ./server.js",
         "build": "next build",
         "start": "next start",
         "lint": "gts lint",
         "clean": "gts clean",
         "fix": "gts fix",
-        "posttest": "yarn run lint"
+        "posttest": "yarn run lint",
+        "certification": "./scripts/certification.sh"
     },
     "dependencies": {
         "next": "12.0.4",
@@ -24,7 +26,8 @@
         "eslint-plugin-import": "^2.24.2",
         "eslint-plugin-jsdoc": "^36.1.0",
         "eslint-plugin-prefer-arrow": "^1.2.3",
-        "typescript": "^4.0.3",
-        "gts": "^3.1.0"
+        "express": "^4.17.1",
+        "gts": "^3.1.0",
+        "typescript": "^4.0.3"
     }
 }
