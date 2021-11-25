@@ -1,3 +1,35 @@
 {
-  "extends": "./node_modules/gts/"
+    "extends": [
+        "./node_modules/gts/",
+        "next",
+        "plugin:jsdoc/recommended",
+        "plugin:import/errors"
+    ],
+    "plugins": [
+        "prefer-arrow",
+        "import"
+    ],
+    "rules": {
+        "prefer-arrow/prefer-arrow-functions": [
+            "error",
+            {
+                "disallowPrototype": true,
+                "singleReturnOnly": true,
+                "classPropertiesAllowed": false
+            }
+        ],
+        "jsdoc/require-jsdoc": [
+            "error"
+        ],
+        "sort-imports": 0,
+        "import/order": [
+            2,
+            {
+                "alphabetize": {
+                    "order": "asc"
+                }
+            }
+        ],
+        "react-hooks/exhaustive-deps": "off"
+    }
 }
