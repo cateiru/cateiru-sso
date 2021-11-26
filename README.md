@@ -4,7 +4,7 @@ Cateiru Single Sign On
 
 ## LINKS
 
-- [Core API](./core)
+- [API](./api)
 - [Frontend](./front)
 
 ## LICENSE
