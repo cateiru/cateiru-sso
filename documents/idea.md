@@ -40,8 +40,6 @@
       - POST: ユーザ情報（名前、テーマ、プロフィール画像）
   - `/login`
     - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しcookieを作成
-    - `/login/checksso`
-      - POST: sso_public_keyを送信し、keyが存在するかチェックと、URLを取得
     - `/login/sso`
       - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しリダイレクト
       - `?nr`でリダイレクトせず(no redirect)、トークンを返す（terminalなどでSSOする際用）
