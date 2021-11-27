@@ -35,9 +35,9 @@
       - POST: WS接続中メールアドレスで確認できた場合にWSを閉じてここにトークンを送信しcookie作成
     - `/create/onetime`
       - GET: ワンタイムパスワードのトークン取得
-      - POST: ワンタイムパスワード作成→認証したやつ
     - `/create/info`
-      - POST: ユーザ情報（名前、テーマ、プロフィール画像）
+      - POST: ユーザ情報（名前、テーマ、プロフィール画像、ワンタイムパスワード）
+      - もし、メール認証できてもこれが有効時間以内に送られなければユーザはリセットする
   - `/login`
     - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しcookieを作成
     - `/login/sso`
@@ -115,6 +115,9 @@
 - `sso_refresh_token`
   - SSOのリフレッシュトークン
   - 有効期限はダッシュボードできめられる
+- `buffer_token`
+  - アカウント作成するときのバッファトークン
+  - 有効時間付きでこの時間内にアカウント作成しないと作成はキャンセルされる
 
 ### 識別子
 
@@ -139,6 +142,7 @@
         user_id: string,
 
         onetime_password_key?: string,
+        onetime_password_backup?: string
     }
     ```
 
@@ -154,12 +158,26 @@
     {
         mail_token: string, // メールのURLパラメータに付加するトークン
         create_date: Date,  // メール認証開始時間
-        period_minute: number = 10, //メール認証の有効期限
+        period_minute: number = 30, //メール認証の有効期限
         open_new_window: boolean, // そのままのウインドウで続きをやるか(false)メールのリンク先ウインドウからやるか(true)
         verify: boolean, // 認証されているか。wsでこのテーブルを読むときに確認する部分
 
         mail: string,
         password: string, // パスワードはハッシュ化
+    }
+    ```
+
+- アカウント作成Buffer
+
+    ```ts
+    {
+        buffer_token: string,
+
+        mail: string,
+        password: string,
+
+        create_date: Date,
+        period_minute: int = 30;
     }
     ```
 
@@ -331,14 +349,14 @@
      - メールアドレスを確認になった場合WSでトンネルを作成
        - もし、WSが閉じられた場合はメールのURLから続きを開始する
        - WSが閉じられていない場合、メールのURLを踏むと「このウィンドウは消して元のウインドウに戻って」とダイアログ
-  3. ワンタイムパスワードを入力し有効化
-  4. 氏名、（プロフィール画像: 後々実装）、テーマ: ライトorダークを入力
+       - `buffer_token`をcookieに入れる
+  3. 氏名、（プロフィール画像: 後々実装）、テーマ: ライトorダーク、ワンタイムパスワードを入力し`buffer_token`で認証しアカウント作成
 - ログイン
   1. メールアドレス、パスワードを入力
   2. ワンタイムパスワードを入力
 - アカウント
   - ロール: `admin`、`pro`、`user`の3種類
-    - admin: 一人のみ。デプロイ時にenv `ADMIN_USER_EMAIL`と`ADMIN_TEMP_PW`を入力
+    - admin: 一人のみ。デプロイ時にenv `ADMIN_USER_EMAIL`と`ADMIN_TEMP_PW`、`ADMIN_ONETIME_PW`を入力
       - envで設定したメアドとパスワードを入力するとパスワードを変更するダイアログとアカウント作成3以降
     - pro: SSOのAPI設定ができるユーザ。adminのダッシュボードから追加、削除できるようにする
     - user: アカウント作成、ログイン、SSOでのログイン、ログイン履歴閲覧（なんのSSOにログインしたか）、SSOログイン停止が可能

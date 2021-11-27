@@ -17,11 +17,13 @@ type userMailPW struct {
 }
 
 // 認証テーブル
-// OnetimePasswordKeyはOptional
+// OnetimePasswordKey, OnetimePasswordBackupはOptional
+// OTPはoptionalであるがアカウント登録時必須なため、実質admin userのログイン用
 type Certification struct {
 	AccountCreateDate time.Time `datastore:"accountCreateDate" json:"account_create_date"`
 
-	OnetimePasswordKey string `datastore:"onetimePasswordKey" json:"onetime_password_key"`
+	OnetimePasswordKey    string   `datastore:"onetimePasswordKey" json:"onetime_password_key"`
+	OnetimePasswordBackup []string `datastore:"onetimePasswordBackup" json:"onetime_password_backup"`
 
 	userMailPW
 	userId
@@ -34,6 +36,13 @@ type MailCertification struct {
 	PeriodMinute  int       `datastore:"periodMinute" json:"period_minute"`
 	OpenNewWindow bool      `datastore:"openNewWindow" json:"open_new_window"`
 	Verify        bool      `datastore:"verify" json:"verify"`
+
+	userMailPW
+}
+
+// メールアドレスの認証が済んでいるが、名前、ワンタイムパスワードの設定が完了してないユーザのデータの一時保管場所
+type CreateAccountBuffer struct {
+	BufferToken string `datastore:"bufferToken" json:"buffer_token"`
 
 	userMailPW
 }
