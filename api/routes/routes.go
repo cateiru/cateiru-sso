@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/cateiru-sso-core/handler"
+	"github.com/cateiru/cateiru-sso/api/handler"
 )
 
 func Routes(mux *http.ServeMux) *http.ServeMux {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cateiru-sso-core/routes"
+	"github.com/cateiru/cateiru-sso/api/routes"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
