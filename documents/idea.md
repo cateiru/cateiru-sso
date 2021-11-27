@@ -77,8 +77,7 @@
         - POST: メールアドレスを入力→登録されているメールアドレスがある場合そのメールアドレスにPW再登録用のURL送付
     - `/user/onetime`
       - POST: ワンタイムパスワード変更
-      - 現在のワンタイムパスワードを入力して変更する必要あり
-      - adminの場合で初回ログイン時はなくてもOK
+      - get /create/onetimeでトークンを取得する必要あり
     - `/user/access`
       - GET: SSOログイン履歴取得
       - POST: ログアウト処理など
@@ -87,10 +86,11 @@
   - `/logout`
     - GET: ログアウト
     - DELETE: アカウント削除
-  - `/oauth/cert`
-    - POST: セッショントークンでユーザ情報取得
-  - `/oauth/update`
-    - POST: リフレッシュトークンでセッショントークンを再取得
+  - `/oauth`
+    - `/oauth/cert`
+      - POST: セッショントークンでユーザ情報取得
+    - `/oauth/update`
+      - POST: リフレッシュトークンでセッショントークンを再取得
 
 ### トークン
 
@@ -265,7 +265,7 @@
     ```
 
 - SSOリフレッシュトークン
-  - `login_only`がtrueの場合、このトークンを作成して一緒に暗号化して返す
+  - `login_only`がfalseの場合、このトークンを作成して一緒に暗号化して返す
 
     ```ts
     {
@@ -275,6 +275,16 @@
         create_date: Date,
         period_hour: number;
         user_id: string;
+    }
+    ```
+
+- SSOのログイン履歴
+
+    ```ts
+    {
+        user_id: string
+
+        sso_refresh_tokens: string[]
     }
     ```
 
@@ -296,8 +306,21 @@
         forget_token: string,
 
         mail: string,
-        create_date: Date,  // メール認証開始時間
-        period_minute: number = 10, //メール認証の有効期限
+        create_date: Date,
+        period_minute: number = 10,
+    }
+    ```
+
+- ワンタイムパスワード登録用
+
+    ```ts
+    {
+        onetime_public_key: string,
+        onetime_private_key: string.
+
+        create_date: Date,
+        period_minute: number = 10,
+        user_id: string,
     }
     ```
 
