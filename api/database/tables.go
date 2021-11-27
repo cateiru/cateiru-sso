@@ -38,6 +38,25 @@ type MailCertification struct {
 	userMailPW
 }
 
+// パスワード忘れによる再登録用テーブル
+type PWForget struct {
+	ForgetToken  string    `datastore:"forgetToken" json:"forget_token"`
+	Mail         string    `datastore:"mail" json:"mail"`
+	CreateDate   time.Time `datastore:"createDate" json:"create_date"`
+	PeriodMinute int       `datastore:"periodMinute" json:"period_minute"`
+}
+
+// ワンタイムパスワード設定用
+type OnetimePassword struct {
+	PublicKey string `datastore:"onetimePublicKey" json:"onetime_public_key"`
+	SecretKey string `datastore:"onetimeSecretKey" json:"onetime_secret_key"`
+
+	CreateDate   time.Time `datastore:"createDate" json:"create_date"`
+	PeriodMinute int       `datastore:"periodMinute" json:"period_minute"`
+
+	userId
+}
+
 // ユーザの情報
 type User struct {
 	FirstName string `datastore:"firstName" json:"first_name"`
@@ -53,7 +72,7 @@ type User struct {
 }
 
 // ログイン履歴（個別）
-type loginHistory struct {
+type LoginHistory struct {
 	AccessId  string    `datastore:"accessId" json:"access_id"`
 	Date      time.Time `datastore:"date" json:"date"`
 	IpAddress string    `datastore:"ipAddress" json:"ip_address"`
@@ -61,7 +80,14 @@ type loginHistory struct {
 
 // ユーザのログイン履歴
 type UserLoginHistories struct {
-	Histories []loginHistory `datastore:"histories" json:"histories"`
+	Histories []LoginHistory `datastore:"histories" json:"histories"`
+
+	userId
+}
+
+// ログインしているSSO
+type SSOLogins struct {
+	SSORefreshTokens []string `datastore:"ssoRefreshTokens" json:"sso_refresh_tokens"`
 
 	userId
 }
