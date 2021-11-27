@@ -11,80 +11,82 @@
 ### Routes
 
 - `sso.cateiru.com`
-- `/`
-  - ルートページ
-- `/create`
-  - アカウント作成ページ
-  - `?m=[token]`を付加しメール確認で送られる
-- `/dashboard`
-  - ダッシュボード
-- `/login`
-  - ログイン
-- `/oauth`
-  - `/oauth/login`
-    - OAuthを使用したSSOログイン
-  - ~~`/oauth/cert`~~
-    - トークンの検証API
+  - `/`
+    - ルートページ
+  - `/create`
+    - アカウント作成ページ
+    - `?m=[token]`を付加しメール確認で送られる
+  - `/dashboard`
+    - ダッシュボード
+  - `/login`
+    - ログイン
+  - `/oauth`
+    - `/oauth/login`
+      - OAuthを使用したSSOログイン
+    - ~~`/oauth/cert`~~
+      - トークンの検証API
 - `api.sso.cateiru.com`
-- `/create`
-  - POST: アカウント作成（メールアドレス、パスワード）
-  - `/create/verify`
-    - WS: メールアドレス確認待機WS
-    - POST: メールアドレスから開いたときにトークンを送信してcookie作成
-  - `/create/accept`
-    - POST: WS接続中メールアドレスで確認できた場合にWSを閉じてここにトークンを送信しcookie作成
-  - `/create/onetime`
-    - GET: ワンタイムパスワードのトークン取得
-    - POST: ワンタイムパスワード作成→認証したやつ
-  - `/create/info`
-    - POST: ユーザ情報（名前、テーマ、プロフィール画像）
-- `/login`
-  - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しcookieを作成
-  - `/login/checksso`
-    - POST: sso_public_keyを送信し、keyが存在するかチェックと、URLを取得
-  - `/login/sso`
-    - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しリダイレクト
-    - `?nr`でリダイレクトせず(no redirect)、トークンを返す（terminalなどでSSOする際用）
-- `/me`
-  - ユーザ情報参照
-- `/admin`
-  - `/admin/pro`
-    - GET: proユーザ一覧を取得
-    - POST: proユーザ追加
-    - DELETE: `?id=[user id]`proユーザ削除
-  - `/admin/user`
-    - GET: 全ユーザ情報取得
-    - DELETE: `?id=[user id]`ユーザ削除
-  - `/admin/ban`
-    - POST: 特定ユーザBan
-  - `/admin/status`
-    - GET: Workerのログとmail_tokenのDB情報などのWorkerで操作するDB情報を取得
-    - POST: mail_token削除など
-- `/sso`
-  - GET: SSO情報取得
-  - POST: SSO追加
-  - DELETE: `?id=[id]`SSO削除
-  - （各SSOはidを作成して管理）
-- `/user`
-  - `/user/mail`
-    - GET: メールアドレス取得
-    - POST: メールアドレス更新
-  - `/user/password`
-    - POST: パスワード変更
-  - `/user/onetime`
-    - POST: ワンタイムパスワード変更
-  - `/user/access`
-    - GET: SSOログイン履歴取得
-    - POST: ログアウト処理など
-  - `/user/history`
-    - GET: ログイン履歴取得
-- `/logout`
-  - GET: ログアウト
-  - DELETE: アカウント削除
-- `/oauth/cert`
-  - POST: セッショントークンでユーザ情報取得
-- `/oauth/update`
-  - POST: リフレッシュトークンでセッショントークンを再取得
+  - `/create`
+    - POST: アカウント作成（メールアドレス、パスワード）
+    - `/create/verify`
+      - WS: メールアドレス確認待機WS
+      - POST: メールアドレスから開いたときにトークンを送信してcookie作成
+    - `/create/accept`
+      - POST: WS接続中メールアドレスで確認できた場合にWSを閉じてここにトークンを送信しcookie作成
+    - `/create/onetime`
+      - GET: ワンタイムパスワードのトークン取得
+      - POST: ワンタイムパスワード作成→認証したやつ
+    - `/create/info`
+      - POST: ユーザ情報（名前、テーマ、プロフィール画像）
+  - `/login`
+    - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しcookieを作成
+    - `/login/checksso`
+      - POST: sso_public_keyを送信し、keyが存在するかチェックと、URLを取得
+    - `/login/sso`
+      - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しリダイレクト
+      - `?nr`でリダイレクトせず(no redirect)、トークンを返す（terminalなどでSSOする際用）
+  - `/me`
+    - ユーザ情報参照
+  - `/admin`
+    - `/admin/pro`
+      - GET: proユーザ一覧を取得
+      - POST: proユーザ追加
+      - DELETE: `?id=[user id]`proユーザ削除
+    - `/admin/user`
+      - GET: 全ユーザ情報取得
+      - DELETE: `?id=[user id]`ユーザ削除
+    - `/admin/ban`
+      - POST: 特定ユーザBan
+    - `/admin/status`
+      - GET: Workerのログとmail_tokenのDB情報などのWorkerで操作するDB情報を取得
+      - POST: mail_token削除など
+  - `/sso`
+    - GET: SSO情報取得
+    - POST: SSO追加
+    - DELETE: `?id=[id]`SSO削除
+    - （各SSOはidを作成して管理）
+  - `/user`
+    - `/user/mail`
+      - GET: メールアドレス取得
+      - POST: メールアドレス更新
+    - `/user/password`
+      - POST: パスワード変更
+    - `/user/onetime`
+      - POST: ワンタイムパスワード変更
+      - 現在のワンタイムパスワードを入力して変更する必要あり
+      - adminの場合で初回ログイン時はなくてもOK
+    - `/user/access`
+      - GET: SSOログイン履歴取得
+      - POST: ログアウト処理など
+    - `/user/history`
+      - GET: ログイン履歴取得
+  - `/logout`
+    - GET: ログアウト
+    - DELETE: アカウント削除
+  - `/oauth/cert`
+    - POST: セッショントークンでユーザ情報取得
+  - `/oauth/update`
+    - POST: リフレッシュトークンでセッショントークンを再取得
 
 ### トークン
 
