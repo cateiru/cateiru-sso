@@ -60,17 +60,21 @@
     - `/admin/status`
       - GET: Workerのログとmail_tokenのDB情報などのWorkerで操作するDB情報を取得
       - POST: mail_token削除など
-  - `/sso`
-    - GET: SSO情報取得
-    - POST: SSO追加
-    - DELETE: `?id=[id]`SSO削除
-    - （各SSOはidを作成して管理）
+  - `/pro`
+    - `/pro/sso`
+      - GET: SSO情報取得
+      - POST: SSO追加
+      - DELETE: `?id=[id]`SSO削除
+      - （各SSOはidを作成して管理）
   - `/user`
     - `/user/mail`
       - GET: メールアドレス取得
       - POST: メールアドレス更新
     - `/user/password`
       - POST: パスワード変更
+      - `/user/password/forget`
+        - パスワードを忘れてしまった際に使用
+        - POST: メールアドレスを入力→登録されているメールアドレスがある場合そのメールアドレスにPW再登録用のURL送付
     - `/user/onetime`
       - POST: ワンタイムパスワード変更
       - 現在のワンタイムパスワードを入力して変更する必要あり
@@ -122,6 +126,8 @@
 - `run_id`
   - workerのrun id
   - 特に意味はない
+- `forget_token`
+  - パスワード忘れ時の再登録トークン
 
 ### テーブル
 
@@ -280,6 +286,18 @@
         status: number, // 0は正常終了、その他はエラー
         status_message?: string,
         run_date: Date,
+    }
+    ```
+
+- PW忘れ再登録用トークン
+
+    ```ts
+    {
+        forget_token: string,
+
+        mail: string,
+        create_date: Date,  // メール認証開始時間
+        period_minute: number = 10, //メール認証の有効期限
     }
     ```
 
