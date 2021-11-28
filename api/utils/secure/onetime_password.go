@@ -16,11 +16,13 @@
 //	}
 //
 // Note: secretをデータベースに保存する前に一度、ユーザにパスコードを生成してもらい結果を検証してください
-package utils
+package secure
 
 import (
 	"crypto/rand"
 
+	"github.com/cateiru/cateiru-sso/api/logging"
+	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
@@ -40,11 +42,11 @@ type OnetimePassword struct {
 //	- 乱数生成: rand.Reader
 func OnetimePasswordNew(accountName string) (*OnetimePassword, error) {
 	ops := totp.GenerateOpts{
-		Issuer:      ONETIME_PASSWORD_ISSUER,
+		Issuer:      string(utils.ONETIME_PASSWORD_ISSUER),
 		AccountName: accountName,
 		Period:      30,
 		SecretSize:  20,
-		Secret:      ONETIME_PASSWORD_SECRET,
+		Secret:      utils.ONETIME_PASSWORD_SECRET,
 		Digits:      otp.DigitsSix,
 		Algorithm:   otp.AlgorithmSHA1,
 		Rand:        rand.Reader,
@@ -54,6 +56,10 @@ func OnetimePasswordNew(accountName string) (*OnetimePassword, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	logging.Sugar.Debugf(
+		"Created OTP. Issuer: %s, AccountName: %s, period: %s, Secret: %s, Public: %s",
+		key.Issuer(), key.AccountName(), key.Period(), key.Secret(), key.String())
 
 	return &OnetimePassword{
 		GenerateOpt: &ops,
@@ -84,5 +90,9 @@ func (o *OnetimePassword) GetSecret() string {
 // passcodeは、ユーザから取得したパスコード。
 // secretは、サーバー内で保存するkey
 func ValidateOnetimePassword(passcode string, secret string) bool {
-	return totp.Validate(passcode, secret)
+	isValidate := totp.Validate(passcode, secret)
+
+	logging.Sugar.Debugf("Varidate OTP. Passcode: %s, Secret: %s, Result: %s", passcode, secret, isValidate)
+
+	return isValidate
 }

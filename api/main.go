@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/routes"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -37,7 +37,7 @@ func main() {
 		Handler: h2c.NewHandler(mux, h2s),
 	}
 
-	logrus.Infof("Start server! addr: %v, port: %v", addr, port)
+	logging.Sugar.Infof("Start server! addr: %v, port: %v", addr, port)
 
 	if err := server.ListenAndServe(); err != nil {
 		panic(err)
