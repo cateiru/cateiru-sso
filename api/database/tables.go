@@ -22,8 +22,8 @@ type userMailPW struct {
 type Certification struct {
 	AccountCreateDate time.Time `datastore:"accountCreateDate" json:"account_create_date"`
 
-	OnetimePasswordKey    string   `datastore:"onetimePasswordKey" json:"onetime_password_key"`
-	OnetimePasswordBackup []string `datastore:"onetimePasswordBackup" json:"onetime_password_backup"`
+	OnetimePasswordSecret  string   `datastore:"onetimePasswordSecret" json:"onetime_password_secret"`
+	OnetimePasswordBackups []string `datastore:"onetimePasswordBackups" json:"onetime_password_backups"`
 
 	userMailPW
 	userId
@@ -31,28 +31,36 @@ type Certification struct {
 
 // メールアドレス認証用テーブル
 type MailCertification struct {
-	MailToken     string    `datastore:"mailToken" json:"mail_token"`
-	CreateDate    time.Time `datastore:"createDate" json:"create_date"`
-	PeriodMinute  int       `datastore:"periodMinute" json:"period_minute"`
-	OpenNewWindow bool      `datastore:"openNewWindow" json:"open_new_window"`
-	Verify        bool      `datastore:"verify" json:"verify"`
+	MailToken      string    `datastore:"mailToken" json:"mail_token"`
+	CreateDate     time.Time `datastore:"createDate" json:"create_date"`
+	PeriodMinute   int       `datastore:"periodMinute" json:"period_minute"`
+	OpenNewWindow  bool      `datastore:"openNewWindow" json:"open_new_window"`
+	Verify         bool      `datastore:"verify" json:"verify"`
+	ChangeMailMode bool      `datastore:"changeMailMode" json:"change_mail_mode"`
 
 	userMailPW
 }
 
-// メールアドレスの認証が済んでいるが、名前、ワンタイムパスワードの設定が完了してないユーザのデータの一時保管場所
+// パスコード再設定や、ワンタイムパスワード入力、ユーザ登録などのテーブルにおいて制限時間を設ける
+type verifyPeriod struct {
+	CreateDate   time.Time `datastore:"createDate" json:"create_date"`
+	PeriodMinute int       `datastore:"periodMinute" json:"period_minute"`
+}
+
+// メールアドレスの認証が済んでいるが、名前、その他ユーザ設定が完了してないユーザのデータの一時保管場所
 type CreateAccountBuffer struct {
 	BufferToken string `datastore:"bufferToken" json:"buffer_token"`
 
+	verifyPeriod
 	userMailPW
 }
 
 // パスワード忘れによる再登録用テーブル
 type PWForget struct {
-	ForgetToken  string    `datastore:"forgetToken" json:"forget_token"`
-	Mail         string    `datastore:"mail" json:"mail"`
-	CreateDate   time.Time `datastore:"createDate" json:"create_date"`
-	PeriodMinute int       `datastore:"periodMinute" json:"period_minute"`
+	ForgetToken string `datastore:"forgetToken" json:"forget_token"`
+	Mail        string `datastore:"mail" json:"mail"`
+
+	verifyPeriod
 }
 
 // ワンタイムパスワード設定用
@@ -60,9 +68,16 @@ type OnetimePassword struct {
 	PublicKey string `datastore:"onetimePublicKey" json:"onetime_public_key"`
 	SecretKey string `datastore:"onetimeSecretKey" json:"onetime_secret_key"`
 
-	CreateDate   time.Time `datastore:"createDate" json:"create_date"`
-	PeriodMinute int       `datastore:"periodMinute" json:"period_minute"`
+	verifyPeriod
+	userId
+}
 
+// ログイン時、メアドとPWを入力後、ワンタイムパスワードが求められる場合のテーブル
+type OnetimePasswordValidate struct {
+	OnetimeToken          string `datastore:"onetimeToken" json:"onetime_token"`
+	OnetimePasswordSecret string `datastore:"onetimePasswordSecret" json:"onetime_password_secret"`
+
+	verifyPeriod
 	userId
 }
 
@@ -81,10 +96,13 @@ type User struct {
 }
 
 // ログイン履歴（個別）
+// IsSSOとSSOPublicKeyはOptional
 type LoginHistory struct {
-	AccessId  string    `datastore:"accessId" json:"access_id"`
-	Date      time.Time `datastore:"date" json:"date"`
-	IpAddress string    `datastore:"ipAddress" json:"ip_address"`
+	AccessId     string    `datastore:"accessId" json:"access_id"`
+	Date         time.Time `datastore:"date" json:"date"`
+	IpAddress    string    `datastore:"ipAddress" json:"ip_address"`
+	IsSSO        bool      `datastore:"isSSO" json:"is_sso"`
+	SSOPublicKey string    `datastore:"ssoPublicKey" json:"sso_publickey"`
 }
 
 // ユーザのログイン履歴

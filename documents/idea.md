@@ -20,6 +20,7 @@
     - ダッシュボード
   - `/login`
     - ログイン
+    - `?nr`でリダイレクトせず(no redirect)、トークンを表示（terminalなどでSSOする際用）
   - `/oauth`
     - `/oauth/login`
       - OAuthを使用したSSOログイン
@@ -33,16 +34,17 @@
       - POST: メールアドレスから開いたときにトークンを送信してcookie作成
     - `/create/accept`
       - POST: WS接続中メールアドレスで確認できた場合にWSを閉じてここにトークンを送信しcookie作成
-    - `/create/onetime`
+    - ~~`/create/onetime`~~ (アカウント作成後、設定から追加できるようにする)
       - GET: ワンタイムパスワードのトークン取得
     - `/create/info`
-      - POST: ユーザ情報（名前、テーマ、プロフィール画像、ワンタイムパスワード）
+      - POST: ユーザ情報（名前、テーマ、プロフィール画像、~~ワンタイムパスワード~~）
       - もし、メール認証できてもこれが有効時間以内に送られなければユーザはリセットする
   - `/login`
-    - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しcookieを作成
+    - POST: メールアドレス、パスワードを送信しcookieを作成
+    - `/login/onetime`
+      - ワンタイムパスワードを入力（必要な場合）
     - `/login/sso`
-      - POST: メールアドレス、パスワード、ワンタイムパスワードを送信しリダイレクト
-      - `?nr`でリダイレクトせず(no redirect)、トークンを返す（terminalなどでSSOする際用）
+      - POST: メールアドレス、パスワードを送信しリダイレクトURLを返す
   - `/me`
     - ユーザ情報参照
   - `/admin`
@@ -74,8 +76,12 @@
         - パスワードを忘れてしまった際に使用
         - POST: メールアドレスを入力→登録されているメールアドレスがある場合そのメールアドレスにPW再登録用のURL送付
     - `/user/onetime`
-      - POST: ワンタイムパスワード変更
+      - ~~POST: ワンタイムパスワード変更~~
+      - GET: ワンタイムパスワードのURL取得
+      - POST: ワンタイムパスワードの無効化、有効化
       - get /create/onetimeでトークンを取得する必要あり
+    - `/user/onetime/backup`
+      - GET: ワンタイムパスワードのバックアップコードを取得
     - `/user/access`
       - GET: SSOログイン履歴取得
       - POST: ログアウト処理など
@@ -141,8 +147,8 @@
         create_account_date: Date, // 認証後のdate
         user_id: string,
 
-        onetime_password_key?: string,
-        onetime_password_backup?: string
+        onetime_password_secret?: string,
+        onetime_password_backups?: string[]
     }
     ```
 
@@ -161,6 +167,7 @@
         period_minute: number = 30, //メール認証の有効期限
         open_new_window: boolean, // そのままのウインドウで続きをやるか(false)メールのリンク先ウインドウからやるか(true)
         verify: boolean, // 認証されているか。wsでこのテーブルを読むときに確認する部分
+        change_mail_mode: boolean, // メールアドレス変更時のメールアドレス認証用に使用しているか。もしその場合passwordは空
 
         mail: string,
         password: string, // パスワードはハッシュ化
@@ -175,6 +182,21 @@
 
         mail: string,
         password: string,
+
+        create_date: Date,
+        period_minute: int = 30;
+    }
+    ```
+
+- ワンタイムパスワード認証Buffer
+
+    ```ts
+    {
+        onetime_token: string,
+
+        onetime_password_secret: string,
+        user_id: string,
+        mail: string,
 
         create_date: Date,
         period_minute: int = 30;
@@ -209,6 +231,8 @@
             access_id: string,
             date: Date,
             ip_address: string,
+            is_sso: boolean,
+            sso_public?: string,
         }[]
     }
     ```

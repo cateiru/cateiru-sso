@@ -42,18 +42,6 @@ func CreateAcceptHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ワンタイムパスワードの処理とか
-func CreateOnetimeHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		createOnetimeGetHandler(w, r)
-	case http.MethodPost:
-		createOnetimePostHandler(w, r)
-	default:
-		RootHandler(w, r)
-	}
-}
-
 // ユーザ情報決定
 func CreateInfoHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -87,13 +75,4 @@ func createVerifyPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // WS接続中メールアドレスで確認できた場合にWSを閉じてここにトークンを送信しcookie作成
 func createAcceptPostHandler(w http.ResponseWriter, r *http.Request) {
-}
-
-// ワンタイムパスワードのトークンを取得する
-func createOnetimeGetHandler(w http.ResponseWriter, r *http.Request) {
-}
-
-// ワンタイムパスワードを設定する
-// cookieで認証します
-func createOnetimePostHandler(w http.ResponseWriter, r *http.Request) {
 }
