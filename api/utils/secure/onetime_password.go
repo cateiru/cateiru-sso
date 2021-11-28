@@ -20,9 +20,9 @@ package secure
 
 import (
 	"crypto/rand"
+	"os"
 
 	"github.com/cateiru/cateiru-sso/api/logging"
-	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
@@ -40,13 +40,13 @@ type OnetimePassword struct {
 //	- TOTPハッシュ桁: 6桁
 //	- ハッシュアルゴリズム: SHA1
 //	- 乱数生成: rand.Reader
-func OnetimePasswordNew(accountName string) (*OnetimePassword, error) {
+func NewOnetimePassword(accountName string, secret []byte) (*OnetimePassword, error) {
 	ops := totp.GenerateOpts{
-		Issuer:      string(utils.ONETIME_PASSWORD_ISSUER),
+		Issuer:      os.Getenv("ONETIME_PASSWORD_ISSUER"),
 		AccountName: accountName,
 		Period:      30,
 		SecretSize:  20,
-		Secret:      utils.ONETIME_PASSWORD_SECRET,
+		Secret:      secret,
 		Digits:      otp.DigitsSix,
 		Algorithm:   otp.AlgorithmSHA1,
 		Rand:        rand.Reader,
@@ -58,7 +58,7 @@ func OnetimePasswordNew(accountName string) (*OnetimePassword, error) {
 	}
 
 	logging.Sugar.Debugf(
-		"Created OTP. Issuer: %s, AccountName: %s, period: %s, Secret: %s, Public: %s",
+		"Created OTP. Issuer: %s, AccountName: %s, Period: %v, Secret: %s, Public: %s",
 		key.Issuer(), key.AccountName(), key.Period(), key.Secret(), key.String())
 
 	return &OnetimePassword{
@@ -92,7 +92,7 @@ func (o *OnetimePassword) GetSecret() string {
 func ValidateOnetimePassword(passcode string, secret string) bool {
 	isValidate := totp.Validate(passcode, secret)
 
-	logging.Sugar.Debugf("Varidate OTP. Passcode: %s, Secret: %s, Result: %s", passcode, secret, isValidate)
+	logging.Sugar.Debugf("Varidate OTP. Passcode: %s, Secret: %s, Result: %v", passcode, secret, isValidate)
 
 	return isValidate
 }
