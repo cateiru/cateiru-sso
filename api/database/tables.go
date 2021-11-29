@@ -104,11 +104,6 @@ type LoginHistory struct {
 	IpAddress    string    `datastore:"ipAddress" json:"ip_address"`
 	IsSSO        bool      `datastore:"isSSO" json:"is_sso"`
 	SSOPublicKey string    `datastore:"ssoPublicKey" json:"sso_publickey"`
-}
-
-// ユーザのログイン履歴
-type UserLoginHistories struct {
-	Histories []LoginHistory `datastore:"histories" json:"histories"`
 
 	userId
 }
@@ -116,13 +111,6 @@ type UserLoginHistories struct {
 // ログインしているSSO
 type SSOLogins struct {
 	SSORefreshTokens []string `datastore:"ssoRefreshTokens" json:"sso_refresh_tokens"`
-
-	userId
-}
-
-// ユーザの定義したSSOのpublic keys
-type UserCreatedSSO struct {
-	SsoPublickeys []string `datastore:"ssoPublickeys" json:"sso_publickeys"`
 
 	userId
 }
@@ -165,6 +153,8 @@ type SSOService struct {
 
 	SessionTokenPeriod int `datastore:"sessionTokenPeriod" json:"session_token_period"`
 	RefreshTokenPeriod int `datastore:"refreshTokenPeriod" json:"refresh_token_period"`
+
+	userId
 }
 
 // SSOのセッショントークン

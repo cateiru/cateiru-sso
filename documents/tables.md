@@ -58,12 +58,6 @@ URL内にsecret情報が含まれているため別にテーブルに保存す�
 
 現在、ログインしているSSO
 
-## UserCreatedSSO
-
-そのユーザが設定したsso
-
-proユーザのみがSSOを設定できる
-
 ## SessionInfo
 
 当サイトのセッショントークン

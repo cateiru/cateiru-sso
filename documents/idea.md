@@ -226,15 +226,12 @@
 
     ```ts
     {
+        access_id: string,
         user_id: string,
-
-        histories: {
-            access_id: string,
-            date: Date,
-            ip_address: string,
-            is_sso: boolean,
-            sso_public?: string,
-        }[]
+        date: Date,
+        ip_address: string,
+        is_sso: boolean,
+        sso_public?: string,
     }
     ```
 
@@ -272,6 +269,7 @@
     {
         sso_public_key: string, // key
 
+        user_id: string,
         name: string,
         from_url: string[],
         to_url: string[],
@@ -281,15 +279,6 @@
         refresh_token_period?: number,
 
         sso_secret_key: string
-    }
-    ```
-
-- ユーザのSSO
-
-    ```ts
-    {
-        user_id: string,
-        sso: string[], // public_keyのlist
     }
     ```
 
