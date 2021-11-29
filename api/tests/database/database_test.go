@@ -79,7 +79,7 @@ func TestMultiEntryDB(t *testing.T) {
 	}
 
 	// 非同期でDBに追加するため追加される（であろう）まで待機する
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	query := datastore.NewQuery(tableName)
 
@@ -96,7 +96,7 @@ func TestMultiEntryDB(t *testing.T) {
 	require.NoError(t, err, "削除できない")
 
 	// 非同期でDBに追加するため追加される（であろう）まで待機する
-	time.Sleep(2 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	numberOfEntry, err = client.Count(ctx, query)
 	require.NoError(t, err, "Countできない")
