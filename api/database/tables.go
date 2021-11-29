@@ -85,6 +85,7 @@ type OnetimePasswordValidate struct {
 type User struct {
 	FirstName string `datastore:"firstName" json:"first_name"`
 	LastName  string `datastore:"lastName" json:"last_name"`
+	UserName  string `datastore:"userName" json:"user_name"`
 
 	Role string
 	Mail string `datastore:"mail" json:"mail"`

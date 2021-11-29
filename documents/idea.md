@@ -212,6 +212,7 @@
 
         first_name: string,
         last_name: string,
+        user_name: string,
         role: string, // `admin`. `pro` or `user`
         mail: string, // これがないと`認証`テーブルを検索できなくなる
 
