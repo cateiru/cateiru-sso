@@ -26,6 +26,7 @@ jobs:
   go:
     name: go test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     services:
       datastore:
         image: singularities/datastore-emulator
