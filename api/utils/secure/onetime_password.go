@@ -23,6 +23,7 @@ import (
 	"os"
 
 	"github.com/cateiru/cateiru-sso/api/logging"
+	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
@@ -40,13 +41,16 @@ type OnetimePassword struct {
 //	- TOTPハッシュ桁: 6桁
 //	- ハッシュアルゴリズム: SHA1
 //	- 乱数生成: rand.Reader
-func NewOnetimePassword(accountName string, secret []byte) (*OnetimePassword, error) {
+func NewOnetimePassword(accountName string) (*OnetimePassword, error) {
+	uuid := utils.UUID()
+	hash := utils.NewHash(uuid)
+
 	ops := totp.GenerateOpts{
 		Issuer:      os.Getenv("ONETIME_PASSWORD_ISSUER"),
 		AccountName: accountName,
 		Period:      30,
 		SecretSize:  20,
-		Secret:      secret,
+		Secret:      hash.SHA256Byte(),
 		Digits:      otp.DigitsSix,
 		Algorithm:   otp.AlgorithmSHA1,
 		Rand:        rand.Reader,

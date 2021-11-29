@@ -1,7 +1,6 @@
 package secure_test
 
 import (
-	"strconv"
 	"testing"
 	"time"
 
@@ -17,7 +16,7 @@ func TestValidateOnetimePassword(t *testing.T) {
 
 	accountName := "TestUser"
 
-	_otp, err := secure.NewOnetimePassword(accountName, []byte("secret"))
+	_otp, err := secure.NewOnetimePassword(accountName)
 	require.NoError(t, err, "OTPが作成できない")
 
 	public := _otp.GetPublic()
@@ -41,7 +40,7 @@ func TestValidateFailed(t *testing.T) {
 
 	accountName := "TestUser"
 
-	_otp, err := secure.NewOnetimePassword(accountName, []byte("secret_1"))
+	_otp, err := secure.NewOnetimePassword(accountName)
 	require.NoError(t, err, "OTPが作成できない")
 
 	n := time.Now().UTC()
@@ -50,7 +49,7 @@ func TestValidateFailed(t *testing.T) {
 	require.NoError(t, err, "URLからパスコードを生成できない")
 
 	// 同じアカウント名で別の鍵生成
-	secondOtp, err := secure.NewOnetimePassword(accountName, []byte("secret_2"))
+	secondOtp, err := secure.NewOnetimePassword(accountName)
 	require.NoError(t, err, "OTPが作成できない")
 
 	isValidate := secure.ValidateOnetimePassword(code, secondOtp.GetSecret())
@@ -67,7 +66,7 @@ func TestOTPMulti(t *testing.T) {
 	length := 10
 
 	for i := 0; length > i; i++ {
-		_otp, err := secure.NewOnetimePassword(accountName, []byte(strconv.Itoa(i)))
+		_otp, err := secure.NewOnetimePassword(accountName)
 		require.NoError(t, err, "OTPを作成できない")
 		secrets = append(secrets, _otp.GetSecret())
 	}
