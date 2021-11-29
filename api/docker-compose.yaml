@@ -1,0 +1,14 @@
+# Google Cloud Datastoreをローカルで実行します
+#
+# docker-compose up -d を使用してコンテナを実行してください
+
+version: "3"
+
+services:
+  datastore:
+    image: singularities/datastore-emulator
+    environment:
+      - DATASTORE_PROJECT_ID=project-test
+      - DATASTORE_LISTEN_ADDRESS=0.0.0.0:18001
+    ports:
+      - "18001:18001"
