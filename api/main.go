@@ -36,6 +36,7 @@ func main() {
 		Addr:    strings.Join([]string{addr, port}, ""),
 		Handler: h2c.NewHandler(mux, h2s),
 	}
+	defer server.Close()
 
 	logging.Sugar.Infof("Start server! addr: %v, port: %v", addr, port)
 
