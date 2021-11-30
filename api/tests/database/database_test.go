@@ -136,6 +136,7 @@ func TestMultiEntryDB(t *testing.T) {
 	client.Close()
 }
 
+// find付きクエリでGetAll、Runを実行する
 func TestFindDB(t *testing.T) {
 	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
 	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
