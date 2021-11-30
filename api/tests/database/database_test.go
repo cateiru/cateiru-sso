@@ -2,6 +2,7 @@ package database_test
 
 import (
 	"context"
+	"strconv"
 	"testing"
 	"time"
 
@@ -9,10 +10,17 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/api/iterator"
 )
 
 type sampleEntry struct {
 	Text string `datastore:"text"`
+}
+
+type sampleEntrySecond struct {
+	Id string `datastore:"id"`
+
+	sampleEntry
 }
 
 // DBのアクセスをトライする
@@ -124,6 +132,69 @@ func TestMultiEntryDB(t *testing.T) {
 		t.Logf("%v == 0", numberOfEntry)
 		return numberOfEntry == 0
 	}, "削除できてない")
+
+	client.Close()
+}
+
+func TestFindDB(t *testing.T) {
+	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
+	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+
+	ctx := context.Background()
+	tableName := utils.CreateID(5)
+	numberOfEntry := 5
+	targetIndex := 3
+
+	client, err := database.NewDatabase(ctx)
+	require.NoError(t, err, "Datastoreに接続できない")
+
+	ids := []string{}
+	for i := 0; numberOfEntry > i; i++ {
+		ids = append(ids, utils.CreateID(5))
+	}
+
+	for index, id := range ids {
+		key := datastore.NameKey(tableName, utils.CreateID(5), nil)
+		client.Put(ctx, key, &sampleEntrySecond{
+			Id: id,
+			sampleEntry: sampleEntry{
+				Text: strconv.Itoa(index),
+			},
+		})
+	}
+
+	query := datastore.NewQuery(tableName).Filter("id =", ids[targetIndex])
+
+	waitDB(t, func() bool {
+		entries := []sampleEntrySecond{}
+		_, err := client.GetAll(ctx, query, &entries)
+		require.NoError(t, err, "GetAllできない")
+
+		t.Logf("Return number of entries: %d, entry id: %s", len(entries), entries[0].Id)
+
+		return len(entries) == 1 && entries[0].Id == ids[targetIndex] && entries[0].Text == strconv.Itoa(targetIndex)
+
+	}, "GetAllでFindできない")
+
+	waitDB(t, func() bool {
+		iter := client.Run(ctx, query)
+
+		for {
+			var entry sampleEntrySecond
+			_, err := iter.Next(&entry)
+			if err == iterator.Done {
+				return false // 見つからなかった
+			}
+			require.NoError(t, err, "イテレータをNEXTできない")
+
+			t.Logf("Find Iter. id: %v, value: %v", entry.Id, entry.Text)
+
+			if entry.Id == ids[targetIndex] && entry.Text == strconv.Itoa(targetIndex) {
+				return true
+			}
+		}
+
+	}, "GetAllでFindできない")
 
 	client.Close()
 }
