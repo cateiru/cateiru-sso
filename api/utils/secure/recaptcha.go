@@ -31,7 +31,7 @@ type RecaptchaResponse struct {
 func NewReCaptcha() *ReCaptcha {
 	return &ReCaptcha{
 		ServerName: "https://www.google.com/recaptcha/api/siteverify",
-		Secret:     os.Getenv("RECHAPTCHA_SECRET"),
+		Secret:     os.Getenv("RECAPTCHA_SECRET"),
 	}
 }
 

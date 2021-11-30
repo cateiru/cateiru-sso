@@ -46,7 +46,7 @@ func NewOnetimePassword(accountName string) (*OnetimePassword, error) {
 	hash := utils.NewHash(uuid)
 
 	ops := totp.GenerateOpts{
-		Issuer:      os.Getenv("ONETIME_PASSWORD_ISSUER"),
+		Issuer:      os.Getenv("ISSUER"),
 		AccountName: accountName,
 		Period:      30,
 		SecretSize:  20,

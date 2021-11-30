@@ -12,7 +12,7 @@ import (
 
 // OTPが生成でき、検証し成功するかチェック
 func TestValidateOnetimePassword(t *testing.T) {
-	t.Setenv("ONETIME_PASSWORD_ISSUER", "test_issuer")
+	t.Setenv("ISSUER", "test_issuer")
 
 	accountName := "TestUser"
 
@@ -36,7 +36,7 @@ func TestValidateOnetimePassword(t *testing.T) {
 
 // 違うパスコードで検証が失敗するか
 func TestValidateFailed(t *testing.T) {
-	t.Setenv("ONETIME_PASSWORD_ISSUER", "test_issuer")
+	t.Setenv("ISSUER", "test_issuer")
 
 	accountName := "TestUser"
 
@@ -59,7 +59,7 @@ func TestValidateFailed(t *testing.T) {
 
 // 複数のOTPは全部違うsecretか
 func TestOTPMulti(t *testing.T) {
-	t.Setenv("ONETIME_PASSWORD_ISSUER", "test_issuer")
+	t.Setenv("ISSUER", "test_issuer")
 	secrets := []string{}
 	accountName := "TestUser"
 
