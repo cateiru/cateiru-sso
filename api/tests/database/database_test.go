@@ -15,6 +15,29 @@ type sampleEntry struct {
 	Text string `datastore:"text"`
 }
 
+// DBのアクセスをトライする
+func waitDB(t *testing.T, f func() bool, message string) {
+	// 合計: 18秒
+	waitTimes := []int{1, 1, 2, 2, 3, 4, 5}
+	successFlag := false
+	id := utils.CreateID(5)
+
+	for _, wait := range waitTimes {
+		t.Logf("Wait DB sleep: %v s, id: %s", wait, id)
+		time.Sleep(time.Duration(wait) * time.Second)
+		result := f()
+
+		if result {
+			successFlag = true
+			break
+		}
+	}
+
+	if !successFlag {
+		t.Fatalf("waitDB: %v", message)
+	}
+}
+
 // データベース（Cloud datastore）の接続、Put、Getを試す
 func TestConnectDB(t *testing.T) {
 	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
@@ -78,14 +101,14 @@ func TestMultiEntryDB(t *testing.T) {
 		require.NoError(t, err, "Putできない")
 	}
 
-	// 非同期でDBに追加するため追加される（であろう）まで待機する
-	time.Sleep(time.Duration(entries) * time.Second)
-
 	query := datastore.NewQuery(tableName)
 
-	numberOfEntry, err := client.Count(ctx, query)
-	require.NoError(t, err, "Countできない")
-	require.Equal(t, numberOfEntry, entries, "カウントされた数が違う")
+	waitDB(t, func() bool {
+		numberOfEntry, err := client.Count(ctx, query)
+		require.NoError(t, err, "Countできない")
+		t.Logf("%v == %v", numberOfEntry, entries)
+		return numberOfEntry == entries
+	}, "カウントされた数が違う")
 
 	returnEntries := []sampleEntry{}
 	keys, err := client.GetAll(ctx, query, &returnEntries)
@@ -95,12 +118,12 @@ func TestMultiEntryDB(t *testing.T) {
 	err = client.DeleteMulti(ctx, keys)
 	require.NoError(t, err, "削除できない")
 
-	// 非同期でDBに追加するため追加される（であろう）まで待機する
-	time.Sleep(time.Duration(entries) * time.Second)
-
-	numberOfEntry, err = client.Count(ctx, query)
-	require.NoError(t, err, "Countできない")
-	require.Equal(t, numberOfEntry, 0, "削除できてない")
+	waitDB(t, func() bool {
+		numberOfEntry, err := client.Count(ctx, query)
+		require.NoError(t, err, "Countできない")
+		t.Logf("%v == 0", numberOfEntry)
+		return numberOfEntry == 0
+	}, "削除できてない")
 
 	client.Close()
 }
