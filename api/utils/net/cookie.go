@@ -1,3 +1,14 @@
+// Cookieの作成、取得、削除を行います。
+//
+// Example:
+//	cookie := NewCookie("example.com", true, http.SameSiteNoneMode)
+//	exp := NewCookieHourExp(10)
+//	cookie.Set(w, "key", "value", exp)
+//
+//	value, err := cookie.Get(r, "key")
+//
+//	err := cookie.Delete(w, r, "key")
+//
 package net
 
 import (
