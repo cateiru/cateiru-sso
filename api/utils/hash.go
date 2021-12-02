@@ -14,6 +14,7 @@ package utils
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"os"
 	"strings"
 )
 
@@ -43,4 +44,11 @@ func (c *Hash) SHA256() string {
 func (c *Hash) SHA256Byte() []byte {
 	hash := sha256.Sum256([]byte(strings.Join(c.Seeds, "")))
 	return hash[:]
+}
+
+// パスワードとSEEDを使用してパスワードをハッシュ化します
+// DBにパスワードを保存する場合は必ずハッシュ化して保存すること
+func PWHash(pw string) string {
+	hash := NewHash(pw).AddSeed(os.Getenv("PW_HASH_SEED"))
+	return hash.SHA256()
 }
