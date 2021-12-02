@@ -163,6 +163,7 @@
     ```ts
     {
         mail_token: string, // メールのURLパラメータに付加するトークン
+        client_check_token: string, // WS開始時に使用するトークン
         create_date: Date,  // メール認証開始時間
         period_minute: number = 30, //メール認証の有効期限
         open_new_window: boolean, // そのままのウインドウで続きをやるか(false)メールのリンク先ウインドウからやるか(true)

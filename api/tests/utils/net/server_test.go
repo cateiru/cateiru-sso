@@ -1,6 +1,7 @@
 package net_test
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/cateiru/cateiru-sso/api/logging"
@@ -15,6 +16,10 @@ type PostForm struct {
 	Name string `json:"name"`
 }
 
+type ResponseOK struct {
+	Status string `json:"status"`
+}
+
 // cookieテスト用のサーバ
 func NewTestApp() *TestApp {
 	mux := http.NewServeMux()
@@ -25,6 +30,9 @@ func NewTestApp() *TestApp {
 	mux.HandleFunc("/delete", app.TestDeleteCookieHandler)
 
 	mux.HandleFunc("/form", app.TestPostFormHandler)
+
+	mux.HandleFunc("/ok", app.TestResponseOKHandler)
+	mux.HandleFunc("/error", app.TestResponseErrorHandler)
 
 	return app
 }
@@ -83,4 +91,18 @@ func (c *TestApp) TestPostFormHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(postForm.Name))
+}
+
+func (c *TestApp) TestResponseOKHandler(w http.ResponseWriter, r *http.Request) {
+	body := ResponseOK{
+		Status: "OK",
+	}
+
+	net.ResponseOK(w, body)
+}
+
+func (c *TestApp) TestResponseErrorHandler(w http.ResponseWriter, r *http.Request) {
+	err := errors.New("Dummy error")
+
+	net.ResponseError(w, 500, err)
 }

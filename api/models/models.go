@@ -31,12 +31,13 @@ type Certification struct {
 
 // メールアドレス認証用テーブル
 type MailCertification struct {
-	MailToken      string    `datastore:"mailToken" json:"mail_token"`
-	CreateDate     time.Time `datastore:"createDate" json:"create_date"`
-	PeriodMinute   int       `datastore:"periodMinute" json:"period_minute"`
-	OpenNewWindow  bool      `datastore:"openNewWindow" json:"open_new_window"`
-	Verify         bool      `datastore:"verify" json:"verify"`
-	ChangeMailMode bool      `datastore:"changeMailMode" json:"change_mail_mode"`
+	MailToken        string    `datastore:"mailToken" json:"mail_token"`
+	ClientCheckToken string    `datastore:"clientCheckToken" json:"client_check_token"`
+	CreateDate       time.Time `datastore:"createDate" json:"create_date"`
+	PeriodMinute     int       `datastore:"periodMinute" json:"period_minute"`
+	OpenNewWindow    bool      `datastore:"openNewWindow" json:"open_new_window"`
+	Verify           bool      `datastore:"verify" json:"verify"`
+	ChangeMailMode   bool      `datastore:"changeMailMode" json:"change_mail_mode"`
 
 	userMailPW
 }
