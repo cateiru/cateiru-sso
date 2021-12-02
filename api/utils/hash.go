@@ -30,9 +30,8 @@ func NewHash(seed string) *Hash {
 
 // seedを追加する
 func (c *Hash) AddSeed(seed string) *Hash {
-	return &Hash{
-		Seeds: append(c.Seeds, seed),
-	}
+	c.Seeds = append(c.Seeds, seed)
+	return c
 }
 
 // SHA256 hashを生成する
