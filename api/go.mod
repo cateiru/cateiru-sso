@@ -26,6 +26,8 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/sendgrid/rest v2.6.5+incompatible // indirect
+	github.com/sendgrid/sendgrid-go v3.10.3+incompatible // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
