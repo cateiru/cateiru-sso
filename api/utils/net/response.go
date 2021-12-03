@@ -14,6 +14,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/go-http-error/httperror"
 )
 
 type AbstractResponse struct {
@@ -37,10 +38,20 @@ type ErrorResponse struct {
 
 // エラーをHTTPで返す
 // レスポンスではerror idを返し、ログからそのIDを検索することでエラーメッセージを参照できる
-func ResponseError(w http.ResponseWriter, statusCode int, err error) {
+//
+// http statusはHTTPErrorで定義してください。
+// See more: https://github.com/cateiru/go-http-error
+func ResponseError(w http.ResponseWriter, err error) {
 	id := utils.CreateID(10)
 
 	logging.Sugar.Errorf("HTTP ERROR. id: %v, message: %v", id, err.Error())
+
+	var statusCode int
+	if httperr, ok := httperror.CastHTTPError(err); ok {
+		statusCode = httperr.StatusCode
+	} else {
+		statusCode = 500
+	}
 
 	body := ErrorResponse{
 		StatusCode: statusCode,

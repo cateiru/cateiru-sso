@@ -6,6 +6,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/go-http-error/httperror/status"
 )
 
 type TestApp struct {
@@ -33,6 +34,7 @@ func NewTestApp() *TestApp {
 
 	mux.HandleFunc("/ok", app.TestResponseOKHandler)
 	mux.HandleFunc("/error", app.TestResponseErrorHandler)
+	mux.HandleFunc("/notfound", app.TestNotfoundErrorHandler)
 
 	return app
 }
@@ -104,5 +106,11 @@ func (c *TestApp) TestResponseOKHandler(w http.ResponseWriter, r *http.Request) 
 func (c *TestApp) TestResponseErrorHandler(w http.ResponseWriter, r *http.Request) {
 	err := errors.New("Dummy error")
 
-	net.ResponseError(w, 500, err)
+	net.ResponseError(w, err)
+}
+
+func (c *TestApp) TestNotfoundErrorHandler(w http.ResponseWriter, r *http.Request) {
+	err := status.NewNotFoundError(errors.New("Dummy error")).Wrap()
+
+	net.ResponseError(w, err)
 }
