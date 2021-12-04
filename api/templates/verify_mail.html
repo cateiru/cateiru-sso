@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メールアドレス認証のお知らせ</title>
+    <style>
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .verify-button {
+            font-size: 1.3rem;
+            border-radius: 20px;
+            padding: .5rem 1rem;
+            background-color: #4ab065;
+            color: #e6e6e6;
+            text-decoration: none;
+
+        }
+
+        .verify-button:hover {
+            background-color: #75df91;
+            color: #4e4e4e;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .button {
+            margin: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>メールアドレス認証のお知らせ</h1>
+    <p class="center">CateiruSSOをご利用いただきありがとうございます。<br />
+        以下のボタンを押してメールアドレスを認証してください。</p>
+    <p class="center">このURLの有効時間は30分です。</p>
+
+    <div class="button">
+        <p class="center">
+            <a class="verify-button" href="{{.VerifyURL}}">メールアドレスを認証する</a>
+        </p>
+    </div>
+
+    <h3 class="center">ご登録の覚えがないのにこのメールが届いたという方</h3>
+    <p class="center">ご迷惑をおかけし申し訳ありません。大変お手数ですが下記フォームまでご連絡をお願いいたします。</p>
+    <p class="center">
+        <a
+            href="https://cateiru.com/contact?title=%E7%99%BB%E9%8C%B2%E3%81%97%E3%81%9F%E8%A6%9A%E3%81%88%E3%81%8C%E3%81%AA%E3%81%84%E3%81%AB%E8%AA%8D%E8%A8%BC%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%8C%E5%B1%8A%E3%81%84%E3%81%9F">
+            お問い合わせフォーム
+        </a>
+    </p>
+
+</body>
+
+</html>
