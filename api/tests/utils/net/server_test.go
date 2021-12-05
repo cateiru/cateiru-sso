@@ -36,6 +36,8 @@ func NewTestApp() *TestApp {
 	mux.HandleFunc("/error", app.TestResponseErrorHandler)
 	mux.HandleFunc("/notfound", app.TestNotfoundErrorHandler)
 
+	mux.HandleFunc("/query", app.TestURLQuery)
+
 	return app
 }
 
@@ -113,4 +115,14 @@ func (c *TestApp) TestNotfoundErrorHandler(w http.ResponseWriter, r *http.Reques
 	err := status.NewNotFoundError(errors.New("Dummy error")).Wrap()
 
 	net.ResponseError(w, err)
+}
+
+func (c *TestApp) TestURLQuery(w http.ResponseWriter, r *http.Request) {
+	query, err := net.GetQuery(r, "sample")
+	if err != nil {
+		net.ResponseError(w, err)
+		return
+	}
+
+	w.Write([]byte(query))
 }
