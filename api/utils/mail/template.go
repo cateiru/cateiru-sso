@@ -8,7 +8,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/logging"
 )
 
-const TEMPLATE_DIR_PATH = "../../templates"
+const TEMPLATE_DIR_PATH = "../../../templates"
 
 // テンプレートファイルから文字列を作成します
 //
