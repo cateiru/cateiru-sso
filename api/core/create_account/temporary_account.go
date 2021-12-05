@@ -20,15 +20,18 @@ import (
 
 const VERIFY_MAIL_TEMPLATE_PATH = "verify_mail"
 
+// POSTのformの型
 type PostForm struct {
 	Mail     string `json:"mail"`
 	Password string `json:"password"`
 }
 
+// レスポンスの型
 type Response struct {
 	ClientCheckToken string `json:"client_check_token"`
 }
 
+// テンプレートに適用する用の型
 type VerifyMailTemplate struct {
 	VerifyURL string
 	Mail      string
@@ -76,6 +79,7 @@ func createTemporaryAccount(ctx context.Context, form *PostForm) (string, error)
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/create_account/temporary_account.go", 35).Wrap()
 	}
+	defer db.Close()
 
 	isMailExist, err := common.CheckExistMail(ctx, db, form.Mail)
 	if err != nil {
@@ -123,9 +127,7 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 		UserMailPW: user,
 	}
 
-	key := database.CreateNameKey("MailCertification", mailToken)
-
-	if err := db.Put(ctx, key, mailVerify); err != nil {
+	if err := mailVerify.Add(ctx, db); err != nil {
 		return "", err
 	}
 

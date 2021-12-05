@@ -5,7 +5,6 @@ import (
 
 	createaccount "github.com/cateiru/cateiru-sso/api/core/create_account"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
-	"golang.org/x/net/websocket"
 )
 
 // アカウント作成: 初期
@@ -22,11 +21,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 func CreateVerifyHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		// プロトコルをWSにアップデーーーーート！！！
-		s := websocket.Server{
-			Handler: websocket.Handler(createVerifyWSHandler),
-		}
-		s.ServeHTTP(w, r)
+		createVerifyWSHandler(w, r)
 	case http.MethodPost:
 		createVerifyPostHandler(w, r)
 	default:
@@ -70,7 +65,10 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // メールアドレス確認待機Websocket
-func createVerifyWSHandler(ws *websocket.Conn) {
+func createVerifyWSHandler(w http.ResponseWriter, r *http.Request) {
+	if err := createaccount.MailVerifyObserve(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // メールアドレスから開いたときににトークンを送信してcookie作成
