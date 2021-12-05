@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const TEMPFILE_PATH = "../../tests/templates/test"
+const TEMPFILE_PATH = "test"
 
 type Element struct {
 	Title string

@@ -1,11 +1,14 @@
 package mail
 
 import (
+	"fmt"
 	"html/template"
 	"strings"
 
 	"github.com/cateiru/cateiru-sso/api/logging"
 )
+
+const TEMPLATE_DIR_PATH = "../../templates"
 
 // テンプレートファイルから文字列を作成します
 //
@@ -13,7 +16,7 @@ import (
 func Template(path string, elements interface{}) (string, error) {
 	logging.Sugar.Debugf("Use %v template.", path)
 
-	templ, err := template.ParseFiles(path)
+	templ, err := template.ParseFiles(fmt.Sprintf("%s/%s", TEMPLATE_DIR_PATH, path))
 	if err != nil {
 		return "", err
 	}

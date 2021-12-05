@@ -18,7 +18,7 @@ type VerifyMailTemplate struct {
 	Mail      string
 }
 
-const VERIFY_MAIL_TEMPLATE_PATH = "../../templates/verify_mail"
+const VERIFY_MAIL_TEMPLATE_PATH = "verify_mail"
 
 // メール認証を開始します
 //
