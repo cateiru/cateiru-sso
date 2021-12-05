@@ -1,8 +1,7 @@
 package logging
 
 import (
-	"os"
-
+	"github.com/cateiru/cateiru-sso/api/utils"
 	"go.uber.org/zap"
 )
 
@@ -11,7 +10,7 @@ var Sugar *zap.SugaredLogger
 
 // ログモードを選択する
 func init() {
-	switch os.Getenv("DEPLOY_MODE") {
+	switch utils.DEPLOY_MODE {
 	case "production":
 		loggerProduction, err := zap.NewProduction()
 		if err != nil {

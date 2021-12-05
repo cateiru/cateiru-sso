@@ -3,6 +3,8 @@ package handler
 import (
 	"net/http"
 
+	createaccount "github.com/cateiru/cateiru-sso/api/core/create_account"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"golang.org/x/net/websocket"
 )
 
@@ -62,7 +64,9 @@ func createInfoPostHandler(w http.ResponseWriter, r *http.Request) {
 // アカウント作成（メール認証前）
 // パスワード、メールアドレスを取得してメール認証を開始します
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
-
+	if err := createaccount.CreateTemporaryHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // メールアドレス確認待機Websocket

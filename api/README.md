@@ -37,6 +37,16 @@ MAIL_FROM_NAME=
 
 # メール受信者の名前
 MAIL_FROM_ADDRESS=
+
+# Datastoreの親レベルのkey名
+# デフォルトは`cateiru-sso`です
+DATASTORE_PARENT_KEY=
+
+# サイトのドメイン
+SITE_DOMAIN=
+
+# APIのドメイン
+API_DOMAIN=
 ```
 
 ## テスト
