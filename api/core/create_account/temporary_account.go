@@ -15,6 +15,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/cateiru-sso/api/utils/mail"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/api/utils/secure"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 
@@ -22,8 +23,9 @@ const VERIFY_MAIL_TEMPLATE_PATH = "verify_mail"
 
 // POSTのformの型
 type PostForm struct {
-	Mail     string `json:"mail"`
-	Password string `json:"password"`
+	Mail       string `json:"mail"`
+	Password   string `json:"password"`
+	ReCHAPTCHA string `json:"re_chaptcha"`
 }
 
 // レスポンスの型
@@ -45,6 +47,7 @@ type VerifyMailTemplate struct {
 //	{
 //		"mail": "example@example.com",
 //		"password": "**********",
+//		"re_chaptcha": "********",
 //	}
 func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
@@ -57,6 +60,18 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 	postForm := new(PostForm)
 	if err := net.GetJsonForm(w, r, postForm); err != nil {
 		return err
+	}
+
+	if utils.DEPLOY_MODE == "production" {
+		isOk, err := secure.NewReCaptcha().Validate(postForm.ReCHAPTCHA, r.Header.Get("x-forwarded-for"))
+		if err != nil {
+			return status.NewInternalServerErrorError(err).Caller(
+				"core/create_account/temporary_account.go", 68).Wrap()
+		}
+		// reCHAPTCHAが認証できなかった場合、403を返す
+		if !isOk {
+			return status.NewForbiddenError(errors.New("reCHAPTCHA is failed")).Caller("core/create_account/temporary_account.go", 71)
+		}
 	}
 
 	clientCheckToken, err := createTemporaryAccount(ctx, postForm)
