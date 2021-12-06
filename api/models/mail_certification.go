@@ -17,7 +17,7 @@ func GetMailCertificationByMailToken(ctx context.Context, db *database.Database,
 	var entry MailCertification
 	_, err := iter.Next(&entry)
 	// 要素がなにもない場合nilを返す
-	if err != iterator.Done {
+	if err == iterator.Done {
 		return nil, nil
 	}
 	if err != nil {
@@ -36,7 +36,7 @@ func GetMailCertificationByCheckToken(ctx context.Context, db *database.Database
 	var entry MailCertification
 	_, err := iter.Next(&entry)
 	// 要素がなにもない場合nilを返す
-	if err != iterator.Done {
+	if err == iterator.Done {
 		return nil, nil
 	}
 	if err != nil {
