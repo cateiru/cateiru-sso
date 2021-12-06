@@ -5,6 +5,7 @@ import (
 
 	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
+	"google.golang.org/api/iterator"
 )
 
 // MailTokenで取得します
@@ -15,6 +16,10 @@ func GetMailCertificationByMailToken(ctx context.Context, db *database.Database,
 
 	var entry MailCertification
 	_, err := iter.Next(&entry)
+	// 要素がなにもない場合nilを返す
+	if err != iterator.Done {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +35,10 @@ func GetMailCertificationByCheckToken(ctx context.Context, db *database.Database
 
 	var entry MailCertification
 	_, err := iter.Next(&entry)
+	// 要素がなにもない場合nilを返す
+	if err != iterator.Done {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

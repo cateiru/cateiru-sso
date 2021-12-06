@@ -85,6 +85,12 @@ func send(ctx context.Context, db *database.Database, ws *websocket.Conn, quit c
 				ws.Close()
 				return
 			}
+			// 要素がない状態はそのまま終了
+			// 有効期限切れでデータが削除されたときなど
+			if entry == nil {
+				ws.Close()
+				return
+			}
 
 			// 認証された場合、`true`を送信
 			// wsのcloseは原則としてclient側から行い、こちら側で閉じるのはエラーのときのみにする

@@ -74,7 +74,7 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	clientCheckToken, err := createTemporaryAccount(ctx, postForm)
+	clientCheckToken, err := CreateTemporaryAccount(ctx, postForm)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func createTemporaryAccount(ctx context.Context, form *PostForm) (string, error) {
+func CreateTemporaryAccount(ctx context.Context, form *PostForm) (string, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller(
@@ -153,6 +153,8 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 		if err := sendVerifyMail(user.Mail, mailToken); err != nil {
 			return "", err
 		}
+	} else {
+		logging.Sugar.Debugf("create mail token. url: https://%s/create?m=%s", os.Getenv("SITE_DOMAIN"), mailToken)
 	}
 
 	logging.Sugar.Debugf("Send verify email. mail: %s, client check token: %s", user.Mail, clientCheckToken)
