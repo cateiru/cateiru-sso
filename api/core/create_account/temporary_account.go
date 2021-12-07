@@ -43,15 +43,13 @@ type VerifyMailTemplate struct {
 // メールアドレス、パスワードをfromで送信することで、そのメールアドレスに確認用URLを送信します。
 // さらに、Websocketでメールアドレスが認証されたか確認するためのトークンを返します。
 //
-// Post Form (application/json):
+// Request Form (application/json):
 //	{
 //		"mail": "example@example.com",
 //		"password": "**********",
 //		"re_chaptcha": "********",
 //	}
 func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
-	ctx := r.Context()
-
 	// contents-type: application/json 以外では400エラーを返す
 	if net.CheckContentType(r) {
 		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller(
@@ -60,24 +58,12 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 
 	postForm := new(PostForm)
 	if err := net.GetJsonForm(w, r, postForm); err != nil {
-		return err
+		status.NewBadRequestError(errors.New("parse not failed")).Caller(
+			"core/create_account/temporary_account.go", 62)
 	}
 
 	ip := r.Header.Get("x-forwarded-for")
-
-	// reCHAPTCHA
-	if utils.DEPLOY_MODE == "production" {
-		isOk, err := secure.NewReCaptcha().Validate(postForm.ReCHAPTCHA, ip)
-		if err != nil {
-			return status.NewInternalServerErrorError(err).Caller(
-				"core/create_account/temporary_account.go", 73).Wrap()
-		}
-		// reCHAPTCHAが認証できなかった場合、400を返す
-		if !isOk {
-			return status.NewBadRequestError(errors.New("reCHAPTCHA is failed")).Caller(
-				"core/create_account/temporary_account.go", 78).AddCode(net.BotError)
-		}
-	}
+	ctx := r.Context()
 
 	clientCheckToken, err := CreateTemporaryAccount(ctx, postForm, ip)
 	if err != nil {
@@ -94,6 +80,20 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (string, error) {
+	// reCHAPTCHA
+	if utils.DEPLOY_MODE == "production" {
+		isOk, err := secure.NewReCaptcha().Validate(form.ReCHAPTCHA, ip)
+		if err != nil {
+			return "", status.NewInternalServerErrorError(err).Caller(
+				"core/create_account/temporary_account.go", 73).Wrap()
+		}
+		// reCHAPTCHAが認証できなかった場合、400を返す
+		if !isOk {
+			return "", status.NewBadRequestError(errors.New("reCHAPTCHA is failed")).Caller(
+				"core/create_account/temporary_account.go", 78).AddCode(net.BotError)
+		}
+	}
+
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller(
@@ -130,6 +130,18 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 			"core/create_account/temporary_account.go", 130).AddCode(net.ExistError).Wrap()
 	}
 
+	// ログを保存する
+	log := &models.TryCreateAccountLog{
+		LogId:      utils.CreateID(0),
+		IP:         ip,
+		TryDate:    time.Now(),
+		TargetMail: form.Mail,
+	}
+	if err := log.Add(ctx, db); err != nil {
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/create_account/temporary_account.go", 143).Wrap()
+	}
+
 	user := models.UserMailPW{
 		Mail:     form.Mail,
 		Password: utils.PWHash(form.Password),
@@ -147,8 +159,8 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 //
 // client_check_token(wsを接続するのに使用するトークンを返します)
 func createVerifyMail(ctx context.Context, db *database.Database, user models.UserMailPW) (string, error) {
-	mailToken := utils.CreateID(0)
-	clientCheckToken := utils.CreateID(0)
+	mailToken := utils.CreateID(20)
+	clientCheckToken := utils.CreateID(20)
 
 	mailVerify := &models.MailCertification{
 		MailToken:        mailToken,
