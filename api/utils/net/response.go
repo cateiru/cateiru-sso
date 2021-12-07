@@ -57,7 +57,11 @@ func ResponseError(w http.ResponseWriter, err error) {
 	var customCode int
 	if httperr, ok := httperror.CastHTTPError(err); ok {
 		statusCode = httperr.StatusCode
-		customCode = httperr.Code
+		if httperr.Code != 0 {
+			customCode = httperr.Code
+		} else {
+			customCode = 1
+		}
 	} else {
 		statusCode = 500
 		customCode = DefaultError
