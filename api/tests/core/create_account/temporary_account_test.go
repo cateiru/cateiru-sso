@@ -36,6 +36,7 @@ func TestSuccess(t *testing.T) {
 	// 確認
 	db, err := database.NewDatabase(ctx)
 	require.NoError(t, err)
+	defer db.Close()
 
 	element, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
 	require.NoError(t, err)

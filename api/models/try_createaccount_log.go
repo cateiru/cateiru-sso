@@ -11,7 +11,7 @@ import (
 // メールアドレスで、アカウント作成ログを取得する
 // 身に覚えがない登録メールが送信されたという問い合わせが来た場合に、これを使用して送信したIPアドレスを取得する
 func GetTryCreateAccountLogByMail(ctx context.Context, db *database.Database, mail string) ([]TryCreateAccountLog, error) {
-	query := datastore.NewQuery("TryCreateAccountLog").Filter("mail =", mail)
+	query := datastore.NewQuery("TryCreateAccountLog").Filter("targetMail =", mail)
 	iter := db.Run(ctx, query)
 
 	logs := []TryCreateAccountLog{}

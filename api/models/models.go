@@ -22,8 +22,8 @@ type UserMailPW struct {
 type Certification struct {
 	AccountCreateDate time.Time `datastore:"accountCreateDate" json:"account_create_date"`
 
-	OnetimePasswordSecret  string   `datastore:"onetimePasswordSecret, omitempty" json:"onetime_password_secret"`
-	OnetimePasswordBackups []string `datastore:"onetimePasswordBackups, omitempty" json:"onetime_password_backups"`
+	OnetimePasswordSecret  string   `datastore:"onetimePasswordSecret,omitempty" json:"onetime_password_secret"`
+	OnetimePasswordBackups []string `datastore:"onetimePasswordBackups,omitempty" json:"onetime_password_backups"`
 
 	UserMailPW
 	UserId
@@ -103,8 +103,8 @@ type LoginHistory struct {
 	AccessId     string    `datastore:"accessId" json:"access_id"`
 	Date         time.Time `datastore:"date" json:"date"`
 	IpAddress    string    `datastore:"ipAddress" json:"ip_address"`
-	IsSSO        bool      `datastore:"isSSO, omitempty" json:"is_sso"`
-	SSOPublicKey string    `datastore:"ssoPublicKey, omitempty" json:"sso_publickey"`
+	IsSSO        bool      `datastore:"isSSO,omitempty" json:"is_sso"`
+	SSOPublicKey string    `datastore:"ssoPublicKey,omitempty" json:"sso_publickey"`
 
 	UserId
 }
@@ -152,8 +152,8 @@ type SSOService struct {
 	ToUrl     []string `datastore:"toUrl" json:"to_url"`
 	LoginOnly bool     `datastore:"loginOnly" json:"login_only"`
 
-	SessionTokenPeriod int `datastore:"sessionTokenPeriod, omitempty" json:"session_token_period"`
-	RefreshTokenPeriod int `datastore:"refreshTokenPeriod, omitempty" json:"refresh_token_period"`
+	SessionTokenPeriod int `datastore:"sessionTokenPeriod,omitempty" json:"session_token_period"`
+	RefreshTokenPeriod int `datastore:"refreshTokenPeriod,omitempty" json:"refresh_token_period"`
 
 	UserId
 }
