@@ -47,6 +47,12 @@ SITE_DOMAIN=
 
 # APIのドメイン
 API_DOMAIN=
+
+# adminのメールアドレスとパスワード
+# 初回ログイン時にこの値を使用します
+# adminユーザは、ログイン後、ワンタイムパスワードとパスワードの変更をする必要があります
+ADMIN_MAIL=
+ADMIN_PASSWORD=
 ```
 
 ## テスト

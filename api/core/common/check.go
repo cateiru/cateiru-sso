@@ -1,7 +1,10 @@
+// - メールアドレスの存在チェック
+// - IPアドレスがブロックリストに存在するかチェック
 package common
 
 import (
 	"context"
+	"os"
 
 	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
@@ -30,4 +33,23 @@ func CheckExistMail(ctx context.Context, db *database.Database, mail string) (bo
 		return false, err
 	}
 	return true, nil
+}
+
+// IPアドレスがブロックリストに存在しているのかを確認する
+// 存在している場合、trueが返る
+func ChaeckBlockIP(ctx context.Context, db *database.Database, ip string) (bool, error) {
+	result, err := models.GetBlockListByIP(ctx, db, ip)
+	if err != nil {
+		return false, err
+	}
+
+	if result == nil {
+		return false, nil
+	}
+	return true, nil
+}
+
+// メールアドレスがadminで定義したメールアドレスかをチェックします
+func CheckAdminMail(mail string) bool {
+	return os.Getenv("ADMIN_MAIL") == mail
 }

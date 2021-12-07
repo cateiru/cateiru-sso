@@ -62,8 +62,11 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	ip := r.Header.Get("x-forwarded-for")
+
+	// reCHAPTCHA
 	if utils.DEPLOY_MODE == "production" {
-		isOk, err := secure.NewReCaptcha().Validate(postForm.ReCHAPTCHA, r.Header.Get("x-forwarded-for"))
+		isOk, err := secure.NewReCaptcha().Validate(postForm.ReCHAPTCHA, ip)
 		if err != nil {
 			return status.NewInternalServerErrorError(err).Caller(
 				"core/create_account/temporary_account.go", 68).Wrap()
@@ -74,7 +77,7 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	clientCheckToken, err := CreateTemporaryAccount(ctx, postForm)
+	clientCheckToken, err := CreateTemporaryAccount(ctx, postForm, ip)
 	if err != nil {
 		return err
 	}
@@ -88,7 +91,7 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func CreateTemporaryAccount(ctx context.Context, form *PostForm) (string, error) {
+func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (string, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller(
@@ -96,23 +99,36 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm) (string, error)
 	}
 	defer db.Close()
 
+	// IPアドレスがブロックされているか確認
+	isBlocked, err := common.ChaeckBlockIP(ctx, db, ip)
+	if err != nil {
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/create_account/temporary_account.go", 35).Wrap()
+	}
+	if isBlocked {
+		return "", status.NewForbiddenError(errors.New("ip is blocked")).Caller("core/create_account/temporary_account.go", 47).Wrap()
+	}
+
+	// メールアドレスが既に存在するかチェック
 	isMailExist, err := common.CheckExistMail(ctx, db, form.Mail)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/create_account/temporary_account.go", 41).Wrap()
 	}
-
 	// メールアドレスがすでに存在している = そのメールアドレスを持ったアカウントが作られている場合、
 	// あたらにそのメールアドレスでアカウントを作成することはできないため、403エラーを返す
 	if isMailExist {
 		return "", status.NewForbiddenError(errors.New("email already exists")).Caller("core/create_account/temporary_account.go", 47).Wrap()
+	}
+	// Adminのメールアドレスは既に定義されており、ログインできるため弾く
+	if common.CheckAdminMail(form.Mail) {
+		return "", status.NewForbiddenError(errors.New("email is admin")).Caller("core/create_account/temporary_account.go", 47).Wrap()
 	}
 
 	user := models.UserMailPW{
 		Mail:     form.Mail,
 		Password: utils.PWHash(form.Password),
 	}
-
 	clientCheckToken, err := createVerifyMail(ctx, db, user)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller(
