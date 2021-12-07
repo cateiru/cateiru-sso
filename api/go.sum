@@ -59,6 +59,8 @@ github.com/cateiru/go-http-error v0.0.0-20211202143300-eb1b5b37cfb8 h1:luatu9VGh
 github.com/cateiru/go-http-error v0.0.0-20211202143300-eb1b5b37cfb8/go.mod h1:YarVP8d1gsMbv8ZhCSGskSEUd5NsmauBGv6lr1pP6/0=
 github.com/cateiru/go-http-error v1.0.1 h1:9dMeFT6nOGoMGR0iL/aNGoJwp5iZhXdel2ZO2MNb2S0=
 github.com/cateiru/go-http-error v1.0.1/go.mod h1:YarVP8d1gsMbv8ZhCSGskSEUd5NsmauBGv6lr1pP6/0=
+github.com/cateiru/go-http-error v1.2.0 h1:Ok5ISTo5lGGRKgjd2gokGdKLz105Qabc7ukHpGk1adw=
+github.com/cateiru/go-http-error v1.2.0/go.mod h1:YarVP8d1gsMbv8ZhCSGskSEUd5NsmauBGv6lr1pP6/0=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.3.0 h1:t/LhUZLVitR1Ow2YOnduCsavhwFUklBMoGVYUCqmCqk=
 github.com/census-instrumentation/opencensus-proto v0.3.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=

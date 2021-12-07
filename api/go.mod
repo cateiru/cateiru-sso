@@ -12,7 +12,7 @@ require (
 	cloud.google.com/go v0.97.0 // indirect
 	cloud.google.com/go/datastore v1.6.0 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
-	github.com/cateiru/go-http-error v1.0.1 // indirect
+	github.com/cateiru/go-http-error v1.2.0 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4 // indirect

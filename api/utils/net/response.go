@@ -17,15 +17,20 @@ import (
 	"github.com/cateiru/go-http-error/httperror"
 )
 
+// 独自ステータスコード
+const (
+	Success        = iota // 成功
+	DefaultError          // エラー
+	ErrorIntoError        // ResponseError内でのエラー
+	BlockedError          // ブロックリストに入っていたエラー
+	ExistError            // メールアドレスなどが既に存在しているエラー
+	BotError              // Bot判定したためエラー
+)
+
 type AbstractResponse struct {
 	// 独自ステータスコード
 	//
 	// 特殊な事情でエラーが起きた場合HTTP ステータスコード以外にこのコードを指定します。
-	//
-	//	0: 正常終了
-	//	1: エラー
-	//	2: ResponseError内でのエラー
-	//
 	Code int `json:"code"`
 }
 
@@ -47,17 +52,20 @@ func ResponseError(w http.ResponseWriter, err error) {
 	logging.Sugar.Errorf("HTTP ERROR. id: %v, message: %v", id, err.Error())
 
 	var statusCode int
+	var customCode int
 	if httperr, ok := httperror.CastHTTPError(err); ok {
 		statusCode = httperr.StatusCode
+		customCode = httperr.Code
 	} else {
 		statusCode = 500
+		customCode = DefaultError
 	}
 
 	body := ErrorResponse{
 		StatusCode: statusCode,
 		ErrorID:    id,
 		AbstractResponse: AbstractResponse{
-			Code: 1,
+			Code: customCode,
 		},
 	}
 

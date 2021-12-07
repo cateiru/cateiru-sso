@@ -21,14 +21,15 @@ import (
 func MailVerifyObserve(w http.ResponseWriter, r *http.Request) error {
 	clientCheckToken, err := net.GetQuery(r, "cct")
 	ctx := r.Context()
+	// クエリパラメータがない場合は400を返す
 	if err != nil {
-		return status.NewForbiddenError(err).Caller("core/create_account/create_observe.go", 25).Wrap()
+		return status.NewBadRequestError(err).Caller("core/create_account/create_observe.go", 25).Wrap()
 	}
 
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/temporary_account.go", 35).Wrap()
+			"core/create_account/temporary_account.go", 30).Wrap()
 	}
 	defer db.Close()
 
