@@ -181,9 +181,15 @@ type WorkerLog struct {
 	RunDate time.Time `datastore:"runDate" json:"run_date"`
 }
 
+// IPアドレスのブロックリスト
 // アカウント作成時、該当IPがブロックされていたら作成できない
 type IPBlockList struct {
 	IP string `datastore:"ip" json:"ip"`
+}
+
+// メールアドレスのブロックリスト
+type MailBlockList struct {
+	Mail string `datastore:"mail" json:"mail"`
 }
 
 // アカウント作成時のログ

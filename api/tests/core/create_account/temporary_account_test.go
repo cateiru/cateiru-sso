@@ -25,8 +25,9 @@ func TestSuccess(t *testing.T) {
 		Password:   "test",
 		ReCHAPTCHA: "",
 	}
+	ip := "192.168.1.1"
 
-	clientCheckToken, err := createaccount.CreateTemporaryAccount(ctx, form)
+	clientCheckToken, err := createaccount.CreateTemporaryAccount(ctx, form, ip)
 	require.NoError(t, err)
 
 	// 有効期限を確認するため一旦sleepする

@@ -35,15 +35,20 @@ func CheckExistMail(ctx context.Context, db *database.Database, mail string) (bo
 	return true, nil
 }
 
-// IPアドレスがブロックリストに存在しているのかを確認する
+// IPアドレス、メールアドレスがブロックリストに存在しているのかを確認する
 // 存在している場合、trueが返る
-func ChaeckBlockIP(ctx context.Context, db *database.Database, ip string) (bool, error) {
-	result, err := models.GetBlockListByIP(ctx, db, ip)
+func ChaeckBlock(ctx context.Context, db *database.Database, ip string, mail string) (bool, error) {
+	resultIp, err := models.GetBlockListByIP(ctx, db, ip)
+	if err != nil {
+		return false, err
+	}
+	resultMail, err := models.GetBlockListByMail(ctx, db, mail)
 	if err != nil {
 		return false, err
 	}
 
-	if result == nil {
+	if resultIp == nil && resultMail == nil {
+		// IP、メールどちらもない場合（=allow）はfalse
 		return false, nil
 	}
 	return true, nil

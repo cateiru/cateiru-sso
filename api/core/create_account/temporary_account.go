@@ -99,8 +99,8 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 	}
 	defer db.Close()
 
-	// IPアドレスがブロックされているか確認
-	isBlocked, err := common.ChaeckBlockIP(ctx, db, ip)
+	// IPアドレス、メールアドレスがブロックされているか確認
+	isBlocked, err := common.ChaeckBlock(ctx, db, ip, form.Mail)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/create_account/temporary_account.go", 35).Wrap()
