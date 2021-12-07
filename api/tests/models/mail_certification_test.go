@@ -32,14 +32,16 @@ func TestMailCertification(t *testing.T) {
 	entry := &models.MailCertification{
 		MailToken:        mailToken,
 		ClientCheckToken: clientToken,
-		CreateDate:       time.Now(),
-		PeriodMinute:     30,
 		OpenNewWindow:    false,
 		Verify:           false,
 		ChangeMailMode:   false,
 		UserMailPW: models.UserMailPW{
 			Mail:     mail,
 			Password: "hoge",
+		},
+		VerifyPeriod: models.VerifyPeriod{
+			CreateDate:   time.Now(),
+			PeriodMinute: 30,
 		},
 	}
 	err = entry.Add(ctx, db)

@@ -29,30 +29,29 @@ type Certification struct {
 	UserId
 }
 
-// メールアドレス認証用テーブル
-type MailCertification struct {
-	MailToken        string    `datastore:"mailToken" json:"mail_token"`
-	ClientCheckToken string    `datastore:"clientCheckToken" json:"client_check_token"`
-	CreateDate       time.Time `datastore:"createDate" json:"create_date"`
-	PeriodMinute     int       `datastore:"periodMinute" json:"period_minute"`
-	OpenNewWindow    bool      `datastore:"openNewWindow" json:"open_new_window"`
-	Verify           bool      `datastore:"verify" json:"verify"`
-	ChangeMailMode   bool      `datastore:"changeMailMode" json:"change_mail_mode"`
-
-	UserMailPW
-}
-
 // パスコード再設定や、ワンタイムパスワード入力、ユーザ登録などのテーブルにおいて制限時間を設ける
-type verifyPeriod struct {
+type VerifyPeriod struct {
 	CreateDate   time.Time `datastore:"createDate" json:"create_date"`
 	PeriodMinute int       `datastore:"periodMinute" json:"period_minute"`
+}
+
+// メールアドレス認証用テーブル
+type MailCertification struct {
+	MailToken        string `datastore:"mailToken" json:"mail_token"`
+	ClientCheckToken string `datastore:"clientCheckToken" json:"client_check_token"`
+	OpenNewWindow    bool   `datastore:"openNewWindow" json:"open_new_window"`
+	Verify           bool   `datastore:"verify" json:"verify"`
+	ChangeMailMode   bool   `datastore:"changeMailMode" json:"change_mail_mode"`
+
+	VerifyPeriod
+	UserMailPW
 }
 
 // メールアドレスの認証が済んでいるが、名前、その他ユーザ設定が完了してないユーザのデータの一時保管場所
 type CreateAccountBuffer struct {
 	BufferToken string `datastore:"bufferToken" json:"buffer_token"`
 
-	verifyPeriod
+	VerifyPeriod
 	UserMailPW
 }
 
@@ -61,7 +60,7 @@ type PWForget struct {
 	ForgetToken string `datastore:"forgetToken" json:"forget_token"`
 	Mail        string `datastore:"mail" json:"mail"`
 
-	verifyPeriod
+	VerifyPeriod
 }
 
 // ワンタイムパスワード設定用
@@ -69,7 +68,7 @@ type OnetimePassword struct {
 	PublicKey string `datastore:"onetimePublicKey" json:"onetime_public_key"`
 	SecretKey string `datastore:"onetimeSecretKey" json:"onetime_secret_key"`
 
-	verifyPeriod
+	VerifyPeriod
 	UserId
 }
 
@@ -78,7 +77,7 @@ type OnetimePasswordValidate struct {
 	OnetimeToken          string `datastore:"onetimeToken" json:"onetime_token"`
 	OnetimePasswordSecret string `datastore:"onetimePasswordSecret" json:"onetime_password_secret"`
 
-	verifyPeriod
+	VerifyPeriod
 	UserId
 }
 

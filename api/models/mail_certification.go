@@ -46,6 +46,12 @@ func GetMailCertificationByCheckToken(ctx context.Context, db *database.Database
 	return &entry, nil
 }
 
+// 削除
+func DeleteMailCertification(ctx context.Context, db *database.Database, mailToken string) error {
+	key := database.CreateNameKey("MailCertification", mailToken)
+	return db.Delete(ctx, key)
+}
+
 // mailCertificationに要素を追加する
 func (c *MailCertification) Add(ctx context.Context, db *database.Database) error {
 	// MailTokenをkeyにする

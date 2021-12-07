@@ -116,7 +116,7 @@ func closeWS(ctx context.Context, db *database.Database, token string, isVerifie
 	if !isVerified {
 		// 認証されずcloseされた場合は、メールに送信されたURLから続きを始めるため、OpenNewWindowをtrueにする
 		entry, err := models.GetMailCertificationByCheckToken(ctx, db, token)
-		if err != nil {
+		if err != nil || entry == nil {
 			logging.Sugar.Error(err)
 			return
 		}

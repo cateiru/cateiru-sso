@@ -42,11 +42,15 @@ MAIL_FROM_ADDRESS=
 # デフォルトは`cateiru-sso`です
 DATASTORE_PARENT_KEY=
 
-# サイトのドメイン
+# サイトのドメイン（パス）
 SITE_DOMAIN=
 
-# APIのドメイン
+# APIのドメイン（パス）
 API_DOMAIN=
+
+# cookieに適用するドメイン
+# サイト、APIのドメインのルートドメインである必要があります
+COOKIE_DOMAIN=
 
 # adminのメールアドレスとパスワード
 # 初回ログイン時にこの値を使用します

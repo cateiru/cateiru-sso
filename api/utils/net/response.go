@@ -25,6 +25,8 @@ const (
 	BlockedError          // ブロックリストに入っていたエラー
 	ExistError            // メールアドレスなどが既に存在しているエラー
 	BotError              // Bot判定したためエラー
+	TimeOutError          // 時間切れ
+	AlreadyDone           // 既に認証済み
 )
 
 type AbstractResponse struct {

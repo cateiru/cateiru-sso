@@ -165,14 +165,17 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 	mailVerify := &models.MailCertification{
 		MailToken:        mailToken,
 		ClientCheckToken: clientCheckToken,
-		CreateDate:       time.Now(),
-		PeriodMinute:     30,
 
 		OpenNewWindow:  false,
 		Verify:         false,
 		ChangeMailMode: false,
 
 		UserMailPW: user,
+
+		VerifyPeriod: models.VerifyPeriod{
+			CreateDate:   time.Now(),
+			PeriodMinute: 30,
+		},
 	}
 
 	if err := mailVerify.Add(ctx, db); err != nil {
