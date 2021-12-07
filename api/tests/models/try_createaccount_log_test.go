@@ -59,8 +59,6 @@ func TestTryCreateAccountLog(t *testing.T) {
 	logs, err = models.GetTryCreateAccountLogByMail(ctx, db, mail)
 	require.NoError(t, err)
 	require.Equal(t, len(logs), 2, "2つの要素が見つかった")
-	require.Equal(t, logs[0].IP, ip, "IPが取得できる")
-	require.Equal(t, logs[0].TargetMail, mail, "メールアドレスが取得できる")
 
 	logs, err = models.GetTryCreateAccountLogByMail(ctx, db, "example@example.com")
 	require.NoError(t, err)
