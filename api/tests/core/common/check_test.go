@@ -47,6 +47,8 @@ func TestExistMail(t *testing.T) {
 	err = certification.Add(ctx, db)
 	require.NoError(t, err)
 
+	time.Sleep(1 * time.Second)
+
 	isExist, err := common.CheckExistMail(ctx, db, mail)
 	require.NoError(t, err)
 
@@ -85,6 +87,8 @@ func TestNotExistMail(t *testing.T) {
 	// 要素追加
 	err = certification.Add(ctx, db)
 	require.NoError(t, err)
+
+	time.Sleep(1 * time.Second)
 
 	newMail := "example@example.com"
 
@@ -129,6 +133,8 @@ func TestBlockList(t *testing.T) {
 	require.NoError(t, err)
 	err = ipBlock.Add(ctx, db)
 	require.NoError(t, err)
+
+	time.Sleep(1 * time.Second)
 
 	isBlocked, err := common.ChaeckBlock(ctx, db, ip, "example@example.com")
 	require.NoError(t, err)
