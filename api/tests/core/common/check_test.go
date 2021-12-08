@@ -47,8 +47,6 @@ func TestExistMail(t *testing.T) {
 	err = certification.Add(ctx, db)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
-
 	isExist, err := common.CheckExistMail(ctx, db, mail)
 	require.NoError(t, err)
 
@@ -88,9 +86,7 @@ func TestNotExistMail(t *testing.T) {
 	err = certification.Add(ctx, db)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
-
-	newMail := "example@example.com"
+	newMail := fmt.Sprintf("%s@example.com", utils.CreateID(4))
 
 	isExist, err := common.CheckExistMail(ctx, db, newMail)
 	require.NoError(t, err)

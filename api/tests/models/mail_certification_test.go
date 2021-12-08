@@ -49,7 +49,7 @@ func TestMailCertification(t *testing.T) {
 
 	result, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
 	require.NoError(t, err)
-	require.NotNil(t, &result, "要素が見つかった")
+	require.NotNil(t, result, "要素が見つかった")
 	require.Equal(t, result.Mail, mail, "見つかった要素のメールアドレスが取得できる")
 
 	result, err = models.GetMailCertificationByMailToken(ctx, db, "example@example.com")
@@ -58,7 +58,7 @@ func TestMailCertification(t *testing.T) {
 
 	result, err = models.GetMailCertificationByCheckToken(ctx, db, clientToken)
 	require.NoError(t, err)
-	require.NotNil(t, &result, "要素が見つかった")
+	require.NotNil(t, result, "要素が見つかった")
 	require.Equal(t, result.Mail, mail, "見つかった要素のメールアドレスが取得できる")
 
 	result, err = models.GetMailCertificationByCheckToken(ctx, db, "hoge")
