@@ -18,13 +18,9 @@ type VerifyRequestForm struct {
 	MailToken string `json:"mail_token"`
 }
 
-type VerifyStatus struct {
-	BufferToken string
-	IsSetCookie bool
-}
-
 type VerifyResponse struct {
-	IsKeepThisPage bool `json:"keep_this_page"`
+	IsKeepThisPage bool   `json:"keep_this_page"`
+	BufferToken    string `json:"buffer_token"`
 }
 
 // mail tokenを受け取り、該当するメールアドレスを認証済みにします。
@@ -56,29 +52,26 @@ func CreateVerifyHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// 開いたベージでそのまま続ける場合はcookieを設定する
-	if verify.IsSetCookie {
+	if verify.IsKeepThisPage {
 		// secure属性はproductionのみにする（テストが通らないため）
 		secure := false
 		if utils.DEPLOY_MODE == "production" {
 			secure = true
 		}
-		cookie := net.NewCookie(os.Getenv("COOKIE_DOMAIN"), secure, http.SameSiteDefaultMode)
+		// ブラウザ上でcookieを追加できるように、HttpOnlyはfalseにする
+		cookie := net.NewCookie(os.Getenv("COOKIE_DOMAIN"), secure, http.SameSiteDefaultMode, false)
 
-		// 有効期限1時間
-		cookieExp := net.NewCookieHourExp(1)
-		cookie.Set(w, "buffer_token", verify.BufferToken, cookieExp)
+		// 有効期限: 同一セッション
+		cookieExp := net.NewSession()
+		cookie.Set(w, "buffer-token", verify.BufferToken, cookieExp)
 	}
 
-	res := VerifyResponse{
-		// cookieをセットする = そのページで続ける
-		IsKeepThisPage: verify.IsSetCookie,
-	}
-	net.ResponseOK(w, res)
+	net.ResponseOK(w, verify)
 
 	return nil
 }
 
-func CreateVerify(ctx context.Context, mailToken string) (*VerifyStatus, error) {
+func CreateVerify(ctx context.Context, mailToken string) (*VerifyResponse, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller(
@@ -142,8 +135,8 @@ func CreateVerify(ctx context.Context, mailToken string) (*VerifyStatus, error) 
 		}
 	}
 
-	return &VerifyStatus{
-		IsSetCookie: certificationEntry.OpenNewWindow,
-		BufferToken: bufferToken,
+	return &VerifyResponse{
+		IsKeepThisPage: certificationEntry.OpenNewWindow,
+		BufferToken:    bufferToken,
 	}, nil
 }

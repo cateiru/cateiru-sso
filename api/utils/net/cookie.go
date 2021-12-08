@@ -26,31 +26,23 @@ type Cookie struct {
 	SomeSite http.SameSite
 }
 
-func NewCookie(domain string, secure bool, someSite http.SameSite) *Cookie {
+func NewCookie(domain string, secure bool, someSite http.SameSite, httpOnly bool) *Cookie {
 	path := "/"
 
 	return &Cookie{
 		Path:     path,
 		Domain:   domain,
 		Secure:   secure,
-		HttpOnly: true,
+		HttpOnly: httpOnly,
 		SomeSite: someSite,
 	}
 }
 
 // Cookieをセットします
 func (c *Cookie) Set(w http.ResponseWriter, key string, value string, exp *CookieExp) {
-	expires := time.Now().Add(exp.GetTime())
-	maxAge := exp.GetNum()
-
-	logging.Sugar.Debugf("Set the cookie. key: %s, value: %s, exp: %vs", key, value, maxAge)
-
 	cookie := &http.Cookie{
 		Name:  key,
 		Value: value,
-
-		Expires: expires,
-		MaxAge:  maxAge,
 
 		Secure:   c.Secure,
 		Path:     c.Path,
@@ -59,6 +51,14 @@ func (c *Cookie) Set(w http.ResponseWriter, key string, value string, exp *Cooki
 		SameSite: c.SomeSite,
 	}
 
+	// 有効期限を設定する
+	// IsSession = trueの場合はセッションクッキーにするため設定しない
+	if !exp.IsSession {
+		cookie.Expires = time.Now().Add(exp.GetTime())
+		cookie.MaxAge = exp.GetNum()
+	}
+
+	logging.Sugar.Debugf("Set the cookie. key: %s, value: %s, exp: %vs", key, value, cookie.MaxAge)
 	http.SetCookie(w, cookie)
 }
 

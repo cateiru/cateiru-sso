@@ -44,7 +44,7 @@ func NewTestApp() *TestApp {
 // cookieを追加する
 func (c *TestApp) TestSetCookiehandler(w http.ResponseWriter, r *http.Request) {
 	exp := net.NewCookieMinutsExp(10)
-	cookie := net.NewCookie("", false, http.SameSiteDefaultMode)
+	cookie := net.NewCookie("", false, http.SameSiteDefaultMode, true)
 	cookie.Set(w, cookieKey, cookieValue, exp)
 
 	w.Write([]byte("OK"))
@@ -52,7 +52,7 @@ func (c *TestApp) TestSetCookiehandler(w http.ResponseWriter, r *http.Request) {
 
 // cookieを取得する
 func (c *TestApp) TestGetCookieHandler(w http.ResponseWriter, r *http.Request) {
-	cookie := net.NewCookie("", true, http.SameSiteNoneMode)
+	cookie := net.NewCookie("", true, http.SameSiteNoneMode, true)
 	value, err := cookie.Get(r, cookieKey)
 	if err != nil {
 		w.Write([]byte(err.Error()))
@@ -69,7 +69,7 @@ func (c *TestApp) TestGetCookieHandler(w http.ResponseWriter, r *http.Request) {
 
 // cookieを削除
 func (c *TestApp) TestDeleteCookieHandler(w http.ResponseWriter, r *http.Request) {
-	cookie := net.NewCookie("", true, http.SameSiteNoneMode)
+	cookie := net.NewCookie("", true, http.SameSiteNoneMode, true)
 	err := cookie.Delete(w, r, cookieKey)
 	if err != nil {
 		w.Write([]byte(err.Error()))

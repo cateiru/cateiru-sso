@@ -12,23 +12,40 @@ package net
 import "time"
 
 type CookieExp struct {
-	time int
-	unit time.Duration
+	time      int
+	unit      time.Duration
+	IsSession bool
 }
 
 // 1時間（60分）単位の時間を作成
 func NewCookieHourExp(hour int) *CookieExp {
 	return &CookieExp{
-		time: hour,
-		unit: time.Hour,
+		time:      hour,
+		unit:      time.Hour,
+		IsSession: false,
 	}
 }
 
 // 分単位の時間を作成
 func NewCookieMinutsExp(minuts int) *CookieExp {
 	return &CookieExp{
-		time: minuts,
-		unit: time.Minute,
+		time:      minuts,
+		unit:      time.Minute,
+		IsSession: false,
+	}
+}
+
+// 同一セッションのみ
+// ブラウザが削除されるとcookieも削除されます
+//
+// Warning:
+// 多くのウェブブラウザーはセッション復元と呼ばれる機能を持っており、
+// これによってすべてのタブを保存し、次回ブラウザーを起動したときに復元することができます。
+// ブラウザーを実際には閉じていないかのように、セッションクッキーも復元されます。
+// by. MDN(https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Set-Cookie)
+func NewSession() *CookieExp {
+	return &CookieExp{
+		IsSession: true,
 	}
 }
 
