@@ -51,7 +51,7 @@ jobs:
 
     - name: Test
       working-directory: ./api
-      run: go test -v ./... -race -coverprofile=coverage.out -covermode=atomic
+      run: go test ./... -v -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic
     - name: Upload coverage to Codecov
       working-directory: ./api
       run: bash <(curl -s https://codecov.io/bash)
