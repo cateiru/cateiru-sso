@@ -19,12 +19,14 @@ type VerifyRequestForm struct {
 }
 
 type VerifyResponse struct {
-	IsKeepThisPage bool   `json:"keep_this_page"`
-	BufferToken    string `json:"buffer_token"`
+	IsKeepThisPage   bool   `json:"keep_this_page"`
+	BufferToken      string `json:"buffer_token"`
+	ClientCheckToken string `json:"client_check_token"`
 }
 
 // mail tokenを受け取り、該当するメールアドレスを認証済みにします。
 // さらに、CreateAccountBufferにアップデートし、openNewWindowがtrueの場合は、BufferTokenをcookieに入れます。
+// openNewWindowがfalseの場合、ユーザが手動でこのページで続きを行えるようにclientCheckTokenを返します
 //
 // Request Form (application/json):
 //	{
@@ -136,7 +138,8 @@ func CreateVerify(ctx context.Context, mailToken string) (*VerifyResponse, error
 	}
 
 	return &VerifyResponse{
-		IsKeepThisPage: certificationEntry.OpenNewWindow,
-		BufferToken:    bufferToken,
+		IsKeepThisPage:   certificationEntry.OpenNewWindow,
+		BufferToken:      bufferToken,
+		ClientCheckToken: certificationEntry.ClientCheckToken,
 	}, nil
 }
