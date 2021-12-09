@@ -69,7 +69,7 @@ func TestConnectDB(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	returnedEntry := new(sampleEntry)
-	err = client.Get(ctx, key, returnedEntry)
+	_, err = client.Get(ctx, key, returnedEntry)
 	require.NoError(t, err, "Getできない")
 
 	require.Equal(t, entry.Text, returnedEntry.Text, "返ってきた値が違う")
@@ -81,8 +81,9 @@ func TestConnectDB(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	returnedEntry = new(sampleEntry)
-	err = client.Get(ctx, key, returnedEntry)
-	require.Error(t, err, "削除できてない")
+	noExist, err := client.Get(ctx, key, returnedEntry)
+	require.NoError(t, err)
+	require.True(t, noExist)
 
 	client.Close()
 }

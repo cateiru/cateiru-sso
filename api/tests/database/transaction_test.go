@@ -49,7 +49,7 @@ func TestTransactionSuccess(t *testing.T) {
 	require.NoError(t, err)
 
 	var entry2 sampleEntry
-	err = client.Get(ctx, key, &entry2)
+	_, err = client.Get(ctx, key, &entry2)
 	require.NoError(t, err)
 
 	require.Equal(t, entry2.Text, "huga")
@@ -95,7 +95,7 @@ func TestTransactionRollback(t *testing.T) {
 	require.NoError(t, err)
 
 	var entry2 sampleEntry
-	err = client.Get(ctx, key, &entry2)
+	_, err = client.Get(ctx, key, &entry2)
 	require.NoError(t, err)
 
 	require.Equal(t, entry2.Text, "hoge")

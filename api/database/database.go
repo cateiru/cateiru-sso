@@ -29,12 +29,14 @@ func (c *Database) Close() {
 }
 
 // keyを指定してdatastoreのentryを1つ取得する
-func (c *Database) Get(ctx context.Context, key *datastore.Key, entity interface{}) error {
+//
+// 要素が見つからない場合、trueを返します
+func (c *Database) Get(ctx context.Context, key *datastore.Key, entity interface{}) (bool, error) {
 	err := c.Client.Get(ctx, key, entity)
 	if err == datastore.ErrNoSuchEntity {
-		return nil
+		return true, nil
 	}
-	return err
+	return false, err
 }
 
 // queryに一致するdatastoreのentryをすべて取得する
@@ -74,35 +76,3 @@ func (c *Database) DeleteMulti(ctx context.Context, key []*datastore.Key) error 
 func (c *Database) Delete(ctx context.Context, key *datastore.Key) error {
 	return c.Client.Delete(ctx, key)
 }
-
-// // 要素を変更します
-// // Transactionを使用して、変更中は他クライアントによるDatastoreアクセスをロックします
-// func (c *Database) Change(ctx context.Context, key *datastore.Key, entry struct, f func(entry interface{}) error, retries int) error {
-// 	err := *new(error)
-
-// 	// 失敗した場合、retriesで指定した分リトライします
-// 	for i := 0; retries > i; i++ {
-// 		tx, err := c.client.NewTransaction(ctx)
-// 		if err != nil {
-// 			break
-// 		}
-
-// 		if err := tx.Get(key, &entry); err != datastore.ErrNoSuchEntity {
-// 			break
-// 		}
-
-// 		if err := f(&entry); err != nil {
-// 			break
-// 		}
-
-// 		if _, err := tx.Put(key, &entry); err != nil {
-// 			break
-// 		}
-
-// 		// commit
-// 		if _, err = tx.Commit(); err != datastore.ErrConcurrentTransaction {
-// 			break
-// 		}
-// 	}
-
-// 	return err
