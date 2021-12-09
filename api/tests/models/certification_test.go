@@ -38,10 +38,12 @@ func TestCertification(t *testing.T) {
 	err = entry.Add(ctx, db)
 	require.NoError(t, err)
 
+	time.Sleep(1 * time.Second)
+
 	// メールアドレスで探索
 	result, err := models.GetCertificationByMail(ctx, db, mail)
 	require.NoError(t, err)
-	require.NotNil(t, &result, "メールアドレスで探して要素がある")
+	require.NotNil(t, result, "メールアドレスで探して要素がある")
 	require.Equal(t, result.Password, entry.Password, "パスワードが同じ")
 
 	result, err = models.GetCertificationByMail(ctx, db, "hoge@example.com")
@@ -51,7 +53,7 @@ func TestCertification(t *testing.T) {
 	// user idで探索
 	result, err = models.GetCertificationByUserID(ctx, db, userId)
 	require.NoError(t, err)
-	require.NotNil(t, &result, "user idで探して要素がある")
+	require.NotNil(t, result, "user idで探して要素がある")
 	require.Equal(t, result.Password, entry.Password, "パスワードが同じ")
 
 	result, err = models.GetCertificationByUserID(ctx, db, "foo")
