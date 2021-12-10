@@ -38,8 +38,6 @@ func TestCertification(t *testing.T) {
 	err = entry.Add(ctx, db)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
-
 	// メールアドレスで探索
 	result, err := models.GetCertificationByMail(ctx, db, mail)
 	require.NoError(t, err)
