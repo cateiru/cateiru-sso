@@ -12,7 +12,6 @@ func Routes(mux *http.ServeMux) *http.ServeMux {
 
 	mux.HandleFunc("/create", handler.CreateHandler)
 	mux.HandleFunc("/create/verify", handler.CreateVerifyHandler)
-	mux.HandleFunc("/create/accept", handler.CreateAcceptHandler)
 	mux.HandleFunc("/create/info", handler.CreateInfoHandler)
 
 	mux.HandleFunc("/login", handler.LoginHandler)

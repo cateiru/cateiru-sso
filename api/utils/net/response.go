@@ -75,7 +75,7 @@ func ResponseError(w http.ResponseWriter, err error) {
 		},
 	}
 
-	ResponseOKCustomStatus(w, statusCode, body)
+	ResponseCustomStatus(w, statusCode, body)
 }
 
 // カスタムに独自ステータスコードを決定し、エラーをHTTPで返す
@@ -93,16 +93,16 @@ func ResponseErrorCustomCode(w http.ResponseWriter, statusCode int, err error, c
 		},
 	}
 
-	ResponseOKCustomStatus(w, statusCode, body)
+	ResponseCustomStatus(w, statusCode, body)
 }
 
 // ステータスコード200で書き出す
 func ResponseOK(w http.ResponseWriter, body interface{}) {
-	ResponseOKCustomStatus(w, http.StatusOK, body)
+	ResponseCustomStatus(w, http.StatusOK, body)
 }
 
 // bodyをHTTP Responceに書き出す
-func ResponseOKCustomStatus(w http.ResponseWriter, statusCode int, body interface{}) {
+func ResponseCustomStatus(w http.ResponseWriter, statusCode int, body interface{}) {
 	bodyByte, err := json.Marshal(body)
 	if err != nil {
 		id := utils.CreateID(10)

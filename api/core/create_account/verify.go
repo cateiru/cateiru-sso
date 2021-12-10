@@ -89,19 +89,19 @@ func CreateVerify(ctx context.Context, mailToken string) (*VerifyResponse, error
 
 	// 既に削除されている場合、400を返す
 	if certificationEntry == nil {
-		return nil, status.NewBadRequestError(err).Caller("core/create_account/verify.go", 98).Wrap()
+		return nil, status.NewBadRequestError(errors.New("deleted entry")).Caller("core/create_account/verify.go", 98).Wrap()
 	}
 
 	// 既に認証済みの場合、400を返す
 	if certificationEntry.Verify {
-		return nil, status.NewBadRequestError(err).Caller(
+		return nil, status.NewBadRequestError(errors.New("verified")).Caller(
 			"core/create_account/verify.go", 103).AddCode(net.AlreadyDone).Wrap()
 	}
 
 	// 有効期限が切れている場合は、400を返す
 	now := time.Now()
 	if now.Sub(certificationEntry.CreateDate) >= time.Duration(certificationEntry.PeriodMinute)*time.Minute {
-		return nil, status.NewBadRequestError(err).Caller(
+		return nil, status.NewBadRequestError(errors.New("Expired")).Caller(
 			"core/create_account/verify.go", 67).AddCode(net.TimeOutError).Wrap()
 	}
 
