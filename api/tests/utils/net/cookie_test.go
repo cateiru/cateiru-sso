@@ -8,11 +8,59 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/stretchr/testify/require"
 )
 
 var cookieKey string = "KEY"
 var cookieValue string = "hoge"
+
+func cookieTestServer() *http.ServeMux {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/set", testSetCookiehandler)
+	mux.HandleFunc("/get", testGetCookieHandler)
+	mux.HandleFunc("/delete", testDeleteCookieHandler)
+
+	return mux
+}
+
+// cookieを追加する
+func testSetCookiehandler(w http.ResponseWriter, r *http.Request) {
+	exp := net.NewCookieMinutsExp(10)
+	cookie := net.NewCookie("", false, http.SameSiteDefaultMode, true)
+	cookie.Set(w, cookieKey, cookieValue, exp)
+
+	w.Write([]byte("OK"))
+}
+
+// cookieを取得する
+func testGetCookieHandler(w http.ResponseWriter, r *http.Request) {
+	value, err := net.GetCookie(r, cookieKey)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	if value != cookieValue {
+		w.Write([]byte("setされたcookieが違う"))
+		return
+	}
+
+	w.Write([]byte("OK"))
+}
+
+// cookieを削除
+func testDeleteCookieHandler(w http.ResponseWriter, r *http.Request) {
+	cookie := net.NewCookie("", true, http.SameSiteNoneMode, true)
+	err := cookie.Delete(w, r, cookieKey)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.Write([]byte("OK"))
+}
 
 // レスポンスを調べる
 func respMessage(t *testing.T, res *http.Response, message string) {
@@ -26,7 +74,7 @@ func respMessage(t *testing.T, res *http.Response, message string) {
 
 // Cookieのテスト
 func TestCookie(t *testing.T) {
-	app := NewTestApp()
+	app := cookieTestServer()
 	server := httptest.NewServer(app)
 	defer server.Close()
 
