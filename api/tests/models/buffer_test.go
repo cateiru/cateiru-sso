@@ -46,3 +46,20 @@ func TestBufferToken(t *testing.T) {
 	require.NotNil(t, element)
 	require.Equal(t, element.Mail, "example@example.com", "メールアドレスが同じ")
 }
+
+// entryが存在しない場合
+func TestBufferNoEntry(t *testing.T) {
+	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
+	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	element, err := models.GetCreateAccountBufferByBufferToken(ctx, db, "hogehoge")
+	require.NoError(t, err)
+
+	require.Nil(t, element)
+}

@@ -47,7 +47,7 @@ func TestUser(t *testing.T) {
 	require.Equal(t, entry.UserName, "cateiru")
 }
 
-func TextTXUser(t *testing.T) {
+func TestTXUser(t *testing.T) {
 	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
 	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
 
@@ -86,6 +86,9 @@ func TextTXUser(t *testing.T) {
 	entry.LastName = "にゃあ"
 
 	err = entry.AddTX(tx)
+	require.NoError(t, err)
+
+	err = tx.Commit()
 	require.NoError(t, err)
 
 	// ---

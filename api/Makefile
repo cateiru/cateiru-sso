@@ -6,3 +6,9 @@ test:
 	docker-compose up -d
 	go test -v ./...
 	docker-compose down
+
+.PHONY: test-no-cache
+test-no-cache:
+	docker-compose up -d
+	go test -v ./... -count=1
+	docker-compose down
