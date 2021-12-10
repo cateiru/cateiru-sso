@@ -45,7 +45,9 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) {
 // 名前、テーマ、プロフィール画像
 // アカウント登録時のみ有効: 変更時は/userでやる
 func createInfoPostHandler(w http.ResponseWriter, r *http.Request) {
-
+	if err := createaccount.CreateInfoHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // アカウント作成（メール認証前）

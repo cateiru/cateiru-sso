@@ -52,8 +52,7 @@ func (c *TestApp) TestSetCookiehandler(w http.ResponseWriter, r *http.Request) {
 
 // cookieを取得する
 func (c *TestApp) TestGetCookieHandler(w http.ResponseWriter, r *http.Request) {
-	cookie := net.NewCookie("", true, http.SameSiteNoneMode, true)
-	value, err := cookie.Get(r, cookieKey)
+	value, err := net.GetCookie(r, cookieKey)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return

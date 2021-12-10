@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
@@ -99,8 +100,7 @@ func CreateVerify(ctx context.Context, mailToken string) (*VerifyResponse, error
 	}
 
 	// 有効期限が切れている場合は、400を返す
-	now := time.Now()
-	if now.Sub(certificationEntry.CreateDate) >= time.Duration(certificationEntry.PeriodMinute)*time.Minute {
+	if common.CheckExpired(&certificationEntry.VerifyPeriod) {
 		return nil, status.NewBadRequestError(errors.New("Expired")).Caller(
 			"core/create_account/verify.go", 67).AddCode(net.TimeOutError).Wrap()
 	}

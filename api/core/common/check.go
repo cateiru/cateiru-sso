@@ -5,6 +5,7 @@ package common
 import (
 	"context"
 	"os"
+	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
@@ -57,4 +58,11 @@ func ChaeckBlock(ctx context.Context, db *database.Database, ip string, mail str
 // メールアドレスがadminで定義したメールアドレスかをチェックします
 func CheckAdminMail(mail string) bool {
 	return os.Getenv("ADMIN_MAIL") == mail
+}
+
+// 有効期限切れかどうかを調べます
+func CheckExpired(entry *models.VerifyPeriod) bool {
+	now := time.Now()
+
+	return now.Sub(entry.CreateDate) >= time.Duration(entry.PeriodMinute)*time.Minute
 }

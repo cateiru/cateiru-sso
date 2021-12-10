@@ -17,6 +17,15 @@ type CookieExp struct {
 	IsSession bool
 }
 
+// 日単位の時間を作成
+func NewCookieDayExp(day int) *CookieExp {
+	return &CookieExp{
+		time:      day,
+		unit:      time.Duration(time.Hour * 24),
+		IsSession: false,
+	}
+}
+
 // 1時間（60分）単位の時間を作成
 func NewCookieHourExp(hour int) *CookieExp {
 	return &CookieExp{
@@ -57,6 +66,8 @@ func (c *CookieExp) GetTime() time.Duration {
 // 時間をミリ秒のintで返す
 func (c *CookieExp) GetNum() int {
 	switch c.unit {
+	case time.Duration(24 * time.Hour):
+		return 86400 * c.time
 	case time.Hour:
 		return 3600 * c.time
 	case time.Minute:

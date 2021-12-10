@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
@@ -44,7 +45,7 @@ func CreateAcceptHandler(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func AcceptVerify(ctx context.Context, clientMailToken string) (string, error) {
+func AcceptVerify(ctx context.Context, clientCheckToken string) (string, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller(
@@ -52,7 +53,7 @@ func AcceptVerify(ctx context.Context, clientMailToken string) (string, error) {
 	}
 	defer db.Close()
 
-	certificationEntry, err := models.GetMailCertificationByCheckToken(ctx, db, clientMailToken)
+	certificationEntry, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/create_account/accept.go", 100).Wrap()
@@ -70,8 +71,7 @@ func AcceptVerify(ctx context.Context, clientMailToken string) (string, error) {
 	}
 
 	// 有効期限が切れている場合は、400を返す
-	now := time.Now()
-	if now.Sub(certificationEntry.CreateDate) >= time.Duration(certificationEntry.PeriodMinute)*time.Minute {
+	if common.CheckExpired(&certificationEntry.VerifyPeriod) {
 		return "", status.NewBadRequestError(errors.New("Expired")).Caller(
 			"core/create_account/accept.go", 67).AddCode(net.TimeOutError).Wrap()
 	}

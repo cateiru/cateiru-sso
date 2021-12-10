@@ -87,8 +87,8 @@ type User struct {
 	LastName  string `datastore:"lastName" json:"last_name"`
 	UserName  string `datastore:"userName" json:"user_name"`
 
-	Role string
-	Mail string `datastore:"mail" json:"mail"`
+	Role []string `datastore:"role" json:"role"`
+	Mail string   `datastore:"mail" json:"mail"`
 
 	Theme     string `datastore:"theme" json:"theme"`
 	AvatarUrl string `datastore:"avatarUrl" json:"avatar_url"`

@@ -86,7 +86,7 @@ func (c *Cookie) Delete(w http.ResponseWriter, req *http.Request, key string) er
 }
 
 // keyで指定した名前のcookieを返します
-func (c *Cookie) Get(req *http.Request, key string) (string, error) {
+func GetCookie(req *http.Request, key string) (string, error) {
 	cookie, err := req.Cookie(key)
 
 	if err != nil {
