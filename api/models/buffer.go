@@ -25,6 +25,11 @@ func GetCreateAccountBufferByBufferToken(ctx context.Context, db *database.Datab
 	return &entry, nil
 }
 
+func DeleteCreateAccountBuffer(ctx context.Context, db *database.Database, token string) error {
+	key := database.CreateNameKey("CreateAccountBuffer", token)
+	return db.Delete(ctx, key)
+}
+
 func (c *CreateAccountBuffer) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("CreateAccountBuffer", c.BufferToken)
 

@@ -116,7 +116,7 @@ type SSOLogins struct {
 }
 
 // セッションandリフレッシュトークン保管時に使うもの
-type tokenInfo struct {
+type TokenInfo struct {
 	CreateDate time.Time `datastore:"createDate" json:"create_date"`
 	PeriodHour int       `datastore:"periodHour" json:"period_hour"`
 
@@ -127,7 +127,7 @@ type tokenInfo struct {
 type SessionInfo struct {
 	SessionToken string `datastore:"sessionToken" json:"session_token"`
 
-	tokenInfo
+	TokenInfo
 }
 
 // CateiruSSOのリフレッシュトークン
@@ -135,7 +135,7 @@ type RefreshInfo struct {
 	RefreshToken string `datastore:"refreshToken" json:"refresh_token"`
 	SessionToken string `datastore:"sessionToken" json:"session_token"`
 
-	tokenInfo
+	TokenInfo
 }
 
 // SSO情報
@@ -161,7 +161,7 @@ type SSOService struct {
 type SSOSession struct {
 	SSOSessionToken string `datastore:"ssoSessionToken" json:"sso_session_token"`
 
-	tokenInfo
+	TokenInfo
 }
 
 // SSOのリフレッシュトークン
@@ -169,7 +169,7 @@ type SSORefreshToken struct {
 	SSOSessionToken string `datastore:"ssoSessionToken" json:"sso_session_token"`
 	SSORefreshToken string `datastore:"ssoRefreshToken" json:"sso_refresh_token"`
 
-	tokenInfo
+	TokenInfo
 }
 
 // Workerのログ

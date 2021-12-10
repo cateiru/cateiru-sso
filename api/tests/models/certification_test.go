@@ -7,6 +7,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +22,7 @@ func TestCertification(t *testing.T) {
 	defer db.Close()
 
 	mail := "example@example.com"
-	userId := "hogehoge"
+	userId := utils.CreateID(30)
 
 	entry := &models.Certification{
 		AccountCreateDate:      time.Now(),

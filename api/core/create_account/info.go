@@ -125,5 +125,11 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 			"core/create_account/info.go", 100).Wrap()
 	}
 
+	// CreateAccontBufferは削除する
+	if err := models.DeleteCreateAccountBuffer(ctx, db, buffer.BufferToken); err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller(
+			"core/create_account/info.go", 107).Wrap()
+	}
+
 	return common.LoginByUserID(ctx, db, userId)
 }

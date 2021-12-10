@@ -4,10 +4,13 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/go-http-error/httperror/status"
 )
 
 type LoginTokens struct {
@@ -17,8 +20,48 @@ type LoginTokens struct {
 
 // ユーザIDを設定し、新たにログインをします
 func LoginByUserID(ctx context.Context, db *database.Database, userId string) (*LoginTokens, error) {
-	// TODO
-	return nil, nil
+	sessionToken := utils.CreateID(30)
+	refreshToken := utils.CreateID(0)
+
+	session := &models.SessionInfo{
+		SessionToken: sessionToken,
+
+		TokenInfo: models.TokenInfo{
+			CreateDate: time.Now(),
+			PeriodHour: 6,
+
+			UserId: models.UserId{
+				UserId: userId,
+			},
+		},
+	}
+	if err := session.Add(ctx, db); err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 40).Wrap()
+	}
+
+	refresh := &models.RefreshInfo{
+		RefreshToken: refreshToken,
+		SessionToken: sessionToken,
+
+		TokenInfo: models.TokenInfo{
+			CreateDate: time.Now(),
+			PeriodHour: 168, // 24*7 = 168
+
+			UserId: models.UserId{
+				UserId: userId,
+			},
+		},
+	}
+	if err := refresh.Add(ctx, db); err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 40).Wrap()
+	}
+
+	return &LoginTokens{
+		SessionToken: sessionToken,
+		RefreshToken: refreshToken,
+	}, nil
 }
 
 // ログイン用のcookieをセットする
