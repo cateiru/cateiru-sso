@@ -47,6 +47,8 @@ func TestMailCertification(t *testing.T) {
 	err = entry.Add(ctx, db)
 	require.NoError(t, err)
 
+	time.Sleep(1 * time.Second)
+
 	result, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
 	require.NoError(t, err)
 	require.NotNil(t, result, "要素が見つかった")
