@@ -21,12 +21,10 @@
 package mail
 
 import (
-	"errors"
 	"os"
 
 	"github.com/cateiru/cateiru-sso/api/logging"
-	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/mailgun/mailgun-go"
 )
 
 type Mail struct {
@@ -76,33 +74,20 @@ func (c *Mail) AddContentsFromTemplate(tempName string, elements interface{}) (*
 
 // メールをAPI経由で送信する
 func (c *Mail) Send() error {
-	from := createFromAccount()
-	to := mail.NewEmail(c.UserName, c.EmailAddress)
-	message := mail.NewSingleEmail(from, c.Subject, to, c.PlainText, c.HTMLText)
-	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
+	domain := os.Getenv("MAIL_FROM_DOMAIL")
+	secret := os.Getenv("MAILGUN_API_KEY")
+	sender := os.Getenv("SENDER_MAIL_ADDRESS")
 
-	logging.Sugar.Debugf("Send email. to: %v, subj: %v, contetents: %v", c.EmailAddress, c.Subject, c.PlainText)
+	mg := mailgun.NewMailgun(domain, secret)
+	message := mg.NewMessage(sender, c.Subject, c.PlainText, c.EmailAddress)
+	message.SetHtml(c.HTMLText)
 
-	response, err := client.Send(message)
+	resp, id, err := mg.Send(message)
 	if err != nil {
 		return err
 	}
 
-	// APIから200以外が返ってくる場合はエラー
-	if response.StatusCode != 200 {
-		logging.Sugar.Errorf("Failed send email. status: %d, body: %v", response.StatusCode, response.Body)
-		return errors.New("failed send email")
-	}
+	logging.Sugar.Infof("Send email. ID: %s, Resp: %s", id, resp)
 
 	return nil
-}
-
-// 送信元のメールアドレスと名前を設定します
-//
-//	name: MAIL_FROM_NAME
-//	email: MAIL_FROM_ADDRESS
-func createFromAccount() *mail.Email {
-	name := os.Getenv("MAIL_FROM_NAME")
-	email := os.Getenv("MAIL_FROM_ADDRESS")
-	return mail.NewEmail(name, email)
 }
