@@ -8,6 +8,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,7 +39,12 @@ func TestBufferToken(t *testing.T) {
 	err = buffer.Add(ctx, db)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
+	goretry.Retry(t, func() bool {
+		element, err := models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
+		require.NoError(t, err)
+
+		return element != nil
+	}, "entryがある")
 
 	element, err := models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
 	require.NoError(t, err)

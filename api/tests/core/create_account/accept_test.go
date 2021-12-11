@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/go-http-error/httperror"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,12 +51,22 @@ func TestAcceptSuccess(t *testing.T) {
 	err = mailVerify.Add(ctx, db)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
+	// メール認証がDBに格納されるまで待機
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
+		require.NoError(t, err)
+
+		return entry != nil
+	}, "entryがある")
 
 	bufferToken, err := createaccount.AcceptVerify(ctx, clientCheckToken)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
+	goretry.Retry(t, func() bool {
+		buffer, err := models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
+		require.NoError(t, err)
+		return buffer != nil
+	}, "entryがある")
 
 	buffer, err := models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
 	require.NoError(t, err)
@@ -115,7 +126,13 @@ func TestAcceptNotVerify(t *testing.T) {
 	err = mailVerify.Add(ctx, db)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
+	// メール認証がDBに格納されるまで待機
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
+		require.NoError(t, err)
+
+		return entry != nil
+	}, "entryがある")
 
 	_, err = createaccount.AcceptVerify(ctx, clientCheckToken)
 	require.Error(t, err)

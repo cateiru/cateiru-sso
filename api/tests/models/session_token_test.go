@@ -8,6 +8,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,6 +40,13 @@ func TestSessionToken(t *testing.T) {
 
 	err = session.Add(ctx, db)
 	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetSessionToken(ctx, db, sessionToken)
+		require.NoError(t, err)
+
+		return entry != nil
+	}, "entryがある")
 
 	entry, err := models.GetSessionToken(ctx, db, sessionToken)
 	require.NoError(t, err)

@@ -57,6 +57,8 @@ github.com/boombuler/barcode v1.0.1 h1:NDBbPmhS+EqABEs5Kg3n/5ZNjy73Pz7SIV+KCeqyX
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/cateiru/go-http-error v1.2.0 h1:Ok5ISTo5lGGRKgjd2gokGdKLz105Qabc7ukHpGk1adw=
 github.com/cateiru/go-http-error v1.2.0/go.mod h1:YarVP8d1gsMbv8ZhCSGskSEUd5NsmauBGv6lr1pP6/0=
+github.com/cateiru/go-retry v0.0.0-20211211132223-214a67371dcc h1:2AQzpXg/3cZV2DdUc5ddh+WfiZJ/n3cLSf5mqi5TTsE=
+github.com/cateiru/go-retry v0.0.0-20211211132223-214a67371dcc/go.mod h1:qYyWJ1AHZb1d259yUkd4rMrgywNl+x84H4DO/0qrBdM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.3.0 h1:t/LhUZLVitR1Ow2YOnduCsavhwFUklBMoGVYUCqmCqk=
 github.com/census-instrumentation/opencensus-proto v0.3.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
