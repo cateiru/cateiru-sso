@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/go-http-error/httperror"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,8 +49,13 @@ func TestVerifySuccess(t *testing.T) {
 	err = mailVerify.Add(ctx, db)
 	require.NoError(t, err)
 
-	// 待機
-	time.Sleep(1 * time.Second)
+	// DBに格納されるまで待機
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
+		require.NoError(t, err)
+
+		return entry != nil
+	}, "entryがある")
 
 	res, err := createaccount.CreateVerify(ctx, mailToken)
 	require.NoError(t, err)
@@ -57,14 +63,12 @@ func TestVerifySuccess(t *testing.T) {
 	require.NotNil(t, res)
 	require.True(t, res.IsKeepThisPage)
 
-	time.Sleep(1 * time.Second)
+	goretry.Retry(t, func() bool {
+		element, err := models.GetCreateAccountBufferByBufferToken(ctx, db, res.BufferToken)
+		require.NoError(t, err)
 
-	element, err := models.GetCreateAccountBufferByBufferToken(ctx, db, res.BufferToken)
-	require.NoError(t, err)
-
-	require.NotNil(t, element)
-	require.Equal(t, element.Mail, "example@example.com", "メールアドレスが同じ")
-
+		return element != nil && element.Mail == "example@example.com"
+	}, "メールアドレスが同じ")
 }
 
 // 認証が存在しない場合
@@ -119,8 +123,13 @@ func TestVerifyAlreadyDone(t *testing.T) {
 	err = mailVerify.Add(ctx, db)
 	require.NoError(t, err)
 
-	// 待機
-	time.Sleep(1 * time.Second)
+	// DBに格納されるまで待機
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
+		require.NoError(t, err)
+
+		return entry != nil
+	}, "entryがある")
 
 	_, err = createaccount.CreateVerify(ctx, mailToken)
 	require.Error(t, err)

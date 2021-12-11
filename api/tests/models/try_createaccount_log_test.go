@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,6 +46,13 @@ func TestTryCreateAccountLog(t *testing.T) {
 	}
 	err = entry2.Add(ctx, db)
 	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		logs, err := models.GetTryCreateAccountLogByIP(ctx, db, ip)
+		require.NoError(t, err)
+
+		return len(logs) != 0
+	}, "要素がある")
 
 	logs, err := models.GetTryCreateAccountLogByIP(ctx, db, ip)
 	require.NoError(t, err)

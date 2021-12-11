@@ -9,6 +9,7 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
 )
@@ -21,29 +22,6 @@ type sampleEntrySecond struct {
 	Id string `datastore:"id"`
 
 	sampleEntry
-}
-
-// DBのアクセスをトライする
-func waitDB(t *testing.T, f func() bool, message string) {
-	// 合計: 18秒
-	waitTimes := []int{1, 1, 2, 2, 3, 4, 5}
-	successFlag := false
-	id := utils.CreateID(5)
-
-	for _, wait := range waitTimes {
-		t.Logf("Wait DB sleep: %v s, id: %s", wait, id)
-		time.Sleep(time.Duration(wait) * time.Second)
-		result := f()
-
-		if result {
-			successFlag = true
-			break
-		}
-	}
-
-	if !successFlag {
-		t.Fatalf("waitDB: %v", message)
-	}
 }
 
 // データベース（Cloud datastore）の接続、Put、Getを試す
@@ -112,7 +90,7 @@ func TestMultiEntryDB(t *testing.T) {
 
 	query := datastore.NewQuery(tableName)
 
-	waitDB(t, func() bool {
+	goretry.Retry(t, func() bool {
 		numberOfEntry, err := client.Count(ctx, query)
 		require.NoError(t, err, "Countできない")
 		t.Logf("%v == %v", numberOfEntry, entries)
@@ -127,7 +105,7 @@ func TestMultiEntryDB(t *testing.T) {
 	err = client.DeleteMulti(ctx, keys)
 	require.NoError(t, err, "削除できない")
 
-	waitDB(t, func() bool {
+	goretry.Retry(t, func() bool {
 		numberOfEntry, err := client.Count(ctx, query)
 		require.NoError(t, err, "Countできない")
 		t.Logf("%v == 0", numberOfEntry)
@@ -167,7 +145,7 @@ func TestFindDB(t *testing.T) {
 
 	query := datastore.NewQuery(tableName).Filter("id =", ids[targetIndex])
 
-	waitDB(t, func() bool {
+	goretry.Retry(t, func() bool {
 		entries := []sampleEntrySecond{}
 		_, err := client.GetAll(ctx, query, &entries)
 		require.NoError(t, err, "GetAllできない")
@@ -178,7 +156,7 @@ func TestFindDB(t *testing.T) {
 
 	}, "GetAllでFindできない")
 
-	waitDB(t, func() bool {
+	goretry.Retry(t, func() bool {
 		iter := client.Run(ctx, query)
 
 		for {

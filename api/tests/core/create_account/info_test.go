@@ -9,6 +9,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,6 +39,14 @@ func TestInfo(t *testing.T) {
 	err = buffer.Add(ctx, db)
 	require.NoError(t, err)
 
+	// メール認証がDBに格納されるまで待機
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
+		require.NoError(t, err)
+
+		return entry != nil
+	}, "entryがある")
+
 	user := createaccount.InfoRequestForm{
 		FirstName: "名前",
 		LastName:  "名字",
@@ -50,7 +59,11 @@ func TestInfo(t *testing.T) {
 	login, err := createaccount.InsertUserInfo(ctx, bufferToken, user)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
+	goretry.Retry(t, func() bool {
+		session, err := models.GetSessionToken(ctx, db, login.SessionToken)
+		require.NoError(t, err)
+		return session != nil
+	}, "sessionTokenがある")
 
 	session, err := models.GetSessionToken(ctx, db, login.SessionToken)
 	require.NoError(t, err)

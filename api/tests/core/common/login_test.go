@@ -7,12 +7,12 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
-	"time"
 
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -85,11 +85,13 @@ func TestLogin(t *testing.T) {
 	login, err := common.LoginByUserID(ctx, db, userId)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
+	// 初回のみ
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetSessionToken(ctx, db, login.SessionToken)
+		require.NoError(t, err)
 
-	entry, err := models.GetSessionToken(ctx, db, login.SessionToken)
-	require.NoError(t, err)
-	require.Equal(t, entry.UserId.UserId, userId)
+		return entry.UserId.UserId == userId
+	}, "sessionTokenがある")
 
 	entryR, err := models.GetRefreshToken(ctx, db, login.RefreshToken)
 	require.NoError(t, err)

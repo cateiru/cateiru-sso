@@ -8,6 +8,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,6 +39,13 @@ func TestCertification(t *testing.T) {
 	}
 	err = entry.Add(ctx, db)
 	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		result, err := models.GetCertificationByMail(ctx, db, mail)
+		require.NoError(t, err)
+
+		return result != nil
+	}, "entryがある")
 
 	// メールアドレスで探索
 	result, err := models.GetCertificationByMail(ctx, db, mail)

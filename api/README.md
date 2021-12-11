@@ -31,15 +31,15 @@ RECAPTCHA_SECRET=
 # （ハッシュ元のPWが脆弱な場合、全探索で検証される可能性）
 PW_HASH_SEED=
 
-# send gridのAPI KEY
+# mail gunのAPI KEY
 # メール送信に使用します
-SENDGRID_API_KEY=
+MAILGUN_API_KEY=
 
-# メール送信者の名前
-MAIL_FROM_NAME=
+# メール送信者のドメイン
+MAIL_FROM_DOMAIL=
 
-# メール受信者の名前
-MAIL_FROM_ADDRESS=
+# メール送信者のメールアドレス
+SENDER_MAIL_ADDRESS=
 
 # Datastoreの親レベルのkey名
 # デフォルトは`cateiru-sso`です

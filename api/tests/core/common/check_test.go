@@ -11,6 +11,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,10 +48,12 @@ func TestExistMail(t *testing.T) {
 	err = certification.Add(ctx, db)
 	require.NoError(t, err)
 
-	isExist, err := common.CheckExistMail(ctx, db, mail)
-	require.NoError(t, err)
+	goretry.Retry(t, func() bool {
+		isExist, err := common.CheckExistMail(ctx, db, mail)
+		require.NoError(t, err)
 
-	require.True(t, isExist, "同じメールアドレスが存在する")
+		return isExist
+	}, "同じメールアドレスが存在する")
 }
 
 // メールアドレスは存在しない
@@ -88,10 +91,12 @@ func TestNotExistMail(t *testing.T) {
 
 	newMail := fmt.Sprintf("%s@example.com", utils.CreateID(4))
 
-	isExist, err := common.CheckExistMail(ctx, db, newMail)
-	require.NoError(t, err)
+	goretry.Retry(t, func() bool {
+		isExist, err := common.CheckExistMail(ctx, db, newMail)
+		require.NoError(t, err)
 
-	require.False(t, isExist, "同じメールアドレスは存在しない")
+		return !isExist
+	}, "同じメールアドレスは存在しない")
 }
 
 // adminのメールアドレスか
@@ -130,13 +135,15 @@ func TestBlockList(t *testing.T) {
 	err = ipBlock.Add(ctx, db)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
+	// 初回のみ。Retryが成功した場合DB内に格納済みであるためその下はリトライは適用しない
+	goretry.Retry(t, func() bool {
+		isBlocked, err := common.ChaeckBlock(ctx, db, ip, "example@example.com")
+		require.NoError(t, err)
 
-	isBlocked, err := common.ChaeckBlock(ctx, db, ip, "example@example.com")
-	require.NoError(t, err)
-	require.True(t, isBlocked, "IPでブロック")
+		return isBlocked
+	}, "IPでブロック")
 
-	isBlocked, err = common.ChaeckBlock(ctx, db, "256.256.256.256", mail)
+	isBlocked, err := common.ChaeckBlock(ctx, db, "256.256.256.256", mail)
 	require.NoError(t, err)
 	require.True(t, isBlocked, "メールアドレスでブロック")
 

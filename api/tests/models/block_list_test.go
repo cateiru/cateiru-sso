@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,11 +33,15 @@ func TestIPBlockListDB(t *testing.T) {
 	err = block.Add(ctx, db)
 	require.NoError(t, err)
 
-	result, err := models.GetBlockListByIP(ctx, db, ip)
-	require.NoError(t, err)
-	require.NotNil(t, &result, "block ipのentryがある")
+	// 初回のみリトライする
+	goretry.Retry(t, func() bool {
+		result, err := models.GetBlockListByIP(ctx, db, ip)
+		require.NoError(t, err)
 
-	result, err = models.GetBlockListByIP(ctx, db, "256.256.256.256")
+		return result != nil
+	}, "block ipのentryがある")
+
+	result, err := models.GetBlockListByIP(ctx, db, "256.256.256.256")
 	require.NoError(t, err)
 	require.Nil(t, result, "block ipのentryはない")
 }
@@ -60,11 +65,15 @@ func TestMailBlockListDB(t *testing.T) {
 	err = block.Add(ctx, db)
 	require.NoError(t, err)
 
-	result, err := models.GetBlockListByIP(ctx, db, mail)
-	require.NoError(t, err)
-	require.NotNil(t, &result, "block mailのentryがある")
+	// 初回のみリトライする
+	goretry.Retry(t, func() bool {
+		result, err := models.GetBlockListByMail(ctx, db, mail)
+		require.NoError(t, err)
 
-	result, err = models.GetBlockListByIP(ctx, db, "example@example.com")
+		return result != nil
+	}, "block mailのentryがある")
+
+	result, err := models.GetBlockListByMail(ctx, db, "example@example.com")
 	require.NoError(t, err)
 	require.Nil(t, result, "block mailのentryはない")
 }

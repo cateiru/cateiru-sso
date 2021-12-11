@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,7 +48,12 @@ func TestMailCertification(t *testing.T) {
 	err = entry.Add(ctx, db)
 	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
+	goretry.Retry(t, func() bool {
+		result, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
+		require.NoError(t, err)
+
+		return result != nil
+	}, "entryがある")
 
 	result, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
 	require.NoError(t, err)
