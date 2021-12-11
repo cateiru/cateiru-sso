@@ -63,6 +63,9 @@ func CheckAdminMail(mail string) bool {
 // 有効期限切れかどうかを調べます
 func CheckExpired(entry *models.VerifyPeriod) bool {
 	now := time.Now()
+	// 有効期限の日時
+	periodTime := entry.CreateDate.Add(time.Duration(entry.PeriodMinute) * time.Minute)
 
-	return now.Sub(entry.CreateDate) >= time.Duration(entry.PeriodMinute)*time.Minute
+	// 有効期限より前に今の時間がある場合Falseを返す
+	return now.After(periodTime)
 }

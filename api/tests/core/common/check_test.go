@@ -149,3 +149,19 @@ func TestBlockList(t *testing.T) {
 	require.False(t, isBlocked, "ブロックリストにない")
 
 }
+
+func TestCheckExpired(t *testing.T) {
+	now := time.Now()
+	period := &models.VerifyPeriod{
+		// 1時間前の時間
+		CreateDate:   now.Add(time.Duration(-1) * time.Hour),
+		PeriodMinute: 1,
+	}
+	require.True(t, common.CheckExpired(period), "正しく有効期限切れになっている")
+
+	periodSafe := &models.VerifyPeriod{
+		CreateDate:   now,
+		PeriodMinute: 10,
+	}
+	require.False(t, common.CheckExpired(periodSafe))
+}

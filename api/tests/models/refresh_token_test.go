@@ -53,7 +53,7 @@ func TestRefreshToken(t *testing.T) {
 
 	require.Equal(t, entries[0].SessionToken, sessionToken)
 
-	entry, err = models.GetRefreshTOkenBySessionToken(ctx, db, sessionToken)
+	entry, err = models.GetRefreshTokenBySessionToken(ctx, db, sessionToken)
 	require.NoError(t, err)
 	require.NotNil(t, entry)
 	require.Equal(t, entry.SessionToken, sessionToken)

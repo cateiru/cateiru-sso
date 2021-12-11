@@ -31,7 +31,7 @@ func GetRefreshTokenByUserId(ctx context.Context, db *database.Database, userId 
 	return entries, nil
 }
 
-func GetRefreshTOkenBySessionToken(ctx context.Context, db *database.Database, sessionToken string) (*RefreshInfo, error) {
+func GetRefreshTokenBySessionToken(ctx context.Context, db *database.Database, sessionToken string) (*RefreshInfo, error) {
 	query := datastore.NewQuery("RefreshInfo").Filter("sessionToken =", sessionToken)
 
 	iter := db.Run(ctx, query)
