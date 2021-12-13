@@ -25,6 +25,12 @@ type InfoRequestForm struct {
 
 // ユーザ情報を設定し、ログイン状態にします
 func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
+	// contents-type: application/json 以外では400エラーを返す
+	if !net.CheckContentType(r) {
+		return status.NewBadRequestError(errors.New("core/create_account/info.go")).Caller(
+			"core/create_account/temporary_account.go", 56)
+	}
+
 	var userData InfoRequestForm
 	err := net.GetJsonForm(w, r, &userData)
 	if err != nil {
