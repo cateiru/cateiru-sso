@@ -19,7 +19,7 @@ type LoginTokens struct {
 }
 
 // ユーザIDを設定し、新たにログインをします
-func LoginByUserID(ctx context.Context, db *database.Database, userId string) (*LoginTokens, error) {
+func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip string, userAgent string) (*LoginTokens, error) {
 	sessionToken := utils.CreateID(30)
 	refreshToken := utils.CreateID(0)
 
@@ -56,6 +56,20 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string) (*
 	if err := refresh.Add(ctx, db); err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller(
 			"core/common/login.go", 40).Wrap()
+	}
+
+	// ログイン履歴を取る
+	history := &models.LoginHistory{
+		AccessId:     utils.CreateID(30),
+		Date:         time.Now(),
+		IpAddress:    ip,
+		UserAgent:    userAgent,
+		IsSSO:        false,
+		SSOPublicKey: "",
+	}
+	if err := history.Add(ctx, db); err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 70).Wrap()
 	}
 
 	return &LoginTokens{

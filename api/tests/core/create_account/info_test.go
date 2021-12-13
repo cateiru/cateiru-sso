@@ -56,7 +56,10 @@ func TestInfo(t *testing.T) {
 		AvatarUrl: "",
 	}
 
-	login, err := createaccount.InsertUserInfo(ctx, bufferToken, user)
+	ip := "198.51.100.0"
+	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
+
+	login, err := createaccount.InsertUserInfo(ctx, bufferToken, user, ip, userAgent)
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {
@@ -80,4 +83,9 @@ func TestInfo(t *testing.T) {
 	entryBuffer, err := models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
 	require.NoError(t, err)
 	require.Nil(t, entryBuffer, "bufferは削除されているためnilである")
+
+	histories, err := models.GetAllLoginHistory(ctx, db, session.UserId.UserId)
+	require.NoError(t, err)
+	require.Equal(t, len(histories), 1)
+	require.Equal(t, histories[0].IpAddress, ip)
 }

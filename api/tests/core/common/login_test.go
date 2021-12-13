@@ -82,7 +82,10 @@ func TestLogin(t *testing.T) {
 
 	userId := utils.CreateID(20)
 
-	login, err := common.LoginByUserID(ctx, db, userId)
+	ip := "198.51.100.0"
+	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
+
+	login, err := common.LoginByUserID(ctx, db, userId, ip, userAgent)
 	require.NoError(t, err)
 
 	// 初回のみ

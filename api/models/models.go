@@ -102,6 +102,7 @@ type LoginHistory struct {
 	AccessId     string    `datastore:"accessId" json:"access_id"`
 	Date         time.Time `datastore:"date" json:"date"`
 	IpAddress    string    `datastore:"ipAddress" json:"ip_address"`
+	UserAgent    string    `datastore:"userAgent" json:"user_agent"`
 	IsSSO        bool      `datastore:"isSSO,omitempty" json:"is_sso"`
 	SSOPublicKey string    `datastore:"ssoPublicKey,omitempty" json:"sso_publickey"`
 

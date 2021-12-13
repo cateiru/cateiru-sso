@@ -45,9 +45,12 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 			"core/create_account/info.go", 36)
 	}
 
+	ip := net.GetIPAddress(r)
+	userAgent := net.GetUserAgent(r)
+
 	ctx := r.Context()
 
-	login, err := InsertUserInfo(ctx, bufferToken, userData)
+	login, err := InsertUserInfo(ctx, bufferToken, userData, ip, userAgent)
 	if err != nil {
 		return err
 	}
@@ -61,7 +64,7 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 // ユーザ情報を入力し、アカウントを正式に登録します
 //
 // 登録後、userIdを返します
-func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestForm) (*common.LoginTokens, error) {
+func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestForm, ip string, userAgent string) (*common.LoginTokens, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller(
@@ -137,5 +140,5 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 			"core/create_account/info.go", 107).Wrap()
 	}
 
-	return common.LoginByUserID(ctx, db, userId)
+	return common.LoginByUserID(ctx, db, userId, ip, userAgent)
 }

@@ -62,7 +62,7 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 			"core/create_account/temporary_account.go", 62)
 	}
 
-	ip := r.Header.Get("x-forwarded-for")
+	ip := net.GetIPAddress(r)
 	ctx := r.Context()
 
 	clientCheckToken, err := CreateTemporaryAccount(ctx, postForm, ip)
