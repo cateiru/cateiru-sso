@@ -84,6 +84,11 @@ func TestInfo(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, entryBuffer, "bufferは削除されているためnilである")
 
+	goretry.Retry(t, func() bool {
+		histories, err := models.GetAllLoginHistory(ctx, db, session.UserId.UserId)
+		require.NoError(t, err)
+		return len(histories) == 1
+	}, "")
 	histories, err := models.GetAllLoginHistory(ctx, db, session.UserId.UserId)
 	require.NoError(t, err)
 	require.Equal(t, len(histories), 1)

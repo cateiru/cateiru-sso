@@ -30,6 +30,7 @@ func TestLoginHistory(t *testing.T) {
 		IpAddress:    "192.168.0.1",
 		IsSSO:        false,
 		SSOPublicKey: "",
+		UserAgent:    "",
 
 		UserId: models.UserId{
 			UserId: userId,

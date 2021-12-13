@@ -66,6 +66,9 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 		UserAgent:    userAgent,
 		IsSSO:        false,
 		SSOPublicKey: "",
+		UserId: models.UserId{
+			UserId: userId,
+		},
 	}
 	if err := history.Add(ctx, db); err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller(

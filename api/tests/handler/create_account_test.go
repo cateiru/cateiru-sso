@@ -73,6 +73,7 @@ func TestCreateAccount(t *testing.T) {
 	// 最初に一時的にアカウントを作成する（メール認証はまだ）
 	resp, err := client.Post(server.URL+"/create", "application/json", bytes.NewBuffer(form))
 	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 200)
 
 	var response createaccount.Response
 	err = respToJson(resp, &response)
@@ -94,10 +95,18 @@ func TestCreateAccount(t *testing.T) {
 	require.NoError(t, err)
 
 	// メール認証URLにアクセスする & bufferTokenのcookieが適用される
-	_, err = client.Post(server.URL+"/create/verify", "application/json", bytes.NewBuffer(form))
+	resp, err = client.Post(server.URL+"/create/verify", "application/json", bytes.NewBuffer(form))
 	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 200)
 
 	// Step.3 ----
+
+	// cookieを設定する
+	resp, err = client.Head(fmt.Sprintf("%s/create/verify?token=%s", server.URL, response.ClientCheckToken))
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 200)
+
+	// Step.4 ----
 
 	userForm := createaccount.InfoRequestForm{
 		FirstName: FirstName,
@@ -109,8 +118,9 @@ func TestCreateAccount(t *testing.T) {
 	form, err = json.Marshal(userForm)
 	require.NoError(t, err)
 
-	_, err = client.Post(server.URL+"/create/info", "application/json", bytes.NewBuffer(form))
+	resp, err = client.Post(server.URL+"/create/info", "application/json", bytes.NewBuffer(form))
 	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 200)
 
 	//////
 	// 入力した値、セッショントークンが正しいか検証する
@@ -164,7 +174,7 @@ func TestCreateAccount(t *testing.T) {
 
 }
 
-// clientCheckTokenからmailTokenを取得し、opennewwindowをtrueにする
+// clientCheckTokenからmailTokenを取得する
 func getMailToken(ctx context.Context, clientCheckToken string) (string, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
@@ -173,13 +183,6 @@ func getMailToken(ctx context.Context, clientCheckToken string) (string, error) 
 	defer db.Close()
 
 	entry, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
-	if err != nil {
-		return "", err
-	}
-
-	entry.OpenNewWindow = true
-
-	err = entry.Add(ctx, db)
 	if err != nil {
 		return "", err
 	}
