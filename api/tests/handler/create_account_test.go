@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -15,16 +16,8 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/stretchr/testify/require"
-)
-
-const (
-	Email     = "example@example.com"
-	Password  = "password"
-	FirstName = "first"
-	LastName  = "last"
-	UserName  = "cateiru"
-	Theme     = "dark"
 )
 
 func createAccountServer() *http.ServeMux {
@@ -47,6 +40,15 @@ func createAccountServer() *http.ServeMux {
 func TestCreateAccount(t *testing.T) {
 	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
 	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+
+	var (
+		Email     = fmt.Sprintf("%s@example.com", utils.CreateID(5))
+		Password  = "password"
+		FirstName = "first"
+		LastName  = "last"
+		UserName  = "cateiru"
+		Theme     = "dark"
+	)
 
 	ctx := context.Background()
 
@@ -121,6 +123,7 @@ func TestCreateAccount(t *testing.T) {
 	for _, cookie := range cookies {
 		if cookie.Name == "session-token" {
 			sessionToken = cookie.Value
+			break
 		}
 	}
 	require.NotEmpty(t, sessionToken)
