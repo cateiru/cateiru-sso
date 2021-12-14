@@ -71,7 +71,7 @@ func AcceptVerify(ctx context.Context, clientCheckToken string) (string, error) 
 	}
 
 	// 有効期限が切れている場合は、400を返す
-	if common.CheckExpired(&certificationEntry.VerifyPeriod) {
+	if common.CheckExpired(&certificationEntry.Period) {
 		return "", status.NewBadRequestError(errors.New("Expired")).Caller(
 			"core/create_account/accept.go", 67).AddCode(net.TimeOutError).Wrap()
 	}
@@ -80,7 +80,7 @@ func AcceptVerify(ctx context.Context, clientCheckToken string) (string, error) 
 	bufferToken := utils.CreateID(20)
 	buffer := &models.CreateAccountBuffer{
 		BufferToken: bufferToken,
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 60,
 		},

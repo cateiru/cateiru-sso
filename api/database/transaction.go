@@ -22,8 +22,12 @@ func NewTransaction(ctx context.Context, db *Database) (*Transaction, error) {
 
 // 取得
 // err == datastore.ErrNoSuchEntity の場合は、リトライはしません
-func (c *Transaction) Get(key *datastore.Key, entry interface{}) error {
-	return c.tx.Get(key, entry)
+func (c *Transaction) Get(key *datastore.Key, entry interface{}) (bool, error) {
+	err := c.tx.Get(key, entry)
+	if err == datastore.ErrNoSuchEntity {
+		return true, nil
+	}
+	return false, err
 }
 
 // 追加
@@ -32,6 +36,11 @@ func (c *Transaction) Put(key *datastore.Key, entry interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// 削除
+func (c *Transaction) Delete(key *datastore.Key) error {
+	return c.tx.Delete(key)
 }
 
 // トランザクションをコミットする

@@ -30,9 +30,13 @@ type Certification struct {
 }
 
 // パスコード再設定や、ワンタイムパスワード入力、ユーザ登録などのテーブルにおいて制限時間を設ける
-type VerifyPeriod struct {
+//
+// PeriodMinuteとPeriodHourはどちらか
+type Period struct {
 	CreateDate   time.Time `datastore:"createDate" json:"create_date"`
-	PeriodMinute int       `datastore:"periodMinute" json:"period_minute"`
+	PeriodMinute int       `datastore:"periodMinute,omitempty" json:"period_minute"`
+	PeriodHour   int       `datastore:"periodHour,omitempty" json:"period_hour"`
+	PeriodDay    int       `datastore:"periodDay,omitempty" json:"period_day"`
 }
 
 // メールアドレス認証用テーブル
@@ -43,7 +47,7 @@ type MailCertification struct {
 	Verify           bool   `datastore:"verify" json:"verify"`
 	ChangeMailMode   bool   `datastore:"changeMailMode" json:"change_mail_mode"`
 
-	VerifyPeriod
+	Period
 	UserMailPW
 }
 
@@ -51,7 +55,7 @@ type MailCertification struct {
 type CreateAccountBuffer struct {
 	BufferToken string `datastore:"bufferToken" json:"buffer_token"`
 
-	VerifyPeriod
+	Period
 	UserMailPW
 }
 
@@ -60,7 +64,7 @@ type PWForget struct {
 	ForgetToken string `datastore:"forgetToken" json:"forget_token"`
 	Mail        string `datastore:"mail" json:"mail"`
 
-	VerifyPeriod
+	Period
 }
 
 // ワンタイムパスワード設定用
@@ -68,7 +72,7 @@ type OnetimePassword struct {
 	PublicKey string `datastore:"onetimePublicKey" json:"onetime_public_key"`
 	SecretKey string `datastore:"onetimeSecretKey" json:"onetime_secret_key"`
 
-	VerifyPeriod
+	Period
 	UserId
 }
 
@@ -77,7 +81,7 @@ type OnetimePasswordValidate struct {
 	OnetimeToken          string `datastore:"onetimeToken" json:"onetime_token"`
 	OnetimePasswordSecret string `datastore:"onetimePasswordSecret" json:"onetime_password_secret"`
 
-	VerifyPeriod
+	Period
 	UserId
 }
 
@@ -116,19 +120,12 @@ type SSOLogins struct {
 	UserId
 }
 
-// セッションandリフレッシュトークン保管時に使うもの
-type TokenInfo struct {
-	CreateDate time.Time `datastore:"createDate" json:"create_date"`
-	PeriodHour int       `datastore:"periodHour" json:"period_hour"`
-
-	UserId
-}
-
 // CateiruSSOのセッション情報
 type SessionInfo struct {
 	SessionToken string `datastore:"sessionToken" json:"session_token"`
 
-	TokenInfo
+	Period
+	UserId
 }
 
 // CateiruSSOのリフレッシュトークン
@@ -136,7 +133,8 @@ type RefreshInfo struct {
 	RefreshToken string `datastore:"refreshToken" json:"refresh_token"`
 	SessionToken string `datastore:"sessionToken" json:"session_token"`
 
-	TokenInfo
+	Period
+	UserId
 }
 
 // SSO情報
@@ -162,7 +160,8 @@ type SSOService struct {
 type SSOSession struct {
 	SSOSessionToken string `datastore:"ssoSessionToken" json:"sso_session_token"`
 
-	TokenInfo
+	Period
+	UserId
 }
 
 // SSOのリフレッシュトークン
@@ -170,7 +169,8 @@ type SSORefreshToken struct {
 	SSOSessionToken string `datastore:"ssoSessionToken" json:"sso_session_token"`
 	SSORefreshToken string `datastore:"ssoRefreshToken" json:"sso_refresh_token"`
 
-	TokenInfo
+	Period
+	UserId
 }
 
 // Workerのログ

@@ -40,7 +40,7 @@ func TestMailCertification(t *testing.T) {
 			Mail:     mail,
 			Password: "hoge",
 		},
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},

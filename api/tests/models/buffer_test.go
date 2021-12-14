@@ -26,7 +26,7 @@ func TestBufferToken(t *testing.T) {
 
 	buffer := &models.CreateAccountBuffer{
 		BufferToken: bufferToken,
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},
@@ -55,8 +55,10 @@ func TestBufferToken(t *testing.T) {
 	err = models.DeleteCreateAccountBuffer(ctx, db, bufferToken)
 	require.NoError(t, err)
 
-	element, err = models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
-	require.NoError(t, err)
+	goretry.Retry(t, func() bool {
+		element, err = models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
+		require.NoError(t, err)
 
-	require.Nil(t, element)
+		return element == nil
+	}, "bufferTokenが消えている")
 }

@@ -85,7 +85,7 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 	}
 
 	// 有効期限が切れている場合は、400を返す
-	if common.CheckExpired(&buffer.VerifyPeriod) {
+	if common.CheckExpired(&buffer.Period) {
 		return nil, status.NewBadRequestError(errors.New("expired")).Caller(
 			"core/create_account/verify.go", 67).AddCode(net.TimeOutError).Wrap()
 	}

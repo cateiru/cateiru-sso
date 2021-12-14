@@ -159,16 +159,30 @@ func TestBlockList(t *testing.T) {
 
 func TestCheckExpired(t *testing.T) {
 	now := time.Now()
-	period := &models.VerifyPeriod{
+	period := &models.Period{
 		// 1時間前の時間
 		CreateDate:   now.Add(time.Duration(-1) * time.Hour),
 		PeriodMinute: 1,
 	}
-	require.True(t, common.CheckExpired(period), "正しく有効期限切れになっている")
+	require.True(t, common.CheckExpired(period), "分で正しく有効期限切れになっている")
 
-	periodSafe := &models.VerifyPeriod{
+	periodSafe := &models.Period{
 		CreateDate:   now,
 		PeriodMinute: 10,
 	}
 	require.False(t, common.CheckExpired(periodSafe))
+
+	periodHour := &models.Period{
+		// 2時間前の時間
+		CreateDate: now.Add(time.Duration(-2) * time.Hour),
+		PeriodHour: 1,
+	}
+	require.True(t, common.CheckExpired(periodHour), "時間で正しく有効期限切れになっている")
+
+	periodDay := &models.Period{
+		// 72時間前の時間
+		CreateDate: now.Add(time.Duration(-72) * time.Hour),
+		PeriodDay:  1,
+	}
+	require.True(t, common.CheckExpired(periodDay), "時間で正しく有効期限切れになっている")
 }

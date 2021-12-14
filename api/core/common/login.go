@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"time"
@@ -26,13 +27,13 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 	session := &models.SessionInfo{
 		SessionToken: sessionToken,
 
-		TokenInfo: models.TokenInfo{
+		Period: models.Period{
 			CreateDate: time.Now(),
 			PeriodHour: 6,
+		},
 
-			UserId: models.UserId{
-				UserId: userId,
-			},
+		UserId: models.UserId{
+			UserId: userId,
 		},
 	}
 	if err := session.Add(ctx, db); err != nil {
@@ -44,13 +45,13 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 		RefreshToken: refreshToken,
 		SessionToken: sessionToken,
 
-		TokenInfo: models.TokenInfo{
+		Period: models.Period{
 			CreateDate: time.Now(),
-			PeriodHour: 168, // 24*7 = 168
+			PeriodDay:  7,
+		},
 
-			UserId: models.UserId{
-				UserId: userId,
-			},
+		UserId: models.UserId{
+			UserId: userId,
 		},
 	}
 	if err := refresh.Add(ctx, db); err != nil {
@@ -79,6 +80,132 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 		SessionToken: sessionToken,
 		RefreshToken: refreshToken,
 	}, nil
+}
+
+// cookieからログインします
+
+// UserIDを返します
+func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWriter, r *http.Request) (string, error) {
+	refreshToken, err := net.GetCookie(r, "refresh-token")
+	if err != nil || len(refreshToken) == 0 {
+		// cookieが存在しない、valueが存在しない場合は403を返す
+		return "", status.NewForbiddenError(errors.New("cookie is not found")).Caller(
+			"core/create_account/info.go", 36)
+	}
+
+	tx, err := database.NewTransaction(ctx, db)
+	if err != nil {
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 99).Wrap()
+	}
+
+	refresh, err := models.GetRefreshTokenTX(tx, refreshToken)
+	if err != nil {
+		rerr := tx.Rollback()
+		if rerr != nil {
+			err = errors.New(err.Error() + rerr.Error())
+		}
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 104).Wrap()
+	}
+
+	// refreshtokenが存在しない場合は400を返す
+	if refresh == nil {
+		err = tx.Rollback()
+		if err == nil {
+			err = errors.New("refresh token is not exist")
+		}
+
+		return "", status.NewBadRequestError(err).Caller(
+			"core/common/login.go", 111).Wrap()
+	}
+
+	// refresh-tokenが有効期限切れの場合は400を返す
+	if CheckExpired(&refresh.Period) {
+		err = tx.Rollback()
+		if err == nil {
+			err = errors.New("Expired")
+		}
+
+		return "", status.NewBadRequestError(err).Caller(
+			"core/common/login.go", 111).AddCode(net.TimeOutError).Wrap()
+	}
+
+	// session-tokenを削除する（ある場合は）
+	err = models.DeleteSessionTokenTX(tx, refresh.SessionToken)
+	if err != nil {
+		rerr := tx.Rollback()
+		if rerr != nil {
+			err = errors.New(err.Error() + rerr.Error())
+		}
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 131).Wrap()
+	}
+
+	// refresh-tokenを削除する
+	err = models.DeleteRefreshTokenTX(tx, refresh.RefreshToken)
+	if err != nil {
+		rerr := tx.Rollback()
+		if rerr != nil {
+			err = errors.New(err.Error() + rerr.Error())
+		}
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 131).Wrap()
+	}
+
+	newSessionToken := utils.CreateID(30)
+	newRefreshToken := utils.CreateID(0)
+
+	// 新しいsession-tokenを作成する
+	session := &models.SessionInfo{
+		SessionToken: newSessionToken,
+
+		Period: models.Period{
+			CreateDate: time.Now(),
+			PeriodHour: 6,
+		},
+
+		UserId: refresh.UserId,
+	}
+	if err := session.AddTX(tx); err != nil {
+		rerr := tx.Rollback()
+		if rerr != nil {
+			err = errors.New(err.Error() + rerr.Error())
+		}
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 131).Wrap()
+	}
+
+	// 新しいrefresh-tokenを作成する
+	newRefresh := &models.RefreshInfo{
+		RefreshToken: newRefreshToken,
+		SessionToken: newSessionToken,
+
+		Period: models.Period{
+			CreateDate: time.Now(),
+			PeriodDay:  7,
+		},
+
+		UserId: refresh.UserId,
+	}
+	if err := newRefresh.AddTX(tx); err != nil {
+		rerr := tx.Rollback()
+		if rerr != nil {
+			err = errors.New(err.Error() + rerr.Error())
+		}
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 131).Wrap()
+	}
+
+	// cookieを上書き
+	// 同じkeyでcookieを設定すれば上書きされるはず
+	login := &LoginTokens{
+		SessionToken: newSessionToken,
+		RefreshToken: newRefreshToken,
+	}
+	LoginSetCookie(w, login)
+
+	return refresh.UserId.UserId, nil
 }
 
 // ログイン用のcookieをセットする

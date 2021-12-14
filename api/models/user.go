@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 
-	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
 )
 
@@ -29,10 +28,10 @@ func GetUserDataTXByUserID(ctx context.Context, db *database.Transaction, userId
 	key := database.CreateNameKey("User", userId)
 	var entry User
 
-	err := db.Get(key, &entry)
+	isNoEntry, err := db.Get(key, &entry)
 
 	// 要素が見つからない場合はnilを返す
-	if err == datastore.ErrNoSuchEntity {
+	if isNoEntry {
 		return nil, nil
 	}
 

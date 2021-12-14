@@ -46,7 +46,32 @@ func GetSessionToken(ctx context.Context, db *database.Database, sessionToken st
 	return &entry, nil
 }
 
+func GetSessionTokenTX(tx *database.Transaction, sessionToken string) (*SessionInfo, error) {
+	key := database.CreateNameKey("SessionInfo", sessionToken)
+	var entry SessionInfo
+	isNotExist, err := tx.Get(key, &entry)
+	if err != nil {
+		return nil, err
+	}
+	// entryが存在しない場合はnilを返す
+	if isNotExist {
+		return nil, nil
+	}
+
+	return &entry, nil
+}
+
+func DeleteSessionTokenTX(tx *database.Transaction, sessionToken string) error {
+	key := database.CreateNameKey("SessionInfo", sessionToken)
+	return tx.Delete(key)
+}
+
 func (c *SessionInfo) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("SessionInfo", c.SessionToken)
 	return db.Put(ctx, key, c)
+}
+
+func (c *SessionInfo) AddTX(tx *database.Transaction) error {
+	key := database.CreateNameKey("SessionInfo", c.SessionToken)
+	return tx.Put(key, c)
 }

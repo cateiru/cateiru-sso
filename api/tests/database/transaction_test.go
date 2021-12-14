@@ -37,8 +37,9 @@ func TestTransactionSuccess(t *testing.T) {
 
 	var e sampleEntry
 
-	err = tx.Get(key, &e)
+	isNoEntry, err := tx.Get(key, &e)
 	require.NoError(t, err)
+	require.False(t, isNoEntry)
 
 	e.Text = "huga"
 
@@ -54,6 +55,43 @@ func TestTransactionSuccess(t *testing.T) {
 
 	require.Equal(t, entry2.Text, "huga")
 
+}
+
+// TXで削除
+func TestTransactionDelete(t *testing.T) {
+	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
+	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+
+	ctx := context.Background()
+	tableName := utils.CreateID(5)
+
+	client, err := database.NewDatabase(ctx)
+	require.NoError(t, err, "Datastoreに接続できない")
+
+	key := datastore.NameKey(tableName, utils.CreateID(5), nil)
+
+	// 最初の要素追加
+	entry := &sampleEntry{
+		Text: "hoge",
+	}
+
+	err = client.Put(ctx, key, entry)
+	require.NoError(t, err, "Putできない")
+
+	// トランザクションを開始し、Textの内容を変える
+	tx, err := database.NewTransaction(ctx, client)
+	require.NoError(t, err)
+
+	err = tx.Delete(key)
+	require.NoError(t, err)
+
+	err = tx.Commit()
+	require.NoError(t, err)
+
+	var entry2 sampleEntry
+	isNoEntity, err := client.Get(ctx, key, &entry2)
+	require.NoError(t, err)
+	require.True(t, isNoEntity)
 }
 
 // トランザクションのロールバック
@@ -83,12 +121,16 @@ func TestTransactionRollback(t *testing.T) {
 
 	var e sampleEntry
 
-	err = tx.Get(key, &e)
+	isNoEntity, err := tx.Get(key, &e)
 	require.NoError(t, err)
+	require.False(t, isNoEntity)
 
 	e.Text = "huga"
 
 	err = tx.Put(key, &e)
+	require.NoError(t, err)
+
+	err = tx.Delete(key)
 	require.NoError(t, err)
 
 	err = tx.Rollback()

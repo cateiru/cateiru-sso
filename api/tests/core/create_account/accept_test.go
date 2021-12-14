@@ -41,7 +41,7 @@ func TestAcceptSuccess(t *testing.T) {
 			Password: "password",
 		},
 
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},
@@ -116,7 +116,7 @@ func TestAcceptNotVerify(t *testing.T) {
 			Password: "password",
 		},
 
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},

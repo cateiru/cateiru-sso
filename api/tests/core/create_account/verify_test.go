@@ -39,7 +39,7 @@ func TestVerifySuccess(t *testing.T) {
 			Password: "password",
 		},
 
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},
@@ -113,7 +113,7 @@ func TestVerifyAlreadyDone(t *testing.T) {
 			Password: "password",
 		},
 
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},

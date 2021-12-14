@@ -172,7 +172,7 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 
 		UserMailPW: user,
 
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},

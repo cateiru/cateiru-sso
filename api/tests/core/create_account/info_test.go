@@ -27,7 +27,7 @@ func TestInfo(t *testing.T) {
 
 	buffer := models.CreateAccountBuffer{
 		BufferToken: bufferToken,
-		VerifyPeriod: models.VerifyPeriod{
+		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},

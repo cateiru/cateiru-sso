@@ -65,7 +65,32 @@ func GetRefreshToken(ctx context.Context, db *database.Database, refreshToken st
 	return &entry, nil
 }
 
+func GetRefreshTokenTX(tx *database.Transaction, refreshToken string) (*RefreshInfo, error) {
+	key := database.CreateNameKey("RefreshInfo", refreshToken)
+	var entry RefreshInfo
+	isNotExist, err := tx.Get(key, &entry)
+	if err != nil {
+		return nil, err
+	}
+	// entryが存在しない場合はnilを返す
+	if isNotExist {
+		return nil, nil
+	}
+
+	return &entry, nil
+}
+
+func DeleteRefreshTokenTX(tx *database.Transaction, refreshToken string) error {
+	key := database.CreateNameKey("RefreshInfo", refreshToken)
+	return tx.Delete(key)
+}
+
 func (c *RefreshInfo) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("RefreshInfo", c.RefreshToken)
 	return db.Put(ctx, key, c)
+}
+
+func (c *RefreshInfo) AddTX(tx *database.Transaction) error {
+	key := database.CreateNameKey("RefreshInfo", c.RefreshToken)
+	return tx.Put(key, c)
 }
