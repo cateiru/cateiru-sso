@@ -197,6 +197,16 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 			"core/common/login.go", 131).Wrap()
 	}
 
+	// 変更をコミットする
+	if err := tx.Commit(); err != nil {
+		rerr := tx.Rollback()
+		if rerr != nil {
+			err = errors.New(err.Error() + rerr.Error())
+		}
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 131).Wrap()
+	}
+
 	// cookieを上書き
 	// 同じkeyでcookieを設定すれば上書きされるはず
 	login := &LoginTokens{
