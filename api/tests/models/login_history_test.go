@@ -44,6 +44,6 @@ func TestLoginHistory(t *testing.T) {
 		histores, err := models.GetAllLoginHistory(ctx, db, userId)
 		require.NoError(t, err)
 
-		return histores[0].IpAddress == "192.168.0.1"
+		return len(histores) != 0 && histores[0].IpAddress == "192.168.0.1"
 	}, "Entryがある")
 }
