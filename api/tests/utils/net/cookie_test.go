@@ -52,8 +52,7 @@ func testGetCookieHandler(w http.ResponseWriter, r *http.Request) {
 
 // cookieを削除
 func testDeleteCookieHandler(w http.ResponseWriter, r *http.Request) {
-	cookie := net.NewCookie("", true, http.SameSiteNoneMode, true)
-	err := cookie.Delete(w, r, cookieKey)
+	err := net.DeleteCookie(w, r, cookieKey)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return

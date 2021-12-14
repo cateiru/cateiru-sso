@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
@@ -101,42 +102,50 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 
 	refresh, err := models.GetRefreshTokenTX(tx, refreshToken)
 	if err != nil {
-		rerr := tx.Rollback()
-		if rerr != nil {
-			err = errors.New(err.Error() + rerr.Error())
+		_err := tx.Rollback()
+		if _err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 107. %s", err.Error())
 		}
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/common/login.go", 104).Wrap()
 	}
 
-	// refreshtokenが存在しない場合は400を返す
+	// refreshtokenが存在しない場合は、トランザクションをロールバック、該当cookieを削除して403を返す
 	if refresh == nil {
 		err = tx.Rollback()
-		if err == nil {
-			err = errors.New("refresh token is not exist")
+		if err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 117. %s", err.Error())
+		}
+		err = net.DeleteCookie(w, r, "refresh-token")
+		if err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 121. %s", err.Error())
 		}
 
-		return "", status.NewBadRequestError(err).Caller(
+		return "", status.NewForbiddenError(errors.New("refresh token is not exist")).Caller(
 			"core/common/login.go", 111).Wrap()
 	}
 
-	// refresh-tokenが有効期限切れの場合は400を返す
+	// refresh-tokenが有効期限切れの場合は、トランザクションをロールバック、該当cookieを削除して403を返す
 	if CheckExpired(&refresh.Period) {
 		err = tx.Rollback()
-		if err == nil {
-			err = errors.New("Expired")
+		if err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 132. %s", err.Error())
+		}
+		err = net.DeleteCookie(w, r, "refresh-token")
+		if err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 136. %s", err.Error())
 		}
 
-		return "", status.NewBadRequestError(err).Caller(
+		return "", status.NewForbiddenError(errors.New("Expired")).Caller(
 			"core/common/login.go", 111).AddCode(net.TimeOutError).Wrap()
 	}
 
 	// session-tokenを削除する（ある場合は）
 	err = models.DeleteSessionTokenTX(tx, refresh.SessionToken)
 	if err != nil {
-		rerr := tx.Rollback()
-		if rerr != nil {
-			err = errors.New(err.Error() + rerr.Error())
+		_err := tx.Rollback()
+		if _err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 148. %s", err.Error())
 		}
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/common/login.go", 131).Wrap()
@@ -145,9 +154,9 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 	// refresh-tokenを削除する
 	err = models.DeleteRefreshTokenTX(tx, refresh.RefreshToken)
 	if err != nil {
-		rerr := tx.Rollback()
-		if rerr != nil {
-			err = errors.New(err.Error() + rerr.Error())
+		_err := tx.Rollback()
+		if _err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 159. %s", err.Error())
 		}
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/common/login.go", 131).Wrap()
@@ -168,9 +177,9 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 		UserId: refresh.UserId,
 	}
 	if err := session.AddTX(tx); err != nil {
-		rerr := tx.Rollback()
-		if rerr != nil {
-			err = errors.New(err.Error() + rerr.Error())
+		_err := tx.Rollback()
+		if _err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 182. %s", err.Error())
 		}
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/common/login.go", 131).Wrap()
@@ -189,9 +198,9 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 		UserId: refresh.UserId,
 	}
 	if err := newRefresh.AddTX(tx); err != nil {
-		rerr := tx.Rollback()
-		if rerr != nil {
-			err = errors.New(err.Error() + rerr.Error())
+		_err := tx.Rollback()
+		if _err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 203. %s", err.Error())
 		}
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/common/login.go", 131).Wrap()
@@ -199,9 +208,9 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 
 	// 変更をコミットする
 	if err := tx.Commit(); err != nil {
-		rerr := tx.Rollback()
-		if rerr != nil {
-			err = errors.New(err.Error() + rerr.Error())
+		_err := tx.Rollback()
+		if _err != nil {
+			logging.Sugar.Errorf("core/common/login.go line: 213. %s", err.Error())
 		}
 		return "", status.NewInternalServerErrorError(err).Caller(
 			"core/common/login.go", 131).Wrap()

@@ -62,9 +62,13 @@ func (c *Cookie) Set(w http.ResponseWriter, key string, value string, exp *Cooki
 	http.SetCookie(w, cookie)
 }
 
-// Cookieを削除します
-func (c *Cookie) Delete(w http.ResponseWriter, req *http.Request, key string) error {
+// cookieを削除
+func DeleteCookie(w http.ResponseWriter, req *http.Request, key string) error {
 	cookie, err := req.Cookie(key)
+	// cookieがない場合は何もしない
+	if err == http.ErrNoCookie {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -74,12 +78,6 @@ func (c *Cookie) Delete(w http.ResponseWriter, req *http.Request, key string) er
 	cookie.Expires = time.Unix(0, 0)
 	cookie.MaxAge = -1
 
-	cookie.Secure = c.Secure
-	cookie.Path = c.Path
-	cookie.Domain = c.Domain
-	cookie.HttpOnly = c.HttpOnly
-	cookie.SameSite = c.SomeSite
-
 	http.SetCookie(w, cookie)
 
 	return nil
@@ -88,7 +86,10 @@ func (c *Cookie) Delete(w http.ResponseWriter, req *http.Request, key string) er
 // keyで指定した名前のcookieを返します
 func GetCookie(req *http.Request, key string) (string, error) {
 	cookie, err := req.Cookie(key)
-
+	// cookieがない場合はなにもしない
+	if err == http.ErrNoCookie {
+		return "", nil
+	}
 	if err != nil {
 		return "", err
 	}
