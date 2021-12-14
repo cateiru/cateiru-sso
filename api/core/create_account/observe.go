@@ -43,6 +43,8 @@ func MailVerifyObserve(w http.ResponseWriter, r *http.Request) error {
 
 				quit := make(chan bool)
 
+				logging.Sugar.Debugf("Start websocket. clientCheckToken: %s", clientCheckToken)
+
 				go send(ctx, db, ws, quit, clientCheckToken, &isVerified)
 				receive(ctx, db, ws, quit, clientCheckToken)
 			}),
@@ -75,22 +77,31 @@ func receive(ctx context.Context, db *database.Database, ws *websocket.Conn, qui
 // 1秒おきにDBを参照し、認証されているかを確認する
 // 認証された場合、trueを返す
 func send(ctx context.Context, db *database.Database, ws *websocket.Conn, quit chan bool, token string, isVerified *bool) {
+	notFoundCount := 0
+
 	for {
 		select {
 		case <-quit:
 			return
 		default:
+			// 3回entityを探しても見つからなかった場合はwsを強制終了する
+			if notFoundCount >= 3 {
+				logging.Sugar.Error("ws: not found entity")
+				ws.Close()
+				return
+			}
+
 			entry, err := models.GetMailCertificationByCheckToken(ctx, db, token)
 			if err != nil {
 				logging.Sugar.Error(err)
 				ws.Close()
 				return
 			}
-			// 要素がない状態はそのまま終了
-			// 有効期限切れでデータが削除されたときなど
+			// 要素がない状態は一旦continueする
 			if entry == nil {
-				ws.Close()
-				return
+				notFoundCount++
+				time.Sleep(1 * time.Second)
+				continue
 			}
 
 			// 認証された場合、`true`を送信

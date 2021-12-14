@@ -119,8 +119,10 @@ func TestRefreshTokenTX(t *testing.T) {
 	require.NoError(t, err)
 	/////
 
-	entity, err = models.GetRefreshTokenBySessionToken(ctx, db, sessionToken)
-	require.NoError(t, err)
-	require.Nil(t, entity)
+	goretry.Retry(t, func() bool {
+		entity, err = models.GetRefreshTokenBySessionToken(ctx, db, sessionToken)
+		require.NoError(t, err)
 
+		return entity == nil
+	}, "削除されている")
 }
