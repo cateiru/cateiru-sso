@@ -83,8 +83,39 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 	}, nil
 }
 
-// cookieからログインします
+// session-tokenのcookieからuser idを取得します
+func GetUserID(ctx context.Context, db *database.Database, w http.ResponseWriter, r *http.Request) (string, error) {
+	sessionToken, err := net.GetCookie(r, "session-token")
+	if err != nil {
+		return "", status.NewBadRequestError(err).Caller(
+			"core/create_account/info.go", 91)
+	}
 
+	// session-tokenが存在しない場合、refresh-tokenからsession-tokenを作成する
+	if sessionToken == "" {
+		return LoginByCookie(ctx, db, w, r)
+	}
+
+	session, err := models.GetSessionToken(ctx, db, sessionToken)
+	if err != nil {
+		return "", status.NewInternalServerErrorError(err).Caller(
+			"core/common/login.go", 102).Wrap()
+	}
+
+	// sessionTokenが見つからない場合、refresh-tokenを使用してsession-tokenの作成を試みます
+	if session == nil {
+		return LoginByCookie(ctx, db, w, r)
+	}
+
+	// sessionTokenの有効期限が切れてしまっている場合、refresh-tokenを使用してsession-tokenの作成を試みます
+	if CheckExpired(&session.Period) {
+		return LoginByCookie(ctx, db, w, r)
+	}
+
+	return session.UserId.UserId, nil
+}
+
+// cookieからログインします
 // UserIDを返します
 func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWriter, r *http.Request) (string, error) {
 	refreshToken, err := net.GetCookie(r, "refresh-token")
