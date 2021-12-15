@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
@@ -84,20 +85,28 @@ func TestTXUser(t *testing.T) {
 
 	// ---
 
-	tx, err := database.NewTransaction(ctx, db)
-	require.NoError(t, err)
+	var entry *models.User
+	for i := 0; 3 > i; i++ {
+		tx, err := database.NewTransaction(ctx, db)
+		require.NoError(t, err)
 
-	entry, err := models.GetUserDataTXByUserID(ctx, tx, userId)
-	require.NoError(t, err)
-	require.NotNil(t, entry)
+		entry, err = models.GetUserDataTXByUserID(ctx, tx, userId)
+		require.NoError(t, err)
+		require.NotNil(t, entry)
 
-	entry.LastName = "にゃあ"
+		entry.LastName = "にゃあ"
 
-	err = entry.AddTX(tx)
-	require.NoError(t, err)
+		err = entry.AddTX(tx)
+		require.NoError(t, err)
 
-	err = tx.Commit()
-	require.NoError(t, err)
+		err = tx.Commit()
+		if err != nil && err != datastore.ErrConcurrentTransaction {
+			t.Fatal()
+		}
+		if err == nil {
+			return
+		}
+	}
 
 	// ---
 

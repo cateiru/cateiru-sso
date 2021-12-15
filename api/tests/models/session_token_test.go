@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
@@ -91,23 +92,32 @@ func TestSessionTX(t *testing.T) {
 
 	/////
 
-	tx, err := database.NewTransaction(ctx, db)
-	require.NoError(t, err)
+	var entity *models.SessionInfo
+	for i := 0; 3 > i; i++ {
+		tx, err := database.NewTransaction(ctx, db)
+		require.NoError(t, err)
 
-	entity, err := models.GetSessionTokenTX(tx, sessionToken)
-	require.NoError(t, err)
+		entity, err = models.GetSessionTokenTX(tx, sessionToken)
+		require.NoError(t, err)
 
-	require.Equal(t, entity.SessionToken, sessionToken)
+		require.Equal(t, entity.SessionToken, sessionToken)
 
-	err = entity.AddTX(tx)
-	require.NoError(t, err)
+		err = entity.AddTX(tx)
+		require.NoError(t, err)
 
-	err = models.DeleteSessionTokenTX(tx, sessionToken)
-	require.NoError(t, err)
+		err = models.DeleteSessionTokenTX(tx, sessionToken)
+		require.NoError(t, err)
 
-	err = tx.Commit()
-	require.NoError(t, err)
+		err = tx.Commit()
+		require.NoError(t, err)
+		if err != nil && err != datastore.ErrConcurrentTransaction {
+			t.Fatal()
+		}
+		if err == nil {
+			return
+		}
 
+	}
 	////
 
 	entity, err = models.GetSessionToken(ctx, db, sessionToken)

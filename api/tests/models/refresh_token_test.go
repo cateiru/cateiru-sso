@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
@@ -98,25 +99,33 @@ func TestRefreshTokenTX(t *testing.T) {
 	err = session.Add(ctx, db)
 	require.NoError(t, err)
 
+	var entity *models.RefreshInfo
+
 	/////
+	for i := 0; 3 > i; i++ {
+		tx, err := database.NewTransaction(ctx, db)
+		require.NoError(t, err)
 
-	tx, err := database.NewTransaction(ctx, db)
-	require.NoError(t, err)
+		entity, err = models.GetRefreshTokenTX(tx, refreshToken)
+		require.NoError(t, err)
 
-	entity, err := models.GetRefreshTokenTX(tx, refreshToken)
-	require.NoError(t, err)
+		require.Equal(t, entity.RefreshToken, refreshToken)
+		entity.SessionToken = utils.CreateID(30)
 
-	require.Equal(t, entity.RefreshToken, refreshToken)
-	entity.SessionToken = utils.CreateID(30)
+		err = entity.AddTX(tx)
+		require.NoError(t, err)
 
-	err = entity.AddTX(tx)
-	require.NoError(t, err)
+		err = models.DeleteRefreshTokenTX(tx, refreshToken)
+		require.NoError(t, err)
 
-	err = models.DeleteRefreshTokenTX(tx, refreshToken)
-	require.NoError(t, err)
-
-	err = tx.Commit()
-	require.NoError(t, err)
+		err = tx.Commit()
+		if err != nil && err != datastore.ErrConcurrentTransaction {
+			t.Fatal()
+		}
+		if err == nil {
+			return
+		}
+	}
 	/////
 
 	goretry.Retry(t, func() bool {

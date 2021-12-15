@@ -79,14 +79,21 @@ func TestTransactionDelete(t *testing.T) {
 	require.NoError(t, err, "Putできない")
 
 	// トランザクションを開始し、Textの内容を変える
-	tx, err := database.NewTransaction(ctx, client)
-	require.NoError(t, err)
+	for i := 0; 3 > i; i++ {
+		tx, err := database.NewTransaction(ctx, client)
+		require.NoError(t, err)
 
-	err = tx.Delete(key)
-	require.NoError(t, err)
+		err = tx.Delete(key)
+		require.NoError(t, err)
 
-	err = tx.Commit()
-	require.NoError(t, err)
+		err = tx.Commit()
+		if err != nil && err != datastore.ErrConcurrentTransaction {
+			t.Fatal()
+		}
+		if err == nil {
+			return
+		}
+	}
 
 	var entry2 sampleEntry
 	isNoEntity, err := client.Get(ctx, key, &entry2)
