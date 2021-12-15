@@ -3,6 +3,7 @@ package logging
 import (
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var Logger *zap.Logger
@@ -18,7 +19,9 @@ func init() {
 		}
 		Logger = loggerProduction
 	default:
-		loggingDebug, err := zap.NewDevelopment()
+		config := zap.NewDevelopmentConfig()
+		config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		loggingDebug, err := config.Build()
 		if err != nil {
 			panic(err)
 		}

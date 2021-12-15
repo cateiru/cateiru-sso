@@ -103,6 +103,8 @@ func TestCreateAccount(t *testing.T) {
 
 	// Step.3 ----
 
+	time.Sleep(1 * time.Second)
+
 	// cookieを設定する
 	resp, err = client.Head(fmt.Sprintf("%s/create/verify?token=%s", server.URL, response.ClientCheckToken))
 	require.NoError(t, err)
@@ -132,13 +134,16 @@ func TestCreateAccount(t *testing.T) {
 
 	cookies := jar.Cookies(set_cookie_url)
 	var sessionToken string
+	var refreshToken string
 	for _, cookie := range cookies {
 		if cookie.Name == "session-token" {
 			sessionToken = cookie.Value
-			break
+		} else if cookie.Name == "refresh-token" {
+			refreshToken = cookie.Value
 		}
 	}
 	require.NotEmpty(t, sessionToken)
+	require.NotEmpty(t, refreshToken)
 
 	db, err := database.NewDatabase(ctx)
 	require.NoError(t, err)

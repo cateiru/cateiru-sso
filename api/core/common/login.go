@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -22,7 +23,7 @@ type LoginTokens struct {
 
 // ユーザIDを設定し、新たにログインをします
 func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip string, userAgent string) (*LoginTokens, error) {
-	sessionToken := utils.CreateID(30)
+	sessionToken := utils.CreateID(0)
 	refreshToken := utils.CreateID(0)
 
 	session := &models.SessionInfo{
@@ -125,126 +126,117 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 			"core/create_account/info.go", 36)
 	}
 
-	tx, err := database.NewTransaction(ctx, db)
-	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 99).Wrap()
-	}
-
-	refresh, err := models.GetRefreshTokenTX(tx, refreshToken)
-	if err != nil {
-		_err := tx.Rollback()
-		if _err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 107. %s", err.Error())
-		}
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 104).Wrap()
-	}
-
-	// refreshtokenが存在しない場合は、トランザクションをロールバック、該当cookieを削除して403を返す
-	if refresh == nil {
-		err = tx.Rollback()
-		if err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 117. %s", err.Error())
-		}
-		err = net.DeleteCookie(w, r, "refresh-token")
-		if err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 121. %s", err.Error())
-		}
-
-		return "", status.NewForbiddenError(errors.New("refresh token is not exist")).Caller(
-			"core/common/login.go", 111).Wrap()
-	}
-
-	// refresh-tokenが有効期限切れの場合は、トランザクションをロールバック、該当cookieを削除して403を返す
-	if CheckExpired(&refresh.Period) {
-		err = tx.Rollback()
-		if err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 132. %s", err.Error())
-		}
-		err = net.DeleteCookie(w, r, "refresh-token")
-		if err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 136. %s", err.Error())
-		}
-
-		return "", status.NewForbiddenError(errors.New("Expired")).Caller(
-			"core/common/login.go", 111).AddCode(net.TimeOutError).Wrap()
-	}
-
-	// session-tokenを削除する（ある場合は）
-	err = models.DeleteSessionTokenTX(tx, refresh.SessionToken)
-	if err != nil {
-		_err := tx.Rollback()
-		if _err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 148. %s", err.Error())
-		}
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 131).Wrap()
-	}
-
-	// refresh-tokenを削除する
-	err = models.DeleteRefreshTokenTX(tx, refresh.RefreshToken)
-	if err != nil {
-		_err := tx.Rollback()
-		if _err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 159. %s", err.Error())
-		}
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 131).Wrap()
-	}
-
-	newSessionToken := utils.CreateID(30)
+	newSessionToken := utils.CreateID(0)
 	newRefreshToken := utils.CreateID(0)
 
-	// 新しいsession-tokenを作成する
-	session := &models.SessionInfo{
-		SessionToken: newSessionToken,
+	var refresh *models.RefreshInfo
 
-		Period: models.Period{
-			CreateDate: time.Now(),
-			PeriodHour: 6,
-		},
-
-		UserId: refresh.UserId,
-	}
-	if err := session.AddTX(tx); err != nil {
-		_err := tx.Rollback()
-		if _err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 182. %s", err.Error())
+	for i := 0; 3 > i; i++ {
+		tx, err := database.NewTransaction(ctx, db)
+		if err != nil {
+			return "", status.NewInternalServerErrorError(err).Caller(
+				"core/common/login.go", 99).Wrap()
 		}
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 131).Wrap()
-	}
 
-	// 新しいrefresh-tokenを作成する
-	newRefresh := &models.RefreshInfo{
-		RefreshToken: newRefreshToken,
-		SessionToken: newSessionToken,
-
-		Period: models.Period{
-			CreateDate: time.Now(),
-			PeriodDay:  7,
-		},
-
-		UserId: refresh.UserId,
-	}
-	if err := newRefresh.AddTX(tx); err != nil {
-		_err := tx.Rollback()
-		if _err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 203. %s", err.Error())
+		refresh, err = models.GetRefreshTokenTX(tx, refreshToken)
+		if err != nil {
+			return "", status.NewInternalServerErrorError(err).Caller(
+				"core/common/login.go", 104).Wrap()
 		}
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 131).Wrap()
-	}
 
-	// 変更をコミットする
-	if err := tx.Commit(); err != nil {
-		_err := tx.Rollback()
-		if _err != nil {
-			logging.Sugar.Errorf("core/common/login.go line: 213. %s", err.Error())
+		// refreshtokenが存在しない場合は、トランザクションをロールバック、該当cookieを削除して403を返す
+		if refresh == nil {
+			err = net.DeleteCookie(w, r, "refresh-token")
+			if err != nil {
+				logging.Sugar.Errorf("core/common/login.go line: 121. %s", err.Error())
+			}
+			// session-tokenがある場合は削除してしまう
+			err = net.DeleteCookie(w, r, "session-token")
+			if err != nil {
+				logging.Sugar.Errorf("core/common/login.go line: 121. %s", err.Error())
+			}
+
+			return "", status.NewForbiddenError(errors.New("refresh token is not exist")).Caller(
+				"core/common/login.go", 111).Wrap()
 		}
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 131).Wrap()
+
+		// refresh-tokenが有効期限切れの場合は、トランザクションをロールバック、該当cookieを削除して403を返す
+		if CheckExpired(&refresh.Period) {
+			err = net.DeleteCookie(w, r, "refresh-token")
+			if err != nil {
+				logging.Sugar.Errorf("core/common/login.go line: 136. %s", err.Error())
+			}
+			// session-tokenがある場合は削除してしまう
+			err = net.DeleteCookie(w, r, "session-token")
+			if err != nil {
+				logging.Sugar.Errorf("core/common/login.go line: 121. %s", err.Error())
+			}
+
+			return "", status.NewForbiddenError(errors.New("Expired")).Caller(
+				"core/common/login.go", 111).AddCode(net.TimeOutError).Wrap()
+		}
+
+		// session-tokenを削除する（ある場合は）
+		err = models.DeleteSessionTokenTX(tx, refresh.SessionToken)
+		if err != nil {
+			return "", status.NewInternalServerErrorError(err).Caller(
+				"core/common/login.go", 131).Wrap()
+		}
+
+		// refresh-tokenを削除する
+		err = models.DeleteRefreshTokenTX(tx, refresh.RefreshToken)
+		if err != nil {
+			return "", status.NewInternalServerErrorError(err).Caller(
+				"core/common/login.go", 131).Wrap()
+		}
+
+		// 新しいsession-tokenを作成する
+		session := &models.SessionInfo{
+			SessionToken: newSessionToken,
+
+			Period: models.Period{
+				CreateDate: time.Now(),
+				PeriodHour: 6,
+			},
+
+			UserId: refresh.UserId,
+		}
+		if err := session.AddTX(tx); err != nil {
+			return "", status.NewInternalServerErrorError(err).Caller(
+				"core/common/login.go", 131).Wrap()
+		}
+
+		// 新しいrefresh-tokenを作成する
+		newRefresh := &models.RefreshInfo{
+			RefreshToken: newRefreshToken,
+			SessionToken: newSessionToken,
+
+			Period: models.Period{
+				CreateDate: time.Now(),
+				PeriodDay:  7,
+			},
+
+			UserId: refresh.UserId,
+		}
+		if err := newRefresh.AddTX(tx); err != nil {
+			return "", status.NewInternalServerErrorError(err).Caller(
+				"core/common/login.go", 131).Wrap()
+		}
+
+		// 変更をコミットする
+		err = tx.Commit()
+		// コミットのエラーがErrConcurrentTransactionの場合はトライする
+		// それ以外のエラーはthrowする
+		if err != nil && err != datastore.ErrConcurrentTransaction {
+			return "", status.NewInternalServerErrorError(err).Caller(
+				"core/common/login.go", 131).Wrap()
+		}
+
+		// 正常にコミットできればリトライループから抜ける
+		if err == nil {
+			break
+		}
+
 	}
 
 	// cookieを上書き
