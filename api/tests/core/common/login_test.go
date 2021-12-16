@@ -13,6 +13,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	goretry "github.com/cateiru/go-retry"
@@ -136,9 +137,9 @@ func TestGetUserIdSuccess(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	userId := utils.CreateID(30)
+	dummyUser := tools.NewDummyUser()
 
-	sessionToken, refreshToken, err := setToken(ctx, t, db, userId, time.Now())
+	sessionToken, refreshToken, err := dummyUser.AddLoginToken(ctx, db, time.Now())
 	require.NoError(t, err)
 
 	// -----
@@ -168,7 +169,7 @@ func TestGetUserIdSuccess(t *testing.T) {
 	require.Equal(t, resp.StatusCode, 200)
 
 	body := convertResp(resp)
-	require.Equal(t, body, userId)
+	require.Equal(t, body, dummyUser.UserID)
 }
 
 // refresh-tokenからsession-tokenを作成し、user idを取得する
@@ -182,9 +183,9 @@ func TestGetUseIdRefresh(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	userId := utils.CreateID(30)
+	dummyUser := tools.NewDummyUser()
 
-	_, refreshToken, err := setToken(ctx, t, db, userId, time.Now())
+	_, refreshToken, err := dummyUser.AddLoginToken(ctx, db, time.Now())
 	require.NoError(t, err)
 
 	// -----
@@ -210,7 +211,7 @@ func TestGetUseIdRefresh(t *testing.T) {
 	require.Equal(t, resp.StatusCode, 200)
 
 	body := convertResp(resp)
-	require.Equal(t, body, userId)
+	require.Equal(t, body, dummyUser.UserID)
 
 	cookies := jar.Cookies(url)
 
@@ -262,9 +263,9 @@ func TestGetUserNotSession(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	userId := utils.CreateID(30)
+	dummyUser := tools.NewDummyUser()
 
-	_, refreshToken, err := setToken(ctx, t, db, userId, time.Now())
+	_, refreshToken, err := dummyUser.AddLoginToken(ctx, db, time.Now())
 	require.NoError(t, err)
 
 	// -----
@@ -294,7 +295,7 @@ func TestGetUserNotSession(t *testing.T) {
 	require.Equal(t, resp.StatusCode, 200) // refresh-tokenからログインする
 
 	body := convertResp(resp)
-	require.Equal(t, body, userId)
+	require.Equal(t, body, dummyUser.UserID)
 
 	cookies := jar.Cookies(url)
 
@@ -327,9 +328,9 @@ func TestNotExistSession(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	userId := utils.CreateID(30)
+	dummyUser := tools.NewDummyUser()
 
-	_, refreshToken, err := setToken(ctx, t, db, userId, time.Now())
+	_, refreshToken, err := dummyUser.AddLoginToken(ctx, db, time.Now())
 	require.NoError(t, err)
 
 	// -----
@@ -355,7 +356,7 @@ func TestNotExistSession(t *testing.T) {
 	require.Equal(t, resp.StatusCode, 200) // refresh-tokenからログインする
 
 	body := convertResp(resp)
-	require.Equal(t, body, userId)
+	require.Equal(t, body, dummyUser.UserID)
 
 	cookies := jar.Cookies(url)
 
@@ -388,12 +389,12 @@ func TestExpiredSession(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	userId := utils.CreateID(30)
+	dummyUser := tools.NewDummyUser()
 
 	// 有効期限はsession-tokenは6時間、refresh-tokenは7日間であるため、
 	// 現在の時間を+24hしてsession-tokenのみ有効期限切れにする
 	now := time.Now().Add(time.Duration(-24) * time.Hour)
-	sessionToken, refreshToken, err := setToken(ctx, t, db, userId, now)
+	sessionToken, refreshToken, err := dummyUser.AddLoginToken(ctx, db, now)
 	require.NoError(t, err)
 
 	// -----
@@ -423,7 +424,7 @@ func TestExpiredSession(t *testing.T) {
 	require.Equal(t, resp.StatusCode, 200) // session-tokenが有効期限切れでもrefresh-tokenを使用してログインする
 
 	body := convertResp(resp)
-	require.Equal(t, body, userId)
+	require.Equal(t, body, dummyUser.UserID)
 }
 
 // session-token、refresh-tokenの有効期限がサーバー上で切れている
@@ -437,12 +438,12 @@ func TestExpiredRefresh(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	userId := utils.CreateID(30)
+	dummyUser := tools.NewDummyUser()
 
 	// 有効期限はsession-tokenは6時間、refresh-tokenは7日間であるため、
 	// 現在の時間を+10*24hしてどちらも有効期限切れにする
 	now := time.Now().Add(time.Duration(-10*24) * time.Hour)
-	sessionToken, refreshToken, err := setToken(ctx, t, db, userId, now)
+	sessionToken, refreshToken, err := dummyUser.AddLoginToken(ctx, db, now)
 	require.NoError(t, err)
 
 	// -----
@@ -485,49 +486,6 @@ func TestExpiredRefresh(t *testing.T) {
 	}
 	require.False(t, sessionTokenFindFlag, "session-tokenのcookieは削除済")
 	require.False(t, refreshTokenFindFlag, "refresh-tokenのcookieは削除済")
-}
-
-// トークンをセットする
-//
-// 有効期限:
-//	session-token: 6時間
-//	refresh-token: 7日間
-func setToken(ctx context.Context, t *testing.T, db *database.Database, userId string, now time.Time) (string, string, error) {
-	sessionToken := utils.CreateID(0)
-	refreshToken := utils.CreateID(0)
-
-	session := &models.SessionInfo{
-		SessionToken: sessionToken,
-
-		Period: models.Period{
-			CreateDate: now,
-			PeriodHour: 6,
-		},
-		UserId: models.UserId{
-			UserId: userId,
-		},
-	}
-	refresh := &models.RefreshInfo{
-		RefreshToken: refreshToken,
-		SessionToken: sessionToken,
-
-		Period: models.Period{
-			CreateDate: now,
-			PeriodDay:  7,
-		},
-		UserId: models.UserId{
-			UserId: userId,
-		},
-	}
-
-	if err := session.Add(ctx, db); err != nil {
-		return "", "", err
-	}
-	if err := refresh.Add(ctx, db); err != nil {
-		return "", "", err
-	}
-
-	return sessionToken, refreshToken, nil
 }
 
 // cookieを設定する

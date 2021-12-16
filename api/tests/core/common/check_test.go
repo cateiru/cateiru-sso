@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
@@ -22,34 +23,17 @@ func TestExistMail(t *testing.T) {
 
 	ctx := context.Background()
 
-	// 実行毎にランダムなメールアドレスを作成
-	mail := fmt.Sprintf("%s@example.com", utils.CreateID(4))
-
 	db, err := database.NewDatabase(ctx)
 	require.NoError(t, err)
 	defer db.Close()
 
-	certification := models.Certification{
-		AccountCreateDate: time.Now(),
+	dummy := tools.NewDummyUser()
 
-		OnetimePasswordSecret:  "test",
-		OnetimePasswordBackups: []string{"test1", "test2"},
-
-		UserMailPW: models.UserMailPW{
-			Mail:     mail,
-			Password: "test",
-		},
-		UserId: models.UserId{
-			UserId: utils.CreateID(0),
-		},
-	}
-
-	// 要素追加
-	err = certification.Add(ctx, db)
+	_, err = dummy.AddUserCert(ctx, db)
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {
-		isExist, err := common.CheckExistMail(ctx, db, mail)
+		isExist, err := common.CheckExistMail(ctx, db, dummy.Mail)
 		require.NoError(t, err)
 
 		return isExist
@@ -63,30 +47,13 @@ func TestNotExistMail(t *testing.T) {
 
 	ctx := context.Background()
 
-	// 実行毎にランダムなメールアドレスを作成
-	mail := fmt.Sprintf("%s@example.com", utils.CreateID(4))
-
 	db, err := database.NewDatabase(ctx)
 	require.NoError(t, err)
 	defer db.Close()
 
-	certification := models.Certification{
-		AccountCreateDate: time.Now(),
+	dummy := tools.NewDummyUser()
 
-		OnetimePasswordSecret:  "test",
-		OnetimePasswordBackups: []string{"test1", "test2"},
-
-		UserMailPW: models.UserMailPW{
-			Mail:     mail,
-			Password: "test",
-		},
-		UserId: models.UserId{
-			UserId: utils.CreateID(0),
-		},
-	}
-
-	// 要素追加
-	err = certification.Add(ctx, db)
+	_, err = dummy.AddUserCert(ctx, db)
 	require.NoError(t, err)
 
 	newMail := fmt.Sprintf("%s@example.com", utils.CreateID(4))
