@@ -255,25 +255,3 @@ func LoginSetCookie(w http.ResponseWriter, login *LoginTokens) {
 	refreshExp := net.NewCookieDayExp(7)
 	cookie.Set(w, "refresh-token", login.RefreshToken, refreshExp)
 }
-
-// ログイン履歴をセットします
-func SetLoginHistory(ctx context.Context, db *database.Database, userId string, ip string, userAgent string) error {
-	// ログイン履歴を取る
-	history := &models.LoginHistory{
-		AccessId:     utils.CreateID(0),
-		Date:         time.Now(),
-		IpAddress:    ip,
-		UserAgent:    userAgent,
-		IsSSO:        false,
-		SSOPublicKey: "",
-		UserId: models.UserId{
-			UserId: userId,
-		},
-	}
-	if err := history.Add(ctx, db); err != nil {
-		return status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 70).Wrap()
-	}
-
-	return nil
-}
