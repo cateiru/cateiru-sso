@@ -22,7 +22,7 @@ type HashedPassword struct {
 //	- key length: 32
 func PWHash(pw string) *HashedPassword {
 	salt := utils.NewHash(utils.UUID()).SHA256Byte()
-	key := argon2.IDKey([]byte(pw), salt, 1, 64*1024, 1, 32)
+	key := argon2.IDKey([]byte(pw), salt, 1, 64*1024, 4, 32)
 
 	return &HashedPassword{
 		Key:  key,

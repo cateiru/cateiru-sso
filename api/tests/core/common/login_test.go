@@ -1,7 +1,6 @@
 package common_test
 
 import (
-	"bytes"
 	"context"
 	"net/http"
 	"net/http/cookiejar"
@@ -162,10 +161,10 @@ func TestGetUserIdSuccess(t *testing.T) {
 	// cookieをセットする
 
 	sessionExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "session-token", sessionToken, sessionExp, url)
+	tools.SetCookie(jar, "session-token", sessionToken, sessionExp, url)
 
 	refreshExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "refresh-token", refreshToken, refreshExp, url)
+	tools.SetCookie(jar, "refresh-token", refreshToken, refreshExp, url)
 
 	// -----
 
@@ -173,7 +172,7 @@ func TestGetUserIdSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
-	body := convertResp(resp)
+	body := tools.ConvertResp(resp)
 	require.Equal(t, body, dummyUser.UserID)
 }
 
@@ -207,7 +206,7 @@ func TestGetUseIdRefresh(t *testing.T) {
 
 	// refresh-tokenのみ、cookieをセットする
 	refreshExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "refresh-token", refreshToken, refreshExp, url)
+	tools.SetCookie(jar, "refresh-token", refreshToken, refreshExp, url)
 
 	// -----
 
@@ -215,7 +214,7 @@ func TestGetUseIdRefresh(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
-	body := convertResp(resp)
+	body := tools.ConvertResp(resp)
 	require.Equal(t, body, dummyUser.UserID)
 
 	cookies := jar.Cookies(url)
@@ -288,10 +287,10 @@ func TestGetUserNotSession(t *testing.T) {
 	// cookieをセットする
 
 	sessionExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "session-token", "hogehoge", sessionExp, url) // session-tokenに違う値をセットする
+	tools.SetCookie(jar, "session-token", "hogehoge", sessionExp, url) // session-tokenに違う値をセットする
 
 	refreshExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "refresh-token", refreshToken, refreshExp, url)
+	tools.SetCookie(jar, "refresh-token", refreshToken, refreshExp, url)
 
 	// -----
 
@@ -299,7 +298,7 @@ func TestGetUserNotSession(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200) // refresh-tokenからログインする
 
-	body := convertResp(resp)
+	body := tools.ConvertResp(resp)
 	require.Equal(t, body, dummyUser.UserID)
 
 	cookies := jar.Cookies(url)
@@ -352,7 +351,7 @@ func TestNotExistSession(t *testing.T) {
 
 	// cookieをセットする（refresh-tokenのみ）
 	refreshExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "refresh-token", refreshToken, refreshExp, url)
+	tools.SetCookie(jar, "refresh-token", refreshToken, refreshExp, url)
 
 	// -----
 
@@ -360,7 +359,7 @@ func TestNotExistSession(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200) // refresh-tokenからログインする
 
-	body := convertResp(resp)
+	body := tools.ConvertResp(resp)
 	require.Equal(t, body, dummyUser.UserID)
 
 	cookies := jar.Cookies(url)
@@ -417,10 +416,10 @@ func TestExpiredSession(t *testing.T) {
 	// cookieをセットする
 
 	sessionExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "session-token", sessionToken, sessionExp, url)
+	tools.SetCookie(jar, "session-token", sessionToken, sessionExp, url)
 
 	refreshExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "refresh-token", refreshToken, refreshExp, url)
+	tools.SetCookie(jar, "refresh-token", refreshToken, refreshExp, url)
 
 	// -----
 
@@ -428,7 +427,7 @@ func TestExpiredSession(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200) // session-tokenが有効期限切れでもrefresh-tokenを使用してログインする
 
-	body := convertResp(resp)
+	body := tools.ConvertResp(resp)
 	require.Equal(t, body, dummyUser.UserID)
 }
 
@@ -466,10 +465,10 @@ func TestExpiredRefresh(t *testing.T) {
 	// cookieをセットする
 
 	sessionExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "session-token", sessionToken, sessionExp, url)
+	tools.SetCookie(jar, "session-token", sessionToken, sessionExp, url)
 
 	refreshExp := net.NewCookieMinutsExp(3)
-	setCookie(jar, "refresh-token", refreshToken, refreshExp, url)
+	tools.SetCookie(jar, "refresh-token", refreshToken, refreshExp, url)
 
 	// -----
 
@@ -491,35 +490,4 @@ func TestExpiredRefresh(t *testing.T) {
 	}
 	require.False(t, sessionTokenFindFlag, "session-tokenのcookieは削除済")
 	require.False(t, refreshTokenFindFlag, "refresh-tokenのcookieは削除済")
-}
-
-// cookieを設定する
-func setCookie(jar *cookiejar.Jar, key string, value string, exp *net.CookieExp, url *url.URL) {
-	cookie := &http.Cookie{
-		Name:  key,
-		Value: value,
-
-		Secure:   false,
-		Path:     "/",
-		Domain:   "",
-		HttpOnly: false,
-		SameSite: http.SameSiteDefaultMode,
-	}
-
-	if !exp.IsSession {
-		cookie.Expires = time.Now().Add(exp.GetTime())
-		cookie.MaxAge = exp.GetNum()
-	}
-
-	jar.SetCookies(url, []*http.Cookie{cookie})
-}
-
-// responseをstringに変換する
-func convertResp(resp *http.Response) string {
-	defer resp.Body.Close()
-
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
-
-	return buf.String()
 }

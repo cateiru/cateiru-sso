@@ -1,13 +1,19 @@
 package tools
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
 	"time"
 
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/api/utils/secure"
 )
 
 type DummyUser struct {
@@ -54,6 +60,11 @@ func (c *DummyUser) AddUserInfo(ctx context.Context, db *database.Database) (*mo
 // ユーザの認証情報を追加する
 // (テスト用)
 func (c *DummyUser) AddUserCert(ctx context.Context, db *database.Database) (*models.Certification, error) {
+
+	password := "password"
+
+	hashedPassword := secure.PWHash(password)
+
 	certification := &models.Certification{
 		AccountCreateDate: time.Now(),
 
@@ -64,8 +75,8 @@ func (c *DummyUser) AddUserCert(ctx context.Context, db *database.Database) (*mo
 
 		UserMailPW: models.UserMailPW{
 			Mail:     c.Mail,
-			Password: []byte("password"),
-			Salt:     []byte(""),
+			Password: hashedPassword.Key,
+			Salt:     hashedPassword.Salt,
 		},
 		UserId: models.UserId{
 			UserId: c.UserID,
@@ -117,4 +128,46 @@ func (c *DummyUser) AddLoginToken(ctx context.Context, db *database.Database, no
 	}
 
 	return sessionToken, refreshToken, nil
+}
+
+// cookieをセットする
+// テスト用
+func SetCookie(jar *cookiejar.Jar, key string, value string, exp *net.CookieExp, url *url.URL) {
+	cookie := &http.Cookie{
+		Name:  key,
+		Value: value,
+
+		Secure:   false,
+		Path:     "/",
+		Domain:   "",
+		HttpOnly: false,
+		SameSite: http.SameSiteDefaultMode,
+	}
+
+	if !exp.IsSession {
+		cookie.Expires = time.Now().Add(exp.GetTime())
+		cookie.MaxAge = exp.GetNum()
+	}
+
+	jar.SetCookies(url, []*http.Cookie{cookie})
+}
+
+// responseをstringに変換する
+func ConvertResp(resp *http.Response) string {
+	defer resp.Body.Close()
+
+	buf := &bytes.Buffer{}
+	buf.ReadFrom(resp.Body)
+
+	return buf.String()
+}
+
+// responseをbytesに変換する
+func ConvertByteResp(resp *http.Response) []byte {
+	defer resp.Body.Close()
+
+	buf := &bytes.Buffer{}
+	buf.ReadFrom(resp.Body)
+
+	return buf.Bytes()
 }

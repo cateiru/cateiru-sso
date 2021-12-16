@@ -1,13 +1,13 @@
 package net_test
 
 import (
-	"bytes"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/stretchr/testify/require"
 )
@@ -63,12 +63,7 @@ func testDeleteCookieHandler(w http.ResponseWriter, r *http.Request) {
 
 // レスポンスを調べる
 func respMessage(t *testing.T, res *http.Response, message string) {
-	defer res.Body.Close()
-
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(res.Body)
-
-	require.Equal(t, buf.String(), "OK", message)
+	require.Equal(t, tools.ConvertResp(res), "OK", message)
 }
 
 // Cookieのテスト

@@ -1,7 +1,6 @@
 package net_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"math"
@@ -9,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 	"github.com/stretchr/testify/require"
@@ -75,10 +75,8 @@ func TestStatusOK(t *testing.T) {
 	require.NoError(t, err, "GETできない")
 	require.Equal(t, resp.StatusCode, 200, "ステータスコードが200ではない")
 
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
 	var body ResponseOK
-	json.Unmarshal(buf.Bytes(), &body)
+	json.Unmarshal(tools.ConvertByteResp(resp), &body)
 
 	require.Equal(t, body.Status, "OK")
 }
@@ -92,10 +90,8 @@ func TestInternalServerError(t *testing.T) {
 	require.NoError(t, err, "GETできない")
 	require.Equal(t, resp.StatusCode, 500, "ステータスコードが500ではない")
 
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
 	var body net.ErrorResponse
-	json.Unmarshal(buf.Bytes(), &body)
+	json.Unmarshal(tools.ConvertByteResp(resp), &body)
 
 	require.Equal(t, body.StatusCode, 500)
 	require.Equal(t, body.Code, 1)
@@ -110,10 +106,8 @@ func TestNotfoundError(t *testing.T) {
 	require.NoError(t, err, "GETできない")
 	require.Equal(t, resp.StatusCode, 404, "ステータスコードが404ではない")
 
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
 	var body net.ErrorResponse
-	json.Unmarshal(buf.Bytes(), &body)
+	json.Unmarshal(tools.ConvertByteResp(resp), &body)
 
 	require.Equal(t, body.StatusCode, 404)
 	require.Equal(t, body.Code, 1)
@@ -128,10 +122,8 @@ func TestCustomError(t *testing.T) {
 	require.NoError(t, err, "GETできない")
 	require.Equal(t, resp.StatusCode, 404, "ステータスコードが404ではない")
 
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
 	var body net.ErrorResponse
-	json.Unmarshal(buf.Bytes(), &body)
+	json.Unmarshal(tools.ConvertByteResp(resp), &body)
 
 	require.Equal(t, body.StatusCode, 404)
 	require.Equal(t, body.Code, 1)
@@ -146,10 +138,8 @@ func TestInternalError(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 500)
 
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
 	var body net.ErrorResponse
-	json.Unmarshal(buf.Bytes(), &body)
+	json.Unmarshal(tools.ConvertByteResp(resp), &body)
 
 	require.Equal(t, body.StatusCode, 500)
 	require.Equal(t, body.Code, 2)

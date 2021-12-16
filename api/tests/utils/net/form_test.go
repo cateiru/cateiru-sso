@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/api/logging"
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/stretchr/testify/require"
 )
@@ -53,10 +54,5 @@ func TestPostForm(t *testing.T) {
 	require.NoError(t, err, "postに失敗した")
 	require.Equal(t, resp.StatusCode, 200, "200で返ってきてない")
 
-	defer resp.Body.Close()
-
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
-
-	require.Equal(t, buf.String(), "hoge", "正しくPOST formを取得できてない")
+	require.Equal(t, tools.ConvertResp(resp), "hoge", "正しくPOST formを取得できてない")
 }

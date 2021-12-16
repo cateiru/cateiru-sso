@@ -1,12 +1,12 @@
 package net_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/stretchr/testify/require"
 )
@@ -50,13 +50,8 @@ func TestHead(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
-	defer resp.Body.Close()
-
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
-
 	var body HeadResponse
-	err = json.Unmarshal(buf.Bytes(), &body)
+	err = json.Unmarshal(tools.ConvertByteResp(resp), &body)
 	require.NoError(t, err)
 
 	t.Logf("IP: %s, User-Agent: %s", body.Ip, body.UserAgent)

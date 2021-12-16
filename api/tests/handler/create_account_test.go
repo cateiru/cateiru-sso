@@ -17,6 +17,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/posener/wstest"
 	"github.com/stretchr/testify/require"
@@ -265,10 +266,7 @@ func respToJson(resp *http.Response, obj interface{}) error {
 		return errors.New("no 200")
 	}
 
-	buf := &bytes.Buffer{}
-	buf.ReadFrom(resp.Body)
-
-	return json.Unmarshal(buf.Bytes(), obj)
+	return json.Unmarshal(tools.ConvertByteResp(resp), obj)
 }
 
 func verifyMail(ctx context.Context, t *testing.T, clientCheckToken string) {
