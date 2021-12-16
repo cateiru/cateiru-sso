@@ -85,6 +85,7 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 }
 
 // session-tokenのcookieからuser idを取得します
+// もし、session-tokenが無いor認証できない場合はrefresh-tokenを用いてログインを試みます
 func GetUserID(ctx context.Context, db *database.Database, w http.ResponseWriter, r *http.Request) (string, error) {
 	sessionToken, err := net.GetCookie(r, "session-token")
 	if err != nil {
@@ -116,7 +117,7 @@ func GetUserID(ctx context.Context, db *database.Database, w http.ResponseWriter
 	return session.UserId.UserId, nil
 }
 
-// cookieからログインします
+// refresh-token cookieからログインします
 // UserIDを返します
 func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWriter, r *http.Request) (string, error) {
 	refreshToken, err := net.GetCookie(r, "refresh-token")
