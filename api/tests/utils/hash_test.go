@@ -42,13 +42,3 @@ func TestDiffrentHashByte(t *testing.T) {
 
 	require.NotEqual(t, hash1, hash2, "違うSEEDのhash(byte)値が同じ")
 }
-
-func TestPWHash(t *testing.T) {
-	t.Setenv("PW_HASH_SEED", "sajdigsalp")
-
-	pw := "sahlpdcvls0re3a:c"
-
-	defaultHash := utils.NewHash(pw)
-
-	require.NotEqual(t, defaultHash.SHA256(), utils.PWHash(pw), "SEEDを追加してないパスワードのハッシュと同じになってしまっている")
-}

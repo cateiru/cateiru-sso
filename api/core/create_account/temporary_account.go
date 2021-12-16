@@ -142,9 +142,12 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 			"core/create_account/temporary_account.go", 143).Wrap()
 	}
 
+	hashedPW := secure.PWHash(form.Password)
+
 	user := models.UserMailPW{
 		Mail:     form.Mail,
-		Password: utils.PWHash(form.Password),
+		Password: hashedPW.Key,
+		Salt:     hashedPW.Salt,
 	}
 	clientCheckToken, err := createVerifyMail(ctx, db, user)
 	if err != nil {

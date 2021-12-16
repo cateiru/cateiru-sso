@@ -38,7 +38,8 @@ func TestAcceptSuccess(t *testing.T) {
 
 		UserMailPW: models.UserMailPW{
 			Mail:     "example@example.com",
-			Password: "password",
+			Password: []byte("password"),
+			Salt:     []byte(""),
 		},
 
 		Period: models.Period{
@@ -113,7 +114,8 @@ func TestAcceptNotVerify(t *testing.T) {
 
 		UserMailPW: models.UserMailPW{
 			Mail:     "example@example.com",
-			Password: "password",
+			Password: []byte("password"),
+			Salt:     []byte(""),
 		},
 
 		Period: models.Period{

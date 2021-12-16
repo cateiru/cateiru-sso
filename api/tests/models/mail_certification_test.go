@@ -38,7 +38,8 @@ func TestMailCertification(t *testing.T) {
 		ChangeMailMode:   false,
 		UserMailPW: models.UserMailPW{
 			Mail:     mail,
-			Password: "hoge",
+			Password: []byte("password"),
+			Salt:     []byte(""),
 		},
 		Period: models.Period{
 			CreateDate:   time.Now(),

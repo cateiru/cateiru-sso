@@ -31,7 +31,8 @@ func TestCertification(t *testing.T) {
 		OnetimePasswordBackups: nil,
 		UserMailPW: models.UserMailPW{
 			Mail:     mail,
-			Password: "hoge",
+			Password: []byte("password"),
+			Salt:     []byte(""),
 		},
 		UserId: models.UserId{
 			UserId: userId,

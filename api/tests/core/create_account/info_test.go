@@ -32,8 +32,9 @@ func TestInfo(t *testing.T) {
 			PeriodMinute: 30,
 		},
 		UserMailPW: models.UserMailPW{
-			Password: "password",
+			Password: []byte("password"),
 			Mail:     "example@example.com",
+			Salt:     []byte(""),
 		},
 	}
 	err = buffer.Add(ctx, db)

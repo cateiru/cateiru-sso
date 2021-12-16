@@ -1,6 +1,11 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/cateiru/cateiru-sso/api/core/me"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
+)
 
 // ユーザ情報を取得する
 func MeHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,4 +20,7 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 // ユーザ情報を取得する
 // cookieを見る
 func meGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := me.MeHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }

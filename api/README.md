@@ -25,12 +25,6 @@ ISSUER=
 # reCAPTCHAのsecret
 RECAPTCHA_SECRET=
 
-# パスワードのハッシュをするときのseed
-# このseedは一度デプロイしたら変更しません。変更した場合すべてのハッシュ化されたPWが検証できなくなります。
-# このSEEDとハッシュ化されたPWが外部に漏れた場合、パスワードが脆弱になる可能性があります。
-# （ハッシュ元のPWが脆弱な場合、全探索で検証される可能性）
-PW_HASH_SEED=
-
 # mail gunのAPI KEY
 # メール送信に使用します
 MAILGUN_API_KEY=

@@ -32,7 +32,8 @@ func TestBufferToken(t *testing.T) {
 		},
 		UserMailPW: models.UserMailPW{
 			Mail:     "example@example.com",
-			Password: "password",
+			Password: []byte("password"),
+			Salt:     []byte(""),
 		},
 	}
 

@@ -13,7 +13,8 @@ type UserId struct {
 // パスワードはハッシュ化する必要がある
 type UserMailPW struct {
 	Mail     string `datastore:"mail" json:"mail"`
-	Password string `datastore:"password" json:"password"`
+	Password []byte `datastore:"password" json:"password"`
+	Salt     []byte `datastore:"salt" json:"salt"`
 }
 
 // 認証テーブル

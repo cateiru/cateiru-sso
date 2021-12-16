@@ -64,7 +64,8 @@ func (c *DummyUser) AddUserCert(ctx context.Context, db *database.Database) (*mo
 
 		UserMailPW: models.UserMailPW{
 			Mail:     c.Mail,
-			Password: "passoword",
+			Password: []byte("password"),
+			Salt:     []byte(""),
 		},
 		UserId: models.UserId{
 			UserId: c.UserID,
