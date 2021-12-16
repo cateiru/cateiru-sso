@@ -124,6 +124,37 @@ func TestLogin(t *testing.T) {
 	entryR, err := models.GetRefreshToken(ctx, db, login.RefreshToken)
 	require.NoError(t, err)
 	require.Equal(t, entryR.UserId.UserId, userId)
+
+	loginHistories, err := models.GetAllLoginHistory(ctx, db, userId)
+	require.NoError(t, err)
+	require.Equal(t, len(loginHistories), 1)
+	require.Equal(t, loginHistories[0].IpAddress, ip)
+}
+
+// ログイン履歴が正しく残されているか
+func TestLoginHistory(t *testing.T) {
+	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
+	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	userId := utils.CreateID(30)
+	ip := "198.51.100.0"
+	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
+
+	err = common.SetLoginHistory(ctx, db, userId, ip, userAgent)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		loginHistories, err := models.GetAllLoginHistory(ctx, db, userId)
+		require.NoError(t, err)
+
+		return len(loginHistories) == 1 && loginHistories[0].IpAddress == ip
+	}, "ログイン履歴が格納できている")
 }
 
 // session-tokenのcookieからuser idを取得する
