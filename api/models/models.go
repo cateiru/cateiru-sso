@@ -68,19 +68,20 @@ type PWForget struct {
 	Period
 }
 
-// ワンタイムパスワード設定用
-type OnetimePassword struct {
+// ワンタイムパスワード設定 & ログイン時一時保存用
+//
+//	- パスワード設定
+//		OPTのトークンを発行した際に、そのトークンで生成したコードとこのidを送ることでOTPを設定できる。
+//	- ログイン時
+//		ログイン後、OTPが設定されている場合、このテーブルに格納し、Idをcookieに格納する。
+//		その後、OTPを入力してもらい検証することでログインする。
+type OnetimePasswordBuffer struct {
+	Id string `datastore:"id" json:"id"`
+
 	PublicKey string `datastore:"onetimePublicKey" json:"onetime_public_key"`
 	SecretKey string `datastore:"onetimeSecretKey" json:"onetime_secret_key"`
 
-	Period
-	UserId
-}
-
-// ログイン時、メアドとPWを入力後、ワンタイムパスワードが求められる場合のテーブル
-type OnetimePasswordValidate struct {
-	OnetimeToken          string `datastore:"onetimeToken" json:"onetime_token"`
-	OnetimePasswordSecret string `datastore:"onetimePasswordSecret" json:"onetime_password_secret"`
+	IsLogin bool `datastore:"isLogin" json:"is_login"`
 
 	Period
 	UserId
