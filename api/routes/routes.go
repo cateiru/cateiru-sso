@@ -30,8 +30,8 @@ func Routes(mux *http.ServeMux) *http.ServeMux {
 	mux.HandleFunc("/user/mail", handler.UserMailHandler)
 	mux.HandleFunc("/user/password", handler.UserPasswordHandler)
 	mux.HandleFunc("/user/password/forget", handler.UserPasswordForgetHandler)
-	mux.HandleFunc("/user/onetime", handler.UserOnetimeHandler)
-	mux.HandleFunc("/user/onetime/backup", handler.UserOnetimeBackupGetHandler)
+	mux.HandleFunc("/user/otp", handler.UserOnetimePWHandler)
+	mux.HandleFunc("/user/otp/backup", handler.UserOnetimePWBackupHandler)
 	mux.HandleFunc("/user/access", handler.UserAccessHandler)
 	mux.HandleFunc("/user/history", handler.UserHistoryHandler)
 

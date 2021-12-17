@@ -35,22 +35,22 @@ func UserPasswordForgetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ワンタイムパスワードの無効化、有効化
-func UserOnetimeHandler(w http.ResponseWriter, r *http.Request) {
+func UserOnetimePWHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		userOnetimePostHandler(w, r)
+		userOnetimePWPostHandler(w, r)
 	case http.MethodGet:
-		createOnetimeGetHandler(w, r)
+		createOnetimePWGetHandler(w, r)
 	default:
 		RootHandler(w, r)
 	}
 }
 
 // ワンタイムパスワードのバックアップコードを表示する
-func UserOnetimeBackupHandler(w http.ResponseWriter, r *http.Request) {
+func UserOnetimePWBackupHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		UserOnetimeBackupGetHandler(w, r)
+		UserOnetimePWBackupGetHandler(w, r)
 	default:
 		RootHandler(w, r)
 	}
@@ -102,15 +102,15 @@ func userPasswordForgetPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ワンタイムパスワードのトークンURLを取得する
-func createOnetimeGetHandler(w http.ResponseWriter, r *http.Request) {
+func createOnetimePWGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ワンタイムパスワードの無効化、有効化
-func userOnetimePostHandler(w http.ResponseWriter, r *http.Request) {
+func userOnetimePWPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ワンタイムパスワードのバックアップコードを返す
-func UserOnetimeBackupGetHandler(w http.ResponseWriter, r *http.Request) {
+func UserOnetimePWBackupGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ログインしているSSOを取得

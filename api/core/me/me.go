@@ -18,6 +18,7 @@ func MeHandler(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller("core/me/me.go", 16).Wrap()
 	}
+	defer db.Close()
 
 	userId, err := common.GetUserID(ctx, db, w, r)
 	if err != nil {
@@ -27,6 +28,11 @@ func MeHandler(w http.ResponseWriter, r *http.Request) error {
 	userInfo, err := models.GetUserDataByUserID(ctx, db, userId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller("core/me/me.go", 27).Wrap()
+	}
+
+	if userInfo == nil {
+		return status.NewBadRequestError(err).Caller(
+			"core/me/me.go", 35)
 	}
 
 	net.ResponseOK(w, userInfo)
