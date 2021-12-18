@@ -24,7 +24,7 @@ func GetUserDataByUserID(ctx context.Context, db *database.Database, userId stri
 }
 
 // TX modeで取得
-func GetUserDataTXByUserID(ctx context.Context, db *database.Transaction, userId string) (*User, error) {
+func GetUserDataTXByUserID(db *database.Transaction, userId string) (*User, error) {
 	key := database.CreateNameKey("User", userId)
 	var entry User
 

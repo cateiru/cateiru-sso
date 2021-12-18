@@ -90,7 +90,7 @@ func TestTXUser(t *testing.T) {
 		tx, err := database.NewTransaction(ctx, db)
 		require.NoError(t, err)
 
-		entry, err = models.GetUserDataTXByUserID(ctx, tx, userId)
+		entry, err = models.GetUserDataTXByUserID(tx, userId)
 		require.NoError(t, err)
 		require.NotNil(t, entry)
 
