@@ -11,6 +11,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/utils/secure"
 	"google.golang.org/api/iterator"
 )
 
@@ -80,4 +81,19 @@ func CheckExpired(entry *models.Period) bool {
 
 	// 有効期限より前に今の時間がある場合Falseを返す
 	return now.After(periodTime)
+}
+
+// OTPが正しいかをチェックします
+func CheckOTP(passcode string, secret string, backups []string) bool {
+	if secure.ValidateOnetimePassword(passcode, secret) {
+		return true
+	}
+
+	for _, backup := range backups {
+		if backup == passcode {
+			return true
+		}
+	}
+
+	return false
 }
