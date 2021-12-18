@@ -75,9 +75,13 @@ func OTPHandler(w http.ResponseWriter, r *http.Request) error {
 
 // OTPを設定します。
 func SetOTP(ctx context.Context, db *database.Database, userId string, id string, passcode string) (*SetOTPResponse, error) {
-	OTPBuffer, err := models.GetOTPBufferByID(ctx, db, userId)
+	OTPBuffer, err := models.GetOTPBufferByID(ctx, db, id)
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller("core/user/otp/operation.go", 54)
+	}
+	if OTPBuffer == nil {
+		return nil, status.NewBadRequestError(errors.New("entity not failed")).Caller(
+			"core/user/otp/operation.go", 84).Wrap()
 	}
 
 	// OTPを検証する
@@ -89,6 +93,10 @@ func SetOTP(ctx context.Context, db *database.Database, userId string, id string
 	userCert, err := models.GetCertificationByUserID(ctx, db, userId)
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller("core/user/otp/operation.go", 69)
+	}
+	if userCert == nil {
+		return nil, status.NewBadRequestError(errors.New("entity not failed")).Caller(
+			"core/user/otp/operation.go", 95).Wrap()
 	}
 
 	backups := []string{}
@@ -113,6 +121,10 @@ func DeleteOTP(ctx context.Context, db *database.Database, userId string, passco
 	userCert, err := models.GetCertificationByUserID(ctx, db, userId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller("core/user/otp/operation.go", 69)
+	}
+	if userCert == nil {
+		return status.NewBadRequestError(errors.New("entity not failed")).Caller(
+			"core/user/otp/operation.go", 95).Wrap()
 	}
 
 	// OTPを検証する

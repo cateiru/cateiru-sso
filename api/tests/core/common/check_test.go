@@ -12,9 +12,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils"
-	"github.com/cateiru/cateiru-sso/api/utils/secure"
 	goretry "github.com/cateiru/go-retry"
-	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
 )
 
@@ -159,18 +157,17 @@ func TestCheckExpired(t *testing.T) {
 func TestCheckOTP(t *testing.T) {
 	t.Setenv("ISSUER", "test_issuer")
 
-	w, err := secure.NewOnetimePassword("test")
+	dummy, err := tools.NewDummyUser().NewOTP()
+	require.NoError(t, err)
+	passcode, err := dummy.GenOTPCode()
 	require.NoError(t, err)
 
-	passcode, err := totp.GenerateCode(w.GetSecret(), time.Now().UTC())
-	require.NoError(t, err)
-
-	result := common.CheckOTP(passcode, w.GetSecret(), []string{})
+	result := common.CheckOTP(passcode, dummy.Otp.GetSecret(), []string{})
 	require.True(t, result)
 
 	failedPass := "239432"
 
-	result2 := common.CheckOTP(failedPass, w.GetSecret(), []string{})
+	result2 := common.CheckOTP(failedPass, dummy.Otp.GetSecret(), []string{})
 	require.False(t, result2)
 }
 

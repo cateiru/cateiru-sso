@@ -14,11 +14,13 @@ import (
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/cateiru/cateiru-sso/api/utils/secure"
+	"github.com/pquerna/otp/totp"
 )
 
 type DummyUser struct {
 	UserID string
 	Mail   string
+	Otp    *secure.OnetimePassword
 }
 
 func NewDummyUser() *DummyUser {
@@ -28,7 +30,24 @@ func NewDummyUser() *DummyUser {
 	return &DummyUser{
 		UserID: userID,
 		Mail:   mail,
+		Otp:    nil,
 	}
+}
+
+// OTPをセットする
+func (c *DummyUser) NewOTP() (*DummyUser, error) {
+
+	otp, err := secure.NewOnetimePassword("test")
+	if err != nil {
+		return nil, err
+	}
+	c.Otp = otp
+	return c, nil
+}
+
+// OTPのパスコードを生成する
+func (c *DummyUser) GenOTPCode() (string, error) {
+	return totp.GenerateCode(c.Otp.GetSecret(), time.Now().UTC())
 }
 
 // ユーザを追加する
@@ -60,6 +79,16 @@ func (c *DummyUser) AddUserInfo(ctx context.Context, db *database.Database) (*mo
 // ユーザの認証情報を追加する
 // (テスト用)
 func (c *DummyUser) AddUserCert(ctx context.Context, db *database.Database) (*models.Certification, error) {
+	otpSecret := ""
+	otpBackups := []string{}
+
+	// OTPが設定されている場合はセットする
+	if c.Otp != nil {
+		otpSecret = c.Otp.GetSecret()
+		for i := 0; 10 > i; i++ {
+			otpBackups = append(otpBackups, utils.CreateID(10))
+		}
+	}
 
 	password := "password"
 
@@ -68,10 +97,8 @@ func (c *DummyUser) AddUserCert(ctx context.Context, db *database.Database) (*mo
 	certification := &models.Certification{
 		AccountCreateDate: time.Now(),
 
-		// アカウント作成後はOTPは設定しない
-		// 設定ページから追加する
-		OnetimePasswordSecret:  "",
-		OnetimePasswordBackups: []string{},
+		OnetimePasswordSecret:  otpSecret,
+		OnetimePasswordBackups: otpBackups,
 
 		UserMailPW: models.UserMailPW{
 			Mail:     c.Mail,
