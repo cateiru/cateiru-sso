@@ -1,6 +1,11 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/cateiru/cateiru-sso/api/core/user/otp"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
+)
 
 // 自分のメールアドレスの操作
 func UserMailHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,10 +108,16 @@ func userPasswordForgetPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // ワンタイムパスワードのトークンURLを取得する
 func createOnetimePWGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := otp.GetOTPTokenURL(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // ワンタイムパスワードの無効化、有効化
 func userOnetimePWPostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := otp.OTPHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // ワンタイムパスワードのバックアップコードを返す
