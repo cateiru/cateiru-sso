@@ -52,14 +52,12 @@ type VerifyMailTemplate struct {
 func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 	// contents-type: application/json 以外では400エラーを返す
 	if !net.CheckContentType(r) {
-		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller(
-			"core/create_account/temporary_account.go", 56)
+		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller()
 	}
 
 	postForm := new(PostForm)
 	if err := net.GetJsonForm(w, r, postForm); err != nil {
-		status.NewBadRequestError(errors.New("parse not failed")).Caller(
-			"core/create_account/temporary_account.go", 62)
+		status.NewBadRequestError(errors.New("parse not failed")).Caller()
 	}
 
 	ip := net.GetIPAddress(r)
@@ -84,50 +82,42 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 	if utils.DEPLOY_MODE == "production" {
 		isOk, err := secure.NewReCaptcha().Validate(form.ReCHAPTCHA, ip)
 		if err != nil {
-			return "", status.NewInternalServerErrorError(err).Caller(
-				"core/create_account/temporary_account.go", 73).Wrap()
+			return "", status.NewInternalServerErrorError(err).Caller()
 		}
 		// reCHAPTCHAが認証できなかった場合、400を返す
 		if !isOk {
-			return "", status.NewBadRequestError(errors.New("reCHAPTCHA is failed")).Caller(
-				"core/create_account/temporary_account.go", 78).AddCode(net.BotError)
+			return "", status.NewBadRequestError(errors.New("reCHAPTCHA is failed")).Caller().AddCode(net.BotError)
 		}
 	}
 
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/temporary_account.go", 100).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
 	// IPアドレス、メールアドレスがブロックされているか確認
 	isBlocked, err := common.ChaeckBlock(ctx, db, ip, form.Mail)
 	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/temporary_account.go", 108).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 	if isBlocked {
-		return "", status.NewForbiddenError(errors.New("ip is blocked")).Caller(
-			"core/create_account/temporary_account.go", 112).AddCode(net.BlockedError).Wrap()
+		return "", status.NewForbiddenError(errors.New("ip is blocked")).Caller().AddCode(net.BlockedError)
 	}
 
 	// メールアドレスが既に存在するかチェック
 	isMailExist, err := common.CheckExistMail(ctx, db, form.Mail)
 	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/temporary_account.go", 119).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 	// メールアドレスがすでに存在している = そのメールアドレスを持ったアカウントが作られている場合、
 	// あたらにそのメールアドレスでアカウントを作成することはできないため、403エラーを返す
 	if isMailExist {
-		return "", status.NewForbiddenError(errors.New("email already exists")).Caller(
-			"core/create_account/temporary_account.go", 125).AddCode(net.ExistError).Wrap()
+		return "", status.NewForbiddenError(errors.New("email already exists")).Caller().AddCode(net.ExistError)
 	}
 	// Adminのメールアドレスは既に定義されており、ログインできるため弾く
 	if common.CheckAdminMail(form.Mail) {
-		return "", status.NewForbiddenError(errors.New("email is admin")).Caller(
-			"core/create_account/temporary_account.go", 130).AddCode(net.ExistError).Wrap()
+		return "", status.NewForbiddenError(errors.New("email is admin")).Caller().AddCode(net.ExistError)
 	}
 
 	// ログを保存する
@@ -138,8 +128,7 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 		TargetMail: form.Mail,
 	}
 	if err := log.Add(ctx, db); err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/temporary_account.go", 143).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	hashedPW := secure.PWHash(form.Password)
@@ -151,8 +140,7 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 	}
 	clientCheckToken, err := createVerifyMail(ctx, db, user)
 	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/temporary_account.go", 140).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	return clientCheckToken, nil

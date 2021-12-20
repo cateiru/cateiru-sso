@@ -50,7 +50,7 @@ func testResponseErrorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func testNotfoundErrorHandler(w http.ResponseWriter, r *http.Request) {
-	err := status.NewNotFoundError(errors.New("Dummy error")).Wrap()
+	err := status.NewNotFoundError(errors.New("Dummy error"))
 
 	net.ResponseError(w, err)
 }

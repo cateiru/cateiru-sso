@@ -23,13 +23,12 @@ func MailVerifyObserve(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 	// クエリパラメータがない場合は400を返す
 	if err != nil {
-		return status.NewBadRequestError(err).Caller("core/create_account/create_observe.go", 25).Wrap()
+		return status.NewBadRequestError(err).Caller()
 	}
 
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/temporary_account.go", 30).Wrap()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 

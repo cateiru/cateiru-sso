@@ -16,7 +16,7 @@ func MeHandler(w http.ResponseWriter, r *http.Request) error {
 
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller("core/me/me.go", 16).Wrap()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
@@ -27,12 +27,11 @@ func MeHandler(w http.ResponseWriter, r *http.Request) error {
 
 	userInfo, err := models.GetUserDataByUserID(ctx, db, userId)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller("core/me/me.go", 27).Wrap()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 
 	if userInfo == nil {
-		return status.NewBadRequestError(err).Caller(
-			"core/me/me.go", 35)
+		return status.NewBadRequestError(err).Caller()
 	}
 
 	net.ResponseOK(w, userInfo)

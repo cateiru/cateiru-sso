@@ -39,8 +39,7 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 		},
 	}
 	if err := session.Add(ctx, db); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 40).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	refresh := &models.RefreshInfo{
@@ -57,8 +56,7 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 		},
 	}
 	if err := refresh.Add(ctx, db); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 40).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	if err := SetLoginHistory(ctx, db, userId, ip, userAgent); err != nil {
@@ -76,8 +74,7 @@ func LoginByUserID(ctx context.Context, db *database.Database, userId string, ip
 func GetUserID(ctx context.Context, db *database.Database, w http.ResponseWriter, r *http.Request) (string, error) {
 	sessionToken, err := net.GetCookie(r, "session-token")
 	if err != nil {
-		return "", status.NewBadRequestError(err).Caller(
-			"core/create_account/info.go", 91)
+		return "", status.NewBadRequestError(err).Caller()
 	}
 
 	// session-tokenが存在しない場合、refresh-tokenからsession-tokenを作成する
@@ -87,8 +84,7 @@ func GetUserID(ctx context.Context, db *database.Database, w http.ResponseWriter
 
 	session, err := models.GetSessionToken(ctx, db, sessionToken)
 	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/login.go", 102).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// sessionTokenが見つからない場合、refresh-tokenを使用してsession-tokenの作成を試みます
@@ -110,8 +106,7 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 	refreshToken, err := net.GetCookie(r, "refresh-token")
 	if err != nil || len(refreshToken) == 0 {
 		// cookieが存在しない、valueが存在しない場合は403を返す
-		return "", status.NewForbiddenError(errors.New("cookie is not found")).Caller(
-			"core/create_account/info.go", 36)
+		return "", status.NewForbiddenError(errors.New("cookie is not found")).Caller()
 	}
 
 	newSessionToken := utils.CreateID(0)
@@ -122,14 +117,12 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 	for i := 0; 3 > i; i++ {
 		tx, err := database.NewTransaction(ctx, db)
 		if err != nil {
-			return "", status.NewInternalServerErrorError(err).Caller(
-				"core/common/login.go", 99).Wrap()
+			return "", status.NewInternalServerErrorError(err).Caller()
 		}
 
 		refresh, err = models.GetRefreshTokenTX(tx, refreshToken)
 		if err != nil {
-			return "", status.NewInternalServerErrorError(err).Caller(
-				"core/common/login.go", 104).Wrap()
+			return "", status.NewInternalServerErrorError(err).Caller()
 		}
 
 		// refreshtokenが存在しない場合は、トランザクションをロールバック、該当cookieを削除して403を返す
@@ -144,8 +137,7 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 				logging.Sugar.Errorf("core/common/login.go line: 121. %s", err.Error())
 			}
 
-			return "", status.NewForbiddenError(errors.New("refresh token is not exist")).Caller(
-				"core/common/login.go", 111).Wrap()
+			return "", status.NewForbiddenError(errors.New("refresh token is not exist")).Caller()
 		}
 
 		// refresh-tokenが有効期限切れの場合は、トランザクションをロールバック、該当cookieを削除して403を返す
@@ -160,22 +152,19 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 				logging.Sugar.Errorf("core/common/login.go line: 121. %s", err.Error())
 			}
 
-			return "", status.NewForbiddenError(errors.New("Expired")).Caller(
-				"core/common/login.go", 111).AddCode(net.TimeOutError).Wrap()
+			return "", status.NewForbiddenError(errors.New("Expired")).Caller()
 		}
 
 		// session-tokenを削除する（ある場合は）
 		err = models.DeleteSessionTokenTX(tx, refresh.SessionToken)
 		if err != nil {
-			return "", status.NewInternalServerErrorError(err).Caller(
-				"core/common/login.go", 131).Wrap()
+			return "", status.NewInternalServerErrorError(err).Caller()
 		}
 
 		// refresh-tokenを削除する
 		err = models.DeleteRefreshTokenTX(tx, refresh.RefreshToken)
 		if err != nil {
-			return "", status.NewInternalServerErrorError(err).Caller(
-				"core/common/login.go", 131).Wrap()
+			return "", status.NewInternalServerErrorError(err).Caller()
 		}
 
 		// 新しいsession-tokenを作成する
@@ -190,8 +179,7 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 			UserId: refresh.UserId,
 		}
 		if err := session.AddTX(tx); err != nil {
-			return "", status.NewInternalServerErrorError(err).Caller(
-				"core/common/login.go", 131).Wrap()
+			return "", status.NewInternalServerErrorError(err).Caller()
 		}
 
 		// 新しいrefresh-tokenを作成する
@@ -207,8 +195,7 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 			UserId: refresh.UserId,
 		}
 		if err := newRefresh.AddTX(tx); err != nil {
-			return "", status.NewInternalServerErrorError(err).Caller(
-				"core/common/login.go", 131).Wrap()
+			return "", status.NewInternalServerErrorError(err).Caller()
 		}
 
 		// 変更をコミットする
@@ -216,8 +203,7 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 		// コミットのエラーがErrConcurrentTransactionの場合はトライする
 		// それ以外のエラーはthrowする
 		if err != nil && err != datastore.ErrConcurrentTransaction {
-			return "", status.NewInternalServerErrorError(err).Caller(
-				"core/common/login.go", 131).Wrap()
+			return "", status.NewInternalServerErrorError(err).Caller()
 		}
 
 		// 正常にコミットできればリトライループから抜ける

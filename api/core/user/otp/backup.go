@@ -23,7 +23,7 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) error {
 
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller("core/user/otp/backup.go", 16).Wrap()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
@@ -48,12 +48,12 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) error {
 func GetBackupcodes(ctx context.Context, db *database.Database, userId string) ([]string, error) {
 	userCert, err := models.GetCertificationByUserID(ctx, db, userId)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller("core/user/otp/backup.go", 35).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// OTPが設定されていない場合は400を返す
 	if len(userCert.OnetimePasswordBackups) == 0 {
-		return nil, status.NewBadRequestError(errors.New("otp is not settings")).Caller("core/user/otp/backup.go", 41)
+		return nil, status.NewBadRequestError(errors.New("otp is not settings")).Caller()
 	}
 
 	return userCert.OnetimePasswordBackups, nil

@@ -12,13 +12,11 @@ import (
 func GetMailByUserID(ctx context.Context, db *database.Database, userID string) (string, error) {
 	userInfo, err := models.GetUserDataByUserID(ctx, db, userID)
 	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/common/get.go", 15).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	if userInfo == nil {
-		return "", status.NewBadRequestError(err).Caller(
-			"core/common/get.go", 20)
+		return "", status.NewBadRequestError(err).Caller()
 	}
 
 	return userInfo.Mail, nil

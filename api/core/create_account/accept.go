@@ -22,7 +22,7 @@ func CreateAcceptHandler(w http.ResponseWriter, r *http.Request) error {
 	clientCheckToken, err := net.GetQuery(r, "token")
 	// クエリがない場合、tokenが空の場合は400を返す
 	if err != nil || len(clientCheckToken) == 0 {
-		return status.NewBadRequestError(err).Caller("core/create_account/accept.go", 17).Wrap()
+		return status.NewBadRequestError(err).Caller()
 	}
 
 	ctx := r.Context()
@@ -48,32 +48,28 @@ func CreateAcceptHandler(w http.ResponseWriter, r *http.Request) error {
 func AcceptVerify(ctx context.Context, clientCheckToken string) (string, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/accept.go", 100).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
 	certificationEntry, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
 	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/accept.go", 100).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// entryがない場合は400を返す
 	if certificationEntry == nil {
-		return "", status.NewBadRequestError(errors.New("deleted entry")).Caller("core/create_account/accept.go", 98).Wrap()
+		return "", status.NewBadRequestError(errors.New("deleted entry")).Caller()
 	}
 
 	// 認証済みではない場合、403を返す
 	if !certificationEntry.Verify {
-		return "", status.NewForbiddenError(errors.New("not verify")).Caller(
-			"core/create_account/accept.go", 103).Wrap()
+		return "", status.NewForbiddenError(errors.New("not verify")).Caller()
 	}
 
 	// 有効期限が切れている場合は、400を返す
 	if common.CheckExpired(&certificationEntry.Period) {
-		return "", status.NewBadRequestError(errors.New("Expired")).Caller(
-			"core/create_account/accept.go", 67).AddCode(net.TimeOutError).Wrap()
+		return "", status.NewBadRequestError(errors.New("Expired")).Caller().AddCode(net.TimeOutError)
 	}
 
 	// bufferTokenを設定する
@@ -87,15 +83,13 @@ func AcceptVerify(ctx context.Context, clientCheckToken string) (string, error) 
 		UserMailPW: certificationEntry.UserMailPW,
 	}
 	if err := buffer.Add(ctx, db); err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/accept.go", 100).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// 元のメール認証用Entryは削除する
 	// そのため、このAPIは一回のみのアクセスとなります
 	if err := models.DeleteMailCertification(ctx, db, certificationEntry.MailToken); err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/accept.go", 133).Wrap()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	return bufferToken, nil

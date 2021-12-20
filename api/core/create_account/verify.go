@@ -36,15 +36,13 @@ type VerifyResponse struct {
 func CreateVerifyHandler(w http.ResponseWriter, r *http.Request) error {
 	// contents-type: application/json 以外では400エラーを返す
 	if !net.CheckContentType(r) {
-		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller(
-			"core/create_account/verify.go", 26)
+		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller()
 	}
 
 	postForm := new(VerifyRequestForm)
 	err := net.GetJsonForm(w, r, postForm)
 	if err != nil {
-		return status.NewBadRequestError(errors.New("parse not failed")).Caller(
-			"core/create_account/verify.go", 33)
+		return status.NewBadRequestError(errors.New("parse not failed")).Caller()
 	}
 
 	ctx := r.Context()
@@ -77,32 +75,28 @@ func CreateVerifyHandler(w http.ResponseWriter, r *http.Request) error {
 func CreateVerify(ctx context.Context, mailToken string) (*VerifyResponse, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/verify.go", 100).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
 	certificationEntry, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/verify.go", 100).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// 既に削除されている場合、400を返す
 	if certificationEntry == nil {
-		return nil, status.NewBadRequestError(errors.New("deleted entry")).Caller("core/create_account/verify.go", 98).Wrap()
+		return nil, status.NewBadRequestError(errors.New("deleted entry")).Caller()
 	}
 
 	// 既に認証済みの場合、400を返す
 	if certificationEntry.Verify {
-		return nil, status.NewBadRequestError(errors.New("verified")).Caller(
-			"core/create_account/verify.go", 103).AddCode(net.AlreadyDone).Wrap()
+		return nil, status.NewBadRequestError(errors.New("verified")).Caller().AddCode(net.AlreadyDone)
 	}
 
 	// 有効期限が切れている場合は、400を返す
 	if common.CheckExpired(&certificationEntry.Period) {
-		return nil, status.NewBadRequestError(errors.New("Expired")).Caller(
-			"core/create_account/verify.go", 67).AddCode(net.TimeOutError).Wrap()
+		return nil, status.NewBadRequestError(errors.New("Expired")).Caller().AddCode(net.TimeOutError)
 	}
 
 	var bufferToken string
@@ -119,21 +113,18 @@ func CreateVerify(ctx context.Context, mailToken string) (*VerifyResponse, error
 			UserMailPW: certificationEntry.UserMailPW,
 		}
 		if err := buffer.Add(ctx, db); err != nil {
-			return nil, status.NewInternalServerErrorError(err).Caller(
-				"core/create_account/verify.go", 100).Wrap()
+			return nil, status.NewInternalServerErrorError(err).Caller()
 		}
 
 		if err := models.DeleteMailCertification(ctx, db, mailToken); err != nil {
-			return nil, status.NewInternalServerErrorError(err).Caller(
-				"core/create_account/verify.go", 133).Wrap()
+			return nil, status.NewInternalServerErrorError(err).Caller()
 		}
 
 	} else {
 		// 認証: trueにする
 		certificationEntry.Verify = true
 		if err := certificationEntry.Add(ctx, db); err != nil {
-			return nil, status.NewInternalServerErrorError(err).Caller(
-				"core/create_account/verify.go", 100).Wrap()
+			return nil, status.NewInternalServerErrorError(err).Caller()
 		}
 	}
 

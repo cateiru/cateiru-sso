@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	cloud.google.com/go/datastore v1.6.0
-	github.com/cateiru/go-http-error v1.2.0
+	github.com/cateiru/go-http-error v1.3.0
 	github.com/google/uuid v1.3.0
 	github.com/mailgun/mailgun-go v2.0.0+incompatible
 	github.com/pquerna/otp v1.3.0

@@ -27,22 +27,19 @@ type InfoRequestForm struct {
 func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 	// contents-type: application/json 以外では400エラーを返す
 	if !net.CheckContentType(r) {
-		return status.NewBadRequestError(errors.New("core/create_account/info.go")).Caller(
-			"core/create_account/temporary_account.go", 56)
+		return status.NewBadRequestError(errors.New("core/create_account/info.go")).Caller()
 	}
 
 	var userData InfoRequestForm
 	err := net.GetJsonForm(w, r, &userData)
 	if err != nil {
-		return status.NewBadRequestError(errors.New("parse not failed")).Caller(
-			"core/create_account/info.go", 62)
+		return status.NewBadRequestError(errors.New("parse not failed")).Caller()
 	}
 
 	bufferToken, err := net.GetCookie(r, "buffer-token")
 	if err != nil || len(bufferToken) == 0 {
 		// cookieが存在しない、valueが存在しない場合は403を返す
-		return status.NewForbiddenError(errors.New("cookie is not found")).Caller(
-			"core/create_account/info.go", 36)
+		return status.NewForbiddenError(errors.New("cookie is not found")).Caller()
 	}
 
 	ip := net.GetIPAddress(r)
@@ -67,27 +64,23 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestForm, ip string, userAgent string) (*common.LoginTokens, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/info.go", 100).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
 	buffer, err := models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/info.go", 100).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// bufferのentryがなかった場合、400を返す
 	if buffer == nil {
-		return nil, status.NewBadRequestError(errors.New("buffer is not exist")).Caller(
-			"core/create_account/info.go", 69)
+		return nil, status.NewBadRequestError(errors.New("buffer is not exist")).Caller()
 	}
 
 	// 有効期限が切れている場合は、400を返す
 	if common.CheckExpired(&buffer.Period) {
-		return nil, status.NewBadRequestError(errors.New("expired")).Caller(
-			"core/create_account/verify.go", 67).AddCode(net.TimeOutError).Wrap()
+		return nil, status.NewBadRequestError(errors.New("expired")).Caller().AddCode(net.TimeOutError)
 	}
 
 	userId := utils.CreateID(30)
@@ -107,8 +100,7 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 		},
 	}
 	if err = certification.Add(ctx, db); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/info.go", 100).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// ユーザ情報追加
@@ -130,14 +122,12 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 	}
 
 	if err = userInfo.Add(ctx, db); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/info.go", 100).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// CreateAccontBufferは削除する
 	if err := models.DeleteCreateAccountBuffer(ctx, db, buffer.BufferToken); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller(
-			"core/create_account/info.go", 107).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	return common.LoginByUserID(ctx, db, userId, ip, userAgent)

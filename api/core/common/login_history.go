@@ -30,8 +30,7 @@ type UserAgent struct {
 func SetLoginHistory(ctx context.Context, db *database.Database, userId string, ip string, userAgent string) error {
 	userAgentInfo, err := UserAgentToJson(userAgent)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller(
-			"core/common/login_history.go", 34).Wrap()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// ログイン履歴を取る
@@ -47,8 +46,7 @@ func SetLoginHistory(ctx context.Context, db *database.Database, userId string, 
 		},
 	}
 	if err := history.Add(ctx, db); err != nil {
-		return status.NewInternalServerErrorError(err).Caller(
-			"core/common/login_history.go", 510).Wrap()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 
 	return nil

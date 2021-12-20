@@ -25,7 +25,7 @@ func GetOTPTokenURL(w http.ResponseWriter, r *http.Request) error {
 
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller("core/user/otp/create.go", 16).Wrap()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
@@ -47,12 +47,12 @@ func GetOTPTokenURL(w http.ResponseWriter, r *http.Request) error {
 func GenerateOTPToken(ctx context.Context, db *database.Database, userId string) (*GetOTPTokenResponse, error) {
 	mail, err := common.GetMailByUserID(ctx, db, userId)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller("core/user/otp/create.go", 47).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	otp, err := secure.NewOnetimePassword(mail)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller("core/user/otp/create.go", 52).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	id := utils.CreateID(0)
@@ -78,7 +78,7 @@ func GenerateOTPToken(ctx context.Context, db *database.Database, userId string)
 	}
 
 	if err := buffer.Add(ctx, db); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller("core/user/otp/create.go", 80).Wrap()
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	return &GetOTPTokenResponse{
