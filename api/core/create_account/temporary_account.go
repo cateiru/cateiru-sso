@@ -57,7 +57,7 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 
 	postForm := new(PostForm)
 	if err := net.GetJsonForm(w, r, postForm); err != nil {
-		status.NewBadRequestError(errors.New("parse not failed")).Caller()
+		status.NewBadRequestError(errors.New("parse failed")).Caller()
 	}
 
 	ip := net.GetIPAddress(r)

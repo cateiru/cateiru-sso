@@ -53,7 +53,7 @@ func GetBackupcodes(ctx context.Context, db *database.Database, userId string) (
 
 	// OTPが設定されていない場合は400を返す
 	if len(userCert.OnetimePasswordBackups) == 0 {
-		return nil, status.NewBadRequestError(errors.New("otp is not settings")).Caller()
+		return nil, status.NewBadRequestError(errors.New("otp is not set")).Caller()
 	}
 
 	return userCert.OnetimePasswordBackups, nil

@@ -44,14 +44,14 @@ func OTPHandler(w http.ResponseWriter, r *http.Request) error {
 	var request OTPRequest
 
 	if err := net.GetJsonForm(w, r, &request); err != nil {
-		return status.NewBadRequestError(errors.New("parse not failed")).Caller()
+		return status.NewBadRequestError(errors.New("parse failed")).Caller()
 	}
 
 	switch request.Id {
 	case "enable":
 		// formにidがない場合400を返す
 		if len(request.Id) == 0 {
-			return status.NewBadRequestError(errors.New("parse not failed")).Caller()
+			return status.NewBadRequestError(errors.New("parse failed")).Caller()
 		}
 		backups, err := SetOTP(ctx, db, userId, request.Id, request.Passcode)
 		if err != nil {
@@ -65,7 +65,7 @@ func OTPHandler(w http.ResponseWriter, r *http.Request) error {
 		}
 		return nil
 	default:
-		return status.NewBadRequestError(errors.New("parse not failed")).Caller()
+		return status.NewBadRequestError(errors.New("parse failed")).Caller()
 	}
 }
 
@@ -76,13 +76,18 @@ func SetOTP(ctx context.Context, db *database.Database, userId string, id string
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 	if OTPBuffer == nil {
-		return nil, status.NewBadRequestError(errors.New("entity not failed")).Caller()
+		return nil, status.NewBadRequestError(errors.New("entity not find")).Caller()
+	}
+
+	// 有効期限がきれている場合400を返す
+	if common.CheckExpired(&OTPBuffer.Period) {
+		return nil, status.NewBadRequestError(errors.New("Expired")).Caller().AddCode(net.TimeOutError)
 	}
 
 	// OTPを検証する
 	// 検証が失敗した場合403を返す
 	if !common.CheckOTP(passcode, nil, &OTPBuffer.SecretKey) {
-		return nil, status.NewForbiddenError(errors.New("otp is not validated")).Caller()
+		return nil, status.NewForbiddenError(errors.New("otp is failed validate")).Caller()
 	}
 
 	userCert, err := models.GetCertificationByUserID(ctx, db, userId)
@@ -90,7 +95,7 @@ func SetOTP(ctx context.Context, db *database.Database, userId string, id string
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 	if userCert == nil {
-		return nil, status.NewBadRequestError(errors.New("entity not failed")).Caller()
+		return nil, status.NewBadRequestError(errors.New("entity not find")).Caller()
 	}
 
 	backups := []string{}
@@ -117,13 +122,13 @@ func DeleteOTP(ctx context.Context, db *database.Database, userId string, passco
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 	if userCert == nil {
-		return status.NewBadRequestError(errors.New("entity not failed")).Caller()
+		return status.NewBadRequestError(errors.New("entity not find")).Caller()
 	}
 
 	// OTPを検証する
 	// 検証が失敗した場合403を返す
 	if !common.CheckOTP(passcode, userCert, nil) {
-		return status.NewForbiddenError(errors.New("otp is not validated")).Caller()
+		return status.NewForbiddenError(errors.New("otp is failed validate")).Caller()
 	}
 
 	userCert.OnetimePasswordBackups = []string{}

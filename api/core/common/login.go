@@ -106,7 +106,7 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 	refreshToken, err := net.GetCookie(r, "refresh-token")
 	if err != nil || len(refreshToken) == 0 {
 		// cookieが存在しない、valueが存在しない場合は403を返す
-		return "", status.NewForbiddenError(errors.New("cookie is not found")).Caller()
+		return "", status.NewForbiddenError(errors.New("cookie is not find")).Caller()
 	}
 
 	newSessionToken := utils.CreateID(0)

@@ -42,7 +42,7 @@ func CreateVerifyHandler(w http.ResponseWriter, r *http.Request) error {
 	postForm := new(VerifyRequestForm)
 	err := net.GetJsonForm(w, r, postForm)
 	if err != nil {
-		return status.NewBadRequestError(errors.New("parse not failed")).Caller()
+		return status.NewBadRequestError(errors.New("parse not find")).Caller()
 	}
 
 	ctx := r.Context()
