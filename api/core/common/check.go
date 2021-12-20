@@ -84,13 +84,20 @@ func CheckExpired(entry *models.Period) bool {
 }
 
 // OTPが正しいかをチェックします
-func CheckOTP(passcode string, secret string, backups []string) bool {
-	if secure.ValidateOnetimePassword(passcode, secret) {
+func CheckOTP(passcode string, cert *models.Certification, secret *string) bool {
+	if cert == nil {
+		return secure.ValidateOnetimePassword(passcode, *secret)
+	}
+
+	if secure.ValidateOnetimePassword(passcode, cert.OnetimePasswordSecret) {
 		return true
 	}
 
-	for _, backup := range backups {
+	for index, backup := range cert.OnetimePasswordBackups {
 		if backup == passcode {
+			// バックアップコードは1回使用したら使えなくなる
+			cert.OnetimePasswordBackups = append(
+				cert.OnetimePasswordBackups[:index], cert.OnetimePasswordBackups[index+1:]...)
 			return true
 		}
 	}

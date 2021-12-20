@@ -161,24 +161,30 @@ func TestCheckOTP(t *testing.T) {
 	require.NoError(t, err)
 	passcode, err := dummy.GenOTPCode()
 	require.NoError(t, err)
+	secret := dummy.Otp.GetSecret()
 
-	result := common.CheckOTP(passcode, dummy.Otp.GetSecret(), []string{})
+	result := common.CheckOTP(passcode, nil, &secret)
 	require.True(t, result)
 
 	failedPass := "239432"
 
-	result2 := common.CheckOTP(failedPass, dummy.Otp.GetSecret(), []string{})
+	result2 := common.CheckOTP(failedPass, nil, &secret)
 	require.False(t, result2)
 }
 
 func TestCheckOTPBackups(t *testing.T) {
 	passcode := "hogehoge"
 
-	result := common.CheckOTP(passcode, "hogehogeaaaa", []string{passcode})
+	cert := models.Certification{
+		OnetimePasswordSecret:  "ghofaw",
+		OnetimePasswordBackups: []string{passcode},
+	}
+
+	result := common.CheckOTP(passcode, &cert, nil)
 	require.True(t, result)
 
 	failedPass := "239432"
 
-	result2 := common.CheckOTP(failedPass, "hogehogeaaaa", []string{})
+	result2 := common.CheckOTP(failedPass, &cert, nil)
 	require.False(t, result2)
 }
