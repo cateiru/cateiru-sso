@@ -27,6 +27,7 @@ const (
 	BotError              // Bot判定したためエラー
 	TimeOutError          // 時間切れ
 	AlreadyDone           // 既に認証済み
+	AccountNoExist        // アカウント無い
 )
 
 type AbstractResponse struct {

@@ -78,8 +78,10 @@ type PWForget struct {
 type OnetimePasswordBuffer struct {
 	Id string `datastore:"id" json:"id"`
 
-	PublicKey string `datastore:"onetimePublicKey" json:"onetime_public_key"`
+	PublicKey string `datastore:"onetimePublicKey,omitempty" json:"onetime_public_key"`
 	SecretKey string `datastore:"onetimeSecretKey" json:"onetime_secret_key"`
+
+	Backups []string `datastore:"onetimeBackups,omitempty" json:"onetime_backups"`
 
 	IsLogin bool `datastore:"isLogin" json:"is_login"`
 
