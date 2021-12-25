@@ -55,7 +55,7 @@ func UserOnetimePWHandler(w http.ResponseWriter, r *http.Request) {
 func UserOnetimePWBackupHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		UserOnetimePWBackupGetHandler(w, r)
+		userOnetimePWBackupGetHandler(w, r)
 	default:
 		RootHandler(w, r)
 	}
@@ -121,7 +121,10 @@ func userOnetimePWPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ワンタイムパスワードのバックアップコードを返す
-func UserOnetimePWBackupGetHandler(w http.ResponseWriter, r *http.Request) {
+func userOnetimePWBackupGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := otp.BackupHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // ログインしているSSOを取得

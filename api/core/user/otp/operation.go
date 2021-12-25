@@ -47,7 +47,7 @@ func OTPHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(errors.New("parse failed")).Caller()
 	}
 
-	switch request.Id {
+	switch request.Type {
 	case "enable":
 		// formにidがない場合400を返す
 		if len(request.Id) == 0 {
