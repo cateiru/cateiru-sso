@@ -127,6 +127,8 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 			SecretKey: cert.OnetimePasswordSecret,
 			Backups:   cert.OnetimePasswordBackups,
 
+			IsLogin: true,
+
 			Period: models.Period{
 				CreateDate:   time.Now(),
 				PeriodMinute: 10,
