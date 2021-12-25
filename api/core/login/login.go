@@ -123,10 +123,7 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 	if len(cert.OnetimePasswordSecret) != 0 {
 		id := utils.CreateID(0)
 		otpBuffer := &models.OnetimePasswordBuffer{
-			Id:        id,
-			SecretKey: cert.OnetimePasswordSecret,
-			Backups:   cert.OnetimePasswordBackups,
-
+			Id:      id,
 			IsLogin: true,
 
 			Period: models.Period{

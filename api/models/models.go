@@ -81,8 +81,6 @@ type OnetimePasswordBuffer struct {
 	PublicKey string `datastore:"onetimePublicKey,omitempty" json:"onetime_public_key"`
 	SecretKey string `datastore:"onetimeSecretKey" json:"onetime_secret_key"`
 
-	Backups []string `datastore:"onetimeBackups,omitempty" json:"onetime_backups"`
-
 	IsLogin bool `datastore:"isLogin" json:"is_login"`
 
 	Period

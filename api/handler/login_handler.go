@@ -46,6 +46,9 @@ func loginPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // ワンタイムパスワードを入力（必要な場合）
 func loginOnetimePostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := login.OTPLoginHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // sso_public_keyを送信してトークンを作成する

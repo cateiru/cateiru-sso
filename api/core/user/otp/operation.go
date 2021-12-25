@@ -86,7 +86,7 @@ func SetOTP(ctx context.Context, db *database.Database, userId string, id string
 
 	// OTPを検証する
 	// 検証が失敗した場合403を返す
-	if !common.CheckOTP(passcode, nil, &OTPBuffer.SecretKey) {
+	if find, _ := common.CheckOTP(passcode, nil, &OTPBuffer.SecretKey); !find {
 		return nil, status.NewForbiddenError(errors.New("otp is failed validate")).Caller()
 	}
 
@@ -127,7 +127,7 @@ func DeleteOTP(ctx context.Context, db *database.Database, userId string, passco
 
 	// OTPを検証する
 	// 検証が失敗した場合403を返す
-	if !common.CheckOTP(passcode, userCert, nil) {
+	if find, _ := common.CheckOTP(passcode, userCert, nil); !find {
 		return status.NewForbiddenError(errors.New("otp is failed validate")).Caller()
 	}
 
