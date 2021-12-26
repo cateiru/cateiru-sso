@@ -17,8 +17,9 @@ import (
 )
 
 type RequestFrom struct {
-	Mail     string `json:"mail"`
-	Password string `json:"password"`
+	Mail       string `json:"mail"`
+	Password   string `json:"password"`
+	ReCHAPTCHA string `json:"re_chaptcha"`
 }
 
 type Response struct {
@@ -34,6 +35,11 @@ type LoginState struct {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) error {
+	// contents-type: application/json 以外では400エラーを返す
+	if !net.CheckContentType(r) {
+		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller()
+	}
+
 	ctx := r.Context()
 
 	var request RequestFrom
@@ -83,6 +89,18 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 //
 // TODO: admin userの設定
 func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) (*LoginState, error) {
+	// reCHAPTCHA
+	if utils.DEPLOY_MODE == "production" {
+		isOk, err := secure.NewReCaptcha().Validate(form.ReCHAPTCHA, ip)
+		if err != nil {
+			return nil, status.NewInternalServerErrorError(err).Caller()
+		}
+		// reCHAPTCHAが認証できなかった場合、400を返す
+		if !isOk {
+			return nil, status.NewBadRequestError(errors.New("reCHAPTCHA is failed")).Caller().AddCode(net.BotError)
+		}
+	}
+
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller()
