@@ -2,9 +2,9 @@ package logout
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/go-http-error/httperror/status"
@@ -19,18 +19,17 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer db.Close()
 
-	userId, err := common.GetUserID(ctx, db, w, r)
+	// session-tokenとrefresh-tokenのcookieとDBを削除する
+	// (logoutと同じ処理)
+	userId, err := Logout(ctx, db, w, r)
 	if err != nil {
 		return err
 	}
 
-	if err := Delete(ctx, db, userId); err != nil {
-		return err
+	if len(userId) != 0 {
+		return Delete(ctx, db, userId)
 	}
-
-	// session-tokenとrefresh-tokenのcookieとDBを削除する
-	// (logoutと同じ処理)
-	return Logout(ctx, db, w, r)
+	return status.NewInternalServerErrorError(errors.New("no set userID")).Caller()
 }
 
 // アカウントを削除する
