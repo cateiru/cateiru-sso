@@ -2,7 +2,6 @@ package otp
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"time"
 
@@ -22,11 +21,6 @@ type GetOTPTokenResponse struct {
 
 // OPTのトークンURLを取得する
 func GetOTPTokenURL(w http.ResponseWriter, r *http.Request) error {
-	// contents-type: application/json 以外では400エラーを返す
-	if !net.CheckContentType(r) {
-		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller()
-	}
-
 	ctx := r.Context()
 
 	db, err := database.NewDatabase(ctx)
