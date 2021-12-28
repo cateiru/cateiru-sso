@@ -44,11 +44,16 @@ func GetCertificationByUserID(ctx context.Context, db *database.Database, userId
 	return &entry, nil
 }
 
+func DeleteCertificationByUserId(ctx context.Context, db *database.Database, userId string) error {
+	key := database.CreateNameKey("Certification", userId)
+	return db.Delete(ctx, key)
+}
+
 // certificationに要素を追加する
 func (c *Certification) Add(ctx context.Context, db *database.Database) error {
 
-	// メールアドレスをkeyにする
-	key := database.CreateNameKey("Certification", c.Mail)
+	// ユーザIDをkeyにする
+	key := database.CreateNameKey("Certification", c.UserId.UserId)
 
 	return db.Put(ctx, key, c)
 }

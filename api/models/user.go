@@ -42,6 +42,12 @@ func GetUserDataTXByUserID(db *database.Transaction, userId string) (*User, erro
 	return &entry, nil
 }
 
+// ユーザ情報を削除
+func DeleteUserDataByUserID(ctx context.Context, db *database.Database, userId string) error {
+	key := database.CreateNameKey("User", userId)
+	return db.Delete(ctx, key)
+}
+
 func (c *User) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("User", c.UserId.UserId)
 	return db.Put(ctx, key, c)

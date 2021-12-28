@@ -7,6 +7,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
@@ -68,4 +69,39 @@ func TestCertification(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, result, "user idで探したけど要素がなかった")
 
+}
+
+func TestDeleteCert(t *testing.T) {
+	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
+	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser()
+
+	_, err = dummy.AddUserCert(ctx, db)
+	require.NoError(t, err)
+
+	// 実際に格納されているか確認する
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetCertificationByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return entity != nil
+	}, "格納された")
+
+	// 削除する
+	err = models.DeleteCertificationByUserId(ctx, db, dummy.UserID)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetCertificationByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return entity == nil
+	}, "削除された")
 }
