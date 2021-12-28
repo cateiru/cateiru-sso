@@ -1,6 +1,11 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/cateiru/cateiru-sso/api/core/logout"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
+)
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -15,8 +20,14 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 // ログアウト
 func logoutGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := logout.LogoutHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // アカウント削除
 func logoutDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	if err := logout.DeleteHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
