@@ -85,6 +85,11 @@ func DeleteRefreshTokenTX(tx *database.Transaction, refreshToken string) error {
 	return tx.Delete(key)
 }
 
+func DeleteRefreshToken(ctx context.Context, db *database.Database, refreshToken string) error {
+	key := database.CreateNameKey("RefreshInfo", refreshToken)
+	return db.Delete(ctx, key)
+}
+
 func (c *RefreshInfo) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("RefreshInfo", c.RefreshToken)
 	return db.Put(ctx, key, c)

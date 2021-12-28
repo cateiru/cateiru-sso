@@ -19,6 +19,19 @@ func GetAllLoginHistory(ctx context.Context, db *database.Database, userId strin
 	return entries, nil
 }
 
+// ログインログを削除する
+func DeleteAllLoginHistories(ctx context.Context, db *database.Database, userId string) error {
+	query := datastore.NewQuery("LoginHistory").Filter("userId =", userId)
+	var entries []LoginHistory
+
+	keys, err := db.GetAll(ctx, query, &entries)
+	if err != nil {
+		return err
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 func (c *LoginHistory) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("LoginHistory", c.AccessId)
 	return db.Put(ctx, key, c)

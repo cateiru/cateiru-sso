@@ -66,6 +66,11 @@ func DeleteSessionTokenTX(tx *database.Transaction, sessionToken string) error {
 	return tx.Delete(key)
 }
 
+func DeleteSessionToken(ctx context.Context, db *database.Database, sessionToken string) error {
+	key := database.CreateNameKey("SessionInfo", sessionToken)
+	return db.Delete(ctx, key)
+}
+
 func (c *SessionInfo) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("SessionInfo", c.SessionToken)
 	return db.Put(ctx, key, c)

@@ -59,6 +59,16 @@ func TestSessionToken(t *testing.T) {
 	require.Equal(t, len(entries), 1)
 
 	require.Equal(t, entries[0].SessionToken, sessionToken)
+
+	err = models.DeleteSessionToken(ctx, db, sessionToken)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetSessionToken(ctx, db, sessionToken)
+		require.NoError(t, err)
+
+		return entity == nil
+	}, "削除されている")
 }
 
 func TestSessionTX(t *testing.T) {

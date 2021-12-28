@@ -66,6 +66,16 @@ func TestRefreshToken(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, entry)
 	require.Equal(t, entry.SessionToken, sessionToken)
+
+	err = models.DeleteRefreshToken(ctx, db, refreshToken)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetRefreshToken(ctx, db, refreshToken)
+		require.NoError(t, err)
+
+		return entity == nil
+	}, "削除されている")
 }
 
 func TestRefreshTokenTX(t *testing.T) {
