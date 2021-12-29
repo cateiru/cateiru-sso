@@ -4,13 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
+	"net/url"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,12 +39,27 @@ func TestGetMail(t *testing.T) {
 	dummy := tools.NewDummyUser()
 	_, err = dummy.AddUserInfo(ctx, db)
 	require.NoError(t, err)
+	session, refresh, err := dummy.AddLoginToken(ctx, db, time.Now())
+	require.NoError(t, err)
 
 	app := getMailServer()
 	server := httptest.NewServer(app)
 	defer server.Close()
 
-	resp, err := http.Get(server.URL + "/")
+	jar, err := cookiejar.New(nil)
+	require.NoError(t, err, "cookiejarでエラー")
+	client := &http.Client{Jar: jar}
+
+	url, err := url.Parse(server.URL + "/")
+	require.NoError(t, err)
+
+	exp := net.NewCookieMinutsExp(3)
+	tools.SetCookie(jar, "session-token", session, exp, url)
+	tools.SetCookie(jar, "refresh-token", refresh, exp, url)
+
+	// ---
+
+	resp, err := client.Get(server.URL + "/")
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 

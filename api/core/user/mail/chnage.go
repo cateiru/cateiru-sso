@@ -58,7 +58,7 @@ func CangeMailHandler(w http.ResponseWriter, r *http.Request) error {
 	switch request.Type {
 	case "change":
 		// メールアドレス認証のリクエストを送信する
-		return ChangeMail(ctx, db, request.NewMail)
+		return ChangeMail(ctx, db, request.NewMail, userId)
 	case "verify":
 		// メールトークンを使用して自分のアカウントのメールアドレスを変更します
 		return VerifyNewMail(ctx, db, request.MailToken, userId)
@@ -68,8 +68,8 @@ func CangeMailHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 // メールアドレス変更リクエストを受け付けます
-func ChangeMail(ctx context.Context, db *database.Database, newMail string) error {
-	if err := createVerifyChangeMail(ctx, db, newMail); err != nil {
+func ChangeMail(ctx context.Context, db *database.Database, newMail string, userId string) error {
+	if err := createVerifyChangeMail(ctx, db, newMail, userId); err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
@@ -93,7 +93,7 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 
 	// ---- Certを変更する
 
-	cert, err := models.GetCertificationByMail(ctx, db, entity.Mail)
+	cert, err := models.GetCertificationByUserID(ctx, db, entity.UserId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
@@ -102,7 +102,7 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 	}
 
 	// 違うアカウントで認証しようとしたら400を返す
-	if cert.UserId.UserId == userId {
+	if cert.UserId.UserId != userId {
 		return status.NewBadRequestError(errors.New("bad account")).Caller()
 	}
 
@@ -134,7 +134,7 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 // メール認証を開始します
 //
 // client_check_token(wsを接続するのに使用するトークンを返します)
-func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail string) error {
+func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail string, userId string) error {
 	mailToken := utils.CreateID(20)
 
 	mailVerify := &models.MailCertification{
@@ -153,6 +153,8 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},
+
+		UserId: userId,
 	}
 
 	if err := mailVerify.Add(ctx, db); err != nil {

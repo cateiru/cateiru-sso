@@ -1,13 +1,10 @@
 package mail
 
 import (
-	"context"
-	"errors"
 	"net/http"
 
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
@@ -31,7 +28,7 @@ func GetMailHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	mail, err := GetMail(ctx, db, userId)
+	mail, err := common.GetMailByUserID(ctx, db, userId)
 	if err != nil {
 		return err
 	}
@@ -41,17 +38,4 @@ func GetMailHandler(w http.ResponseWriter, r *http.Request) error {
 	})
 
 	return nil
-}
-
-// userIDからメールアドレスを取得する
-func GetMail(ctx context.Context, db *database.Database, userId string) (string, error) {
-	userInfo, err := models.GetUserDataByUserID(ctx, db, userId)
-	if err != nil {
-		return "", status.NewInternalServerErrorError(err).Caller()
-	}
-	if userInfo == nil {
-		return "", status.NewInternalServerErrorError(errors.New("user info is empty")).Caller()
-	}
-
-	return userInfo.Mail, nil
 }
