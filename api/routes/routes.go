@@ -6,7 +6,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/handler"
 )
 
-func Routes(mux *http.ServeMux) *http.ServeMux {
+func Routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/", handler.RootHandler)
 
@@ -39,6 +39,4 @@ func Routes(mux *http.ServeMux) *http.ServeMux {
 
 	mux.HandleFunc("/oauth/cert", handler.OAuthCertHandler)
 	mux.HandleFunc("/oauth/update", handler.OAuthUpdateHandler)
-
-	return mux
 }

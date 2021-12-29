@@ -30,7 +30,7 @@ func main() {
 	mux := http.NewServeMux()
 	h2s := &http2.Server{}
 
-	mux = routes.Routes(mux)
+	routes.Routes(mux)
 
 	server := &http.Server{
 		Addr:    strings.Join([]string{addr, port}, ""),
