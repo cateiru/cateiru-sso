@@ -95,6 +95,9 @@ func userMailGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // メールアドレスの更新
 func userMailPostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := mail.CangeMailHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // パスワード更新

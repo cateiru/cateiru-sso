@@ -86,6 +86,11 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 		return status.NewBadRequestError(errors.New("mail cert is empty")).Caller()
 	}
 
+	// 違うアカウントで認証しようとしたら400を返す
+	if entity.UserId != userId {
+		return status.NewBadRequestError(errors.New("bad account")).Caller()
+	}
+
 	// 有効期限が切れている場合、400を返す
 	if common.CheckExpired(&entity.Period) {
 		return status.NewBadRequestError(errors.New("expired")).AddCode(net.TimeOutError).Caller()
@@ -99,11 +104,6 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 	}
 	if cert == nil {
 		return status.NewInternalServerErrorError(errors.New("cert is empty")).Caller()
-	}
-
-	// 違うアカウントで認証しようとしたら400を返す
-	if cert.UserId.UserId != userId {
-		return status.NewBadRequestError(errors.New("bad account")).Caller()
 	}
 
 	cert.Mail = entity.Mail // certのメールアドレスを更新
