@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/core/user/otp"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 )
@@ -87,10 +88,16 @@ func UserHistoryHandler(w http.ResponseWriter, r *http.Request) {
 // 全ユーザ
 // `/me`でも取得できる
 func userMailGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := mail.GetMailHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // メールアドレスの更新
 func userMailPostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := mail.CangeMailHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // パスワード更新

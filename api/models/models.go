@@ -50,6 +50,8 @@ type MailCertification struct {
 
 	Period
 	UserMailPW
+
+	UserId string `datastore:"userId,omitempty" json:"user_id"` // Option
 }
 
 // メールアドレスの認証が済んでいるが、名前、その他ユーザ設定が完了してないユーザのデータの一時保管場所
