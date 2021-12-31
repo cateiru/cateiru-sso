@@ -65,8 +65,8 @@ type CreateAccountBuffer struct {
 // パスワード忘れによる再登録用テーブル
 type PWForget struct {
 	ForgetToken string `datastore:"forgetToken" json:"forget_token"`
-	Mail        string `datastore:"mail" json:"mail"`
 
+	UserId
 	Period
 }
 
