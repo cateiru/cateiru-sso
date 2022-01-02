@@ -19,6 +19,7 @@ func changePWServer() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", handler.UserPasswordHandler)
+	mux.HandleFunc("/forget", handler.PasswordForgetAcceptHandler)
 
 	return mux
 }

@@ -31,16 +31,6 @@ func UserPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// パスワード忘れの再登録用
-func UserPasswordForgetHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		userPasswordForgetPostHandler(w, r)
-	default:
-		RootHandler(w, r)
-	}
-}
-
 // ワンタイムパスワードの無効化、有効化
 func UserOnetimePWHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -107,14 +97,6 @@ func userPasswordPostHandler(w http.ResponseWriter, r *http.Request) {
 	if err := password.PasswordChangeHandler(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
-}
-
-// パスワードを忘れた場合の再登録
-//
-// メールアドレスを送信して、そのメールアドレスの持ったアカウントが存在する場合に、
-// トークンをパラメータに付与したURLをメール送信
-// UserPasswordHandlerでPW変更する
-func userPasswordForgetPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ワンタイムパスワードのトークンURLを取得する

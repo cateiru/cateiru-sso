@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/core/user/password"
+	"github.com/cateiru/cateiru-sso/api/core/password"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"

@@ -27,9 +27,11 @@ func Routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/pro/sso", handler.ProSSOHandler)
 
+	mux.HandleFunc("/password/forget", handler.PasswordForgetHandler)
+	mux.HandleFunc("/password/forget/accept", handler.PasswordForgetAcceptHandler)
+
 	mux.HandleFunc("/user/mail", handler.UserMailHandler)
 	mux.HandleFunc("/user/password", handler.UserPasswordHandler)
-	mux.HandleFunc("/user/password/forget", handler.UserPasswordForgetHandler)
 	mux.HandleFunc("/user/otp", handler.UserOnetimePWHandler)
 	mux.HandleFunc("/user/otp/backup", handler.UserOnetimePWBackupHandler)
 	mux.HandleFunc("/user/access", handler.UserAccessHandler)
