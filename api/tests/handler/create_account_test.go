@@ -1,15 +1,12 @@
 package handler_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/cookiejar"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 	"time"
 
@@ -55,13 +52,7 @@ func TestCreateAccount(t *testing.T) {
 
 	ctx := context.Background()
 
-	app := createAccountServer()
-	server := httptest.NewServer(app)
-	defer server.Close()
-
-	jar, err := cookiejar.New(nil)
-	require.NoError(t, err, "cookiejarでエラー")
-	client := &http.Client{Jar: jar}
+	s := tools.NewTestServer(t, createAccountServer(), true)
 
 	// Step.1 ----
 
@@ -70,16 +61,12 @@ func TestCreateAccount(t *testing.T) {
 		Password:   Password,
 		ReCHAPTCHA: "", // dev modeのため検証しない
 	}
-	form, err := json.Marshal(createForm)
-	require.NoError(t, err)
 
 	// 最初に一時的にアカウントを作成する（メール認証はまだ）
-	resp, err := client.Post(server.URL+"/create", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	resp := s.Post(t, "/create", createForm)
 
 	var response createaccount.Response
-	err = respToJson(resp, &response)
+	err := respToJson(resp, &response)
 	require.NoError(t, err)
 
 	t.Log(response.ClientCheckToken)
@@ -94,22 +81,16 @@ func TestCreateAccount(t *testing.T) {
 	verifyForm := createaccount.VerifyRequestForm{
 		MailToken: mailToken,
 	}
-	form, err = json.Marshal(verifyForm)
-	require.NoError(t, err)
 
 	// メール認証URLにアクセスする & bufferTokenのcookieが適用される
-	resp, err = client.Post(server.URL+"/create/verify", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Post(t, "/create/verify", verifyForm)
 
 	// Step.3 ----
 
 	time.Sleep(1 * time.Second)
 
 	// cookieを設定する
-	resp, err = client.Head(fmt.Sprintf("%s/create/verify?token=%s", server.URL, response.ClientCheckToken))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Head(t, fmt.Sprintf("/create/verify?token=%s", response.ClientCheckToken))
 
 	// Step.4 ----
 
@@ -120,38 +101,20 @@ func TestCreateAccount(t *testing.T) {
 		Theme:     Theme,
 		AvatarUrl: "",
 	}
-	form, err = json.Marshal(userForm)
-	require.NoError(t, err)
 
-	resp, err = client.Post(server.URL+"/create/info", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Post(t, "/create/info", userForm)
 
 	//////
 	// 入力した値、セッショントークンが正しいか検証する
 
-	set_cookie_url, err := url.Parse(server.URL + "/create/info")
-	require.NoError(t, err)
-
-	cookies := jar.Cookies(set_cookie_url)
-	var sessionToken string
-	var refreshToken string
-	for _, cookie := range cookies {
-		if cookie.Name == "session-token" {
-			sessionToken = cookie.Value
-		} else if cookie.Name == "refresh-token" {
-			refreshToken = cookie.Value
-		}
-	}
-	require.NotEmpty(t, sessionToken)
-	require.NotEmpty(t, refreshToken)
+	s.FindCookies(t, []string{"session-token", "refresh-token"})
 
 	db, err := database.NewDatabase(ctx)
 	require.NoError(t, err)
 	defer db.Close()
 
 	// セッショントークンからUserIDを取得する
-	session, err := models.GetSessionToken(ctx, db, sessionToken)
+	session, err := models.GetSessionToken(ctx, db, s.GetCookie("session-token"))
 	require.NoError(t, err)
 	require.NotNil(t, session)
 

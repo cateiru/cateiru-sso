@@ -3,17 +3,12 @@ package handler_test
 import (
 	"context"
 	"net/http"
-	"net/http/cookiejar"
-	"net/http/httptest"
-	"net/url"
 	"testing"
-	"time"
 
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
@@ -39,40 +34,24 @@ func TestLogout(t *testing.T) {
 	dummy := tools.NewDummyUser()
 	_, err = dummy.AddUserInfo(ctx, db)
 	require.NoError(t, err)
-	session, refresh, err := dummy.AddLoginToken(ctx, db, time.Now())
-	require.NoError(t, err)
 
-	app := logoutServer()
-	server := httptest.NewServer(app)
-	defer server.Close()
+	s := tools.NewTestServer(t, logoutServer(), true)
+	s.AddSession(ctx, db, dummy)
 
-	jar, err := cookiejar.New(nil)
-	require.NoError(t, err, "cookiejarでエラー")
-	client := &http.Client{Jar: jar}
-
-	url, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
-
-	exp := net.NewCookieMinutsExp(3)
-	tools.SetCookie(jar, "session-token", session, exp, url)
-	tools.SetCookie(jar, "refresh-token", refresh, exp, url)
-
-	resp, err := client.Get(server.URL + "/")
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Get(t, "/")
 
 	// --- チェックする
 
 	// cookieが削除されているか確認する
-	for _, cookie := range jar.Cookies(url) {
+	for _, cookie := range s.Jar.Cookies(s.Url) {
 		require.NotEqual(t, cookie.Name, "session-token")
 		require.NotEqual(t, cookie.Name, "refresh-token")
 	}
 
 	goretry.Retry(t, func() bool {
-		sessionToken, err := models.GetSessionToken(ctx, db, session)
+		sessionToken, err := models.GetSessionToken(ctx, db, s.SessionToken)
 		require.NoError(t, err)
-		refreshToken, err := models.GetRefreshToken(ctx, db, refresh)
+		refreshToken, err := models.GetRefreshToken(ctx, db, s.RefreshToken)
 		require.NoError(t, err)
 
 		return sessionToken == nil && refreshToken == nil
@@ -95,44 +74,25 @@ func TestDelete(t *testing.T) {
 	_, err = dummy.AddUserCert(ctx, db)
 	require.NoError(t, err)
 
-	session, refresh, err := dummy.AddLoginToken(ctx, db, time.Now())
-	require.NoError(t, err)
-
-	app := logoutServer()
-	server := httptest.NewServer(app)
-	defer server.Close()
-
-	jar, err := cookiejar.New(nil)
-	require.NoError(t, err, "cookiejarでエラー")
-	client := &http.Client{Jar: jar}
-
-	url, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
-
-	exp := net.NewCookieMinutsExp(3)
-	tools.SetCookie(jar, "session-token", session, exp, url)
-	tools.SetCookie(jar, "refresh-token", refresh, exp, url)
+	s := tools.NewTestServer(t, logoutServer(), true)
+	s.AddSession(ctx, db, dummy)
 
 	// --- 削除する
 
-	req, err := http.NewRequest("DELETE", server.URL+"/", nil)
-	require.NoError(t, err)
-	resp, err := client.Do(req)
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Delete(t, "/")
 
 	// --- チェックする
 
 	// cookieが削除されているか確認する
-	for _, cookie := range jar.Cookies(url) {
+	for _, cookie := range s.Jar.Cookies(s.Url) {
 		require.NotEqual(t, cookie.Name, "session-token")
 		require.NotEqual(t, cookie.Name, "refresh-token")
 	}
 
 	goretry.Retry(t, func() bool {
-		sessionToken, err := models.GetSessionToken(ctx, db, session)
+		sessionToken, err := models.GetSessionToken(ctx, db, s.SessionToken)
 		require.NoError(t, err)
-		refreshToken, err := models.GetRefreshToken(ctx, db, refresh)
+		refreshToken, err := models.GetRefreshToken(ctx, db, s.RefreshToken)
 		require.NoError(t, err)
 
 		return sessionToken == nil && refreshToken == nil

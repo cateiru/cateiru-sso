@@ -1,13 +1,9 @@
 package handler_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/cookiejar"
-	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/api/core/login"
@@ -44,39 +40,16 @@ func TestLoginNoOTP(t *testing.T) {
 	_, err = dummy.AddUserInfo(ctx, db)
 	require.NoError(t, err)
 
-	app := loginServer()
-	server := httptest.NewServer(app)
-	defer server.Close()
-
-	jar, err := cookiejar.New(nil)
-	require.NoError(t, err, "cookiejarでエラー")
-	client := &http.Client{Jar: jar}
-
-	url, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
+	s := tools.NewTestServer(t, loginServer(), true)
 
 	send := login.RequestFrom{
 		Mail:     dummy.Mail,
 		Password: "password",
 	}
-	form, err := json.Marshal(send)
-	require.NoError(t, err)
 
-	resp, err := client.Post(server.URL+"/login", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Post(t, "/login", send)
 
-	var sessionToken string
-	var refreshToken string
-	for _, cookie := range jar.Cookies(url) {
-		if cookie.Name == "session-token" {
-			sessionToken = cookie.Value
-		} else if cookie.Name == "refresh-token" {
-			refreshToken = cookie.Value
-		}
-	}
-	require.NotEmpty(t, sessionToken)
-	require.NotEmpty(t, refreshToken)
+	s.FindCookies(t, []string{"session-token", "refresh-token"})
 }
 
 func TestLoginOTP(t *testing.T) {
@@ -98,27 +71,14 @@ func TestLoginOTP(t *testing.T) {
 	_, err = dummy.AddUserInfo(ctx, db)
 	require.NoError(t, err)
 
-	app := loginServer()
-	server := httptest.NewServer(app)
-	defer server.Close()
-
-	jar, err := cookiejar.New(nil)
-	require.NoError(t, err, "cookiejarでエラー")
-	client := &http.Client{Jar: jar}
-
-	url, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
+	s := tools.NewTestServer(t, loginServer(), true)
 
 	send := login.RequestFrom{
 		Mail:     dummy.Mail,
 		Password: "password",
 	}
-	form, err := json.Marshal(send)
-	require.NoError(t, err)
 
-	resp, err := client.Post(server.URL+"/login", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	resp := s.Post(t, "/login", send)
 
 	var response login.Response
 	err = json.Unmarshal(tools.ConvertByteResp(resp), &response)
@@ -134,24 +94,10 @@ func TestLoginOTP(t *testing.T) {
 	otpSend := login.OTPRequest{
 		Passcode: passcode,
 	}
-	form, err = json.Marshal(otpSend)
-	require.NoError(t, err)
 
-	resp, err = client.Post(server.URL+"/login/otp", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Post(t, "/login/otp", otpSend)
 
 	// ---
 
-	var sessionToken string
-	var refreshToken string
-	for _, cookie := range jar.Cookies(url) {
-		if cookie.Name == "session-token" {
-			sessionToken = cookie.Value
-		} else if cookie.Name == "refresh-token" {
-			refreshToken = cookie.Value
-		}
-	}
-	require.NotEmpty(t, sessionToken)
-	require.NotEmpty(t, refreshToken)
+	s.FindCookies(t, []string{"session-token", "refresh-token"})
 }
