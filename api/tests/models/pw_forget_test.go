@@ -28,9 +28,7 @@ func TestPWForget(t *testing.T) {
 
 	entity := models.PWForget{
 		ForgetToken: token,
-		UserId: models.UserId{
-			UserId: dummy.UserID,
-		},
+		Mail:        dummy.Mail,
 		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
@@ -44,6 +42,6 @@ func TestPWForget(t *testing.T) {
 		entity, err := models.GetPWForgetByToken(ctx, db, token)
 		require.NoError(t, err)
 
-		return entity != nil && entity.UserId.UserId == dummy.UserID
+		return entity != nil && entity.Mail == dummy.Mail
 	}, "要素が格納されている")
 }

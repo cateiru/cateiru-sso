@@ -5,6 +5,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/core/user/otp"
+	"github.com/cateiru/cateiru-sso/api/core/user/password"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 )
 
@@ -103,6 +104,9 @@ func userMailPostHandler(w http.ResponseWriter, r *http.Request) {
 // パスワード更新
 // 現在のパスワードを送信するか、パスワード忘れ用の再登録トークンを送信
 func userPasswordPostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := password.PasswordChangeHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // パスワードを忘れた場合の再登録
