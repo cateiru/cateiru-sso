@@ -54,11 +54,14 @@ func NewTestServer(t *testing.T, handler http.Handler, isCookie bool) *TestServe
 }
 
 // cookieにセッション情報を追加する
-func (c *TestServer) AddSession(ctx context.Context, db *database.Database, dummy DummyUser) error {
+func (c *TestServer) AddSession(ctx context.Context, db *database.Database, dummy *DummyUser) error {
 	session, refresh, err := dummy.AddLoginToken(ctx, db, time.Now())
 	if err != nil {
 		return err
 	}
+
+	c.SessionToken = session
+	c.RefreshToken = refresh
 
 	exp := net.NewCookieMinutsExp(3)
 	SetCookie(c.Jar, "session-token", session, exp, c.Url)
@@ -84,6 +87,16 @@ func (c *TestServer) FindCookies(t *testing.T, cookies []string) {
 	}
 }
 
+func (c *TestServer) GetCookie(key string) string {
+	for _, cookie := range c.Jar.Cookies(c.Url) {
+		if cookie.Name == key {
+			return cookie.Value
+		}
+	}
+
+	return ""
+}
+
 func (c *TestServer) Get(t *testing.T, path string) *http.Response {
 	resp, err := c.Client.Get(c.Server.URL + path)
 
@@ -98,6 +111,14 @@ func (c *TestServer) Post(t *testing.T, path string, form interface{}) *http.Res
 	require.NoError(t, err)
 
 	resp, err := c.Client.Post(c.Server.URL+path, "application/json", bytes.NewBuffer(requestForm))
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 200)
+
+	return resp
+}
+
+func (c *TestServer) Head(t *testing.T, path string) *http.Response {
+	resp, err := c.Client.Head(c.Server.URL + path)
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
