@@ -5,6 +5,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/core/user/otp"
+	"github.com/cateiru/cateiru-sso/api/core/user/password"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 )
 
@@ -25,16 +26,6 @@ func UserPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		userPasswordPostHandler(w, r)
-	default:
-		RootHandler(w, r)
-	}
-}
-
-// パスワード忘れの再登録用
-func UserPasswordForgetHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		userPasswordForgetPostHandler(w, r)
 	default:
 		RootHandler(w, r)
 	}
@@ -103,14 +94,9 @@ func userMailPostHandler(w http.ResponseWriter, r *http.Request) {
 // パスワード更新
 // 現在のパスワードを送信するか、パスワード忘れ用の再登録トークンを送信
 func userPasswordPostHandler(w http.ResponseWriter, r *http.Request) {
-}
-
-// パスワードを忘れた場合の再登録
-//
-// メールアドレスを送信して、そのメールアドレスの持ったアカウントが存在する場合に、
-// トークンをパラメータに付与したURLをメール送信
-// UserPasswordHandlerでPW変更する
-func userPasswordForgetPostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := password.PasswordChangeHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // ワンタイムパスワードのトークンURLを取得する

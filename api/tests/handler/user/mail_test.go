@@ -1,15 +1,10 @@
 package user_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/cookiejar"
-	"net/http/httptest"
-	"net/url"
 	"testing"
-	"time"
 
 	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
@@ -17,7 +12,6 @@ import (
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
@@ -43,29 +37,13 @@ func TestGetMail(t *testing.T) {
 	dummy := tools.NewDummyUser()
 	_, err = dummy.AddUserInfo(ctx, db)
 	require.NoError(t, err)
-	session, refresh, err := dummy.AddLoginToken(ctx, db, time.Now())
-	require.NoError(t, err)
 
-	app := mailServer()
-	server := httptest.NewServer(app)
-	defer server.Close()
-
-	jar, err := cookiejar.New(nil)
-	require.NoError(t, err, "cookiejarでエラー")
-	client := &http.Client{Jar: jar}
-
-	url, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
-
-	exp := net.NewCookieMinutsExp(3)
-	tools.SetCookie(jar, "session-token", session, exp, url)
-	tools.SetCookie(jar, "refresh-token", refresh, exp, url)
+	s := tools.NewTestServer(t, mailServer(), true)
+	s.AddSession(ctx, db, dummy)
 
 	// ---
 
-	resp, err := client.Get(server.URL + "/")
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	resp := s.Get(t, "/")
 
 	var element mail.ResponseMail
 
@@ -90,25 +68,11 @@ func TestChangeMail(t *testing.T) {
 	require.NoError(t, err)
 	_, err = dummy.AddUserCert(ctx, db)
 	require.NoError(t, err)
-	session, refresh, err := dummy.AddLoginToken(ctx, db, time.Now())
-	require.NoError(t, err)
 
 	newMail := tools.NewDummyUser().Mail
 
-	app := mailServer()
-	server := httptest.NewServer(app)
-	defer server.Close()
-
-	jar, err := cookiejar.New(nil)
-	require.NoError(t, err, "cookiejarでエラー")
-	client := &http.Client{Jar: jar}
-
-	url, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
-
-	exp := net.NewCookieMinutsExp(3)
-	tools.SetCookie(jar, "session-token", session, exp, url)
-	tools.SetCookie(jar, "refresh-token", refresh, exp, url)
+	s := tools.NewTestServer(t, mailServer(), true)
+	s.AddSession(ctx, db, dummy)
 
 	// --- 認証リクエスト
 
@@ -116,12 +80,8 @@ func TestChangeMail(t *testing.T) {
 		Type:    "change",
 		NewMail: newMail,
 	}
-	form, err := json.Marshal(changeForm)
-	require.NoError(t, err)
 
-	resp, err := client.Post(server.URL+"/", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Post(t, "/", changeForm)
 
 	// --- メールトークンをDBから抜いてくる
 
@@ -152,12 +112,8 @@ func TestChangeMail(t *testing.T) {
 		Type:      "verify",
 		MailToken: mailToken,
 	}
-	form, err = json.Marshal(changeForm)
-	require.NoError(t, err)
 
-	resp, err = client.Post(server.URL+"/", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	s.Post(t, "/", changeForm)
 
 	// --- 確認
 

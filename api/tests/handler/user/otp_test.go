@@ -1,13 +1,9 @@
 package user_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/cookiejar"
-	"net/http/httptest"
-	"net/url"
 	"testing"
 	"time"
 
@@ -15,7 +11,6 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
 	_otp "github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
@@ -47,29 +42,13 @@ func TestOTP(t *testing.T) {
 	require.NoError(t, err)
 	_, err = dummy.AddUserInfo(ctx, db)
 	require.NoError(t, err)
-	session, refresh, err := dummy.AddLoginToken(ctx, db, time.Now())
-	require.NoError(t, err)
 
-	app := otpServer()
-	server := httptest.NewServer(app)
-	defer server.Close()
-
-	jar, err := cookiejar.New(nil)
-	require.NoError(t, err, "cookiejarでエラー")
-	client := &http.Client{Jar: jar}
-
-	url, err := url.Parse(server.URL + "/")
-	require.NoError(t, err)
-
-	exp := net.NewCookieMinutsExp(3)
-	tools.SetCookie(jar, "session-token", session, exp, url)
-	tools.SetCookie(jar, "refresh-token", refresh, exp, url)
+	s := tools.NewTestServer(t, otpServer(), true)
+	s.AddSession(ctx, db, dummy)
 
 	// ----
 
-	resp, err := client.Get(server.URL + "/otp")
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	resp := s.Get(t, "/otp")
 
 	var otpToken otp.GetOTPTokenResponse
 	err = json.Unmarshal(tools.ConvertByteResp(resp), &otpToken)
@@ -88,12 +67,8 @@ func TestOTP(t *testing.T) {
 		Passcode: code,
 		Id:       otpToken.Id,
 	}
-	form, err := json.Marshal(send)
-	require.NoError(t, err)
 
-	resp, err = client.Post(server.URL+"/otp", "application/json", bytes.NewBuffer(form))
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	resp = s.Post(t, "/otp", send)
 
 	var backups otp.SetOTPResponse
 	err = json.Unmarshal(tools.ConvertByteResp(resp), &backups)
@@ -101,9 +76,7 @@ func TestOTP(t *testing.T) {
 
 	// ----
 
-	resp, err = client.Get(server.URL + "/otp/bup")
-	require.NoError(t, err)
-	require.Equal(t, resp.StatusCode, 200)
+	resp = s.Get(t, "/otp/bup")
 
 	var getBackups otp.ResponseBackups
 	err = json.Unmarshal(tools.ConvertByteResp(resp), &getBackups)
