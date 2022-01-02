@@ -1,11 +1,11 @@
-package user_test
+package handler_test
 
 import (
 	"context"
 	"net/http"
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/core/user/password"
+	"github.com/cateiru/cateiru-sso/api/core/password"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -15,15 +15,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func changePWServer() *http.ServeMux {
+func forgetServer() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", handler.UserPasswordHandler)
+	mux.HandleFunc("/forget", handler.PasswordForgetHandler)
+	mux.HandleFunc("/forget/accept", handler.PasswordForgetAcceptHandler)
 
 	return mux
 }
 
-func TestPasswordChange(t *testing.T) {
+func TestForgetPassword(t *testing.T) {
 	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
 	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
 
@@ -41,15 +42,32 @@ func TestPasswordChange(t *testing.T) {
 	_, err = dummy.AddUserInfo(ctx, db)
 	require.NoError(t, err)
 
-	s := tools.NewTestServer(t, changePWServer(), true)
-	s.AddSession(ctx, db, dummy)
+	s := tools.NewTestServer(t, forgetServer(), false)
 
-	form := password.ChangePasswordRequest{
-		NewPassword: newPassword,
-		OldPassword: "password",
+	form := password.ForgetRequest{
+		Mail: dummy.Mail,
 	}
+	s.Post(t, "/forget", form)
 
-	s.Post(t, "/", form)
+	var forgetToken string
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetPWForgetByMail(ctx, db, dummy.Mail)
+		require.NoError(t, err)
+
+		if len(entity) == 0 {
+			return false
+		}
+		forgetToken = entity[0].ForgetToken
+		return true
+	}, "")
+	require.NotEmpty(t, forgetToken)
+
+	acceptForm := password.AccpetFortgetRequest{
+		ForgetToken: forgetToken,
+		NewPassword: newPassword,
+	}
+	s.Post(t, "/forget/accept", acceptForm)
 
 	// --- 確認する
 

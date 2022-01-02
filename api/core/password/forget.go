@@ -21,12 +21,7 @@ import (
 const CHANGE_PW_MAIL_TEMPLATE_PATH = "pw_change_mail"
 
 type ForgetRequest struct {
-	Mail string
-}
-
-type AccpetFortgetRequest struct {
-	ForgetToken string
-	NewPassword string
+	Mail string `json:"mail"`
 }
 
 // テンプレートに適用する用の型
@@ -36,6 +31,11 @@ type ChangePWMailTemplate struct {
 }
 
 func ForgetPasswordRequestHandler(w http.ResponseWriter, r *http.Request) error {
+	// contents-type: application/json 以外では400エラーを返す
+	if !net.CheckContentType(r) {
+		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller()
+	}
+
 	ctx := r.Context()
 
 	db, err := database.NewDatabase(ctx)
