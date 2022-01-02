@@ -25,7 +25,7 @@ func GetPWForgetByToken(ctx context.Context, db *database.Database, token string
 	return &entity, nil
 }
 
-func GetPWFrogetByMail(ctx context.Context, db *database.Database, mail string) ([]PWForget, error) {
+func GetPWForgetByMail(ctx context.Context, db *database.Database, mail string) ([]PWForget, error) {
 	query := datastore.NewQuery("PWForget").Filter("mail =", mail)
 
 	iter := db.Run(ctx, query)

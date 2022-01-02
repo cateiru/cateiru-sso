@@ -50,7 +50,7 @@ func ForgetPasswordRequestHandler(w http.ResponseWriter, r *http.Request) error 
 		return status.NewBadRequestError(err).Caller()
 	}
 
-	return createChangeMail(ctx, db, form.Mail)
+	return CreateChangeMail(ctx, db, form.Mail)
 }
 
 func ForgetPasswordAcceptHandler(w http.ResponseWriter, r *http.Request) error {
@@ -67,10 +67,10 @@ func ForgetPasswordAcceptHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(err).Caller()
 	}
 
-	return changePWAccept(ctx, db, &form)
+	return ChangePWAccept(ctx, db, &form)
 }
 
-func changePWAccept(ctx context.Context, db *database.Database, form *AccpetFortgetRequest) error {
+func ChangePWAccept(ctx context.Context, db *database.Database, form *AccpetFortgetRequest) error {
 	buffer, err := models.GetPWForgetByToken(ctx, db, form.ForgetToken)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
@@ -102,7 +102,7 @@ func changePWAccept(ctx context.Context, db *database.Database, form *AccpetFort
 }
 
 // パスワードリセットメールを送信する
-func createChangeMail(ctx context.Context, db *database.Database, mail string) error {
+func CreateChangeMail(ctx context.Context, db *database.Database, mail string) error {
 	existMail, err := common.CheckExistMail(ctx, db, mail)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
