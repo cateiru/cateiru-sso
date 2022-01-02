@@ -44,4 +44,8 @@ func TestPWForget(t *testing.T) {
 
 		return entity != nil && entity.Mail == dummy.Mail
 	}, "要素が格納されている")
+
+	entities, err := models.GetPWFrogetByMail(ctx, db, dummy.Mail)
+	require.NoError(t, err)
+	require.Len(t, entities, 1)
 }
