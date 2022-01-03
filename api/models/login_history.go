@@ -8,8 +8,15 @@ import (
 )
 
 // userIdを指定して、ログインログを取得する
-func GetAllLoginHistory(ctx context.Context, db *database.Database, userId string) ([]LoginHistory, error) {
-	query := datastore.NewQuery("LoginHistory").Filter("userId =", userId)
+func GetAllLoginHistory(ctx context.Context, db *database.Database, userId string, limit ...interface{}) ([]LoginHistory, error) {
+	limitNum := -1
+	if len(limit) != 0 && limit != nil {
+		if limitInt, ok := limit[0].(int); ok {
+			limitNum = limitInt
+		}
+	}
+
+	query := datastore.NewQuery("LoginHistory").Filter("userId =", userId).Limit(limitNum)
 	var entries []LoginHistory
 
 	if _, err := db.GetAll(ctx, query, &entries); err != nil {

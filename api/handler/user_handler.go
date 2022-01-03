@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/cateiru/cateiru-sso/api/core/user/history"
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/core/user/otp"
 	"github.com/cateiru/cateiru-sso/api/core/user/password"
@@ -130,4 +131,7 @@ func userAccessPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // アカウントのログイン履歴取得
 func userHistoryGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := history.UserLoginHistoryHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
