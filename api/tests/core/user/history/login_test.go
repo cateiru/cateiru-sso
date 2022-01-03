@@ -1,10 +1,11 @@
-package models_test
+package history_test
 
 import (
 	"context"
 	"testing"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/core/user/history"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
@@ -13,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoginHistory(t *testing.T) {
+func TestLoginHistores(t *testing.T) {
 	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
 	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
 
@@ -24,6 +25,9 @@ func TestLoginHistory(t *testing.T) {
 	defer db.Close()
 
 	dummy := tools.NewDummyUser()
+
+	_, err = dummy.AddUserCert(ctx, db)
+	require.NoError(t, err)
 
 	// 10個入れる
 	for i := 0; 10 > i; i++ {
@@ -45,30 +49,12 @@ func TestLoginHistory(t *testing.T) {
 	}
 
 	goretry.Retry(t, func() bool {
-		histores, err := models.GetAllLoginHistory(ctx, db, dummy.UserID)
-		require.NoError(t, err)
+		histories, err := history.LoginHistories(ctx, db, dummy.UserID, -1)
+		if err != nil {
+			t.Log(err)
+			return false
+		}
 
-		return len(histores) == 10 && histores[0].IpAddress == "192.168.0.1"
-	}, "Entityが10個ある")
-
-	// ---- limitを指定して取得する
-
-	goretry.Retry(t, func() bool {
-		histores, err := models.GetAllLoginHistory(ctx, db, dummy.UserID, 3)
-		require.NoError(t, err)
-
-		return len(histores) == 3 && histores[0].IpAddress == "192.168.0.1"
-	}, "Entityが3つだけ取得できる")
-
-	// ---- 削除する
-
-	err = models.DeleteAllLoginHistories(ctx, db, dummy.UserID)
-	require.NoError(t, err)
-
-	goretry.Retry(t, func() bool {
-		histores, err := models.GetAllLoginHistory(ctx, db, dummy.UserID)
-		require.NoError(t, err)
-
-		return len(histores) == 0
-	}, "Entityが全部削除されている")
+		return len(histories) == 10
+	}, "")
 }
