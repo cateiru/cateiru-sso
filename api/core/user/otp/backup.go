@@ -50,6 +50,9 @@ func GetBackupcodes(ctx context.Context, db *database.Database, userId string) (
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
+	if userCert == nil {
+		return nil, status.NewBadRequestError(errors.New("entity is not found")).Caller()
+	}
 
 	// OTPが設定されていない場合は400を返す
 	if len(userCert.OnetimePasswordBackups) == 0 {
