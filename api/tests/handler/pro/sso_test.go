@@ -1,6 +1,7 @@
 package pro_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -82,6 +83,45 @@ func TestSSO(t *testing.T) {
 	// --- もう一度一覧を取得する（削除されたか確認する）
 
 	resp, err = s.Client.Get(s.Server.URL + "/")
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 400)
+}
+
+func TestNoProUser(t *testing.T) {
+	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
+	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+
+	t.Setenv("ISSUER", "TestIssuer")
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser()
+	_, err = dummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+
+	s := tools.NewTestServer(t, ssoServer(), true)
+	s.AddSession(ctx, db, dummy)
+
+	// --- SSOを追加する
+
+	form := pro.AddRequestForm{
+		Name:      "Test",
+		FromURL:   []string{"https://example.com/login"},
+		ToURL:     []string{"https://example.com/login/redirect"},
+		LoginOnly: true,
+
+		SessionTokenPeriod: 10,
+		RefreshTokenPeriod: 30,
+	}
+
+	requestForm, err := json.Marshal(form)
+	require.NoError(t, err)
+
+	resp, err := s.Client.Post(s.Server.URL+"/", "application/json", bytes.NewBuffer(requestForm))
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 400)
 }
