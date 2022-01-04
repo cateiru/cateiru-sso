@@ -40,7 +40,10 @@ func TestGetSSO(t *testing.T) {
 
 	goretry.Retry(t, func() bool {
 		services, err := pro.GetSSO(ctx, db, dummy.UserID)
-		require.NoError(t, err)
+		if err != nil {
+			t.Log(err)
+			return false
+		}
 
 		return len(services) == 1 && services[0].SSOPublicKey == tokens.PublicKey
 	}, "取得できる")
@@ -51,10 +54,8 @@ func TestGetSSO(t *testing.T) {
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {
-		services, err := pro.GetSSO(ctx, db, dummy.UserID)
-		require.NoError(t, err)
-
-		return len(services) == 0
+		_, err := pro.GetSSO(ctx, db, dummy.UserID)
+		return err != nil
 	}, "削除されている")
 }
 
