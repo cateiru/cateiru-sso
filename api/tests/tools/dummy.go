@@ -21,6 +21,7 @@ type DummyUser struct {
 	UserID string
 	Mail   string
 	Otp    *secure.OnetimePassword
+	Roles  []string
 }
 
 func NewDummyUser() *DummyUser {
@@ -31,7 +32,14 @@ func NewDummyUser() *DummyUser {
 		UserID: userID,
 		Mail:   mail,
 		Otp:    nil,
+		Roles:  []string{"user"},
 	}
+}
+
+// Roleを追加する
+func (c *DummyUser) AddRole(role string) *DummyUser {
+	c.Roles = append(c.Roles, role)
+	return c
 }
 
 // OTPをセットする
@@ -60,7 +68,7 @@ func (c *DummyUser) AddUserInfo(ctx context.Context, db *database.Database) (*mo
 		Theme:     "Dark",
 		AvatarUrl: "",
 
-		Role: []string{"user"},
+		Role: c.Roles,
 
 		Mail: c.Mail,
 
