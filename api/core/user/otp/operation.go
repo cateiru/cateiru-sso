@@ -29,10 +29,6 @@ func OTPHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller()
 	}
 
-	if !net.CheckContentType(r) {
-		return status.NewBadRequestError(errors.New("request header is not application/json")).Caller()
-	}
-
 	ctx := r.Context()
 
 	db, err := database.NewDatabase(ctx)

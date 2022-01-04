@@ -31,7 +31,10 @@ func TestBackup(t *testing.T) {
 
 	goretry.Retry(t, func() bool {
 		backups, err := otp.GetBackupcodes(ctx, db, dummy.UserID)
-		require.NoError(t, err)
+		if err != nil {
+			t.Log(err)
+			return false
+		}
 
 		if len(cert.OnetimePasswordBackups) == 0 {
 			return false
