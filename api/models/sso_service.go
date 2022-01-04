@@ -35,6 +35,12 @@ func GetSSOServiceByUserID(ctx context.Context, db *database.Database, userID st
 	return entities, nil
 }
 
+func DeleteSSOServiceByPublicKey(ctx context.Context, db *database.Database, publicKey string) error {
+	key := database.CreateNameKey("SSOService", publicKey)
+
+	return db.Delete(ctx, key)
+}
+
 func (c *SSOService) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("SSOService", c.SSOPublicKey)
 

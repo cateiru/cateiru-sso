@@ -44,6 +44,18 @@ func TestGetSSO(t *testing.T) {
 
 		return len(services) == 1 && services[0].SSOPublicKey == tokens.PublicKey
 	}, "取得できる")
+
+	// --- 削除する
+
+	err = pro.DeleteSSO(ctx, db, tokens.PublicKey, dummy.UserID)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		services, err := pro.GetSSO(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return len(services) == 0
+	}, "削除されている")
 }
 
 func TestURL(t *testing.T) {

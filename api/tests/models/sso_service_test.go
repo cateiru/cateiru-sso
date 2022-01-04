@@ -60,4 +60,14 @@ func TestSSOService(t *testing.T) {
 
 		return len(entities) == 2
 	}, "UserIDをkeyにして複数取得できる")
+
+	err = models.DeleteSSOServiceByPublicKey(ctx, db, publicKeys[1])
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entities, err := models.GetSSOServiceByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return len(entities) == 1
+	}, "削除できている")
 }
