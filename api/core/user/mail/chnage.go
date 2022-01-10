@@ -25,7 +25,7 @@ type ChangeMailRequest struct {
 
 	NewMail string `json:"new_mail"`
 
-	MailToken string `json:"buffer_token"`
+	MailToken string `json:"mail_token"`
 }
 
 // テンプレートに適用する用の型

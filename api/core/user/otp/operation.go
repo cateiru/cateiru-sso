@@ -72,6 +72,18 @@ func OTPHandler(w http.ResponseWriter, r *http.Request) error {
 
 // OTPを設定します。
 func SetOTP(ctx context.Context, db *database.Database, userId string, id string, passcode string) (*SetOTPResponse, error) {
+	userCert, err := models.GetCertificationByUserID(ctx, db, userId)
+	if err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller()
+	}
+	if userCert == nil {
+		return nil, status.NewBadRequestError(errors.New("entity not find")).Caller()
+	}
+	// すでにOTPが設定されている場合は400を返す
+	if len(userCert.OnetimePasswordSecret) != 0 {
+		return nil, status.NewBadRequestError(errors.New("OTP is already set")).Caller()
+	}
+
 	OTPBuffer, err := models.GetOTPBufferByID(ctx, db, id)
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller()
@@ -89,14 +101,6 @@ func SetOTP(ctx context.Context, db *database.Database, userId string, id string
 	// 検証が失敗した場合403を返す
 	if find, _ := common.CheckOTP(passcode, nil, &OTPBuffer.SecretKey); !find {
 		return nil, status.NewForbiddenError(errors.New("otp is failed validate")).Caller()
-	}
-
-	userCert, err := models.GetCertificationByUserID(ctx, db, userId)
-	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
-	}
-	if userCert == nil {
-		return nil, status.NewBadRequestError(errors.New("entity not find")).Caller()
 	}
 
 	backups := []string{}
