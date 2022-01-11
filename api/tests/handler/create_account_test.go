@@ -128,10 +128,16 @@ func TestCreateAccount(t *testing.T) {
 	require.Equal(t, userInfo.FirstName, FirstName)
 	require.Equal(t, userInfo.LastName, LastName)
 	require.Equal(t, userInfo.Mail, Email)
-	require.Equal(t, userInfo.Role[0], "user")
 	require.Equal(t, userInfo.Theme, Theme)
 	require.Equal(t, userInfo.UserName, UserName)
 	require.Equal(t, userInfo.AvatarUrl, "")
+
+	// ユーザのroleを取得する
+	role, err := models.GetRoleByUserID(ctx, db, userID)
+	require.NoError(t, err)
+	require.NotNil(t, role)
+
+	require.Equal(t, role.Role[0], "user")
 
 	// ユーザの認証情報を取得する
 	userCert, err := models.GetCertificationByMail(ctx, db, userInfo.Mail)

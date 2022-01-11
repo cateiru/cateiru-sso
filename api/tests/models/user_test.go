@@ -29,7 +29,6 @@ func TestUser(t *testing.T) {
 		LastName:  "い",
 		UserName:  "cateiru",
 
-		Role:      []string{"user", "pro"},
 		AvatarUrl: "",
 
 		UserId: models.UserId{
@@ -73,7 +72,6 @@ func TestTXUser(t *testing.T) {
 		LastName:  "い",
 		UserName:  "cateiru",
 
-		Role:      []string{"user", "pro"},
 		AvatarUrl: "",
 
 		UserId: models.UserId{

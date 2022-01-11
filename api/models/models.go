@@ -95,11 +95,17 @@ type User struct {
 	LastName  string `datastore:"lastName" json:"last_name"`
 	UserName  string `datastore:"userName" json:"user_name"`
 
-	Role []string `datastore:"role" json:"role"`
-	Mail string   `datastore:"mail" json:"mail"`
+	Mail string `datastore:"mail" json:"mail"`
 
 	Theme     string `datastore:"theme" json:"theme"`
 	AvatarUrl string `datastore:"avatarUrl" json:"avatar_url"`
+
+	UserId
+}
+
+// ユーザの権限
+type Role struct {
+	Role []string `datastore:"role" json:"role"`
 
 	UserId
 }

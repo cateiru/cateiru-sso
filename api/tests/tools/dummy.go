@@ -68,8 +68,6 @@ func (c *DummyUser) AddUserInfo(ctx context.Context, db *database.Database) (*mo
 		Theme:     "Dark",
 		AvatarUrl: "",
 
-		Role: c.Roles,
-
 		Mail: c.Mail,
 
 		UserId: models.UserId{
@@ -78,6 +76,18 @@ func (c *DummyUser) AddUserInfo(ctx context.Context, db *database.Database) (*mo
 	}
 
 	if err := userInfo.Add(ctx, db); err != nil {
+		return nil, err
+	}
+
+	role := &models.Role{
+		Role: c.Roles,
+
+		UserId: models.UserId{
+			UserId: c.UserID,
+		},
+	}
+
+	if err := role.Add(ctx, db); err != nil {
 		return nil, err
 	}
 
