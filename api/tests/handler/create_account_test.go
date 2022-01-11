@@ -16,6 +16,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/posener/wstest"
 	"github.com/stretchr/testify/require"
 )
@@ -73,8 +74,7 @@ func TestCreateAccount(t *testing.T) {
 
 	require.NotEqual(t, len(response.ClientCheckToken), 0, "ちゃんとclientCheckTokenが返ってくる")
 
-	mailToken, err := getMailToken(ctx, response.ClientCheckToken)
-	require.NoError(t, err)
+	mailToken := getMailToken(t, ctx, response.ClientCheckToken)
 
 	// Step.2 ----
 
@@ -212,19 +212,26 @@ func TestObserve(t *testing.T) {
 }
 
 // clientCheckTokenからmailTokenを取得する
-func getMailToken(ctx context.Context, clientCheckToken string) (string, error) {
+func getMailToken(t *testing.T, ctx context.Context, clientCheckToken string) string {
 	db, err := database.NewDatabase(ctx)
-	if err != nil {
-		return "", err
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
-	entry, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
-	if err != nil {
-		return "", err
-	}
+	var mailToken string
 
-	return entry.MailToken, nil
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
+		require.NoError(t, err)
+
+		if entry != nil {
+			mailToken = entry.MailToken
+			return true
+		}
+
+		return false
+	}, "")
+
+	return mailToken
 }
 
 // responseをjsonにパースする
