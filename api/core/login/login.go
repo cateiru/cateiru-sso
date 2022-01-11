@@ -188,7 +188,11 @@ func LoginAdmin(ctx context.Context, db *database.Database, form *RequestFrom) (
 		return "", status.NewBadRequestError(errors.New("admin pw is not validate")).Caller()
 	}
 
-	hashedPW := secure.PWHash(form.Password)
+	hashedPW, err := secure.PWHash(form.Password)
+	if err != nil {
+		return "", status.NewBadRequestError(err).Caller()
+	}
+
 	userID := utils.CreateID(30)
 
 	newCert := &models.Certification{

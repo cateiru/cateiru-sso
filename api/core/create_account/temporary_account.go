@@ -131,7 +131,10 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
-	hashedPW := secure.PWHash(form.Password)
+	hashedPW, err := secure.PWHash(form.Password)
+	if err != nil {
+		return "", status.NewBadRequestError(err).Caller()
+	}
 
 	user := models.UserMailPW{
 		Mail:     form.Mail,

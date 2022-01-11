@@ -100,7 +100,10 @@ func (c *DummyUser) AddUserCert(ctx context.Context, db *database.Database) (*mo
 
 	password := "password"
 
-	hashedPassword := secure.PWHash(password)
+	hashedPassword, err := secure.PWHash(password)
+	if err != nil {
+		return nil, err
+	}
 
 	certification := &models.Certification{
 		AccountCreateDate: time.Now(),

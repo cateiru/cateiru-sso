@@ -66,7 +66,10 @@ func ChangePassword(ctx context.Context, db *database.Database, userId string, f
 		return status.NewBadRequestError(errors.New("password is not validate")).Caller()
 	}
 
-	newPassword := secure.PWHash(form.NewPassword)
+	newPassword, err := secure.PWHash(form.NewPassword)
+	if err != nil {
+		return status.NewBadRequestError(err).Caller()
+	}
 
 	cert.Password = newPassword.Key
 	cert.Salt = newPassword.Salt
