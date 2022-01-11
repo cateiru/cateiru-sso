@@ -16,15 +16,15 @@ func ProMoreOnly(ctx context.Context, db *database.Database, userId string) erro
 
 // roleを見る
 func findRole(ctx context.Context, db *database.Database, userId string, targetRoles []string) error {
-	info, err := models.GetUserDataByUserID(ctx, db, userId)
+	role, err := models.GetRoleByUserID(ctx, db, userId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
-	if info == nil {
+	if role == nil {
 		return status.NewBadRequestError(err).Caller()
 	}
 
-	for _, role := range info.Role {
+	for _, role := range role.Role {
 		for _, target := range targetRoles {
 			if role == target {
 				return nil

@@ -211,8 +211,6 @@ func LoginAdmin(ctx context.Context, db *database.Database, form *RequestFrom) (
 		LastName:  "User",
 		UserName:  "admin",
 
-		Role: []string{"user", "pro", "admin"},
-
 		Mail: form.Mail,
 
 		// TODO: 初期値設定する
@@ -223,7 +221,20 @@ func LoginAdmin(ctx context.Context, db *database.Database, form *RequestFrom) (
 			UserId: userID,
 		},
 	}
+
 	if err := newUser.Add(ctx, db); err != nil {
+		return "", status.NewInternalServerErrorError(err).Caller()
+	}
+
+	role := &models.Role{
+		Role: []string{"user", "pro", "admin"},
+
+		UserId: models.UserId{
+			UserId: userID,
+		},
+	}
+
+	if err := role.Add(ctx, db); err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 

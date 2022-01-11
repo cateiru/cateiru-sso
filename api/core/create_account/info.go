@@ -111,9 +111,6 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 		Theme:     user.Theme,
 		AvatarUrl: user.AvatarUrl,
 
-		// デフォルトは`user`のみ
-		Role: []string{"user"},
-
 		Mail: buffer.Mail,
 
 		UserId: models.UserId{
@@ -122,6 +119,20 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 	}
 
 	if err = userInfo.Add(ctx, db); err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller()
+	}
+
+	// ユーザの権限
+	role := &models.Role{
+		// デフォルトは`user`のみ
+		Role: []string{"user"},
+
+		UserId: models.UserId{
+			UserId: userId,
+		},
+	}
+
+	if err := role.Add(ctx, db); err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
