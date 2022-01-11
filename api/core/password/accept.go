@@ -59,7 +59,10 @@ func ChangePWAccept(ctx context.Context, db *database.Database, form *AccpetFort
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
-	pw := secure.PWHash(form.NewPassword)
+	pw, err := secure.PWHash(form.NewPassword)
+	if err != nil {
+		return status.NewBadRequestError(err).Caller()
+	}
 
 	cert.Password = pw.Key
 	cert.Salt = pw.Salt
