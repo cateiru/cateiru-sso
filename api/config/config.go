@@ -33,9 +33,9 @@ var Defs Config
 
 func Init() {
 	Defs = Config{
-		DeployMode: getDeployMode(),
+		DeployMode: GetDeployMode(),
 
-		Port:    getPort(),
+		Port:    GetPort(),
 		Address: "0.0.0.0",
 
 		AdminMail:     os.Getenv("ADMIN_MAIL"),
@@ -45,7 +45,7 @@ func Init() {
 		SiteDomain:   os.Getenv("SITE_DOMAIN"),
 		APIDomain:    os.Getenv("API_DOMAIN"),
 
-		Issuer: getIssuer(),
+		Issuer: GetIssuer(),
 
 		ReChaptchaSecret: os.Getenv("RECAPTCHA_SECRET"),
 
@@ -53,7 +53,7 @@ func Init() {
 		MailFromDomain:    os.Getenv("MAIL_FROM_DOMAIL"),
 		SenderMailAddress: os.Getenv("SENDER_MAIL_ADDRESS"),
 
-		DatastoreParentKey: getDatastoreParentKey(),
+		DatastoreParentKey: GetDatastoreParentKey(),
 	}
 }
 
@@ -65,7 +65,7 @@ func TestInit(t *testing.T) {
 }
 
 // envが設定されていない場合は、`develop`を指定します
-func getDeployMode() string {
+func GetDeployMode() string {
 	deployMode := os.Getenv("DEPLOY_MODE")
 
 	if len(deployMode) == 0 {
@@ -76,7 +76,7 @@ func getDeployMode() string {
 }
 
 // envが設定されていない場合、3000を使用します
-func getPort() string {
+func GetPort() string {
 	port := os.Getenv("PORT")
 
 	if len(port) == 0 {
@@ -86,7 +86,7 @@ func getPort() string {
 	return port
 }
 
-func getIssuer() string {
+func GetIssuer() string {
 	issuer := os.Getenv("ISSUER")
 
 	if len(issuer) == 0 {
@@ -96,7 +96,7 @@ func getIssuer() string {
 	return issuer
 }
 
-func getDatastoreParentKey() string {
+func GetDatastoreParentKey() string {
 	parentKey := os.Getenv("DATASTORE_PARENT_KEY")
 	if len(parentKey) == 0 {
 		parentKey = "cateiru-sso"
