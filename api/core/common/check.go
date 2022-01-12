@@ -4,10 +4,10 @@ package common
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"cloud.google.com/go/datastore"
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -58,7 +58,7 @@ func ChaeckBlock(ctx context.Context, db *database.Database, ip string, mail str
 
 // メールアドレスがadminで定義したメールアドレスかをチェックします
 func CheckAdminMail(mail string) bool {
-	return os.Getenv("ADMIN_MAIL") == mail
+	return config.Defs.AdminMail == mail
 }
 
 // 有効期限切れかどうかを調べます。

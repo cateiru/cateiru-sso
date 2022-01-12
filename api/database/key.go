@@ -1,9 +1,8 @@
 package database
 
 import (
-	"os"
-
 	"cloud.google.com/go/datastore"
+	"github.com/cateiru/cateiru-sso/api/config"
 )
 
 // datasotoreのkeyを作成します
@@ -15,9 +14,5 @@ func CreateNameKey(tableName string, keyName string) *datastore.Key {
 //
 // DATASTORE_PARENT_KEYを使用します
 func createParentKey() *datastore.Key {
-	parentKey := os.Getenv("DATASTORE_PARENT_KEY")
-	if len(parentKey) == 0 {
-		parentKey = "cateiru-sso"
-	}
-	return datastore.NameKey(parentKey, "default", nil)
+	return datastore.NameKey(config.Defs.DatastoreParentKey, "default", nil)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/login"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -13,8 +14,7 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -63,14 +63,13 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLoginAdmin(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	adminMail := tools.NewDummyUser().Mail
 	adminPW := "ddsfe0w3sa"
 
-	t.Setenv("ADMIN_MAIL", adminMail)
-	t.Setenv("ADMIN_PASSWORD", adminPW)
+	config.Defs.AdminMail = adminMail
+	config.Defs.AdminPassword = adminPW
 
 	ctx := context.Background()
 
@@ -103,10 +102,7 @@ func TestLoginAdmin(t *testing.T) {
 }
 
 func TestLoginOTP(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
-
-	t.Setenv("ISSUER", "TestIssuer")
+	config.TestInit(t)
 
 	ctx := context.Background()
 

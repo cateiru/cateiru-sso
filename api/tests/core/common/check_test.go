@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -18,8 +19,7 @@ import (
 
 // 既にメールアドレスが存在する
 func TestExistMail(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -42,8 +42,7 @@ func TestExistMail(t *testing.T) {
 
 // メールアドレスは存在しない
 func TestNotExistMail(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -69,7 +68,7 @@ func TestNotExistMail(t *testing.T) {
 // adminのメールアドレスか
 func TestIsADMIN(t *testing.T) {
 	mail := "example@example.com"
-	t.Setenv("ADMIN_MAIL", mail)
+	config.Defs.AdminMail = mail
 
 	require.True(t, common.CheckAdminMail(mail))
 	require.False(t, common.CheckAdminMail("hoge@example.com"))
@@ -77,8 +76,7 @@ func TestIsADMIN(t *testing.T) {
 
 func TestBlockList(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -155,7 +153,7 @@ func TestCheckExpired(t *testing.T) {
 }
 
 func TestCheckOTP(t *testing.T) {
-	t.Setenv("ISSUER", "test_issuer")
+	config.TestInit(t)
 
 	dummy, err := tools.NewDummyUser().NewOTP()
 	require.NoError(t, err)

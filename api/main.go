@@ -2,28 +2,16 @@ package main
 
 import (
 	"net/http"
-	"os"
-	"strings"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/routes"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
 
-var addr string
-var port string
-
 func init() {
-	_port := os.Getenv("PORT")
-
-	if len(_port) == 0 {
-		port = ":3000"
-	} else {
-		port = strings.Join([]string{":", _port}, "")
-	}
-
-	addr = "0.0.0.0"
+	config.Init()
 }
 
 func main() {
@@ -33,12 +21,12 @@ func main() {
 	routes.Routes(mux)
 
 	server := &http.Server{
-		Addr:    strings.Join([]string{addr, port}, ""),
+		Addr:    config.Defs.Address + ":" + config.Defs.Port,
 		Handler: h2c.NewHandler(mux, h2s),
 	}
 	defer server.Close()
 
-	logging.Sugar.Infof("Start server! addr: %v, port: %v", addr, port)
+	logging.Sugar.Infof("Start server! addr: %v, port: %v", config.Defs.Address, config.Defs.Port)
 
 	if err := server.ListenAndServe(); err != nil {
 		panic(err)

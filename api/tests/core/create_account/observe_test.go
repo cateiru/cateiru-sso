@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	createaccount "github.com/cateiru/cateiru-sso/api/core/create_account"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -31,8 +32,7 @@ func observeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestObserve(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 

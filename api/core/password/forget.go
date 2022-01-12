@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/logging"
@@ -79,13 +79,13 @@ func CreateChangeMail(ctx context.Context, db *database.Database, mail string) e
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
-	if utils.DEPLOY_MODE == "production" {
+	if config.Defs.DeployMode == "production" {
 		if err := sendPwMail(mail, forgetToken); err != nil {
 			return err
 		}
 	} else {
 		logging.Sugar.Debugf(
-			"create pw_forget token. url: https://%s/pw/change?m=%s", os.Getenv("SITE_DOMAIN"), forgetToken)
+			"create pw_forget token. url: https://%s/pw/change?m=%s", config.Defs.SiteDomain, forgetToken)
 	}
 
 	return nil
@@ -93,7 +93,7 @@ func CreateChangeMail(ctx context.Context, db *database.Database, mail string) e
 
 func sendPwMail(mail string, forgetToken string) error {
 	template := ChangePWMailTemplate{
-		VerifyURL: fmt.Sprintf("https://%s/pw/change?m=%s", os.Getenv("SITE_DOMAIN"), forgetToken),
+		VerifyURL: fmt.Sprintf("https://%s/pw/change?m=%s", config.Defs.SiteDomain, forgetToken),
 		Mail:      mail,
 	}
 

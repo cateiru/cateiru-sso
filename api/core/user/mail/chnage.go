@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/logging"
@@ -169,13 +169,13 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 	// send mail
 	// SendGrid APIをテストでは使用しないため、
 	// DEPLOY_MODEがproductionのときのみ送信します
-	if utils.DEPLOY_MODE == "production" {
+	if config.Defs.DeployMode == "production" {
 		if err := sendVerifyMail(newMail, mailToken); err != nil {
 			return err
 		}
 	} else {
 		logging.Sugar.Debugf(
-			"create mail token. url: https://%s/mail/change?m=%s", os.Getenv("SITE_DOMAIN"), mailToken)
+			"create mail token. url: https://%s/mail/change?m=%s", config.Defs.SiteDomain, mailToken)
 	}
 
 	return nil
@@ -184,7 +184,7 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 // メールアドレス認証メールを送信する
 func sendVerifyMail(mailAddress string, mailToken string) error {
 	template := VerifyMailTemplate{
-		VerifyURL: fmt.Sprintf("https://%s/mail/change?m=%s", os.Getenv("SITE_DOMAIN"), mailToken),
+		VerifyURL: fmt.Sprintf("https://%s/mail/change?m=%s", config.Defs.SiteDomain, mailToken),
 		Mail:      mailAddress,
 	}
 

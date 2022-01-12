@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"cloud.google.com/go/datastore"
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/stretchr/testify/require"
@@ -12,8 +13,7 @@ import (
 
 // トランザクションを使用したentryの更新
 func TestTransactionSuccess(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 	tableName := utils.CreateID(5)
@@ -59,8 +59,7 @@ func TestTransactionSuccess(t *testing.T) {
 
 // TXで削除
 func TestTransactionDelete(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 	tableName := utils.CreateID(5)
@@ -103,8 +102,7 @@ func TestTransactionDelete(t *testing.T) {
 
 // トランザクションのロールバック
 func TestTransactionRollback(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 	tableName := utils.CreateID(5)
