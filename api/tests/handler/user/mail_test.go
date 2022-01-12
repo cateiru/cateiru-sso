@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"cloud.google.com/go/datastore"
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
@@ -25,8 +26,7 @@ func mailServer() *http.ServeMux {
 	return mux
 }
 func TestGetMail(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -54,8 +54,7 @@ func TestGetMail(t *testing.T) {
 }
 
 func TestChangeMail(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 

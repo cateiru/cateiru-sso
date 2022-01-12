@@ -21,8 +21,7 @@
 package mail
 
 import (
-	"os"
-
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/mailgun/mailgun-go"
 )
@@ -74,9 +73,9 @@ func (c *Mail) AddContentsFromTemplate(tempName string, elements interface{}) (*
 
 // メールをAPI経由で送信する
 func (c *Mail) Send() error {
-	domain := os.Getenv("MAIL_FROM_DOMAIL")
-	secret := os.Getenv("MAILGUN_API_KEY")
-	sender := os.Getenv("SENDER_MAIL_ADDRESS")
+	domain := config.Defs.MailFromDomain
+	secret := config.Defs.MailgunAPIKey
+	sender := config.Defs.SenderMailAddress
 
 	mg := mailgun.NewMailgun(domain, secret)
 	message := mg.NewMessage(sender, c.Subject, c.PlainText, c.EmailAddress)

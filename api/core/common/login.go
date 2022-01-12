@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"os"
 	"time"
 
 	"cloud.google.com/go/datastore"
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -228,11 +228,11 @@ func LoginByCookie(ctx context.Context, db *database.Database, w http.ResponseWr
 func LoginSetCookie(w http.ResponseWriter, login *LoginTokens) {
 	// secure属性はproductionのみにする（テストが通らないため）
 	secure := false
-	if utils.DEPLOY_MODE == "production" {
+	if config.Defs.DeployMode == "production" {
 		secure = true
 	}
 	// ブラウザ上でcookieを追加できるように、HttpOnlyはfalseにする
-	cookie := net.NewCookie(os.Getenv("COOKIE_DOMAIN"), secure, http.SameSiteDefaultMode, false)
+	cookie := net.NewCookie(config.Defs.CookieDomain, secure, http.SameSiteDefaultMode, false)
 
 	sessionExp := net.NewSession()
 	cookie.Set(w, "session-token", login.SessionToken, sessionExp)

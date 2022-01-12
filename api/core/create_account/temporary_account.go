@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/logging"
@@ -79,7 +79,7 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 
 func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (string, error) {
 	// reCHAPTCHA
-	if utils.DEPLOY_MODE == "production" {
+	if config.Defs.DeployMode == "production" {
 		isOk, err := secure.NewReCaptcha().Validate(form.ReCHAPTCHA, ip)
 		if err != nil {
 			return "", status.NewInternalServerErrorError(err).Caller()
@@ -179,13 +179,13 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 	// send mail
 	// SendGrid APIをテストでは使用しないため、
 	// DEPLOY_MODEがproductionのときのみ送信します
-	if utils.DEPLOY_MODE == "production" {
+	if config.Defs.DeployMode == "production" {
 		if err := sendVerifyMail(user.Mail, mailToken); err != nil {
 			return "", err
 		}
 	} else {
 		logging.Sugar.Debugf(
-			"create mail token. url: https://%s/create?m=%s", os.Getenv("SITE_DOMAIN"), mailToken)
+			"create mail token. url: https://%s/create?m=%s", config.Defs.SiteDomain, mailToken)
 	}
 
 	logging.Sugar.Debugf(
@@ -197,7 +197,7 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 // メールアドレス認証メールを送信する
 func sendVerifyMail(mailAddress string, mailToken string) error {
 	template := VerifyMailTemplate{
-		VerifyURL: fmt.Sprintf("https://%s/create?m=%s", os.Getenv("SITE_DOMAIN"), mailToken),
+		VerifyURL: fmt.Sprintf("https://%s/create?m=%s", config.Defs.SiteDomain, mailToken),
 		Mail:      mailAddress,
 	}
 

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/user/history"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -15,8 +16,7 @@ import (
 )
 
 func TestLoginHistores(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 

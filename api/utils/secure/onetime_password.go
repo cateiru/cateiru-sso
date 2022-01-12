@@ -20,8 +20,8 @@ package secure
 
 import (
 	"crypto/rand"
-	"os"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/pquerna/otp"
@@ -46,7 +46,7 @@ func NewOnetimePassword(accountName string) (*OnetimePassword, error) {
 	hash := utils.NewHash(uuid)
 
 	ops := totp.GenerateOpts{
-		Issuer:      os.Getenv("ISSUER"),
+		Issuer:      config.Defs.Issuer,
 		AccountName: accountName,
 		Period:      30,
 		SecretSize:  20,

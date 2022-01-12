@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -56,11 +56,11 @@ func CreateVerifyHandler(w http.ResponseWriter, r *http.Request) error {
 	if verify.IsKeepThisPage {
 		// secure属性はproductionのみにする（テストが通らないため）
 		secure := false
-		if utils.DEPLOY_MODE == "production" {
+		if config.Defs.DeployMode == "production" {
 			secure = true
 		}
 		// ブラウザ上でcookieを追加できるように、HttpOnlyはfalseにする
-		cookie := net.NewCookie(os.Getenv("COOKIE_DOMAIN"), secure, http.SameSiteDefaultMode, false)
+		cookie := net.NewCookie(config.Defs.CookieDomain, secure, http.SameSiteDefaultMode, false)
 
 		// 有効期限: 同一セッション
 		cookieExp := net.NewSession()

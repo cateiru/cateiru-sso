@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	createaccount "github.com/cateiru/cateiru-sso/api/core/create_account"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -15,8 +16,7 @@ import (
 )
 
 func TestVerifySuccess(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -74,8 +74,7 @@ func TestVerifySuccess(t *testing.T) {
 
 // 認証が存在しない場合
 func TestVerifyNotExist(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -89,8 +88,7 @@ func TestVerifyNotExist(t *testing.T) {
 
 // 既に認証済みの場合
 func TestVerifyAlreadyDone(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 

@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -95,8 +96,7 @@ func TestLoginSetCookie(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -132,8 +132,7 @@ func TestLogin(t *testing.T) {
 
 // session-tokenのcookieからuser idを取得する
 func TestGetUserIdSuccess(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -178,8 +177,7 @@ func TestGetUserIdSuccess(t *testing.T) {
 
 // refresh-tokenからsession-tokenを作成し、user idを取得する
 func TestGetUseIdRefresh(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -239,8 +237,7 @@ func TestGetUseIdRefresh(t *testing.T) {
 
 // session-token、refresh-tokenは存在しない
 func TestGetUserNoTokens(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	app := loginServer()
 	server := httptest.NewServer(app)
@@ -258,8 +255,7 @@ func TestGetUserNoTokens(t *testing.T) {
 
 // session-tokenは存在するが中の値が違う
 func TestGetUserNotSession(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -323,8 +319,7 @@ func TestGetUserNotSession(t *testing.T) {
 
 // session-tokenはなく、refresh-tokenはあるが中の値が違う
 func TestNotExistSession(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -384,8 +379,7 @@ func TestNotExistSession(t *testing.T) {
 
 // session-tokenの有効期限がサーバー上で切れている
 func TestExpiredSession(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -433,8 +427,7 @@ func TestExpiredSession(t *testing.T) {
 
 // session-token、refresh-tokenの有効期限がサーバー上で切れている
 func TestExpiredRefresh(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 

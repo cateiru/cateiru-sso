@@ -8,9 +8,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
 )
 
@@ -31,7 +31,7 @@ type RecaptchaResponse struct {
 func NewReCaptcha() *ReCaptcha {
 	return &ReCaptcha{
 		ServerName: "https://www.google.com/recaptcha/api/siteverify",
-		Secret:     os.Getenv("RECAPTCHA_SECRET"),
+		Secret:     config.Defs.ReChaptchaSecret,
 	}
 }
 

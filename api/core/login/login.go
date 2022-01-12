@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -61,11 +61,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 
 		// secure属性はproductionのみにする（テストが通らないため）
 		secure := false
-		if utils.DEPLOY_MODE == "production" {
+		if config.Defs.DeployMode == "production" {
 			secure = true
 		}
 		// ブラウザ上でcookieを追加できるように、HttpOnlyはfalseにする
-		cookie := net.NewCookie(os.Getenv("COOKIE_DOMAIN"), secure, http.SameSiteDefaultMode, false)
+		cookie := net.NewCookie(config.Defs.CookieDomain, secure, http.SameSiteDefaultMode, false)
 
 		sessionExp := net.NewSession()
 		cookie.Set(w, "otp-token", loginState.OTPId, sessionExp)
@@ -90,7 +90,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 // TODO: admin userの設定
 func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) (*LoginState, error) {
 	// reCHAPTCHA
-	if utils.DEPLOY_MODE == "production" {
+	if config.Defs.DeployMode == "production" {
 		isOk, err := secure.NewReCaptcha().Validate(form.ReCHAPTCHA, ip)
 		if err != nil {
 			return nil, status.NewInternalServerErrorError(err).Caller()
@@ -184,7 +184,7 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 // 初回のみで、その後は通常と同じアカウントと同じ方法でログインします
 func LoginAdmin(ctx context.Context, db *database.Database, form *RequestFrom) (string, error) {
 	// パスワード検証
-	if form.Password != os.Getenv("ADMIN_PASSWORD") {
+	if form.Password != config.Defs.AdminPassword {
 		return "", status.NewBadRequestError(errors.New("admin pw is not validate")).Caller()
 	}
 

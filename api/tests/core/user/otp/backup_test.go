@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/user/otp"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
@@ -12,10 +13,7 @@ import (
 )
 
 func TestBackup(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
-
-	t.Setenv("ISSUER", "TestIssuer")
+	config.TestInit(t)
 
 	ctx := context.Background()
 

@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	createaccount "github.com/cateiru/cateiru-sso/api/core/create_account"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
@@ -39,8 +40,7 @@ func createAccountServer() *http.ServeMux {
 //	↓
 //	buffer tokenを使用してユーザ情報を入力し、アカウント作成
 func TestCreateAccount(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	var (
 		Email     = fmt.Sprintf("%s@example.com", utils.CreateID(5))
@@ -170,8 +170,7 @@ func TestOther(t *testing.T) {
 }
 
 func TestObserve(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 

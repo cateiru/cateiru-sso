@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/utils/secure"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
@@ -12,7 +13,7 @@ import (
 
 // OTPが生成でき、検証し成功するかチェック
 func TestValidateOnetimePassword(t *testing.T) {
-	t.Setenv("ISSUER", "test_issuer")
+	config.TestInit(t)
 
 	accountName := "TestUser"
 
@@ -36,7 +37,7 @@ func TestValidateOnetimePassword(t *testing.T) {
 
 // 違うパスコードで検証が失敗するか
 func TestValidateFailed(t *testing.T) {
-	t.Setenv("ISSUER", "test_issuer")
+	config.TestInit(t)
 
 	accountName := "TestUser"
 
@@ -59,7 +60,8 @@ func TestValidateFailed(t *testing.T) {
 
 // 複数のOTPは全部違うsecretか
 func TestOTPMulti(t *testing.T) {
-	t.Setenv("ISSUER", "test_issuer")
+	config.TestInit(t)
+
 	secrets := []string{}
 	accountName := "TestUser"
 

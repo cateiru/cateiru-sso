@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/datastore"
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	goretry "github.com/cateiru/go-retry"
@@ -26,8 +27,7 @@ type sampleEntrySecond struct {
 
 // データベース（Cloud datastore）の接続、Put、Getを試す
 func TestConnectDB(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 
@@ -68,8 +68,7 @@ func TestConnectDB(t *testing.T) {
 
 // CountとGetAll、DeleteMultiのテスト
 func TestMultiEntryDB(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 	tableName := utils.CreateID(5)
@@ -117,8 +116,7 @@ func TestMultiEntryDB(t *testing.T) {
 
 // find付きクエリでGetAll、Runを実行する
 func TestFindDB(t *testing.T) {
-	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
-	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+	config.TestInit(t)
 
 	ctx := context.Background()
 	tableName := utils.CreateID(5)
