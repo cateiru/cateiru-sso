@@ -143,8 +143,8 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 	mailToken := utils.CreateID(20)
 
 	mailVerify := &models.MailCertification{
-		MailToken:        mailToken,
-		ClientCheckToken: utils.CreateID(0), // 使わないが一応keyを指定しておく
+		MailToken:   mailToken,
+		ClientToken: utils.CreateID(0), // 使わないが一応keyを指定しておく
 
 		OpenNewWindow:  false,
 		Verify:         false,
