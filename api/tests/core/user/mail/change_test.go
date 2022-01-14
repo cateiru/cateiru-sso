@@ -117,4 +117,11 @@ func TestVerifyChangeMail(t *testing.T) {
 
 		return info != nil && info.Mail == newMail
 	}, "userInfoのメールアドレスが変更されている")
+
+	goretry.Retry(t, func() bool {
+		mailCert, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
+		require.NoError(t, err)
+
+		return mailCert == nil
+	}, "mail certが削除されている")
 }

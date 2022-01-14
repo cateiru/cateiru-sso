@@ -133,6 +133,10 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
+	if err := models.DeleteMailCertification(ctx, db, entity.MailToken); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+
 	return nil
 }
 
