@@ -27,8 +27,8 @@ func TestVerifySuccess(t *testing.T) {
 	mailToken := utils.CreateID(20)
 
 	mailVerify := &models.MailCertification{
-		MailToken:        mailToken,
-		ClientCheckToken: "hugahuga",
+		MailToken:   mailToken,
+		ClientToken: "hugahuga",
 
 		OpenNewWindow:  true,
 		Verify:         false,
@@ -65,7 +65,7 @@ func TestVerifySuccess(t *testing.T) {
 	require.True(t, res.IsKeepThisPage)
 
 	goretry.Retry(t, func() bool {
-		element, err := models.GetCreateAccountBufferByBufferToken(ctx, db, res.BufferToken)
+		element, err := models.GetMailCertificationByClientToken(ctx, db, res.ClientToken)
 		require.NoError(t, err)
 
 		return element != nil && element.Mail == "example@example.com"
@@ -99,8 +99,8 @@ func TestVerifyAlreadyDone(t *testing.T) {
 	mailToken := utils.CreateID(20)
 
 	mailVerify := &models.MailCertification{
-		MailToken:        mailToken,
-		ClientCheckToken: "hugahuga",
+		MailToken:   mailToken,
+		ClientToken: "hugahuga",
 
 		OpenNewWindow: true,
 		// 既に認証済み
