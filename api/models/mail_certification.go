@@ -28,8 +28,8 @@ func GetMailCertificationByMailToken(ctx context.Context, db *database.Database,
 }
 
 // ClientMailTokenで取得します
-func GetMailCertificationByCheckToken(ctx context.Context, db *database.Database, clientCheckToken string) (*MailCertification, error) {
-	query := datastore.NewQuery("MailCertification").Filter("clientCheckToken =", clientCheckToken)
+func GetMailCertificationByClientToken(ctx context.Context, db *database.Database, clientToken string) (*MailCertification, error) {
+	query := datastore.NewQuery("MailCertification").Filter("clientToken =", clientToken)
 
 	iter := db.Run(ctx, query)
 

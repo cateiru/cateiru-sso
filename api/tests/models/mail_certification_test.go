@@ -31,11 +31,11 @@ func TestMailCertification(t *testing.T) {
 	clientToken := utils.CreateID(10)
 
 	entry := &models.MailCertification{
-		MailToken:        mailToken,
-		ClientCheckToken: clientToken,
-		OpenNewWindow:    false,
-		Verify:           false,
-		ChangeMailMode:   false,
+		MailToken:      mailToken,
+		ClientToken:    clientToken,
+		OpenNewWindow:  false,
+		Verify:         false,
+		ChangeMailMode: false,
 		UserMailPW: models.UserMailPW{
 			Mail:     mail,
 			Password: []byte("password"),
@@ -65,12 +65,12 @@ func TestMailCertification(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, result, "要素が見つからない")
 
-	result, err = models.GetMailCertificationByCheckToken(ctx, db, clientToken)
+	result, err = models.GetMailCertificationByClientToken(ctx, db, clientToken)
 	require.NoError(t, err)
 	require.NotNil(t, result, "要素が見つかった")
 	require.Equal(t, result.Mail, mail, "見つかった要素のメールアドレスが取得できる")
 
-	result, err = models.GetMailCertificationByCheckToken(ctx, db, "hoge")
+	result, err = models.GetMailCertificationByClientToken(ctx, db, "hoge")
 	require.NoError(t, err)
 	require.Nil(t, result, "要素が見つからない")
 
