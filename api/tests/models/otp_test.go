@@ -51,4 +51,14 @@ func TestOTPBuffer(t *testing.T) {
 
 		return entity != nil && entity.UserId.UserId == userId
 	}, "要素が取得できる")
+
+	err = models.DeleteOTPBuffer(ctx, db, id)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetOTPBufferByID(ctx, db, id)
+		require.NoError(t, err)
+
+		return entity == nil
+	}, "削除されている")
 }

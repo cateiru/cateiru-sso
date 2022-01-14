@@ -22,6 +22,11 @@ func GetOTPBufferByID(ctx context.Context, db *database.Database, id string) (*O
 	return &entity, nil
 }
 
+func DeleteOTPBuffer(ctx context.Context, db *database.Database, id string) error {
+	key := database.CreateNameKey("OnetimePasswordBuffer", id)
+	return db.Delete(ctx, key)
+}
+
 func (c *OnetimePasswordBuffer) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("OnetimePasswordBuffer", c.Id)
 	return db.Put(ctx, key, c)
