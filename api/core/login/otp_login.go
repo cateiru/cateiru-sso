@@ -14,6 +14,7 @@ import (
 
 type OTPRequest struct {
 	Passcode string `json:"passcode"`
+	OtpToken string `json:"otp_token"`
 }
 
 // OTPを入力してログインする
@@ -30,22 +31,10 @@ func OTPLoginHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(err).Caller()
 	}
 
-	id, err := net.GetCookie(r, "otp-token")
-	if err != nil {
-		// cookieが設定されていない場合は400を返す
-		return status.NewBadRequestError(err).Caller()
-	}
-
-	// cookieを削除する
-	err = net.DeleteCookie(w, r, "otp-token")
-	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
-	}
-
 	ip := net.GetIPAddress(r)
 	userAgent := net.GetUserAgent(r)
 
-	login, err := LoginOTP(ctx, id, otpRequest.Passcode, ip, userAgent)
+	login, err := LoginOTP(ctx, otpRequest.OtpToken, otpRequest.Passcode, ip, userAgent)
 	if err != nil {
 		return err
 	}
@@ -61,6 +50,10 @@ func LoginOTP(ctx context.Context, id string, passcode string, ip string, userAg
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
+
+	if len(id) == 0 || len(passcode) == 0 {
+		return nil, status.NewBadRequestError(errors.New("incomplete form"))
+	}
 
 	buffer, err := models.GetOTPBufferByID(ctx, db, id)
 	if err != nil {
@@ -101,11 +94,16 @@ func LoginOTP(ctx context.Context, id string, passcode string, ip string, userAg
 	if !ok {
 		return nil, status.NewBadRequestError(errors.New("otp not varidated")).Caller()
 	}
+
 	// backupが更新された場合はDBを更新する
 	if update {
 		if err := cert.Add(ctx, db); err != nil {
 			return nil, status.NewInternalServerErrorError(err).Caller()
 		}
+	}
+
+	if err := models.DeleteOTPBuffer(ctx, db, id); err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// ログイントークンをセットする

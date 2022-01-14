@@ -133,6 +133,10 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
+	if err := models.DeleteMailCertification(ctx, db, entity.MailToken); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+
 	return nil
 }
 
@@ -143,8 +147,8 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 	mailToken := utils.CreateID(20)
 
 	mailVerify := &models.MailCertification{
-		MailToken:        mailToken,
-		ClientCheckToken: utils.CreateID(0), // 使わないが一応keyを指定しておく
+		MailToken:   mailToken,
+		ClientToken: utils.CreateID(0), // 使わないが一応keyを指定しておく
 
 		OpenNewWindow:  false,
 		Verify:         false,

@@ -91,6 +91,9 @@ func SetOTP(ctx context.Context, db *database.Database, userId string, id string
 	if OTPBuffer == nil {
 		return nil, status.NewBadRequestError(errors.New("entity not find")).Caller()
 	}
+	if err := models.DeleteOTPBuffer(ctx, db, id); err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller()
+	}
 
 	// 有効期限がきれている場合400を返す
 	if common.CheckExpired(&OTPBuffer.Period) {

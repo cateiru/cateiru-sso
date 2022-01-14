@@ -42,24 +42,16 @@ type Period struct {
 
 // メールアドレス認証用テーブル
 type MailCertification struct {
-	MailToken        string `datastore:"mailToken" json:"mail_token"`
-	ClientCheckToken string `datastore:"clientCheckToken" json:"client_check_token"`
-	OpenNewWindow    bool   `datastore:"openNewWindow" json:"open_new_window"`
-	Verify           bool   `datastore:"verify" json:"verify"`
-	ChangeMailMode   bool   `datastore:"changeMailMode" json:"change_mail_mode"`
+	MailToken      string `datastore:"mailToken" json:"mail_token"`
+	ClientToken    string `datastore:"clientToken" json:"client_token"`
+	OpenNewWindow  bool   `datastore:"openNewWindow" json:"open_new_window"`
+	Verify         bool   `datastore:"verify" json:"verify"`
+	ChangeMailMode bool   `datastore:"changeMailMode" json:"change_mail_mode"`
 
 	Period
 	UserMailPW
 
 	UserId string `datastore:"userId,omitempty" json:"user_id"` // Option
-}
-
-// メールアドレスの認証が済んでいるが、名前、その他ユーザ設定が完了してないユーザのデータの一時保管場所
-type CreateAccountBuffer struct {
-	BufferToken string `datastore:"bufferToken" json:"buffer_token"`
-
-	Period
-	UserMailPW
 }
 
 // パスワード忘れによる再登録用テーブル

@@ -57,6 +57,11 @@ func TestOTPLogin(t *testing.T) {
 	passcode, err := dummy.GenOTPCode()
 	require.NoError(t, err)
 
+	// 違うパスワードではできない
+	dummyPasscode := "hogehoge"
+	_, err = login.LoginOTP(ctx, id, dummyPasscode, ip, userAgent)
+	require.Error(t, err)
+
 	goretry.Retry(t, func() bool {
 		loginToken, err := login.LoginOTP(ctx, id, passcode, ip, userAgent)
 		if err != nil {
@@ -68,8 +73,8 @@ func TestOTPLogin(t *testing.T) {
 
 	// ---
 
-	dummyPasscode := "hogehoge"
-	_, err = login.LoginOTP(ctx, id, dummyPasscode, ip, userAgent)
+	// 同じidで複数回はできない
+	_, err = login.LoginOTP(ctx, id, passcode, ip, userAgent)
 	require.Error(t, err)
 }
 

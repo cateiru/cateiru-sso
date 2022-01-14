@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/go-http-error/httperror"
@@ -52,8 +53,6 @@ type ErrorResponse struct {
 func ResponseError(w http.ResponseWriter, err error) {
 	id := utils.CreateID(10)
 
-	logging.Sugar.Errorf("HTTP ERROR. id: %v, message: %v", id, err.Error())
-
 	var statusCode int
 	var customCode int
 	if httperr, ok := httperror.CastHTTPError(err); ok {
@@ -66,6 +65,11 @@ func ResponseError(w http.ResponseWriter, err error) {
 	} else {
 		statusCode = 500
 		customCode = DefaultError
+	}
+
+	// ログはproduction時は500エラーのみ
+	if statusCode == 500 || config.Defs.DeployMode != "production" {
+		logging.Sugar.Errorf("HTTP ERROR. id: %v, message: %v", id, err.Error())
 	}
 
 	body := ErrorResponse{

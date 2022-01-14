@@ -23,13 +23,12 @@ type RequestFrom struct {
 }
 
 type Response struct {
-	IsOTP bool   `json:"is_otp"`
-	OTPId string `json:"otp_id"`
+	IsOTP    bool   `json:"is_otp"`
+	OTPToken string `json:"otp_token"`
 }
 
 type LoginState struct {
-	IsOTP bool
-	OTPId string
+	Response
 
 	common.LoginTokens
 }
@@ -56,30 +55,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	if loginState.IsOTP {
-		// OTPが設定している場合
-
-		// secure属性はproductionのみにする（テストが通らないため）
-		secure := false
-		if config.Defs.DeployMode == "production" {
-			secure = true
-		}
-		// ブラウザ上でcookieを追加できるように、HttpOnlyはfalseにする
-		cookie := net.NewCookie(config.Defs.CookieDomain, secure, http.SameSiteDefaultMode, false)
-
-		sessionExp := net.NewSession()
-		cookie.Set(w, "otp-token", loginState.OTPId, sessionExp)
-
-		resp := Response{
-			OTPId: loginState.OTPId,
-			IsOTP: true,
-		}
-		net.ResponseOK(w, resp)
-	} else {
-		// OTPは設定されていない場合
+	if !loginState.IsOTP {
+		// OTPが設定されていない場合
 		// ログイントークンをcookieにセットする
 		common.LoginSetCookie(w, &loginState.LoginTokens)
 	}
+
+	net.ResponseOK(w, loginState.Response)
 
 	return nil
 }
@@ -127,7 +109,9 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 			}
 
 			return &LoginState{
-				IsOTP:       false, // OTPはセットされていないためfalse
+				Response: Response{
+					IsOTP: false, // OTPはセットされていないためfalse
+				},
 				LoginTokens: *login,
 			}, nil
 
@@ -157,8 +141,10 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 		}
 
 		return &LoginState{
-			IsOTP: true,
-			OTPId: id,
+			Response: Response{
+				IsOTP:    true,
+				OTPToken: id,
+			},
 		}, nil
 	}
 
@@ -175,7 +161,9 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 	}
 
 	return &LoginState{
-		IsOTP:       false, // OTPはセットされていないためfalse
+		Response: Response{
+			IsOTP: false, // OTPはセットされていないためfalse
+		},
 		LoginTokens: *login,
 	}, nil
 }

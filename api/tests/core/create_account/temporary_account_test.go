@@ -27,7 +27,7 @@ func TestSuccess(t *testing.T) {
 	}
 	ip := "192.168.1.1"
 
-	clientCheckToken, err := createaccount.CreateTemporaryAccount(ctx, form, ip)
+	clientToken, err := createaccount.CreateTemporaryAccount(ctx, form, ip)
 	require.NoError(t, err)
 
 	// 有効期限を確認するため一旦sleepする
@@ -38,7 +38,7 @@ func TestSuccess(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	element, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
+	element, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
 	require.NoError(t, err)
 
 	require.NotEqual(t, len(element.MailToken), 0, "mail tokenが存在する")
@@ -49,7 +49,7 @@ func TestSuccess(t *testing.T) {
 	require.NotEqual(t, element.Password, form.Password, "パスワードがハッシュ化されている")
 	require.Equal(t, element.Mail, form.Mail, "メールアドレスがある")
 
-	require.Equal(t, element.ClientCheckToken, clientCheckToken)
+	require.Equal(t, element.ClientToken, clientToken)
 
 	now := time.Now()
 	require.NotEqual(t, now.Sub(element.CreateDate), time.Duration(0), "ちゃんと作成日時が定義されている")

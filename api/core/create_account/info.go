@@ -15,6 +15,8 @@ import (
 )
 
 type InfoRequestForm struct {
+	ClientToken string `json:"client_token"`
+
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	UserName  string `json:"user_name"`
@@ -36,18 +38,12 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(errors.New("parse not failed")).Caller()
 	}
 
-	bufferToken, err := net.GetCookie(r, "buffer-token")
-	if err != nil || len(bufferToken) == 0 {
-		// cookieが存在しない、valueが存在しない場合は403を返す
-		return status.NewForbiddenError(errors.New("cookie is not found")).Caller()
-	}
-
 	ip := net.GetIPAddress(r)
 	userAgent := net.GetUserAgent(r)
 
 	ctx := r.Context()
 
-	login, err := InsertUserInfo(ctx, bufferToken, userData, ip, userAgent)
+	login, err := InsertUserInfo(ctx, userData.ClientToken, userData, ip, userAgent)
 	if err != nil {
 		return err
 	}
@@ -61,14 +57,14 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 // ユーザ情報を入力し、アカウントを正式に登録します
 //
 // 登録後、userIdを返します
-func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestForm, ip string, userAgent string) (*common.LoginTokens, error) {
+func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestForm, ip string, userAgent string) (*common.LoginTokens, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
-	buffer, err := models.GetCreateAccountBufferByBufferToken(ctx, db, bufferToken)
+	buffer, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
 	if err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
@@ -81,6 +77,11 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 	// 有効期限が切れている場合は、400を返す
 	if common.CheckExpired(&buffer.Period) {
 		return nil, status.NewBadRequestError(errors.New("expired")).Caller().AddCode(net.TimeOutError)
+	}
+
+	// メールアドレスが未認証の場合は400を返す
+	if !buffer.Verify {
+		return nil, status.NewBadRequestError(errors.New("email address is unauthenticated")).Caller()
 	}
 
 	userId := utils.CreateID(30)
@@ -136,8 +137,7 @@ func InsertUserInfo(ctx context.Context, bufferToken string, user InfoRequestFor
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
-	// CreateAccontBufferは削除する
-	if err := models.DeleteCreateAccountBuffer(ctx, db, buffer.BufferToken); err != nil {
+	if err := models.DeleteMailCertification(ctx, db, buffer.MailToken); err != nil {
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 

@@ -24,8 +24,6 @@ func CreateVerifyHandler(w http.ResponseWriter, r *http.Request) {
 		createVerifyWSHandler(w, r)
 	case http.MethodPost:
 		createVerifyPostHandler(w, r)
-	case http.MethodHead:
-		createAcceptPostHandler(w, r)
 	default:
 		RootHandler(w, r)
 	}
@@ -68,13 +66,6 @@ func createVerifyWSHandler(w http.ResponseWriter, r *http.Request) {
 // メールアドレスから開いたときににトークンを送信してcookie作成
 func createVerifyPostHandler(w http.ResponseWriter, r *http.Request) {
 	if err := createaccount.CreateVerifyHandler(w, r); err != nil {
-		net.ResponseError(w, err)
-	}
-}
-
-// WS接続中メールアドレスで確認できた場合にWSを閉じてここにトークンを送信しcookie作成
-func createAcceptPostHandler(w http.ResponseWriter, r *http.Request) {
-	if err := createaccount.CreateAcceptHandler(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }

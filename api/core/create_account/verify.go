@@ -4,13 +4,10 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"time"
 
-	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
@@ -20,14 +17,11 @@ type VerifyRequestForm struct {
 }
 
 type VerifyResponse struct {
-	IsKeepThisPage   bool   `json:"keep_this_page"`
-	BufferToken      string `json:"buffer_token"`
-	ClientCheckToken string `json:"client_check_token"`
+	IsKeepThisPage bool   `json:"keep_this_page"`
+	ClientToken    string `json:"client_token"`
 }
 
 // mail tokenを受け取り、該当するメールアドレスを認証済みにします。
-// さらに、CreateAccountBufferにアップデートし、openNewWindowがtrueの場合は、BufferTokenをcookieに入れます。
-// openNewWindowがfalseの場合、ユーザが手動でこのページで続きを行えるようにclientCheckTokenを返します
 //
 // Request Form (application/json):
 //	{
@@ -50,21 +44,6 @@ func CreateVerifyHandler(w http.ResponseWriter, r *http.Request) error {
 	verify, err := CreateVerify(ctx, postForm.MailToken)
 	if err != nil {
 		return err
-	}
-
-	// 開いたベージでそのまま続ける場合はcookieを設定する
-	if verify.IsKeepThisPage {
-		// secure属性はproductionのみにする（テストが通らないため）
-		secure := false
-		if config.Defs.DeployMode == "production" {
-			secure = true
-		}
-		// ブラウザ上でcookieを追加できるように、HttpOnlyはfalseにする
-		cookie := net.NewCookie(config.Defs.CookieDomain, secure, http.SameSiteDefaultMode, false)
-
-		// 有効期限: 同一セッション
-		cookieExp := net.NewSession()
-		cookie.Set(w, "buffer-token", verify.BufferToken, cookieExp)
 	}
 
 	net.ResponseOK(w, verify)
@@ -99,38 +78,14 @@ func CreateVerify(ctx context.Context, mailToken string) (*VerifyResponse, error
 		return nil, status.NewBadRequestError(errors.New("Expired")).Caller().AddCode(net.TimeOutError)
 	}
 
-	var bufferToken string
-
-	if certificationEntry.OpenNewWindow {
-		// Websocketの監視は終わっているため、ユーザ情報をCreateAccountBufferに移行してこのentryは削除する
-		bufferToken = utils.CreateID(20)
-		buffer := &models.CreateAccountBuffer{
-			BufferToken: bufferToken,
-			Period: models.Period{
-				CreateDate:   time.Now(),
-				PeriodMinute: 60,
-			},
-			UserMailPW: certificationEntry.UserMailPW,
-		}
-		if err := buffer.Add(ctx, db); err != nil {
-			return nil, status.NewInternalServerErrorError(err).Caller()
-		}
-
-		if err := models.DeleteMailCertification(ctx, db, mailToken); err != nil {
-			return nil, status.NewInternalServerErrorError(err).Caller()
-		}
-
-	} else {
-		// 認証: trueにする
-		certificationEntry.Verify = true
-		if err := certificationEntry.Add(ctx, db); err != nil {
-			return nil, status.NewInternalServerErrorError(err).Caller()
-		}
+	// 認証: trueにする
+	certificationEntry.Verify = true
+	if err := certificationEntry.Add(ctx, db); err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	return &VerifyResponse{
-		IsKeepThisPage:   certificationEntry.OpenNewWindow,
-		BufferToken:      bufferToken,
-		ClientCheckToken: certificationEntry.ClientCheckToken,
+		IsKeepThisPage: certificationEntry.OpenNewWindow,
+		ClientToken:    certificationEntry.ClientToken,
 	}, nil
 }

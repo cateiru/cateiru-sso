@@ -59,6 +59,13 @@ func TestOTPEnable(t *testing.T) {
 
 		return cert != nil && len(cert.OnetimePasswordBackups) == 10 && len(cert.OnetimePasswordSecret) != 0
 	}, "")
+
+	goretry.Retry(t, func() bool {
+		buff, err := models.GetOTPBufferByID(ctx, db, otpData.Id)
+		require.NoError(t, err)
+
+		return buff == nil
+	}, "bufferは削除されている")
 }
 
 func TestOTPDisable(t *testing.T) {

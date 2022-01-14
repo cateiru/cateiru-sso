@@ -30,7 +30,7 @@ type PostForm struct {
 
 // レスポンスの型
 type Response struct {
-	ClientCheckToken string `json:"client_check_token"`
+	ClientToken string `json:"client_token"`
 }
 
 // テンプレートに適用する用の型
@@ -63,13 +63,13 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 	ip := net.GetIPAddress(r)
 	ctx := r.Context()
 
-	clientCheckToken, err := CreateTemporaryAccount(ctx, postForm, ip)
+	clientToken, err := CreateTemporaryAccount(ctx, postForm, ip)
 	if err != nil {
 		return err
 	}
 
 	response := Response{
-		ClientCheckToken: clientCheckToken,
+		ClientToken: clientToken,
 	}
 
 	net.ResponseOK(w, response)
@@ -141,24 +141,24 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 		Password: hashedPW.Key,
 		Salt:     hashedPW.Salt,
 	}
-	clientCheckToken, err := createVerifyMail(ctx, db, user)
+	clientToken, err := createVerifyMail(ctx, db, user)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
-	return clientCheckToken, nil
+	return clientToken, nil
 }
 
 // メール認証を開始します
 //
-// client_check_token(wsを接続するのに使用するトークンを返します)
+// client_token(wsを接続するのに使用する&認証後ユーザ情報を設定するためのトークンを返します)
 func createVerifyMail(ctx context.Context, db *database.Database, user models.UserMailPW) (string, error) {
 	mailToken := utils.CreateID(20)
-	clientCheckToken := utils.CreateID(20)
+	clientToken := utils.CreateID(20)
 
 	mailVerify := &models.MailCertification{
-		MailToken:        mailToken,
-		ClientCheckToken: clientCheckToken,
+		MailToken:   mailToken,
+		ClientToken: clientToken,
 
 		OpenNewWindow:  false,
 		Verify:         false,
@@ -189,9 +189,9 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 	}
 
 	logging.Sugar.Debugf(
-		"Send verify email. mail: %s, client check token: %s", user.Mail, clientCheckToken)
+		"Send verify email. mail: %s, client check token: %s", user.Mail, clientToken)
 
-	return clientCheckToken, nil
+	return clientToken, nil
 }
 
 // メールアドレス認証メールを送信する
