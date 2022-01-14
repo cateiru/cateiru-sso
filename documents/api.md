@@ -25,7 +25,7 @@
 
         ```ts
         {
-            client_check_token: string,
+            client_token: string,
         }
         ```
 
@@ -35,7 +35,7 @@
   - Websocketに変わる
   - メール認証の可否をリアルタイムに取得する
   - Req
-    - `?cct=`: `POST /create`で帰ってきたClientCheckTokenを指定する
+    - `?cct=`: `POST /create`で帰ってきたClientTokenを指定する
   - Res
     - 認証された場合、Websocketで`true`という文字列が返る
     - Websocketのcloseはclient側で行い、サーバ側で終了した場合はエラーである。
@@ -56,17 +56,9 @@
     ```ts
     {
         keep_this_page: boolean, // Websocketがすでに閉じている = 元のウィンドウが消されている場合はtrueが帰ってくる。
-        buffer_token: string, // ? 何故あるのか忘れた。 keep_this_pageがtrueのときのみある
-        client_check_token: string, // keep_this_pageがfalseで元ウィンドウが開かれていた場合、ユーザにどちらのウィンドウで操作するかを選択してもらう。メールから開いたウィンドウで続きをする場合、このtokenを使用して`HEAD /create/verify`にアクセスしてcookieをセットする
+        client_token: string,
     }
     ```
-
-- HEAD
-  - WebsocketでVerify=trueになった場合、このエンドポイントを叩きcookieをセットする
-  - Req
-    - `?token=client_check_token`
-  - Cookie
-    - `buffer-token`: `/create/info`で使用する
 
 ## `/create/info`
 
@@ -79,6 +71,8 @@
 
     ```ts
     {
+        client_token: string,
+
         first_name: string,
         last_name: string,
 
@@ -110,12 +104,12 @@
     ```
 
   - Res
-    - application/json or null
+    - application/json
 
     ```ts
     {
         is_otp: boolean, // OTPが必要かどうか
-        otp_id: string, // `otp_token` cookieにセットされているやつ
+        otp_token: string,
     }
     ```
 
@@ -134,6 +128,7 @@
     ```ts
     {
         passcode: string, // OTPのパスコード
+        otp_token: string,
     }
     ```
 
