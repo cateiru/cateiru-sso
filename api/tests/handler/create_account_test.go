@@ -70,11 +70,11 @@ func TestCreateAccount(t *testing.T) {
 	err := respToJson(resp, &response)
 	require.NoError(t, err)
 
-	t.Log(response.ClientCheckToken)
+	t.Log(response.ClientToken)
 
-	require.NotEqual(t, len(response.ClientCheckToken), 0, "ちゃんとclientCheckTokenが返ってくる")
+	require.NotEqual(t, len(response.ClientToken), 0, "ちゃんとclientTokenが返ってくる")
 
-	mailToken := getMailToken(t, ctx, response.ClientCheckToken)
+	mailToken := getMailToken(t, ctx, response.ClientToken)
 
 	// Step.2 ----
 
@@ -85,16 +85,13 @@ func TestCreateAccount(t *testing.T) {
 	// メール認証URLにアクセスする & bufferTokenのcookieが適用される
 	s.Post(t, "/create/verify", verifyForm)
 
-	// Step.3 ----
-
 	time.Sleep(1 * time.Second)
-
-	// cookieを設定する
-	s.Head(t, fmt.Sprintf("/create/verify?token=%s", response.ClientCheckToken))
 
 	// Step.4 ----
 
 	userForm := createaccount.InfoRequestForm{
+		ClientToken: response.ClientToken,
+
 		FirstName: FirstName,
 		LastName:  LastName,
 		UserName:  UserName,
@@ -181,7 +178,7 @@ func TestObserve(t *testing.T) {
 	}
 	ip := "192.168.1.1"
 
-	clientCheckToken, err := createaccount.CreateTemporaryAccount(ctx, form, ip)
+	clientToken, err := createaccount.CreateTemporaryAccount(ctx, form, ip)
 	require.NoError(t, err)
 
 	////
@@ -190,12 +187,12 @@ func TestObserve(t *testing.T) {
 
 	d := wstest.NewDialer(server)
 
-	c, resp, err := d.Dial(fmt.Sprintf("ws://whatever/create/verify?cct=%s", clientCheckToken), nil)
+	c, resp, err := d.Dial(fmt.Sprintf("ws://whatever/create/verify?cct=%s", clientToken), nil)
 	require.NoError(t, err)
 	got, want := resp.StatusCode, http.StatusSwitchingProtocols
 	require.Equal(t, got, want)
 
-	go verifyMail(ctx, t, clientCheckToken)
+	go verifyMail(ctx, t, clientToken)
 
 	// 受信待機
 	var respm bool
@@ -210,8 +207,8 @@ func TestObserve(t *testing.T) {
 	require.True(t, respm)
 }
 
-// clientCheckTokenからmailTokenを取得する
-func getMailToken(t *testing.T, ctx context.Context, clientCheckToken string) string {
+// clientTokenからmailTokenを取得する
+func getMailToken(t *testing.T, ctx context.Context, clientToken string) string {
 	db, err := database.NewDatabase(ctx)
 	require.NoError(t, err)
 	defer db.Close()
@@ -219,7 +216,7 @@ func getMailToken(t *testing.T, ctx context.Context, clientCheckToken string) st
 	var mailToken string
 
 	goretry.Retry(t, func() bool {
-		entry, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
+		entry, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
 		require.NoError(t, err)
 
 		if entry != nil {
@@ -244,7 +241,7 @@ func respToJson(resp *http.Response, obj interface{}) error {
 	return json.Unmarshal(tools.ConvertByteResp(resp), obj)
 }
 
-func verifyMail(ctx context.Context, t *testing.T, clientCheckToken string) {
+func verifyMail(ctx context.Context, t *testing.T, clientToken string) {
 	// 3秒間待機する: WSで待機するため
 	time.Sleep(3 * time.Second)
 
@@ -252,7 +249,7 @@ func verifyMail(ctx context.Context, t *testing.T, clientCheckToken string) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	cert, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
+	cert, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
 	require.NoError(t, err)
 	require.NotNil(t, cert)
 
