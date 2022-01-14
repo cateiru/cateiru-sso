@@ -61,4 +61,11 @@ func TestFrogetPW(t *testing.T) {
 
 		return cert != nil && secure.ValidatePW(newPassword, cert.Password, cert.Salt)
 	}, "パスワードが変更されている")
+
+	goretry.Retry(t, func() bool {
+		forget, err := models.GetPWForgetByToken(ctx, db, forgetToken)
+		require.NoError(t, err)
+
+		return forget == nil
+	}, "forgetが削除されている")
 }

@@ -48,6 +48,11 @@ func GetPWForgetByMail(ctx context.Context, db *database.Database, mail string) 
 	return entities, nil
 }
 
+func DeletePWForgetByToken(ctx context.Context, db *database.Database, token string) error {
+	key := database.CreateNameKey("PWForget", token)
+	return db.Delete(ctx, key)
+}
+
 func (c *PWForget) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("PWForget", c.ForgetToken)
 

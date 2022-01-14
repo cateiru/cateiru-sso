@@ -48,4 +48,14 @@ func TestPWForget(t *testing.T) {
 	entities, err := models.GetPWForgetByMail(ctx, db, dummy.Mail)
 	require.NoError(t, err)
 	require.Len(t, entities, 1)
+
+	err = models.DeletePWForgetByToken(ctx, db, token)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetPWForgetByToken(ctx, db, token)
+		require.NoError(t, err)
+
+		return entity == nil
+	}, "削除されている")
 }
