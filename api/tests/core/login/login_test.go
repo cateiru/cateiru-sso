@@ -138,5 +138,5 @@ func TestLoginOTP(t *testing.T) {
 
 	require.NotNil(t, loginState)
 	require.True(t, loginState.IsOTP)
-	require.NotEmpty(t, loginState.OTPId)
+	require.NotEmpty(t, loginState.OTPToken)
 }
