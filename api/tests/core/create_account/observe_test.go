@@ -43,7 +43,7 @@ func TestObserve(t *testing.T) {
 	}
 	ip := "192.168.1.1"
 
-	clientCheckToken, err := createaccount.CreateTemporaryAccount(ctx, form, ip)
+	clientToken, err := createaccount.CreateTemporaryAccount(ctx, form, ip)
 	require.NoError(t, err)
 
 	////
@@ -52,12 +52,12 @@ func TestObserve(t *testing.T) {
 
 	d := wstest.NewDialer(server)
 
-	c, resp, err := d.Dial(fmt.Sprintf("ws://whatever/?cct=%s", clientCheckToken), nil)
+	c, resp, err := d.Dial(fmt.Sprintf("ws://whatever/?cct=%s", clientToken), nil)
 	require.NoError(t, err)
 	got, want := resp.StatusCode, http.StatusSwitchingProtocols
 	require.Equal(t, got, want)
 
-	go verifyMail(ctx, t, clientCheckToken)
+	go verifyMail(ctx, t, clientToken)
 
 	// 受信待機
 	var respm bool
@@ -72,7 +72,7 @@ func TestObserve(t *testing.T) {
 	require.True(t, respm)
 }
 
-func verifyMail(ctx context.Context, t *testing.T, clientCheckToken string) {
+func verifyMail(ctx context.Context, t *testing.T, clientToken string) {
 	// 3秒間待機する: WSで待機するため
 	time.Sleep(3 * time.Second)
 
@@ -80,7 +80,7 @@ func verifyMail(ctx context.Context, t *testing.T, clientCheckToken string) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	cert, err := models.GetMailCertificationByCheckToken(ctx, db, clientCheckToken)
+	cert, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
 	require.NoError(t, err)
 	require.NotNil(t, cert)
 

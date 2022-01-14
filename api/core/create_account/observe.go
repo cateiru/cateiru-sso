@@ -19,7 +19,7 @@ import (
 //
 // もし、認証されずcloseされた場合は、メールに送信されたURLから続きを始めるため、OpenNewWindowをtrueにします。
 func MailVerifyObserve(w http.ResponseWriter, r *http.Request) error {
-	clientCheckToken, err := net.GetQuery(r, "cct")
+	clientToken, err := net.GetQuery(r, "cct")
 	ctx := r.Context()
 	// クエリパラメータがない場合は400を返す
 	if err != nil {
@@ -38,14 +38,14 @@ func MailVerifyObserve(w http.ResponseWriter, r *http.Request) error {
 			func(ws *websocket.Conn) {
 				isVerified := false
 
-				defer closeWS(ctx, db, clientCheckToken, isVerified)
+				defer closeWS(ctx, db, clientToken, isVerified)
 
 				quit := make(chan bool)
 
-				logging.Sugar.Debugf("Start websocket. clientCheckToken: %s", clientCheckToken)
+				logging.Sugar.Debugf("Start websocket. clientToken: %s", clientToken)
 
-				go send(ctx, db, ws, quit, clientCheckToken, &isVerified)
-				receive(ctx, db, ws, quit, clientCheckToken)
+				go send(ctx, db, ws, quit, clientToken, &isVerified)
+				receive(ctx, db, ws, quit, clientToken)
 			}),
 	}
 	s.ServeHTTP(w, r)
@@ -90,7 +90,7 @@ func send(ctx context.Context, db *database.Database, ws *websocket.Conn, quit c
 				return
 			}
 
-			entry, err := models.GetMailCertificationByCheckToken(ctx, db, token)
+			entry, err := models.GetMailCertificationByClientToken(ctx, db, token)
 			if err != nil {
 				logging.Sugar.Error(err)
 				ws.Close()
@@ -125,7 +125,7 @@ func send(ctx context.Context, db *database.Database, ws *websocket.Conn, quit c
 func closeWS(ctx context.Context, db *database.Database, token string, isVerified bool) {
 	if !isVerified {
 		// 認証されずcloseされた場合は、メールに送信されたURLから続きを始めるため、OpenNewWindowをtrueにする
-		entry, err := models.GetMailCertificationByCheckToken(ctx, db, token)
+		entry, err := models.GetMailCertificationByClientToken(ctx, db, token)
 		if err != nil || entry == nil {
 			logging.Sugar.Error(err)
 			return
