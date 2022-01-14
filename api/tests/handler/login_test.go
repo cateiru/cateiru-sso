@@ -88,6 +88,7 @@ func TestLoginOTP(t *testing.T) {
 
 	otpSend := login.OTPRequest{
 		Passcode: passcode,
+		OtpToken: response.OTPToken,
 	}
 
 	s.Post(t, "/login/otp", otpSend)
