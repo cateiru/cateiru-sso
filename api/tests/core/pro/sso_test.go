@@ -45,7 +45,7 @@ func TestGetSSO(t *testing.T) {
 			return false
 		}
 
-		return len(services) == 1 && services[0].SSOPublicKey == tokens.PublicKey
+		return len(services) == 1 && services[0].PublicKey == tokens.PublicKey
 	}, "取得できる")
 
 	// --- 削除する

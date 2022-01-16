@@ -42,7 +42,7 @@ func DeleteSSOServiceByPublicKey(ctx context.Context, db *database.Database, pub
 }
 
 func (c *SSOService) Add(ctx context.Context, db *database.Database) error {
-	key := database.CreateNameKey("SSOService", c.SSOPublicKey)
+	key := database.CreateNameKey("SSOService", c.PublicKey)
 
 	return db.Put(ctx, key, c)
 }

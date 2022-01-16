@@ -28,15 +28,16 @@ func TestSSOService(t *testing.T) {
 	// 複数追加する
 	for _, publicKey := range publicKeys {
 		entity := models.SSOService{
-			SSOPublicKey: publicKey,
+			PublicKey: publicKey,
 
-			SSOSecretKey:  utils.CreateID(0),
-			SSOPrivateKey: utils.CreateID(0),
+			TokenDecryption: utils.CreateID(0),
+			PrivateKey:      utils.CreateID(0),
 
-			Name:      "Test",
-			FromUrl:   []string{"https://example.com/login"},
-			ToUrl:     []string{"https://example.com/login/redirect"},
-			LoginOnly: false,
+			Issuer:       "test_user",
+			ServiceName:  "Test",
+			ServiceImage: "",
+			FromUrl:      []string{"https://example.com/login"},
+			ToUrl:        []string{"https://example.com/login/redirect"},
 
 			UserId: models.UserId{
 				UserId: dummy.UserID,

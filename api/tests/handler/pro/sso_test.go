@@ -61,7 +61,7 @@ func TestSSO(t *testing.T) {
 
 	require.NotEmpty(t, keys.PrivateKey)
 	require.NotEmpty(t, keys.PublicKey)
-	require.NotEmpty(t, keys.SecretKey)
+	require.NotEmpty(t, keys.TokenDecryption)
 
 	// --- SSO一覧を取得する
 

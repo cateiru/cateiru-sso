@@ -24,9 +24,9 @@ type AddRequestForm struct {
 }
 
 type AddResponse struct {
-	PublicKey  string `json:"public_key"`
-	SecretKey  string `json:"secret_key"`
-	PrivateKey string `json:"private_key"`
+	PublicKey       string `json:"public_key"`
+	TokenDecryption string `json:"token_cryption"`
+	PrivateKey      string `json:"private_key"`
 }
 
 func AddSSOHandler(w http.ResponseWriter, r *http.Request) error {
@@ -84,22 +84,21 @@ func AddSSO(ctx context.Context, db *database.Database, userId string, form *Add
 	}
 
 	publicKey := utils.CreateID(0)
-	secretKey := utils.CreateID(20)
+	tokenDecryption := utils.CreateID(20)
 	privateKey := utils.CreateID(0)
 
 	service := models.SSOService{
-		SSOPublicKey: publicKey,
+		PublicKey: publicKey,
 
-		SSOSecretKey:  secretKey,
-		SSOPrivateKey: privateKey,
+		TokenDecryption: tokenDecryption,
+		PrivateKey:      privateKey,
 
-		Name:      form.Name,
-		FromUrl:   form.FromURL,
-		ToUrl:     form.ToURL,
-		LoginOnly: form.LoginOnly,
+		Issuer:       userId,
+		ServiceName:  form.Name,
+		ServiceImage: "", // TODO
 
-		SessionTokenPeriod: form.SessionTokenPeriod,
-		RefreshTokenPeriod: form.RefreshTokenPeriod,
+		FromUrl: form.FromURL,
+		ToUrl:   form.ToURL,
 
 		UserId: models.UserId{
 			UserId: userId,
@@ -111,8 +110,8 @@ func AddSSO(ctx context.Context, db *database.Database, userId string, form *Add
 	}
 
 	return &AddResponse{
-		PublicKey:  publicKey,
-		SecretKey:  secretKey,
-		PrivateKey: privateKey,
+		PublicKey:       publicKey,
+		TokenDecryption: tokenDecryption,
+		PrivateKey:      privateKey,
 	}, nil
 }

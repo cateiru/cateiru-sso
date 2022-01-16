@@ -142,34 +142,23 @@ type RefreshInfo struct {
 // SSO情報
 // SessionTokenPeriod, RefreshTokenPeriodはOptional
 type SSOService struct {
-	SSOPublicKey string `datastore:"ssoPublicKey" json:"sso_publickey"`
+	PublicKey string `datastore:"publicKey" json:"publickey"`
 
-	SSOSecretKey  string `datastore:"ssoSecretKey" json:"sso_secretkey"`
-	SSOPrivateKey string `datastore:"ssoPrivateKey" json:"sso_privatekey"`
+	TokenDecryption string `datastore:"tokenDecryption" json:"token_cryption"`
+	PrivateKey      string `datastore:"privateKey" json:"privatekey"`
 
-	Name      string   `datastore:"name" json:"name"`
-	FromUrl   []string `datastore:"fromUrl" json:"from_url"`
-	ToUrl     []string `datastore:"toUrl" json:"to_url"`
-	LoginOnly bool     `datastore:"loginOnly" json:"login_only"`
+	Issuer       string `datastore:"issuer" json:"issuer"`
+	ServiceName  string `datastore:"serviceName" json:"service_name"`
+	ServiceImage string `datastore:"serviceImage" json:"service_image"`
 
-	SessionTokenPeriod int `datastore:"sessionTokenPeriod,omitempty" json:"session_token_period"`
-	RefreshTokenPeriod int `datastore:"refreshTokenPeriod,omitempty" json:"refresh_token_period"`
+	FromUrl []string `datastore:"fromUrl" json:"from_url"`
+	ToUrl   []string `datastore:"toUrl" json:"to_url"`
 
 	UserId
 }
 
-// SSOのセッショントークン
 type SSOSession struct {
-	SSOSessionToken string `datastore:"ssoSessionToken" json:"sso_session_token"`
-
-	Period
-	UserId
-}
-
-// SSOのリフレッシュトークン
-type SSORefreshToken struct {
-	SSOSessionToken string `datastore:"ssoSessionToken" json:"sso_session_token"`
-	SSORefreshToken string `datastore:"ssoRefreshToken" json:"sso_refresh_token"`
+	Token string `datastore:"token" json:"token"`
 
 	Period
 	UserId
