@@ -16,7 +16,9 @@ import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
 import PasswordChecklist from 'react-password-checklist';
 import PasswordStrengthBar from 'react-password-strength-bar';
 
-const UserPassword = () => {
+const UserPassword: React.FC<{submit: (values: FieldValues) => void}> = ({
+  submit,
+}) => {
   const {
     handleSubmit,
     register,
@@ -26,16 +28,6 @@ const UserPassword = () => {
   const [show, setShow] = React.useState(false);
   const [pass, setPass] = React.useState('');
   const [pwOK, setPwOK] = React.useState(false);
-
-  const submit = (values: FieldValues) => {
-    return new Promise(() => {
-      setTimeout(() => {
-        alert(JSON.stringify(values, null, 2));
-      }, 3000);
-    });
-  };
-
-  console.log(errors.email);
 
   return (
     <Box width={{base: '90%', md: '600px'}}>

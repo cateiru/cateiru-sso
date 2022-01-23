@@ -1,7 +1,23 @@
 import {Flex} from '@chakra-ui/react';
-import UserPassword from './UserPassword';
+import {useRouter} from 'next/router';
+import React from 'react';
+import SelectCreate, {CreateType} from './SelectCreate';
 
-const CreateAccountPage = () => {
+const CreateAccountPage: React.FC = () => {
+  const [mailToken, setMailToken] = React.useState('');
+  const [selectType, setSelectType] = React.useState(CreateType.Initialize);
+
+  const router = useRouter();
+  React.useEffect(() => {
+    if (!router.isReady) return;
+    const query = router.query;
+
+    if (typeof query['token'] === 'string') {
+      setMailToken(query['token']);
+      setSelectType(CreateType.ValidateMail);
+    }
+  }, [router.isReady, router.query]);
+
   return (
     <Flex
       justifyContent="center"
@@ -11,7 +27,11 @@ const CreateAccountPage = () => {
       height="80vh"
       px={{base: '1rem', md: '5rem'}}
     >
-      <UserPassword />
+      <SelectCreate
+        selectType={selectType}
+        mailToken={mailToken}
+        setSelectType={setSelectType}
+      />
     </Flex>
   );
 };
