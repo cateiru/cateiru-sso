@@ -28,6 +28,7 @@ const SelectCreate: React.FC<SelectProps> = ({
     initialStep: 0,
   });
   const [mail, setMail] = React.useState('＼(^o^)／');
+  const [recaptcha, setRecaptcha] = React.useState('');
 
   React.useEffect(() => {
     if (selectType === CreateType.ValidateMail) {
@@ -46,7 +47,10 @@ const SelectCreate: React.FC<SelectProps> = ({
       case CreateType.Initialize:
         return (
           <>
-            <UserPassword submit={submit} />
+            <UserPassword
+              submit={submit}
+              setToken={token => setRecaptcha(token)}
+            />
           </>
         );
       case CreateType.SendMail:

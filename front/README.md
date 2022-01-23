@@ -19,6 +19,7 @@ yarn lint
 ## Environments
 
 ```env
-API_DOMAIN=
+NEXT_PUBLIC_API_URL=
 GOOGLE_ANALYTICS_ID=
+NExT_PUBLIC_RE_CAPTCHA=
 ```
