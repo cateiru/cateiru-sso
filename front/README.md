@@ -20,4 +20,5 @@ yarn lint
 
 ```env
 API_DOMAIN=
+GOOGLE_ANALYTICS_ID=
 ```
