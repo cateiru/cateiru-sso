@@ -9,6 +9,7 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import React from 'react';
+import Logo from './Logo';
 
 const Footer = () => {
   return (
@@ -26,7 +27,9 @@ const Footer = () => {
         >
           <Box flex="1">
             <Link to="/" _focus={{boxShadow: 'none'}}>
-              <Box width="10rem">TODO: LOGO</Box>
+              <Box width="10rem">
+                <Logo />
+              </Box>
             </Link>
           </Box>
           <Stack
