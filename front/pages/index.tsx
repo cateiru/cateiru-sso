@@ -1,8 +1,14 @@
-import {Box} from '@chakra-ui/react';
 import type {NextPage} from 'next';
+import Title from '../components/common/Title';
+import TopPage from '../components/top/TopPage';
 
 const Home: NextPage = () => {
-  return <Box></Box>;
+  return (
+    <>
+      <Title title="Top | CateiruSSO" />
+      <TopPage />
+    </>
+  );
 };
 
 export default Home;
