@@ -10,7 +10,7 @@ import {
   Box,
 } from '@chakra-ui/react';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
+
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
@@ -19,8 +19,7 @@ import PasswordStrengthBar from 'react-password-strength-bar';
 
 const UserPassword: React.FC<{
   submit: (values: FieldValues) => void;
-  setToken: (token: string) => void;
-}> = ({submit, setToken}) => {
+}> = ({submit}) => {
   const {
     handleSubmit,
     register,
@@ -30,21 +29,6 @@ const UserPassword: React.FC<{
   const [show, setShow] = React.useState(false);
   const [pass, setPass] = React.useState('');
   const [pwOK, setPwOK] = React.useState(false);
-
-  const {executeRecaptcha} = useGoogleReCaptcha();
-  const handleReCaptchaVerify = React.useCallback(async () => {
-    if (!executeRecaptcha) {
-      console.log('Execute recaptcha not yet available');
-      return;
-    }
-
-    const token = await executeRecaptcha();
-    setToken(token);
-  }, [executeRecaptcha]);
-
-  React.useEffect(() => {
-    handleReCaptchaVerify();
-  }, [executeRecaptcha]);
 
   return (
     <Box width={{base: '90%', md: '600px'}}>

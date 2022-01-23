@@ -1,6 +1,7 @@
 import {Box} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
 import React from 'react';
+import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {FieldValues} from 'react-hook-form';
 import Flow from './Flow';
 import UserPassword from './UserPassword';
@@ -42,15 +43,30 @@ const SelectCreate: React.FC<SelectProps> = ({
     setSelectType(CreateType.SendMail);
   };
 
+  const {executeRecaptcha} = useGoogleReCaptcha();
+  const handleReCaptchaVerify = React.useCallback(async () => {
+    if (!executeRecaptcha) {
+      console.log('Execute recaptcha not yet available');
+      return;
+    }
+
+    const token = await executeRecaptcha();
+    setRecaptcha(token);
+  }, [executeRecaptcha, setRecaptcha]);
+
+  // reCAPTCHAのトークンを取得する
+  React.useEffect(() => {
+    if (selectType === CreateType.Initialize) {
+      handleReCaptchaVerify();
+    }
+  }, [executeRecaptcha, selectType]);
+
   const Select = () => {
     switch (selectType) {
       case CreateType.Initialize:
         return (
           <>
-            <UserPassword
-              submit={submit}
-              setToken={token => setRecaptcha(token)}
-            />
+            <UserPassword submit={submit} />
           </>
         );
       case CreateType.SendMail:

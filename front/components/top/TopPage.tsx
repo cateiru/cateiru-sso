@@ -13,7 +13,7 @@ const TopPage = () => {
       px={{base: '1rem', md: '5rem'}}
     >
       <Box marginBottom="1rem">
-        <Box width={{base: '20rem', sm: '30rem', md: '50rem', lg: '60rem'}}>
+        <Box width={{base: '20rem', md: '30rem', lg: '45rem'}}>
           <Logo />
         </Box>
         <Center>
