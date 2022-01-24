@@ -6,6 +6,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/routes"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -20,9 +21,12 @@ func main() {
 
 	routes.Routes(mux)
 
+	corsConfig := net.CorsConfig()
+	handler := corsConfig.Handler(mux)
+
 	server := &http.Server{
 		Addr:    config.Defs.Address + ":" + config.Defs.Port,
-		Handler: h2c.NewHandler(mux, h2s),
+		Handler: h2c.NewHandler(handler, h2s),
 	}
 	defer server.Close()
 
