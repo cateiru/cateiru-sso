@@ -2,6 +2,7 @@ import {Box} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
 import React from 'react';
 import {FieldValues} from 'react-hook-form';
+import {useCreateTemp} from '../../hooks/useCreate';
 import Flow from './Flow';
 import UserPassword from './UserPassword';
 import ValidateMail from './ValidateMai';
@@ -28,6 +29,7 @@ const SelectCreate: React.FC<SelectProps> = ({
     initialStep: 0,
   });
   const [mail, setMail] = React.useState('＼(^o^)／');
+  const [create, clientToken] = useCreateTemp();
 
   React.useEffect(() => {
     if (selectType === CreateType.ValidateMail) {
@@ -40,8 +42,16 @@ const SelectCreate: React.FC<SelectProps> = ({
     nextStep();
     setSelectType(CreateType.SendMail);
 
+    // API叩く
+    create(values.email, values.password, recaptcha);
+
     console.log(recaptcha);
   };
+
+  // TODO: clientTokenでws
+  React.useEffect(() => {
+    console.log(clientToken);
+  }, [clientToken]);
 
   const Select = () => {
     switch (selectType) {

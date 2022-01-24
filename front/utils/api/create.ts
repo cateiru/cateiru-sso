@@ -1,4 +1,4 @@
-import {API} from './abstract';
+import {API} from './api';
 
 interface CreateResponse {
   client_token: string;
@@ -10,7 +10,7 @@ interface CreateResponse {
  * @param {string} recaptcha - reCAPTCHA token
  * @returns {string} - client_token
  */
-export async function create(
+export async function createTemp(
   mail: string,
   password: string,
   recaptcha: string
