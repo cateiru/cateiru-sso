@@ -18,11 +18,7 @@ func CorsConfig() *cors.Cors {
 }
 
 func url() []string {
-	urls := []string{config.Defs.CookieDomain}
-
-	if config.Defs.DeployMode != "production" {
-		urls = append(urls, "http://localhost")
-	}
+	urls := []string{config.Defs.CORS}
 
 	return urls
 }
