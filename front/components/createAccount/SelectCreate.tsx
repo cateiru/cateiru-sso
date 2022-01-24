@@ -3,7 +3,9 @@ import {useSteps} from 'chakra-ui-steps';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {FieldValues} from 'react-hook-form';
+import {useSetRecoilState, useRecoilValue} from 'recoil';
 import {useCreateTemp} from '../../hooks/useCreate';
+import {CTState, CreateNextState} from '../../utils/state/atom';
 import Flow from './Flow';
 import UserPassword from './UserPassword';
 import ValidateMail from './ValidateMai';
@@ -25,8 +27,8 @@ const SelectCreate: React.FC = () => {
   const [mailToken, setMailToken] = React.useState('');
   const [mail, setMail] = React.useState('＼(^o^)／');
   const [create, clientToken, err] = useCreateTemp();
-  const [next, setNext] = React.useState(false);
-  const [ct, setCT] = React.useState('');
+  const setCT = useSetRecoilState(CTState);
+  const next = useRecoilValue(CreateNextState);
 
   // クエリパラメータから取得する（あれば）
   const router = useRouter();
@@ -74,17 +76,7 @@ const SelectCreate: React.FC = () => {
 
   const Validate = () =>
     React.useMemo(() => {
-      return (
-        <ValidateMail
-          token={mailToken}
-          setCT={t => {
-            setCT(t);
-          }}
-          next={() => {
-            setNext(true);
-          }}
-        />
-      );
+      return <ValidateMail token={mailToken} />;
     }, [mailToken]);
 
   const Select = () =>
@@ -99,13 +91,7 @@ const SelectCreate: React.FC = () => {
         case CreateType.SendMail:
           return (
             <>
-              <WaitMail
-                mail={mail}
-                token={ct}
-                next={() => {
-                  setNext(true);
-                }}
-              />
+              <WaitMail mail={mail} />
             </>
           );
         case CreateType.ValidateMail:
@@ -115,7 +101,7 @@ const SelectCreate: React.FC = () => {
             </>
           );
         case CreateType.Info:
-          return <></>;
+          return <>TODO</>;
         case CreateType.Error:
           return <Heading>Oops!</Heading>;
         default:

@@ -1,14 +1,16 @@
 import {Heading, Button, Spinner} from '@chakra-ui/react';
 import React from 'react';
+import {useSetRecoilState, useRecoilState} from 'recoil';
 import useVerify from '../../hooks/useVerify';
+import {CTState, CreateNextState} from '../../utils/state/atom';
 
 const ValidateMail: React.FC<{
   token: string;
-  setCT: (t: string) => void;
-  next: () => void;
-}> = ({token, setCT, next}) => {
+}> = ({token}) => {
   const [verify, isKeep, ct, error] = useVerify();
   const [load, setLoad] = React.useState(true);
+  const setCT = useSetRecoilState(CTState);
+  const [next, setNext] = useRecoilState(CreateNextState);
 
   React.useEffect(() => {
     console.log(token);
@@ -16,7 +18,7 @@ const ValidateMail: React.FC<{
 
   // API叩く
   React.useEffect(() => {
-    if (token.length !== 0) {
+    if (token.length !== 0 && !next) {
       verify(token);
     }
   }, []);
@@ -27,13 +29,13 @@ const ValidateMail: React.FC<{
 
       // CTをセットする
       setCT(ct);
-
-      // isKeepがtrueの場合は強制的に次へ進む
-      if (isKeep) {
-        next();
-      }
     }
-  }, [ct]);
+
+    // isKeepがtrueの場合は強制的に次へ進む
+    if (isKeep) {
+      setNext(true);
+    }
+  }, [ct, isKeep]);
 
   return (
     <>
@@ -47,7 +49,13 @@ const ValidateMail: React.FC<{
             <>
               <Heading>メールアドレスを確認しました</Heading>
               {isKeep || (
-                <Button colorScheme="blue" mt="2rem" onClick={next}>
+                <Button
+                  colorScheme="blue"
+                  mt="2rem"
+                  onClick={() => {
+                    setNext(true);
+                  }}
+                >
                   このページで続きをする
                 </Button>
               )}
