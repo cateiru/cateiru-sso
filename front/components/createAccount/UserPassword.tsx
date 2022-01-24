@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 
+import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
@@ -18,7 +19,7 @@ import PasswordChecklist from 'react-password-checklist';
 import PasswordStrengthBar from 'react-password-strength-bar';
 
 const UserPassword: React.FC<{
-  submit: (values: FieldValues) => void;
+  submit: (values: FieldValues, recaptcha: string) => void;
 }> = ({submit}) => {
   const {
     handleSubmit,
@@ -29,10 +30,31 @@ const UserPassword: React.FC<{
   const [show, setShow] = React.useState(false);
   const [pass, setPass] = React.useState('');
   const [pwOK, setPwOK] = React.useState(false);
+  const [recaptcha, setRecaptcha] = React.useState('');
+
+  const {executeRecaptcha} = useGoogleReCaptcha();
+  const handleReCaptchaVerify = React.useCallback(async () => {
+    if (!executeRecaptcha) {
+      console.log('Execute recaptcha not yet available');
+      return;
+    }
+
+    const token = await executeRecaptcha();
+    setRecaptcha(token);
+  }, [executeRecaptcha, setRecaptcha]);
+
+  // reCAPTCHAのトークンを取得する
+  React.useEffect(() => {
+    handleReCaptchaVerify();
+  }, [executeRecaptcha]);
+
+  const submitHandler = (values: FieldValues) => {
+    submit(values, recaptcha);
+  };
 
   return (
     <Box width={{base: '90%', md: '600px'}}>
-      <form onSubmit={handleSubmit(submit)}>
+      <form onSubmit={handleSubmit(submitHandler)}>
         <FormControl isInvalid={errors.email}>
           <FormLabel htmlFor="email">メールアドレス</FormLabel>
           <Input

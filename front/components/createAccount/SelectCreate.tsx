@@ -1,12 +1,14 @@
 import {Box} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
+import {GoogleReCaptchaProvider} from 'react-google-recaptcha-v3';
 import {FieldValues} from 'react-hook-form';
 import Flow from './Flow';
 import UserPassword from './UserPassword';
 import ValidateMail from './ValidateMai';
 import WaitMail from './WaitMailValidate';
+
+const reCAPTCHA = process.env.NEXT_PUBLIC_RE_CAPTCHA;
 
 export enum CreateType {
   Initialize,
@@ -29,7 +31,6 @@ const SelectCreate: React.FC<SelectProps> = ({
     initialStep: 0,
   });
   const [mail, setMail] = React.useState('＼(^o^)／');
-  const [recaptcha, setRecaptcha] = React.useState('');
 
   React.useEffect(() => {
     if (selectType === CreateType.ValidateMail) {
@@ -37,29 +38,13 @@ const SelectCreate: React.FC<SelectProps> = ({
     }
   }, [selectType]);
 
-  const submit = (values: FieldValues) => {
+  const submit = (values: FieldValues, recaptcha: string) => {
     setMail(values.email);
     nextStep();
     setSelectType(CreateType.SendMail);
+
+    console.log(recaptcha);
   };
-
-  const {executeRecaptcha} = useGoogleReCaptcha();
-  const handleReCaptchaVerify = React.useCallback(async () => {
-    if (!executeRecaptcha) {
-      console.log('Execute recaptcha not yet available');
-      return;
-    }
-
-    const token = await executeRecaptcha();
-    setRecaptcha(token);
-  }, [executeRecaptcha, setRecaptcha]);
-
-  // reCAPTCHAのトークンを取得する
-  React.useEffect(() => {
-    if (selectType === CreateType.Initialize) {
-      handleReCaptchaVerify();
-    }
-  }, [executeRecaptcha, selectType]);
 
   const Select = () => {
     switch (selectType) {

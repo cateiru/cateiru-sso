@@ -26,11 +26,13 @@ const Footer = () => {
           spacing={{base: '10', lg: '28'}}
         >
           <Box flex="1">
-            <Link to="/" _focus={{boxShadow: 'none'}}>
-              <Box width="10rem">
-                <Logo />
-              </Box>
-            </Link>
+            <Box width="10rem">
+              <NextLink href="/" passHref>
+                <Link _focus={{boxShadow: 'none'}}>
+                  <Logo />
+                </Link>
+              </NextLink>
+            </Box>
           </Box>
           <Stack
             direction={{
