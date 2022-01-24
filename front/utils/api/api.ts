@@ -1,3 +1,5 @@
+import decodeErrorCode from './errorCode';
+
 export class API {
   private apiUrl = process.env.NEXT_PUBLIC_API_URL;
   private config: RequestInit = {};
@@ -13,6 +15,9 @@ export class API {
 
     if (!response.ok) {
       const resp = await response.json();
+      if (resp['code']) {
+        throw new Error(decodeErrorCode(resp['code']));
+      }
       throw new Error(`${resp['status_code']}::ID:${resp['error_id']}`);
     }
 

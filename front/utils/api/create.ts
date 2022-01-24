@@ -4,6 +4,11 @@ interface CreateResponse {
   client_token: string;
 }
 
+interface VerifyResponse {
+  keep_this_page: boolean;
+  client_token: string;
+}
+
 /**
  * @param {string} mail - user email
  * @param {string} password - user password
@@ -23,4 +28,15 @@ export async function createTemp(
   const resp = (await (await api.connect('/create')).json()) as CreateResponse;
 
   return resp['client_token'];
+}
+
+/**
+ * @param {string} mailToken - メールアドレスに送信されるトークン
+ * @returns {VerifyResponse} - ClientTokenとこのページでやるかの選択
+ */
+export async function createVerify(mailToken: string): Promise<VerifyResponse> {
+  const api = new API();
+  api.post(JSON.stringify({mail_token: mailToken}));
+
+  return (await (await api.connect('/create/verify')).json()) as VerifyResponse;
 }

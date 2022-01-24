@@ -34,13 +34,19 @@ const UserPassword: React.FC<{
 
   const {executeRecaptcha} = useGoogleReCaptcha();
   const handleReCaptchaVerify = React.useCallback(async () => {
+    let unmounted = false;
     if (!executeRecaptcha) {
-      console.log('Execute recaptcha not yet available');
       return;
     }
-
     const token = await executeRecaptcha();
-    setRecaptcha(token);
+
+    if (!unmounted) {
+      setRecaptcha(token);
+    }
+
+    return () => {
+      unmounted = true;
+    };
   }, [executeRecaptcha, setRecaptcha]);
 
   // reCAPTCHAのトークンを取得する

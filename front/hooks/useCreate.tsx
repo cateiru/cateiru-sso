@@ -4,10 +4,12 @@ import {createTemp} from '../utils/api/create';
 
 export const useCreateTemp = (): [
   (mail: string, password: string, recaptcha: string) => void,
-  string
+  string,
+  boolean
 ] => {
   const toast = useToast();
   const [clientToken, setClientToken] = React.useState('');
+  const [err, setError] = React.useState(false);
 
   const create = (mail: string, password: string, recaptcha: string) => {
     const f = async () => {
@@ -16,6 +18,7 @@ export const useCreateTemp = (): [
         setClientToken(token);
       } catch (error) {
         if (error instanceof Error) {
+          setError(true);
           toast({
             title: 'エラー',
             description: error.message,
@@ -29,5 +32,5 @@ export const useCreateTemp = (): [
     f();
   };
 
-  return [create, clientToken];
+  return [create, clientToken, err];
 };
