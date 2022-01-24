@@ -1,14 +1,11 @@
 import {Box} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
 import React from 'react';
-import {GoogleReCaptchaProvider} from 'react-google-recaptcha-v3';
 import {FieldValues} from 'react-hook-form';
 import Flow from './Flow';
 import UserPassword from './UserPassword';
 import ValidateMail from './ValidateMai';
 import WaitMail from './WaitMailValidate';
-
-const reCAPTCHA = process.env.NEXT_PUBLIC_RE_CAPTCHA;
 
 export enum CreateType {
   Initialize,
