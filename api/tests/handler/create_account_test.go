@@ -47,7 +47,7 @@ func TestCreateAccount(t *testing.T) {
 		Password  = "password"
 		FirstName = "first"
 		LastName  = "last"
-		UserName  = "cateiru"
+		UserName  = utils.CreateID(5)
 		Theme     = "dark"
 	)
 
