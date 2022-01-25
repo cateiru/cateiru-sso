@@ -19,6 +19,7 @@ func TestUser(t *testing.T) {
 
 	ctx := context.Background()
 	userId := utils.CreateID(30)
+	userName := "cateiru"
 
 	db, err := database.NewDatabase(ctx)
 	require.NoError(t, err)
@@ -27,7 +28,7 @@ func TestUser(t *testing.T) {
 	userData := &models.User{
 		FirstName: "あ",
 		LastName:  "い",
-		UserName:  "cateiru",
+		UserName:  userName,
 
 		AvatarUrl: "",
 
@@ -54,6 +55,14 @@ func TestUser(t *testing.T) {
 
 	require.Equal(t, entry.FirstName, "あ")
 	require.Equal(t, entry.UserName, "cateiru")
+
+	entity, err := models.GetUserDataByUserName(ctx, db, userName)
+	require.NoError(t, err)
+	require.NotNil(t, entity)
+
+	require.Equal(t, entity.FirstName, "あ")
+	require.Equal(t, entity.UserName, "cateiru")
+
 }
 
 func TestTXUser(t *testing.T) {

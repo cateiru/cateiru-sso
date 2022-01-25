@@ -12,6 +12,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils/secure"
+	"github.com/cateiru/go-http-error/httperror/status"
 	"google.golang.org/api/iterator"
 )
 
@@ -35,6 +36,21 @@ func CheckExistMail(ctx context.Context, db *database.Database, mail string) (bo
 		return false, err
 	}
 	return true, nil
+}
+
+// ユーザ名が存在するかチェックする
+func CheckUsername(ctx context.Context, db *database.Database, userName string) (bool, error) {
+	user, err := models.GetUserDataByUserName(ctx, db, userName)
+	if err != nil {
+		return false, status.NewInternalServerErrorError(err)
+	}
+
+	exist := false
+	if user != nil {
+		exist = true
+	}
+
+	return exist, nil
 }
 
 // IPアドレス、メールアドレスがブロックリストに存在しているのかを確認する

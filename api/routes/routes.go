@@ -14,6 +14,8 @@ func Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/create/verify", handler.CreateVerifyHandler)
 	mux.HandleFunc("/create/info", handler.CreateInfoHandler)
 
+	mux.HandleFunc("/check/username", handler.CheckHandler)
+
 	mux.HandleFunc("/login", handler.LoginHandler)
 	mux.HandleFunc("/login/onetime", handler.LoginOnetimeHandler)
 	mux.HandleFunc("/login/sso", handler.LoginSSOHandler)

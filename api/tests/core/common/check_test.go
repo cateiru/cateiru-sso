@@ -188,3 +188,32 @@ func TestCheckOTPBackups(t *testing.T) {
 	require.False(t, check)
 	require.False(t, result2)
 }
+
+func TestCheckUserName(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser()
+	info, err := dummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		user, err := models.GetUserDataByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return user != nil
+	}, "")
+
+	result, err := common.CheckUsername(ctx, db, info.UserName)
+	require.NoError(t, err)
+	require.True(t, result)
+
+	result, err = common.CheckUsername(ctx, db, "Hey")
+	require.NoError(t, err)
+	require.False(t, result)
+}

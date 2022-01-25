@@ -84,6 +84,15 @@ func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestFor
 		return nil, status.NewBadRequestError(errors.New("email address is unauthenticated")).Caller()
 	}
 
+	// UserIDはユニークであるためすでに存在している場合は400を返す
+	existUserName, err := common.CheckUsername(ctx, db, user.UserName)
+	if err != nil {
+		return nil, err
+	}
+	if existUserName {
+		return nil, status.NewBadRequestError(errors.New("user id is already exists")).Caller().AddCode(net.ExistUserName)
+	}
+
 	userId := utils.CreateID(30)
 
 	// ユーザ認証情報追加

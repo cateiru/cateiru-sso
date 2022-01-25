@@ -59,7 +59,7 @@ func TestInfo(t *testing.T) {
 	user := createaccount.InfoRequestForm{
 		FirstName: "名前",
 		LastName:  "名字",
-		UserName:  "cateiru",
+		UserName:  utils.CreateID(20),
 
 		Theme:     "dark",
 		AvatarUrl: "",

@@ -3,7 +3,9 @@ package models
 import (
 	"context"
 
+	"cloud.google.com/go/datastore"
 	"github.com/cateiru/cateiru-sso/api/database"
+	"google.golang.org/api/iterator"
 )
 
 func GetUserDataByUserID(ctx context.Context, db *database.Database, userId string) (*User, error) {
@@ -18,6 +20,24 @@ func GetUserDataByUserID(ctx context.Context, db *database.Database, userId stri
 	// 要素が見つからない場合はnilを返す
 	if notExist {
 		return nil, nil
+	}
+
+	return &entry, nil
+}
+
+func GetUserDataByUserName(ctx context.Context, db *database.Database, userName string) (*User, error) {
+	query := datastore.NewQuery("User").Filter("userName =", userName)
+
+	iter := db.Run(ctx, query)
+
+	var entry User
+	_, err := iter.Next(&entry)
+	// 要素がなにもない場合nilを返す
+	if err == iterator.Done {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	return &entry, nil

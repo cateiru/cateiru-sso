@@ -29,6 +29,7 @@ const (
 	TimeOutError          // 時間切れ
 	AlreadyDone           // 既に認証済み
 	AccountNoExist        // アカウント無い
+	ExistUserName         // ユーザIDがすでにある
 )
 
 type AbstractResponse struct {
