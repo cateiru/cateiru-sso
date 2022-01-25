@@ -22,7 +22,7 @@ type Config struct {
 
 	Issuer string
 
-	ReChaptchaSecret string
+	ReCaptchaSecret string
 
 	MailgunAPIKey     string
 	MailFromDomain    string
@@ -51,10 +51,10 @@ func Init() {
 
 		Issuer: GetIssuer(),
 
-		ReChaptchaSecret: os.Getenv("RECAPTCHA_SECRET"),
+		ReCaptchaSecret: os.Getenv("RECAPTCHA_SECRET"),
 
 		MailgunAPIKey:     os.Getenv("MAILGUN_API_KEY"),
-		MailFromDomain:    os.Getenv("MAIL_FROM_DOMAIL"),
+		MailFromDomain:    os.Getenv("MAIL_FROM_DOMAIN"),
 		SenderMailAddress: os.Getenv("SENDER_MAIL_ADDRESS"),
 
 		DatastoreParentKey: GetDatastoreParentKey(),

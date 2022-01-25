@@ -1,4 +1,4 @@
-// Google reCHAPCHAの検証を行う
+// Google reCAPCHAの検証を行う
 //
 // Based on: https://qiita.com/supertaihei02/items/fb15726fd603de7dcefb
 package secure
@@ -31,11 +31,11 @@ type RecaptchaResponse struct {
 func NewReCaptcha() *ReCaptcha {
 	return &ReCaptcha{
 		ServerName: "https://www.google.com/recaptcha/api/siteverify",
-		Secret:     config.Defs.ReChaptchaSecret,
+		Secret:     config.Defs.ReCaptchaSecret,
 	}
 }
 
-// reCHAPTCHAの検証を行い、結果をboolで返す
+// reCAPTCHAの検証を行い、結果をboolで返す
 func (c *ReCaptcha) Validate(token string, remoteIp string) (bool, error) {
 	result, err := c.ValidateOrder(token, remoteIp)
 	if err != nil {
@@ -45,7 +45,7 @@ func (c *ReCaptcha) Validate(token string, remoteIp string) (bool, error) {
 	return result.Success, nil
 }
 
-// reCHAPTCHAの検証を行う
+// reCAPTCHAの検証を行う
 func (c *ReCaptcha) ValidateOrder(token string, remoteIp string) (*RecaptchaResponse, error) {
 	resp, err := http.PostForm(c.ServerName, url.Values{"secret": {c.Secret}, "remoteip": {remoteIp}, "response": {token}})
 	if err != nil {
@@ -63,7 +63,7 @@ func (c *ReCaptcha) ValidateOrder(token string, remoteIp string) (*RecaptchaResp
 	}
 
 	logging.Sugar.Debugf(
-		"reCHAPTCHA validate. Token: %s Status: %v, Score: %v, Action: %s, ErrCode: %v",
+		"reCAPTCHA validate. Token: %s Status: %v, Score: %v, Action: %s, ErrCode: %v",
 		token, r.Success, r.Score, r.Action, r.ErrorCodes)
 
 	return &r, nil

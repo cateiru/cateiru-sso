@@ -22,7 +22,7 @@ export async function createTemp(
 ): Promise<string> {
   const api = new API();
   api.post(
-    JSON.stringify({mail: mail, password: password, re_chaptcha: recaptcha})
+    JSON.stringify({mail: mail, password: password, re_captcha: recaptcha})
   );
 
   const resp = (await (await api.connect('/create')).json()) as CreateResponse;

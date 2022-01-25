@@ -44,7 +44,7 @@ func TestSetConfig(t *testing.T) {
 
 	require.Equal(t, config.Defs.Issuer, "test")
 
-	require.Equal(t, config.Defs.ReChaptchaSecret, "secret")
+	require.Equal(t, config.Defs.ReCaptchaSecret, "secret")
 
 	require.Equal(t, config.Defs.MailgunAPIKey, "mailgun")
 	require.Equal(t, config.Defs.MailFromDomain, "example.com")

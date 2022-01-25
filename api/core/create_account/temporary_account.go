@@ -23,9 +23,9 @@ const VERIFY_MAIL_TEMPLATE_PATH = "verify_mail"
 
 // POSTのformの型
 type PostForm struct {
-	Mail       string `json:"mail"`
-	Password   string `json:"password"`
-	ReCHAPTCHA string `json:"re_chaptcha"`
+	Mail      string `json:"mail"`
+	Password  string `json:"password"`
+	ReCAPTCHA string `json:"re_captcha"`
 }
 
 // レスポンスの型
@@ -78,15 +78,15 @@ func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (string, error) {
-	// reCHAPTCHA
+	// reCAPTCHA
 	if config.Defs.DeployMode == "production" {
-		isOk, err := secure.NewReCaptcha().Validate(form.ReCHAPTCHA, ip)
+		isOk, err := secure.NewReCaptcha().Validate(form.ReCAPTCHA, ip)
 		if err != nil {
 			return "", status.NewInternalServerErrorError(err).Caller()
 		}
-		// reCHAPTCHAが認証できなかった場合、400を返す
+		// reCAPTCHAが認証できなかった場合、400を返す
 		if !isOk {
-			return "", status.NewBadRequestError(errors.New("reCHAPTCHA is failed")).Caller().AddCode(net.BotError)
+			return "", status.NewBadRequestError(errors.New("reCAPTCHA is failed")).Caller().AddCode(net.BotError)
 		}
 	}
 

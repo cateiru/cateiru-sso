@@ -21,9 +21,9 @@ func TestSuccess(t *testing.T) {
 	ctx := context.Background()
 
 	form := &createaccount.PostForm{
-		Mail:       fmt.Sprintf("%s@example.com", utils.CreateID(4)),
-		Password:   "test",
-		ReCHAPTCHA: "",
+		Mail:      fmt.Sprintf("%s@example.com", utils.CreateID(4)),
+		Password:  "test",
+		ReCAPTCHA: "",
 	}
 	ip := "192.168.1.1"
 

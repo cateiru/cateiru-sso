@@ -17,9 +17,9 @@ import (
 )
 
 type RequestFrom struct {
-	Mail       string `json:"mail"`
-	Password   string `json:"password"`
-	ReCHAPTCHA string `json:"re_chaptcha"`
+	Mail      string `json:"mail"`
+	Password  string `json:"password"`
+	ReCAPTCHA string `json:"re_captcha"`
 }
 
 type Response struct {
@@ -71,15 +71,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 //
 // TODO: admin userの設定
 func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) (*LoginState, error) {
-	// reCHAPTCHA
+	// reCAPTCHA
 	if config.Defs.DeployMode == "production" {
-		isOk, err := secure.NewReCaptcha().Validate(form.ReCHAPTCHA, ip)
+		isOk, err := secure.NewReCaptcha().Validate(form.ReCAPTCHA, ip)
 		if err != nil {
 			return nil, status.NewInternalServerErrorError(err).Caller()
 		}
-		// reCHAPTCHAが認証できなかった場合、400を返す
+		// reCAPTCHAが認証できなかった場合、400を返す
 		if !isOk {
-			return nil, status.NewBadRequestError(errors.New("reCHAPTCHA is failed")).Caller().AddCode(net.BotError)
+			return nil, status.NewBadRequestError(errors.New("reCAPTCHA is failed")).Caller().AddCode(net.BotError)
 		}
 	}
 
