@@ -8,12 +8,12 @@ services:
       - DATASTORE_LISTEN_ADDRESS=0.0.0.0:18001
     ports:
       - 18001:18001
-    links:
-      - api
   api:
     build: .
     ports:
       - 3001:3001
+    links:
+      - datastore
     environment:
       - DEPLOY_MODE=debug
       - PORT=3001
@@ -22,9 +22,12 @@ services:
       - COOKIE_DOMAIN=localhost
       - SITE_DOMAIN=localhost:3000
       - API_DOMAIN=localhost:3001
+      - CORS=http://localhost:3000
       - ISSUER=test_user
       - RECAPTCHA_SECRET=
       - MAILGUN_API_KEY=
       - MAIL_FROM_DOMAIL=
       - SENDER_MAIL_ADDRESS=
       - DATASTORE_PARENT_KEY=test-cateiru-sso
+      - DATASTORE_PROJECT_ID=project-test
+      - DATASTORE_EMULATOR_HOST=datastore:18001

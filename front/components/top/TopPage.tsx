@@ -1,4 +1,5 @@
 import {Flex, Button, Box, Text, Center, Stack} from '@chakra-ui/react';
+import NextLink from 'next/link';
 import Logo from '../common/Logo';
 
 const TopPage = () => {
@@ -12,7 +13,7 @@ const TopPage = () => {
       px={{base: '1rem', md: '5rem'}}
     >
       <Box marginBottom="1rem">
-        <Box width={{base: '20rem', sm: '30rem', md: '50rem', lg: '60rem'}}>
+        <Box width={{base: '20rem', md: '30rem', lg: '45rem'}}>
           <Logo />
         </Box>
         <Center>
@@ -25,9 +26,11 @@ const TopPage = () => {
         <Button colorScheme="blue" variant="solid">
           ログイン
         </Button>
-        <Button colorScheme="blue" variant="outline">
-          新規登録
-        </Button>
+        <NextLink href="/create" passHref>
+          <Button colorScheme="blue" variant="outline">
+            新規登録
+          </Button>
+        </NextLink>
       </Stack>
     </Flex>
   );
