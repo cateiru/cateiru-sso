@@ -3,7 +3,7 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     id: 'build-docker-image'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}', 'api/']
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-docker-image'
     args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}']
