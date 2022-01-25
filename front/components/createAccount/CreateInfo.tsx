@@ -43,7 +43,13 @@ const CreateInfo = React.memo(() => {
   const submit = (values: FieldValues) => {
     info(values.firstName, values.lastName, values.userName, values.theme);
     setCT('');
-    router.push('/hello');
+
+    // 1秒待機してから/helloへ飛ばす（cookieがブラウザと馴染むまで）
+    return new Promise(() =>
+      setTimeout(() => {
+        router.push('/hello');
+      }, 1000)
+    );
   };
 
   return (
