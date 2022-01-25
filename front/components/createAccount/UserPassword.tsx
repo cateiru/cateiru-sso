@@ -36,24 +36,23 @@ const UserPassword: React.FC<{
 
   const {executeRecaptcha} = useGoogleReCaptcha();
   const handleReCaptchaVerify = React.useCallback(async () => {
-    let unmounted = false;
     if (!executeRecaptcha) {
       return;
     }
     const token = await executeRecaptcha();
 
-    if (!unmounted) {
-      setRecaptcha(token);
-    }
-
-    return () => {
-      unmounted = true;
-    };
+    setRecaptcha(token);
   }, [executeRecaptcha, setRecaptcha]);
 
   // reCAPTCHAのトークンを取得する
   React.useEffect(() => {
-    handleReCaptchaVerify();
+    let unmounted = false;
+    if (!unmounted) {
+      handleReCaptchaVerify();
+    }
+    return () => {
+      unmounted = true;
+    };
   }, [executeRecaptcha]);
 
   const submitHandler = (values: FieldValues) => {
