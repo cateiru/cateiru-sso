@@ -18,6 +18,8 @@ type Config struct {
 	SiteDomain   string
 	APIDomain    string
 
+	CORS string
+
 	Issuer string
 
 	ReChaptchaSecret string
@@ -44,6 +46,8 @@ func Init() {
 		CookieDomain: os.Getenv("COOKIE_DOMAIN"),
 		SiteDomain:   os.Getenv("SITE_DOMAIN"),
 		APIDomain:    os.Getenv("API_DOMAIN"),
+
+		CORS: os.Getenv("CORS"),
 
 		Issuer: GetIssuer(),
 

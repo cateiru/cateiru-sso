@@ -6,11 +6,7 @@ WORKDIR /go/src
 COPY go.mod go.sum ./
 RUN go mod download
 
-# COPY ./controller ./controller/
-# COPY ./database ./database/
-# COPY ./handler ./handler/
-# COPY ./utils ./utils/
-# COPY ./main.go ./
+COPY . ./
 
 ARG CGO_ENABLED=0
 ARG GOOS=linux
