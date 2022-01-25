@@ -15,7 +15,7 @@ export class API {
 
     if (!response.ok) {
       const resp = await response.json();
-      if (resp['code']) {
+      if (resp['code'] !== 1) {
         throw new Error(decodeErrorCode(resp['code']));
       }
       throw new Error(`${resp['status_code']}::ID:${resp['error_id']}`);

@@ -12,7 +12,9 @@ import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
+import {useSetRecoilState} from 'recoil';
 import useCreateInfo from '../../hooks/useCreateInfo';
+import {CTState} from '../../utils/state/atom';
 
 const CreateInfo = React.memo(() => {
   const {
@@ -23,6 +25,7 @@ const CreateInfo = React.memo(() => {
   const [user, setUser] = React.useState('');
   const info = useCreateInfo();
   const router = useRouter();
+  const setCT = useSetRecoilState(CTState);
 
   // TODO: ユーザ名が使われていないか確認する機能
   React.useEffect(() => {
@@ -33,7 +36,8 @@ const CreateInfo = React.memo(() => {
 
   const submit = (values: FieldValues) => {
     info(values.firstName, values.lastName, values.userName, values.theme);
-    router.push('/user');
+    setCT('');
+    router.push('/hello');
   };
 
   return (

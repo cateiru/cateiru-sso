@@ -60,6 +60,7 @@ const SelectCreate: React.FC = () => {
     if (next) {
       nextStep();
       setSelectType(CreateType.Info);
+      setNext(false);
     }
   }, [next]);
 

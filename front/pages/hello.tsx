@@ -1,7 +1,7 @@
 import Title from '../components/common/Title';
 import ShowUser from '../components/user/ShowUser';
 
-const User = () => {
+const UserHello = () => {
   return (
     <>
       <Title title="ユーザ | CateiruSSO" />
@@ -14,4 +14,4 @@ const User = () => {
   );
 };
 
-export default User;
+export default UserHello;
