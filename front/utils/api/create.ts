@@ -40,3 +40,32 @@ export async function createVerify(mailToken: string): Promise<VerifyResponse> {
 
   return (await (await api.connect('/create/verify')).json()) as VerifyResponse;
 }
+
+/**
+ * @param {string} clientToken - client token
+ * @param {string} firstName - 名前
+ * @param {string} lastName - 名字
+ * @param {string} userName - ユーザ名
+ * @param {string} theme - テーマ
+ */
+export async function createInfo(
+  clientToken: string,
+  firstName: string,
+  lastName: string,
+  userName: string,
+  theme: string
+) {
+  const api = new API();
+  api.post(
+    JSON.stringify({
+      client_token: clientToken,
+      first_name: firstName,
+      last_name: lastName,
+      user_name: userName,
+      theme: theme,
+      avatar_url: '', // これはいらなくね？
+    })
+  );
+
+  await api.connect('/create/info');
+}

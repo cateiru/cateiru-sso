@@ -3,8 +3,10 @@ import {useSteps} from 'chakra-ui-steps';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {FieldValues} from 'react-hook-form';
-import {useSetRecoilState, useRecoilValue} from 'recoil';
+import {useRecoilValue, useRecoilState} from 'recoil';
 import {useCreateTemp} from '../../hooks/useCreate';
+import useVerify from '../../hooks/useVerify';
+import useVerifySurveillance from '../../hooks/useVerifySurveillance';
 import {CTState, CreateNextState} from '../../utils/state/atom';
 import CreateInfo from './CreateInfo';
 import Flow from './Flow';
@@ -27,9 +29,11 @@ const SelectCreate: React.FC = () => {
   const [selectType, setSelectType] = React.useState(CreateType.Initialize);
   const [mailToken, setMailToken] = React.useState('');
   const [mail, setMail] = React.useState('＼(^o^)／');
-  const [create, clientToken, err] = useCreateTemp();
-  const setCT = useSetRecoilState(CTState);
-  const next = useRecoilValue(CreateNextState);
+  const [create, err] = useCreateTemp();
+  const [surveillance, receive, close] = useVerifySurveillance();
+  const [verify, isKeep, loadVerify, verifyError] = useVerify();
+  const [next, setNext] = useRecoilState(CreateNextState);
+  const ct = useRecoilValue(CTState);
 
   // クエリパラメータから取得する（あれば）
   const router = useRouter();
@@ -43,13 +47,6 @@ const SelectCreate: React.FC = () => {
       setStep(1);
     }
   }, [router.isReady, router.query]);
-
-  // clientTokenを移動する
-  React.useEffect(() => {
-    if (clientToken.length !== 0) {
-      setCT(clientToken);
-    }
-  }, [clientToken]);
 
   // APIでエラーが発生した場合
   React.useEffect(() => {
@@ -75,10 +72,31 @@ const SelectCreate: React.FC = () => {
     create(values.email, values.password, recaptcha);
   };
 
-  const Validate = () =>
-    React.useMemo(() => {
-      return <ValidateMail token={mailToken} />;
-    }, [mailToken]);
+  // 認証確認Websocket
+  React.useEffect(() => {
+    let unmounted = false;
+    if (ct.length !== 0 && !unmounted && selectType === CreateType.SendMail) {
+      surveillance(ct);
+    }
+
+    return () => {
+      unmounted = true;
+    };
+  }, [ct, selectType]);
+
+  // 確認API叩く
+  React.useEffect(() => {
+    if (mailToken.length !== 0 && selectType === CreateType.ValidateMail) {
+      verify(mailToken);
+    }
+  }, [mailToken, selectType]);
+
+  React.useEffect(() => {
+    // isKeepがtrueの場合は強制的に次へ進む
+    if (isKeep) {
+      setNext(true);
+    }
+  }, [isKeep]);
 
   const Select = () =>
     React.useMemo(() => {
@@ -92,13 +110,17 @@ const SelectCreate: React.FC = () => {
         case CreateType.SendMail:
           return (
             <>
-              <WaitMail mail={mail} />
+              <WaitMail mail={mail} receive={receive} close={close} />
             </>
           );
         case CreateType.ValidateMail:
           return (
             <>
-              <Validate />
+              <ValidateMail
+                isKeep={isKeep}
+                loadVerify={loadVerify}
+                verifyError={verifyError}
+              />
             </>
           );
         case CreateType.Info:
