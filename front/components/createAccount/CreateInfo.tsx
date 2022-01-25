@@ -8,9 +8,11 @@ import {
   Select,
   FormErrorMessage,
 } from '@chakra-ui/react';
+import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
+import useCreateInfo from '../../hooks/useCreateInfo';
 
 const CreateInfo = React.memo(() => {
   const {
@@ -19,6 +21,8 @@ const CreateInfo = React.memo(() => {
     formState: {errors, isSubmitting},
   } = useForm();
   const [user, setUser] = React.useState('');
+  const info = useCreateInfo();
+  const router = useRouter();
 
   // TODO: ユーザ名が使われていないか確認する機能
   React.useEffect(() => {
@@ -28,7 +32,8 @@ const CreateInfo = React.memo(() => {
   }, [user]);
 
   const submit = (values: FieldValues) => {
-    console.log(JSON.stringify(values));
+    info(values.firstName, values.lastName, values.userName, values.theme);
+    router.push('/user');
   };
 
   return (
