@@ -24,7 +24,7 @@ func TestSetConfig(t *testing.T) {
 	t.Setenv("RECAPTCHA_SECRET", "secret")
 
 	t.Setenv("MAILGUN_API_KEY", "mailgun")
-	t.Setenv("MAIL_FROM_DOMAIL", "example.com")
+	t.Setenv("MAIL_FROM_DOMAIN", "example.com")
 	t.Setenv("SENDER_MAIL_ADDRESS", "info@example.com")
 
 	t.Setenv("DATASTORE_PARENT_KEY", "parent_key")
