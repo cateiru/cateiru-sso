@@ -14,6 +14,7 @@ import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 import {useSetRecoilState} from 'recoil';
 import useCreateInfo from '../../hooks/useCreateInfo';
+import {checkUserName} from '../../utils/api/check';
 import {CTState} from '../../utils/state/atom';
 
 const CreateInfo = React.memo(() => {
@@ -23,14 +24,19 @@ const CreateInfo = React.memo(() => {
     formState: {errors, isSubmitting},
   } = useForm();
   const [user, setUser] = React.useState('');
+  const [existUser, setExistUser] = React.useState(false);
   const info = useCreateInfo();
   const router = useRouter();
   const setCT = useSetRecoilState(CTState);
 
-  // TODO: ユーザ名が使われていないか確認する機能
   React.useEffect(() => {
     if (user) {
-      console.log(user);
+      const f = async () => {
+        const exist = await checkUserName(user);
+        setExistUser(exist);
+      };
+
+      f();
     }
   }, [user]);
 
@@ -73,7 +79,7 @@ const CreateInfo = React.memo(() => {
             </FormErrorMessage>
           </FormControl>
         </Flex>
-        <FormControl isInvalid={errors.userName} mt="1rem">
+        <FormControl isInvalid={errors.userName || existUser} mt="1rem">
           <FormLabel htmlFor="userName">ユーザ名</FormLabel>
           <Input
             id="userName"
@@ -86,6 +92,7 @@ const CreateInfo = React.memo(() => {
           />
           <FormErrorMessage>
             {errors.userName && errors.userName.message}
+            {existUser && 'このユーザ名はすでに使用されています'}
           </FormErrorMessage>
         </FormControl>
         <FormControl isInvalid={errors.theme} mt="1rem">
@@ -109,6 +116,7 @@ const CreateInfo = React.memo(() => {
           colorScheme="blue"
           isLoading={isSubmitting}
           type="submit"
+          disabled={existUser}
         >
           これでOK
         </Button>
