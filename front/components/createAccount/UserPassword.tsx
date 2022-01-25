@@ -9,14 +9,16 @@ import {
   FormErrorMessage,
   Box,
 } from '@chakra-ui/react';
+import dynamic from 'next/dynamic';
 import React from 'react';
-
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
-import PasswordChecklist from 'react-password-checklist';
 import PasswordStrengthBar from 'react-password-strength-bar';
+const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
+  ssr: false,
+});
 
 const UserPassword: React.FC<{
   submit: (values: FieldValues, recaptcha: string) => void;

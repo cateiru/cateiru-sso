@@ -6,6 +6,7 @@ import {FieldValues} from 'react-hook-form';
 import {useSetRecoilState, useRecoilValue} from 'recoil';
 import {useCreateTemp} from '../../hooks/useCreate';
 import {CTState, CreateNextState} from '../../utils/state/atom';
+import CreateInfo from './CreateInfo';
 import Flow from './Flow';
 import UserPassword from './UserPassword';
 import ValidateMail from './ValidateMai';
@@ -101,7 +102,11 @@ const SelectCreate: React.FC = () => {
             </>
           );
         case CreateType.Info:
-          return <>TODO</>;
+          return (
+            <>
+              <CreateInfo />
+            </>
+          );
         case CreateType.Error:
           return <Heading>Oops!</Heading>;
         default:
