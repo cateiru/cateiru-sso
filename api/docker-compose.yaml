@@ -12,3 +12,15 @@ services:
       - DATASTORE_LISTEN_ADDRESS=0.0.0.0:18001
     ports:
       - "18001:18001"
+  gcs:
+    image: fsouza/fake-gcs-server
+    tty: true
+    stdin_open: true
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - 4443:4443
+    volumes:
+      - ./.data:/data/test-bucket:cached
+    command: --scheme http --public-host localhost
