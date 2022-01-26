@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/api/config"
@@ -14,15 +15,16 @@ func TestStorage(t *testing.T) {
 	config.TestInit(t)
 
 	ctx := context.Background()
-	str, err := storage.NewStorage(ctx, "test-bucket")
+	str, err := storage.NewStorage(ctx, config.Defs.StorageBucket)
 	require.NoError(t, err)
+	defer str.Close()
 
-	body := []byte("hoge")
+	body := "hoge"
 	dirs := []string{"target"}
 	filename := "files.txt"
 
 	// ファイル書き出しする
-	err = str.WriteFile(ctx, dirs, filename, body)
+	err = str.WriteFile(ctx, dirs, filename, strings.NewReader(body), "text/plain")
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {
@@ -32,8 +34,9 @@ func TestStorage(t *testing.T) {
 		return exist
 	}, "存在している")
 
-	getBody, err := str.ReadFile(ctx, dirs, filename)
+	getBody, contentType, err := str.ReadFile(ctx, dirs, filename)
 	require.NoError(t, err)
+	require.Equal(t, contentType, "text/plain")
 
-	require.Equal(t, string(body), string(getBody))
+	require.Equal(t, body, string(getBody))
 }

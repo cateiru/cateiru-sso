@@ -2,15 +2,16 @@ package storage
 
 import (
 	"context"
+	"io"
 	"io/ioutil"
 	"strings"
 
 	"cloud.google.com/go/storage"
-	"google.golang.org/api/iterator"
 )
 
 type Storage struct {
-	rc *storage.BucketHandle
+	client *storage.Client
+	rc     *storage.BucketHandle
 }
 
 func NewStorage(ctx context.Context, bucketName string) (*Storage, error) {
@@ -21,8 +22,13 @@ func NewStorage(ctx context.Context, bucketName string) (*Storage, error) {
 	rc := client.Bucket(bucketName)
 
 	return &Storage{
-		rc: rc,
+		client: client,
+		rc:     rc,
 	}, nil
+}
+
+func (s *Storage) Close() {
+	s.client.Close()
 }
 
 // Create Storage object.
@@ -47,28 +53,31 @@ func (s *Storage) FileExist(ctx context.Context, dirs []string, fileName string)
 }
 
 // Read file.
-func (s *Storage) ReadFile(ctx context.Context, dirs []string, fileName string) ([]byte, error) {
+func (s *Storage) ReadFile(ctx context.Context, dirs []string, fileName string) ([]byte, string, error) {
 	object := s.Object(dirs, fileName)
 	reader, err := object.NewReader(ctx)
+	contentType := reader.ContentType()
 	// reader.Attrs.ContentType
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	defer reader.Close()
 
 	b, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return b, nil
+	return b, contentType, nil
 }
 
 // Write file
-func (s *Storage) WriteFile(ctx context.Context, dirs []string, fileName string, body []byte) error {
+func (s *Storage) WriteFile(ctx context.Context, dirs []string, fileName string, body io.Reader, contentType string) error {
 	object := s.Object(dirs, fileName)
 	writer := object.NewWriter(ctx)
 
-	_, err := writer.Write(body)
+	writer.ContentType = contentType
+
+	_, err := io.Copy(writer, body)
 	if err != nil {
 		return err
 	}
@@ -80,24 +89,9 @@ func (s *Storage) WriteFile(ctx context.Context, dirs []string, fileName string,
 }
 
 // Delete files
-func (s *Storage) Delete(ctx context.Context, prefix string) error {
-	objects := s.rc.Objects(ctx, &storage.Query{
-		Prefix: prefix,
-	})
-
-	for {
-		attrs, err := objects.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		if err := s.rc.Object(attrs.Name).Delete(ctx); err != nil {
-			return err
-		}
-	}
-	return nil
+func (s *Storage) Delete(ctx context.Context, dirs []string, fileName string) error {
+	object := s.Object(dirs, fileName)
+	return object.Delete(ctx)
 }
 
 // disable to versioning.
