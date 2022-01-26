@@ -29,6 +29,9 @@ type Config struct {
 	SenderMailAddress string
 
 	DatastoreParentKey string
+
+	StorageDomain string
+	StorageBucket string
 }
 
 var Defs Config
@@ -58,6 +61,9 @@ func Init() {
 		SenderMailAddress: os.Getenv("SENDER_MAIL_ADDRESS"),
 
 		DatastoreParentKey: GetDatastoreParentKey(),
+
+		StorageDomain: os.Getenv("STORAGE_DOMAIN"),
+		StorageBucket: "cateiru-sso",
 	}
 }
 
@@ -66,6 +72,8 @@ func TestInit(t *testing.T) {
 
 	t.Setenv("DATASTORE_EMULATOR_HOST", "localhost:18001")
 	t.Setenv("DATASTORE_PROJECT_ID", "project-test")
+
+	t.Setenv("STORAGE_EMULATOR_HOST", "localhost:4443")
 }
 
 // envが設定されていない場合は、`develop`を指定します

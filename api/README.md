@@ -30,7 +30,7 @@ RECAPTCHA_SECRET=
 MAILGUN_API_KEY=
 
 # メール送信者のドメイン
-MAIL_FROM_DOMAIL=
+MAIL_FROM_DOMAIN=
 
 # メール送信者のメールアドレス
 SENDER_MAIL_ADDRESS=
@@ -54,6 +54,9 @@ COOKIE_DOMAIN=
 # adminユーザは、ログイン後、ワンタイムパスワードとパスワードの変更をする必要があります
 ADMIN_MAIL=
 ADMIN_PASSWORD=
+
+# cloud storageのドメイン
+STORAGE_DOMAIN=
 ```
 
 ## テスト

@@ -260,3 +260,5 @@ $RECYCLE.BIN/
 
 front/certificates/*
 !front/certificates/.gitkeep
+
+api/.data/*

@@ -42,7 +42,7 @@ func CheckExistMail(ctx context.Context, db *database.Database, mail string) (bo
 func CheckUsername(ctx context.Context, db *database.Database, userName string) (bool, error) {
 	user, err := models.GetUserDataByUserName(ctx, db, userName)
 	if err != nil {
-		return false, status.NewInternalServerErrorError(err)
+		return false, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	exist := false

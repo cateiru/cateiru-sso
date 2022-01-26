@@ -12,3 +12,7 @@ test-no-cache:
 	docker-compose up -d
 	go test -v ./... -count=1
 	docker-compose down
+
+.PHONY: dev
+test-no-cache:
+	docker-compose -f docker-compose.yaml -f docker-compose.debug.yaml up
