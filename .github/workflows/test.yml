@@ -27,38 +27,21 @@ jobs:
     name: go test
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    services:
-      datastore:
-        image: singularities/datastore-emulator
-        env:
-          DATASTORE_LISTEN_ADDRESS: 0.0.0.0:18001
-          DATASTORE_PROJECT_ID: cateiru-sso-test
-        ports:
-          - 18001:18001
-      gcs:
-        image: fsouza/fake-gcs-server
-        options: "--tyy --interactive --privileged --security-opt=seccomp:unconfined --scheme http --public-host localhost"
-        ports:
-          - 4443:4443
-        volumes:
-          - ./.data:/data/test-bucket:cached
-    env:
-      DATASTORE_EMULATOR_HOST: localhost:18001
-      DATASTORE_PROJECT_ID: cateiru-sso-test
     steps:
     - uses: actions/checkout@v2
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
         go-version: 1.17
-
     - name: Build
       working-directory: ./api
       run: go build -v ./...
 
     - name: Test
       working-directory: ./api
-      run: go test ./... -v -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic
+      run: |
+        docker-compose up -d
+        go test ./... -v -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic
     - name: Upload coverage to Codecov
       working-directory: ./api
       run: bash <(curl -s https://codecov.io/bash)
