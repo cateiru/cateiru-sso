@@ -15,4 +15,4 @@ test-no-cache:
 
 .PHONY: dev
 test-no-cache:
-	docker-compose -f docker-compose.debug.yaml up
+	docker-compose -f docker-compose.yaml -f docker-compose.debug.yaml up
