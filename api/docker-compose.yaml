@@ -22,5 +22,5 @@ services:
     ports:
       - 4443:4443
     volumes:
-      - ./.data:/data/test-bucket:cached
+      - ./.data:/data/cateiru-sso:cached
     command: --scheme http --public-host localhost
