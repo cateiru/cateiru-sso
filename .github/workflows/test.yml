@@ -35,6 +35,13 @@ jobs:
           DATASTORE_PROJECT_ID: cateiru-sso-test
         ports:
           - 18001:18001
+      gcs:
+        image: fsouza/fake-gcs-server
+        options: "--tyy --interactive --privileged --security-opt=seccomp:unconfined --scheme http --public-host localhost"
+        ports:
+          - 4443:4443
+        volumes:
+          - ./.data:/data/test-bucket:cached
     env:
       DATASTORE_EMULATOR_HOST: localhost:18001
       DATASTORE_PROJECT_ID: cateiru-sso-test
