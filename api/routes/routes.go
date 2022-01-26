@@ -38,6 +38,7 @@ func Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/user/otp/backup", handler.UserOnetimePWBackupHandler)
 	mux.HandleFunc("/user/history/access", handler.UserAccessHandler)
 	mux.HandleFunc("/user/history/login", handler.UserHistoryHandler)
+	mux.HandleFunc("/user/avator", handler.UserAvatorHandler)
 
 	mux.HandleFunc("/logout", handler.LogoutHandler)
 

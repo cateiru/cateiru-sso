@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/cateiru/cateiru-sso/api/core/user"
 	"github.com/cateiru/cateiru-sso/api/core/user/history"
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/core/user/otp"
@@ -76,6 +77,18 @@ func UserHistoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// アバターの設定
+func UserAvatorHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		AvatorPostHandler(w, r)
+	case http.MethodDelete:
+		AvatorDeleteHandler(w, r)
+	default:
+		RootHandler(w, r)
+	}
+}
+
 // メールアドレス取得
 // 全ユーザ
 // `/me`でも取得できる
@@ -132,6 +145,20 @@ func userAccessPostHandler(w http.ResponseWriter, r *http.Request) {
 // アカウントのログイン履歴取得
 func userHistoryGetHandler(w http.ResponseWriter, r *http.Request) {
 	if err := history.UserLoginHistoryHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+// アバター設定
+func AvatorPostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := user.AvatorSetHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+// アバター削除
+func AvatorDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	if err := user.DeleteAvatorHandler(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }
