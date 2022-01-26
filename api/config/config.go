@@ -29,6 +29,9 @@ type Config struct {
 	SenderMailAddress string
 
 	DatastoreParentKey string
+
+	StorageDomain string
+	StorageBucket string
 }
 
 var Defs Config
@@ -58,6 +61,9 @@ func Init() {
 		SenderMailAddress: os.Getenv("SENDER_MAIL_ADDRESS"),
 
 		DatastoreParentKey: GetDatastoreParentKey(),
+
+		StorageDomain: os.Getenv("STORAGE_DOMAIN"),
+		StorageBucket: "cateiru-sso",
 	}
 }
 
