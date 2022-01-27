@@ -1,7 +1,8 @@
-import {Box, Flex, Heading, Spinner, useColorMode} from '@chakra-ui/react';
+import {Box, Flex, Heading, useColorMode} from '@chakra-ui/react';
 import React from 'react';
 import JSONPretty from 'react-json-pretty';
 import {useGetUserInfo} from '../../hooks/useGetUserInfo';
+import Spinner from '../common/Spinner';
 
 const ShowUser = () => {
   const [get, user, err] = useGetUserInfo();
@@ -28,13 +29,7 @@ const ShowUser = () => {
       px={{base: '1rem', md: '5rem'}}
     >
       {load ? (
-        <Spinner
-          mt="2rem"
-          thickness="4px"
-          speed="0.65s"
-          color="blue.500"
-          size="xl"
-        />
+        <Spinner />
       ) : err ? (
         <>
           <Heading>あれ、もしかしてログインしていませんか？</Heading>

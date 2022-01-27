@@ -1,7 +1,8 @@
-import {Text, Heading, Spinner, Button} from '@chakra-ui/react';
+import {Text, Heading, Button} from '@chakra-ui/react';
 import React from 'react';
 import {useSetRecoilState} from 'recoil';
 import {CreateNextState} from '../../utils/state/atom';
+import Spinner from '../common/Spinner';
 
 const WaitMail = React.memo<{mail: string; receive: boolean; close: boolean}>(
   ({mail, receive, close}) => {
@@ -33,13 +34,7 @@ const WaitMail = React.memo<{mail: string; receive: boolean; close: boolean}>(
                 このページで続きをする
               </Button>
             ) : (
-              <Spinner
-                mt="2rem"
-                thickness="4px"
-                speed="0.65s"
-                color="blue.500"
-                size="xl"
-              />
+              <Spinner />
             )}
           </>
         )}

@@ -1,7 +1,8 @@
-import {Heading, Button, Spinner} from '@chakra-ui/react';
+import {Heading, Button} from '@chakra-ui/react';
 import React from 'react';
 import {useSetRecoilState} from 'recoil';
 import {CreateNextState} from '../../utils/state/atom';
+import Spinner from '../common/Spinner';
 
 const ValidateMail: React.FC<{
   isKeep: boolean;
@@ -17,7 +18,7 @@ const ValidateMail: React.FC<{
       ) : (
         <>
           {loadVerify ? (
-            <Spinner thickness="4px" speed="0.65s" color="blue.500" size="xl" />
+            <Spinner />
           ) : (
             <>
               <Heading>メールアドレスを確認しました</Heading>
