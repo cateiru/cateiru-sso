@@ -5,6 +5,7 @@ import nprogress from 'nprogress';
 import {useEffect} from 'react';
 import {RecoilRoot} from 'recoil';
 import Font from '../components/common/Font';
+import Load from '../components/common/Load';
 import Me from '../components/common/Me';
 import Page from '../components/common/Page';
 import {GA_TRACKING_ID, pageview} from '../utils/ga/gtag';
@@ -43,6 +44,7 @@ const App = ({Component, pageProps}: AppProps) => {
     <RecoilRoot>
       <ChakraProvider theme={theme}>
         <Font />
+        <Load />
         <Me>
           <Page>
             <Component {...pageProps} />

@@ -5,7 +5,7 @@ import cookieValue from '../../utils/cookie';
 import {UserState} from '../../utils/state/atom';
 
 const Me: React.FC = props => {
-  const [get, user, err] = useGetUserInfo();
+  const get = useGetUserInfo();
   const setUser = useSetRecoilState(UserState);
 
   React.useEffect(() => {
@@ -19,14 +19,6 @@ const Me: React.FC = props => {
       }
     }
   }, []);
-
-  React.useEffect(() => {
-    if (user) {
-      setUser(user);
-    } else if (err) {
-      setUser(null);
-    }
-  }, [user, err]);
 
   return <>{props.children}</>;
 };

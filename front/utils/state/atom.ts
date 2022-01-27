@@ -15,3 +15,8 @@ export const UserState = atom<UserInfo | null | undefined>({
   key: 'User',
   default: undefined,
 });
+
+export const LoadState = atom<boolean>({
+  key: 'Load',
+  default: false,
+});
