@@ -20,10 +20,10 @@ export const useGetUserInfo = (): [
         if (error instanceof Error) {
           setError(true);
           toast({
-            title: 'エラー',
-            description: error.message,
+            title: error.message,
             status: 'error',
             isClosable: true,
+            duration: 9000,
           });
         }
       }

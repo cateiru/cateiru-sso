@@ -8,6 +8,7 @@ import {useCreateTemp} from '../../hooks/useCreate';
 import useVerify from '../../hooks/useVerify';
 import useVerifySurveillance from '../../hooks/useVerifySurveillance';
 import {CTState, CreateNextState} from '../../utils/state/atom';
+import Spinner from '../common/Spinner';
 import CreateInfo from './CreateInfo';
 import Flow from './Flow';
 import UserPassword from './UserPassword';
@@ -133,7 +134,11 @@ const SelectCreate: React.FC = () => {
         case CreateType.Error:
           return <Heading>Oops!</Heading>;
         default:
-          return <></>;
+          return (
+            <>
+              <Spinner />
+            </>
+          );
       }
     }, [selectType]);
 

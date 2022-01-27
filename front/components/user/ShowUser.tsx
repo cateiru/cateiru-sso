@@ -1,7 +1,8 @@
-import {Box, Flex, Heading, Spinner, useColorMode} from '@chakra-ui/react';
+import {Box, Flex, Heading, useColorMode} from '@chakra-ui/react';
 import React from 'react';
 import JSONPretty from 'react-json-pretty';
 import {useGetUserInfo} from '../../hooks/useGetUserInfo';
+import Spinner from '../common/Spinner';
 
 const ShowUser = () => {
   const [get, user, err] = useGetUserInfo();
@@ -10,8 +11,13 @@ const ShowUser = () => {
 
   React.useEffect(() => {
     get();
-    setLoad(false);
   }, []);
+
+  React.useEffect(() => {
+    if (user || err) {
+      setLoad(false);
+    }
+  }, [user, err]);
 
   return (
     <Flex
@@ -23,13 +29,7 @@ const ShowUser = () => {
       px={{base: '1rem', md: '5rem'}}
     >
       {load ? (
-        <Spinner
-          mt="2rem"
-          thickness="4px"
-          speed="0.65s"
-          color="blue.500"
-          size="xl"
-        />
+        <Spinner />
       ) : err ? (
         <>
           <Heading>あれ、もしかしてログインしていませんか？</Heading>
@@ -55,10 +55,10 @@ const ShowUser = () => {
                   : 'line-height:1.3;color:#C53030;'
               }
               keyStyle={
-                colorMode === 'dark' ? 'color:#63B3ED;' : 'color:#086F83;'
+                colorMode === 'dark' ? 'color:#63B3ED;' : 'color:#4299E1;'
               }
               stringStyle={
-                colorMode === 'dark' ? 'color:#F6AD55;' : 'color:#975A16;'
+                colorMode === 'dark' ? 'color:#F6AD55;' : 'color:#DD6B20;'
               }
               valueStyle={
                 colorMode === 'dark' ? 'color:#68D391;' : 'color:#22543D;'
