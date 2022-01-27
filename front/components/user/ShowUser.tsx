@@ -10,8 +10,13 @@ const ShowUser = () => {
 
   React.useEffect(() => {
     get();
-    setLoad(false);
   }, []);
+
+  React.useEffect(() => {
+    if (user || err) {
+      setLoad(false);
+    }
+  }, [user, err]);
 
   return (
     <Flex
