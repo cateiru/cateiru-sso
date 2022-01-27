@@ -55,10 +55,10 @@ const ShowUser = () => {
                   : 'line-height:1.3;color:#C53030;'
               }
               keyStyle={
-                colorMode === 'dark' ? 'color:#63B3ED;' : 'color:#086F83;'
+                colorMode === 'dark' ? 'color:#63B3ED;' : 'color:#4299E1;'
               }
               stringStyle={
-                colorMode === 'dark' ? 'color:#F6AD55;' : 'color:#975A16;'
+                colorMode === 'dark' ? 'color:#F6AD55;' : 'color:#DD6B20;'
               }
               valueStyle={
                 colorMode === 'dark' ? 'color:#68D391;' : 'color:#22543D;'
