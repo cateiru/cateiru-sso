@@ -22,6 +22,7 @@ const useVerifySurveillance = (): [
         title: 'エラーによりコネクションが切断されました',
         status: 'error',
         isClosable: true,
+        duration: 9000,
       });
     });
 

@@ -22,10 +22,10 @@ const useVerify = (): [(t: string) => void, boolean, boolean, boolean] => {
         setError(true);
         if (error instanceof Error) {
           toast({
-            title: 'エラー',
-            description: error.message,
+            title: error.message,
             status: 'error',
             isClosable: true,
+            duration: 9000,
           });
         }
       }

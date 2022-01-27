@@ -28,10 +28,10 @@ const useCreateInfo = (): ((
       } catch (error) {
         if (error instanceof Error) {
           toast({
-            title: 'エラー',
-            description: error.message,
+            title: error.message,
             status: 'error',
             isClosable: true,
+            duration: 9000,
           });
         }
       }
