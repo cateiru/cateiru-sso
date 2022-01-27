@@ -43,7 +43,7 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 
 	ctx := r.Context()
 
-	login, err := InsertUserInfo(ctx, userData.ClientToken, userData, ip, userAgent)
+	login, userInfo, err := InsertUserInfo(ctx, userData.ClientToken, userData, ip, userAgent)
 	if err != nil {
 		return err
 	}
@@ -51,46 +51,48 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 	// ログイン用のトークンをcookieにセットする
 	common.LoginSetCookie(w, login)
 
+	net.ResponseOK(w, userInfo)
+
 	return nil
 }
 
 // ユーザ情報を入力し、アカウントを正式に登録します
 //
 // 登録後、userIdを返します
-func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestForm, ip string, userAgent string) (*common.LoginTokens, error) {
+func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestForm, ip string, userAgent string) (*common.LoginTokens, *models.User, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
 	buffer, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// bufferのentryがなかった場合、400を返す
 	if buffer == nil {
-		return nil, status.NewBadRequestError(errors.New("buffer is not exist")).Caller()
+		return nil, nil, status.NewBadRequestError(errors.New("buffer is not exist")).Caller()
 	}
 
 	// 有効期限が切れている場合は、400を返す
 	if common.CheckExpired(&buffer.Period) {
-		return nil, status.NewBadRequestError(errors.New("expired")).Caller().AddCode(net.TimeOutError)
+		return nil, nil, status.NewBadRequestError(errors.New("expired")).Caller().AddCode(net.TimeOutError)
 	}
 
 	// メールアドレスが未認証の場合は400を返す
 	if !buffer.Verify {
-		return nil, status.NewBadRequestError(errors.New("email address is unauthenticated")).Caller()
+		return nil, nil, status.NewBadRequestError(errors.New("email address is unauthenticated")).Caller()
 	}
 
 	// UserIDはユニークであるためすでに存在している場合は400を返す
 	existUserName, err := common.CheckUsername(ctx, db, user.UserName)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if existUserName {
-		return nil, status.NewBadRequestError(errors.New("user id is already exists")).Caller().AddCode(net.ExistUserName)
+		return nil, nil, status.NewBadRequestError(errors.New("user id is already exists")).Caller().AddCode(net.ExistUserName)
 	}
 
 	userId := utils.CreateID(30)
@@ -110,7 +112,7 @@ func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestFor
 		},
 	}
 	if err = certification.Add(ctx, db); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// ユーザ情報追加
@@ -129,7 +131,7 @@ func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestFor
 	}
 
 	if err = userInfo.Add(ctx, db); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// ユーザの権限
@@ -143,12 +145,17 @@ func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestFor
 	}
 
 	if err := role.Add(ctx, db); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
 	if err := models.DeleteMailCertification(ctx, db, buffer.MailToken); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
-	return common.LoginByUserID(ctx, db, userId, ip, userAgent)
+	loginTokens, err := common.LoginByUserID(ctx, db, userId, ip, userAgent)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return loginTokens, userInfo, nil
 }

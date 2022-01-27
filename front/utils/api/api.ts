@@ -11,7 +11,7 @@ export class API {
    * @returns {Promise<Response>} - response data.
    */
   async connect(apiPath: string): Promise<Response> {
-    const response = await fetch(`${this.apiUrl}${apiPath}`, this.config);
+    const response = await this.connectNoErr(apiPath);
 
     if (!response.ok) {
       const resp = await response.json();
@@ -21,6 +21,11 @@ export class API {
       throw new Error(`${resp['status_code']}::ID:${resp['error_id']}`);
     }
 
+    return response;
+  }
+
+  async connectNoErr(apiPath: string): Promise<Response> {
+    const response = await fetch(`${this.apiUrl}${apiPath}`, this.config);
     return response;
   }
 

@@ -1,3 +1,4 @@
+import {UserInfo} from '../state/types';
 import {API} from './api';
 
 interface CreateResponse {
@@ -47,6 +48,7 @@ export async function createVerify(mailToken: string): Promise<VerifyResponse> {
  * @param {string} lastName - 名字
  * @param {string} userName - ユーザ名
  * @param {string} theme - テーマ
+ * @returns {UserInfo} - ユーザ情報。 /meで取得したときと同じです
  */
 export async function createInfo(
   clientToken: string,
@@ -54,7 +56,7 @@ export async function createInfo(
   lastName: string,
   userName: string,
   theme: string
-) {
+): Promise<UserInfo> {
   const api = new API();
   api.post(
     JSON.stringify({
@@ -67,5 +69,5 @@ export async function createInfo(
     })
   );
 
-  await api.connect('/create/info');
+  return (await (await api.connect('/create/info')).json()) as UserInfo;
 }

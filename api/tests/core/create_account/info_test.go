@@ -68,8 +68,10 @@ func TestInfo(t *testing.T) {
 	ip := "198.51.100.0"
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
-	login, err := createaccount.InsertUserInfo(ctx, clientToken, user, ip, userAgent)
+	login, userInfo, err := createaccount.InsertUserInfo(ctx, clientToken, user, ip, userAgent)
 	require.NoError(t, err)
+
+	require.Equal(t, userInfo.FirstName, "名前")
 
 	goretry.Retry(t, func() bool {
 		session, err := models.GetSessionToken(ctx, db, login.SessionToken)
@@ -85,7 +87,7 @@ func TestInfo(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, refresh)
 
-	userInfo, err := models.GetUserDataByUserID(ctx, db, session.UserId.UserId)
+	userInfo, err = models.GetUserDataByUserID(ctx, db, session.UserId.UserId)
 	require.NoError(t, err)
 	require.Equal(t, userInfo.Mail, buffer.Mail, "メールアドレスが同じ")
 
@@ -157,6 +159,6 @@ func TestInfoUnauthenticated(t *testing.T) {
 	ip := "198.51.100.0"
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
-	_, err = createaccount.InsertUserInfo(ctx, clientToken, user, ip, userAgent)
+	_, _, err = createaccount.InsertUserInfo(ctx, clientToken, user, ip, userAgent)
 	require.Error(t, err)
 }

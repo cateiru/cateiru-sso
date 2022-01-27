@@ -15,7 +15,7 @@ import type {FieldValues} from 'react-hook-form';
 import {useSetRecoilState} from 'recoil';
 import useCreateInfo from '../../hooks/useCreateInfo';
 import {checkUserName} from '../../utils/api/check';
-import {CTState} from '../../utils/state/atom';
+import {CTState, LoadState} from '../../utils/state/atom';
 
 const CreateInfo = React.memo(() => {
   const {
@@ -28,6 +28,7 @@ const CreateInfo = React.memo(() => {
   const info = useCreateInfo();
   const router = useRouter();
   const setCT = useSetRecoilState(CTState);
+  const setLoad = useSetRecoilState(LoadState);
 
   React.useEffect(() => {
     if (user) {
@@ -41,15 +42,22 @@ const CreateInfo = React.memo(() => {
   }, [user]);
 
   const submit = (values: FieldValues) => {
-    info(values.firstName, values.lastName, values.userName, values.theme);
-    setCT('');
+    const f = async () => {
+      setLoad(true);
+      await info(
+        values.firstName,
+        values.lastName,
+        values.userName,
+        values.theme
+      );
+      setCT('');
+      setLoad(false);
+      router.push('/hello');
+    };
 
-    // 1秒待機してから/helloへ飛ばす（cookieがブラウザと馴染むまで）
-    return new Promise(() =>
-      setTimeout(() => {
-        router.push('/hello');
-      }, 1000)
-    );
+    f();
+
+    return () => {};
   };
 
   return (

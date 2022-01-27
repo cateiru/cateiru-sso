@@ -1,15 +1,11 @@
 import {useToast} from '@chakra-ui/react';
-import React from 'react';
-import getUserInfo, {UserInfo} from '../utils/api/userInfo';
+import {useSetRecoilState} from 'recoil';
+import getUserInfo from '../utils/api/userInfo';
+import {UserState} from '../utils/state/atom';
 
-export const useGetUserInfo = (): [
-  () => void,
-  UserInfo | undefined,
-  boolean
-] => {
+export const useGetUserInfo = (): (() => void) => {
   const toast = useToast();
-  const [user, setUser] = React.useState<UserInfo>();
-  const [err, setError] = React.useState(false);
+  const setUser = useSetRecoilState(UserState);
 
   const get = () => {
     const f = async () => {
@@ -18,7 +14,7 @@ export const useGetUserInfo = (): [
         setUser(user);
       } catch (error) {
         if (error instanceof Error) {
-          setError(true);
+          setUser(null);
           toast({
             title: error.message,
             status: 'error',
@@ -32,5 +28,5 @@ export const useGetUserInfo = (): [
     f();
   };
 
-  return [get, user, err];
+  return get;
 };

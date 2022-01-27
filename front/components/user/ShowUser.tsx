@@ -1,23 +1,13 @@
 import {Box, Flex, Heading, useColorMode} from '@chakra-ui/react';
 import React from 'react';
 import JSONPretty from 'react-json-pretty';
-import {useGetUserInfo} from '../../hooks/useGetUserInfo';
+import {useRecoilValue} from 'recoil';
+import {UserState} from '../../utils/state/atom';
 import Spinner from '../common/Spinner';
 
 const ShowUser = () => {
-  const [get, user, err] = useGetUserInfo();
-  const [load, setLoad] = React.useState(true);
+  const user = useRecoilValue(UserState);
   const {colorMode} = useColorMode();
-
-  React.useEffect(() => {
-    get();
-  }, []);
-
-  React.useEffect(() => {
-    if (user || err) {
-      setLoad(false);
-    }
-  }, [user, err]);
 
   return (
     <Flex
@@ -28,9 +18,9 @@ const ShowUser = () => {
       height="80vh"
       px={{base: '1rem', md: '5rem'}}
     >
-      {load ? (
+      {user === undefined ? (
         <Spinner />
-      ) : err ? (
+      ) : user === null ? (
         <>
           <Heading>あれ、もしかしてログインしていませんか？</Heading>
         </>
