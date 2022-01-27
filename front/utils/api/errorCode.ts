@@ -13,6 +13,7 @@ export default function decodeErrorCode(code: number): string {
     // 6: 時間切れ
     // 7: すでに認証済み
     // 8: アカウントない
+    // 9: ログインできなかった
     case 2:
       return '予測不可能なエラー';
     case 3:
@@ -27,6 +28,10 @@ export default function decodeErrorCode(code: number): string {
       return 'あれ？すでに認証されているようです';
     case 8:
       return 'あれ？あなたのアカウントはありませんよ？';
+    case 9:
+      return 'そのユーザIDはすでに存在しています';
+    case 10:
+      return 'ログインができていません';
     default:
       return 'エラー';
   }

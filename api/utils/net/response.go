@@ -30,6 +30,7 @@ const (
 	AlreadyDone           // 既に認証済み
 	AccountNoExist        // アカウント無い
 	ExistUserName         // ユーザIDがすでにある
+	FailedLogin           // ログインできない
 )
 
 type AbstractResponse struct {
