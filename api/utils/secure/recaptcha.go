@@ -5,6 +5,7 @@ package secure
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
+	"github.com/cateiru/go-http-error/httperror/status"
 )
 
 type ReCaptcha struct {
@@ -36,13 +38,17 @@ func NewReCaptcha() *ReCaptcha {
 }
 
 // reCAPTCHAの検証を行い、結果をboolで返す
+// 0.5を閾値とする
 func (c *ReCaptcha) Validate(token string, remoteIp string) (bool, error) {
 	result, err := c.ValidateOrder(token, remoteIp)
 	if err != nil {
-		return false, err
+		return false, status.NewInternalServerErrorError(err).Caller()
+	}
+	if !result.Success {
+		return false, status.NewBadRequestError(errors.New("reCAPTCHA token is failed")).Caller()
 	}
 
-	return result.Success, nil
+	return result.Score > 0.5, nil
 }
 
 // reCAPTCHAの検証を行う

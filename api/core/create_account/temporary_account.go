@@ -82,7 +82,7 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 	if config.Defs.DeployMode == "production" {
 		isOk, err := secure.NewReCaptcha().Validate(form.ReCAPTCHA, ip)
 		if err != nil {
-			return "", status.NewInternalServerErrorError(err).Caller()
+			return "", err
 		}
 		// reCAPTCHAが認証できなかった場合、400を返す
 		if !isOk {

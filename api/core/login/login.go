@@ -75,7 +75,7 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 	if config.Defs.DeployMode == "production" {
 		isOk, err := secure.NewReCaptcha().Validate(form.ReCAPTCHA, ip)
 		if err != nil {
-			return nil, status.NewInternalServerErrorError(err).Caller()
+			return nil, err
 		}
 		// reCAPTCHAが認証できなかった場合、400を返す
 		if !isOk {
