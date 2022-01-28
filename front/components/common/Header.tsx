@@ -49,13 +49,7 @@ const Header = React.memo(() => {
 
   return (
     <Box width="100%">
-      <Flex
-        paddingLeft="1rem"
-        paddingRight={{base: '1rem'}}
-        paddingTop={{base: '1rem', sm: '0'}}
-        marginY=".5rem"
-        height="50px"
-      >
+      <Flex paddingX="1rem" marginY=".5rem" height="50px">
         <NextLink href="/">
           <Box width="160px" cursor="pointer">
             <Logo />
