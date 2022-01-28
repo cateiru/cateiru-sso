@@ -22,6 +22,12 @@ func GetRoleByUserID(ctx context.Context, db *database.Database, userId string) 
 	return &role, nil
 }
 
+func DeleteRoleByUserID(ctx context.Context, db *database.Database, userId string) error {
+	key := database.CreateNameKey("Role", userId)
+
+	return db.Delete(ctx, key)
+}
+
 func (c *Role) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("Role", c.UserId.UserId)
 
