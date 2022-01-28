@@ -17,7 +17,7 @@ import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import Logo from './Logo';
 
-const Header: React.FC = () => {
+const Header = React.memo(() => {
   const {colorMode, toggleColorMode} = useColorMode();
   const user = useRecoilValue(UserState);
 
@@ -57,7 +57,7 @@ const Header: React.FC = () => {
         height="50px"
       >
         <NextLink href="/">
-          <Center width="10rem" cursor="pointer">
+          <Center width="160px" cursor="pointer">
             <Logo />
           </Center>
         </NextLink>
@@ -93,6 +93,8 @@ const Header: React.FC = () => {
       </Flex>
     </Box>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;

@@ -1,4 +1,6 @@
-const Logo = () => {
+import React from 'react';
+
+const Logo = React.memo(() => {
   return (
     <svg
       id="レイヤー_1"
@@ -40,6 +42,8 @@ const Logo = () => {
       </g>
     </svg>
   );
-};
+});
+
+Logo.displayName = 'Logo';
 
 export default Logo;
