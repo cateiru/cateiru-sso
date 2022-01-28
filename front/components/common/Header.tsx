@@ -57,9 +57,9 @@ const Header = React.memo(() => {
         height="50px"
       >
         <NextLink href="/">
-          <Center width="160px" cursor="pointer">
+          <Box width="160px" cursor="pointer">
             <Logo />
-          </Center>
+          </Box>
         </NextLink>
         <Spacer />
         <Center>
