@@ -83,7 +83,6 @@ const LoginForm = () => {
         router.push(`/login/otp?t=${token}`);
       } else {
         // me情報を取得するためにuserを初期化する
-        // 調査: もしかしたらcookieの問題で取得できない可能性もある
         resetUser();
 
         router.push('/hello');

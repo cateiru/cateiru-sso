@@ -34,7 +34,7 @@ const OTPLoginForm: React.FC<{token: string}> = ({token}) => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // OTPは6文字であるためtrueの場合は強制的に送信してしまう
+    // OTPは数字6文字であるためtrueの場合は強制的に送信してしまう
     // backup codeは手動
     const passcode = e.target.value;
     if (/[0-9]{6}/g.test(passcode)) {
@@ -63,7 +63,6 @@ const OTPLoginForm: React.FC<{token: string}> = ({token}) => {
     }
 
     // me情報を取得するためにuserを初期化する
-    // 調査: もしかしたらcookieの問題で取得できない可能性もある
     resetUser();
 
     router.push('/hello');
