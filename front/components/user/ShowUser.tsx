@@ -4,6 +4,7 @@ import JSONPretty from 'react-json-pretty';
 import {useRecoilValue, useRecoilState} from 'recoil';
 import {UserState, LoadState} from '../../utils/state/atom';
 import Spinner from '../common/Spinner';
+import LoginButtons from '../createAccount/LoginButtons';
 
 const ShowUser = () => {
   const user = useRecoilValue(UserState);
@@ -30,7 +31,10 @@ const ShowUser = () => {
         <Spinner />
       ) : user === null ? (
         <>
-          <Heading>あれ、もしかしてログインしていませんか？</Heading>
+          <Heading mb="1.4rem" textAlign="center">
+            あれ、もしかしてログインしていませんか？
+          </Heading>
+          <LoginButtons />
         </>
       ) : (
         <>
