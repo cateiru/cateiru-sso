@@ -98,7 +98,7 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 
 	// 有効期限が切れている場合、400を返す
 	if common.CheckExpired(&entity.Period) {
-		return status.NewBadRequestError(errors.New("expired")).AddCode(net.TimeOutError).Caller()
+		return status.NewBadRequestError(errors.New("expired")).AddCode(net.TimeOutError).Caller().AddCode(net.TimeOutError)
 	}
 
 	// ---- Certを変更する

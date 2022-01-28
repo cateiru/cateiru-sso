@@ -143,7 +143,7 @@ const CreateInfo = React.memo(() => {
             {errors.theme && errors.theme.message}
           </FormErrorMessage>
         </FormControl>
-        <FormControl isInvalid={errors.password}>
+        <FormControl isInvalid={errors.password} mt="1rem">
           <FormLabel htmlFor="password" marginTop="1rem">
             パスワード（8文字以上128文字以下）
           </FormLabel>

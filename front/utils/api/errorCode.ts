@@ -31,7 +31,7 @@ export default function decodeErrorCode(code: number): string {
     case 9:
       return 'そのユーザIDはすでに存在しています';
     case 10:
-      return 'ログインができていません';
+      return 'ログインができませんでした。パスワードまたはメールアドレスが間違っています。';
     default:
       return 'エラー';
   }

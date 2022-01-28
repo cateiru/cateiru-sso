@@ -62,12 +62,12 @@ func LoginOTP(ctx context.Context, id string, passcode string, ip string, userAg
 
 	// idが存在しない場合は400を返す
 	if buffer == nil {
-		return nil, status.NewBadRequestError(errors.New("entity not found")).Caller()
+		return nil, status.NewBadRequestError(errors.New("entity not found")).Caller().AddCode(net.FailedLogin)
 	}
 
 	// bufferの有効期限切れの場合は400を返す
 	if common.CheckExpired(&buffer.Period) {
-		return nil, status.NewBadRequestError(err).Caller()
+		return nil, status.NewBadRequestError(err).Caller().AddCode(net.TimeOutError).AddCode(net.TimeOutError)
 	}
 
 	// （ないとは思うが）isLoginをチェックする
@@ -86,13 +86,13 @@ func LoginOTP(ctx context.Context, id string, passcode string, ip string, userAg
 
 	// OTPが設定されていない場合は400を返す
 	if len(cert.OnetimePasswordSecret) == 0 {
-		return nil, status.NewBadRequestError(errors.New("otp not set")).Caller()
+		return nil, status.NewBadRequestError(errors.New("otp not set")).Caller().AddCode(net.FailedLogin)
 	}
 
 	ok, update := common.CheckOTP(passcode, cert, nil)
 	// OTPが認証できない場合は400を返す
 	if !ok {
-		return nil, status.NewBadRequestError(errors.New("otp not varidated")).Caller()
+		return nil, status.NewBadRequestError(errors.New("otp not varidated")).Caller().AddCode(net.FailedLogin)
 	}
 
 	// backupが更新された場合はDBを更新する
