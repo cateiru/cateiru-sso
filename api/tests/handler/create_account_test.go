@@ -59,7 +59,6 @@ func TestCreateAccount(t *testing.T) {
 
 	createForm := createaccount.PostForm{
 		Mail:      Email,
-		Password:  Password,
 		ReCAPTCHA: "", // dev modeのため検証しない
 	}
 
@@ -97,6 +96,8 @@ func TestCreateAccount(t *testing.T) {
 		UserName:  UserName,
 		Theme:     Theme,
 		AvatarUrl: "",
+
+		Password: Password,
 	}
 
 	s.Post(t, "/create/info", userForm)
@@ -173,7 +174,6 @@ func TestObserve(t *testing.T) {
 
 	form := &createaccount.PostForm{
 		Mail:      fmt.Sprintf("%s@example.com", utils.CreateID(4)),
-		Password:  "password",
 		ReCAPTCHA: "",
 	}
 	ip := "192.168.1.1"

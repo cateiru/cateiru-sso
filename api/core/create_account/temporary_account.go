@@ -24,7 +24,6 @@ const VERIFY_MAIL_TEMPLATE_PATH = "verify_mail"
 // POSTのformの型
 type PostForm struct {
 	Mail      string `json:"mail"`
-	Password  string `json:"password"`
 	ReCAPTCHA string `json:"re_captcha"`
 }
 
@@ -40,13 +39,12 @@ type VerifyMailTemplate struct {
 }
 
 // 一時的にアカウントを作成します
-// メールアドレス、パスワードをfromで送信することで、そのメールアドレスに確認用URLを送信します。
+// メールアドレス、をfromで送信することで、そのメールアドレスに確認用URLを送信します。
 // さらに、Websocketでメールアドレスが認証されたか確認するためのトークンを返します。
 //
 // Request Form (application/json):
 //	{
 //		"mail": "example@example.com",
-//		"password": "**********",
 //		"re_chaptcha": "********",
 //	}
 func CreateTemporaryHandler(w http.ResponseWriter, r *http.Request) error {
@@ -131,17 +129,7 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
-	hashedPW, err := secure.PWHash(form.Password)
-	if err != nil {
-		return "", status.NewBadRequestError(err).Caller()
-	}
-
-	user := models.UserMailPW{
-		Mail:     form.Mail,
-		Password: hashedPW.Key,
-		Salt:     hashedPW.Salt,
-	}
-	clientToken, err := createVerifyMail(ctx, db, user)
+	clientToken, err := createVerifyMail(ctx, db, form.Mail)
 	if err != nil {
 		return "", status.NewInternalServerErrorError(err).Caller()
 	}
@@ -152,7 +140,7 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 // メール認証を開始します
 //
 // client_token(wsを接続するのに使用する&認証後ユーザ情報を設定するためのトークンを返します)
-func createVerifyMail(ctx context.Context, db *database.Database, user models.UserMailPW) (string, error) {
+func createVerifyMail(ctx context.Context, db *database.Database, mail string) (string, error) {
 	mailToken := utils.CreateID(20)
 	clientToken := utils.CreateID(20)
 
@@ -164,7 +152,7 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 		Verify:         false,
 		ChangeMailMode: false,
 
-		UserMailPW: user,
+		Mail: mail,
 
 		Period: models.Period{
 			CreateDate:   time.Now(),
@@ -180,7 +168,7 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 	// SendGrid APIをテストでは使用しないため、
 	// DEPLOY_MODEがproductionのときのみ送信します
 	if config.Defs.DeployMode == "production" {
-		if err := sendVerifyMail(user.Mail, mailToken); err != nil {
+		if err := sendVerifyMail(mail, mailToken); err != nil {
 			return "", err
 		}
 	} else {
@@ -189,7 +177,7 @@ func createVerifyMail(ctx context.Context, db *database.Database, user models.Us
 	}
 
 	logging.Sugar.Debugf(
-		"Send verify email. mail: %s, client check token: %s", user.Mail, clientToken)
+		"Send verify email. mail: %s, client check token: %s", mail, clientToken)
 
 	return clientToken, nil
 }
