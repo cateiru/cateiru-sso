@@ -12,19 +12,15 @@ interface VerifyResponse {
 
 /**
  * @param {string} mail - user email
- * @param {string} password - user password
  * @param {string} recaptcha - reCAPTCHA token
  * @returns {string} - client_token
  */
 export async function createTemp(
   mail: string,
-  password: string,
   recaptcha: string
 ): Promise<string> {
   const api = new API();
-  api.post(
-    JSON.stringify({mail: mail, password: password, re_captcha: recaptcha})
-  );
+  api.post(JSON.stringify({mail: mail, re_captcha: recaptcha}));
 
   const resp = (await (await api.connect('/create')).json()) as CreateResponse;
 
@@ -48,6 +44,7 @@ export async function createVerify(mailToken: string): Promise<VerifyResponse> {
  * @param {string} lastName - 名字
  * @param {string} userName - ユーザ名
  * @param {string} theme - テーマ
+ * @param {string} password - パスワード
  * @returns {UserInfo} - ユーザ情報。 /meで取得したときと同じです
  */
 export async function createInfo(
@@ -55,7 +52,8 @@ export async function createInfo(
   firstName: string,
   lastName: string,
   userName: string,
-  theme: string
+  theme: string,
+  password: string
 ): Promise<UserInfo> {
   const api = new API();
   api.post(
@@ -66,6 +64,7 @@ export async function createInfo(
       user_name: userName,
       theme: theme,
       avatar_url: '', // これはいらなくね？
+      password: password,
     })
   );
 

@@ -9,7 +9,8 @@ const useCreateInfo = (): ((
   firstName: string,
   lastName: string,
   userName: string,
-  theme: string
+  theme: string,
+  password: string
 ) => Promise<void>) => {
   const toast = useToast();
   const ct = useRecoilValue(CTState);
@@ -19,11 +20,19 @@ const useCreateInfo = (): ((
     firstName: string,
     lastName: string,
     userName: string,
-    theme: string
+    theme: string,
+    password: string
   ) => {
     try {
       if (ct) {
-        const user = await createInfo(ct, firstName, lastName, userName, theme);
+        const user = await createInfo(
+          ct,
+          firstName,
+          lastName,
+          userName,
+          theme,
+          password
+        );
         setUser(user);
       } else {
         throw new Error('あれ？トークンがありませんよ');

@@ -5,17 +5,17 @@ import {createTemp} from '../utils/api/create';
 import {CTState} from '../utils/state/atom';
 
 export const useCreateTemp = (): [
-  (mail: string, password: string, recaptcha: string) => void,
+  (mail: string, recaptcha: string) => void,
   boolean
 ] => {
   const toast = useToast();
   const [err, setError] = React.useState(false);
   const setCT = useSetRecoilState(CTState);
 
-  const create = (mail: string, password: string, recaptcha: string) => {
+  const create = (mail: string, recaptcha: string) => {
     const f = async () => {
       try {
-        const token = await createTemp(mail, password, recaptcha);
+        const token = await createTemp(mail, recaptcha);
         setCT(token);
       } catch (error) {
         if (error instanceof Error) {

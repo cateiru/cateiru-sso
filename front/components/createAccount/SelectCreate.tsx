@@ -11,7 +11,7 @@ import {CTState, CreateNextState} from '../../utils/state/atom';
 import Spinner from '../common/Spinner';
 import CreateInfo from './CreateInfo';
 import Flow from './Flow';
-import UserPassword from './UserPassword';
+import UserPassword from './UserMail';
 import ValidateMail from './ValidateMai';
 import WaitMail from './WaitMailValidate';
 
@@ -71,7 +71,7 @@ const SelectCreate: React.FC = () => {
     setSelectType(CreateType.SendMail);
 
     // API叩く
-    create(values.email, values.password, recaptcha);
+    create(values.email, recaptcha);
   };
 
   // 認証確認Websocket
@@ -106,6 +106,9 @@ const SelectCreate: React.FC = () => {
         case CreateType.Initialize:
           return (
             <>
+              <Heading fontSize="1.6rem" marginBottom="1.5rem">
+                メールアドレスを認証してアカウントを作成します
+              </Heading>
               <UserPassword submit={submit} />
             </>
           );
