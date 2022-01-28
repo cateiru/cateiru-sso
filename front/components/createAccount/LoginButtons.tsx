@@ -8,9 +8,11 @@ const LoginButtons = () => {
       spacing="10px"
       width={{base: '100%', sm: 'auto'}}
     >
-      <Button colorScheme="blue" variant="solid">
-        ログイン
-      </Button>
+      <Link href="/login" passHref>
+        <Button colorScheme="blue" variant="solid">
+          ログイン
+        </Button>
+      </Link>
       <Link href="/create" passHref>
         <Button colorScheme="blue" variant="outline">
           新規登録
