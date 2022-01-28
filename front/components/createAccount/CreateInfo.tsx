@@ -44,13 +44,6 @@ const CreateInfo = React.memo(() => {
   const [pass, setPass] = React.useState('');
   const [pwOK, setPwOK] = React.useState(false);
 
-  // ページ遷移ギリギリまでロード画面出す
-  React.useEffect(() => {
-    return () => {
-      setLoad(false);
-    };
-  }, []);
-
   React.useEffect(() => {
     if (user) {
       const f = async () => {
@@ -115,13 +108,17 @@ const CreateInfo = React.memo(() => {
           </FormControl>
         </Flex>
         <FormControl isInvalid={errors.userName || existUser} mt="1rem">
-          <FormLabel htmlFor="userName">ユーザ名</FormLabel>
+          <FormLabel htmlFor="userName">ユーザ名（小文字英数字）</FormLabel>
           <Input
             id="userName"
             type="name"
-            placeholder="ユーザ名"
+            placeholder="ユーザ名（小文字英数字）"
             {...register('userName', {
               required: 'ユーザ名が必要です',
+              pattern: {
+                value: /^[a-z0-9]+$/,
+                message: 'ユーザ名は小文字英数字で入力してください',
+              },
               onBlur: e => setUser(e.target.value),
             })}
           />

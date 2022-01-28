@@ -1,13 +1,21 @@
 import {Box, Flex, Heading, useColorMode} from '@chakra-ui/react';
 import React from 'react';
 import JSONPretty from 'react-json-pretty';
-import {useRecoilValue} from 'recoil';
-import {UserState} from '../../utils/state/atom';
+import {useRecoilValue, useRecoilState} from 'recoil';
+import {UserState, LoadState} from '../../utils/state/atom';
 import Spinner from '../common/Spinner';
 
 const ShowUser = () => {
   const user = useRecoilValue(UserState);
   const {colorMode} = useColorMode();
+  const [load, setLoad] = useRecoilState(LoadState);
+
+  React.useEffect(() => {
+    // ロードしながらこのページに飛んだときにロードを削除する
+    if (load) {
+      setLoad(false);
+    }
+  }, []);
 
   return (
     <Flex

@@ -45,6 +45,8 @@ const UserPassword: React.FC<{
 
   const submitHandler = (values: FieldValues) => {
     submit(values, recaptcha);
+
+    return () => {};
   };
 
   return (
