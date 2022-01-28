@@ -1,4 +1,4 @@
-import {Box, Heading} from '@chakra-ui/react';
+import {Center, Heading} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
 import {useRouter} from 'next/router';
 import React from 'react';
@@ -147,9 +147,12 @@ const SelectCreate: React.FC = () => {
 
   return (
     <>
-      <Box width={{base: '100%', md: '50rem'}} marginBottom="4rem">
+      <Center
+        width={{base: '90%', md: '50rem'}}
+        marginBottom={{base: '1rem', sm: '3rem', md: '4rem'}}
+      >
         <Flow step={activeStep} />
-      </Box>
+      </Center>
       <Select />
     </>
   );
