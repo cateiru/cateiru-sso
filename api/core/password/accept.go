@@ -51,7 +51,7 @@ func ChangePWAccept(ctx context.Context, db *database.Database, form *AccpetFort
 	}
 	// 有効期限の場合は400を返す
 	if common.CheckExpired(&buffer.Period) {
-		return status.NewBadRequestError(errors.New("expired")).Caller()
+		return status.NewBadRequestError(errors.New("expired")).Caller().AddCode(net.TimeOutError)
 	}
 
 	cert, err := models.GetCertificationByMail(ctx, db, buffer.Mail)

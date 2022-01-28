@@ -151,7 +151,7 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 	// パスワードを検証
 	// パスワードが違う場合は400を返す
 	if !secure.ValidatePW(form.Password, cert.Password, cert.Salt) {
-		return nil, status.NewBadRequestError(errors.New("no validate password")).Caller()
+		return nil, status.NewBadRequestError(errors.New("no validate password")).Caller().AddCode(net.FailedLogin)
 	}
 
 	// ログイントークンをセットする
