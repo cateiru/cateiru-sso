@@ -39,10 +39,8 @@ func TestInfo(t *testing.T) {
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},
-		UserMailPW: models.UserMailPW{
-			Mail:     dummy.Mail,
-			Password: []byte("password"),
-		},
+
+		Mail: dummy.Mail,
 	}
 
 	err = buffer.Add(ctx, db)
@@ -57,18 +55,22 @@ func TestInfo(t *testing.T) {
 	}, "entryがある")
 
 	user := createaccount.InfoRequestForm{
+		ClientToken: clientToken,
+
 		FirstName: "名前",
 		LastName:  "名字",
 		UserName:  utils.CreateID(20),
 
 		Theme:     "dark",
 		AvatarUrl: "",
+
+		Password: "password",
 	}
 
 	ip := "198.51.100.0"
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
-	login, userInfo, err := createaccount.InsertUserInfo(ctx, clientToken, user, ip, userAgent)
+	login, userInfo, err := createaccount.InsertUserInfo(ctx, user, ip, userAgent)
 	require.NoError(t, err)
 
 	require.Equal(t, userInfo.FirstName, "名前")
@@ -130,10 +132,8 @@ func TestInfoUnauthenticated(t *testing.T) {
 			CreateDate:   time.Now(),
 			PeriodMinute: 30,
 		},
-		UserMailPW: models.UserMailPW{
-			Mail:     dummy.Mail,
-			Password: []byte("password"),
-		},
+
+		Mail: dummy.Mail,
 	}
 
 	err = buffer.Add(ctx, db)
@@ -154,11 +154,13 @@ func TestInfoUnauthenticated(t *testing.T) {
 
 		Theme:     "dark",
 		AvatarUrl: "",
+
+		Password: "password",
 	}
 
 	ip := "198.51.100.0"
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
-	_, _, err = createaccount.InsertUserInfo(ctx, clientToken, user, ip, userAgent)
+	_, _, err = createaccount.InsertUserInfo(ctx, user, ip, userAgent)
 	require.Error(t, err)
 }

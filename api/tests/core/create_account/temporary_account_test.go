@@ -22,7 +22,6 @@ func TestSuccess(t *testing.T) {
 
 	form := &createaccount.PostForm{
 		Mail:      fmt.Sprintf("%s@example.com", utils.CreateID(4)),
-		Password:  "test",
 		ReCAPTCHA: "",
 	}
 	ip := "192.168.1.1"
@@ -46,7 +45,6 @@ func TestSuccess(t *testing.T) {
 	require.NotEqual(t, element.OpenNewWindow, "新しいウィンドウではない")
 	require.NotEqual(t, element.ChangeMailMode, "メールアドレス変更ではない")
 
-	require.NotEqual(t, element.Password, form.Password, "パスワードがハッシュ化されている")
 	require.Equal(t, element.Mail, form.Mail, "メールアドレスがある")
 
 	require.Equal(t, element.ClientToken, clientToken)

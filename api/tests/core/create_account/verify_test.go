@@ -34,11 +34,7 @@ func TestVerifySuccess(t *testing.T) {
 		Verify:         false,
 		ChangeMailMode: false,
 
-		UserMailPW: models.UserMailPW{
-			Mail:     "example@example.com",
-			Password: []byte("password"),
-			Salt:     []byte(""),
-		},
+		Mail: "example@example.com",
 
 		Period: models.Period{
 			CreateDate:   time.Now(),
@@ -107,11 +103,7 @@ func TestVerifyAlreadyDone(t *testing.T) {
 		Verify:         true,
 		ChangeMailMode: false,
 
-		UserMailPW: models.UserMailPW{
-			Mail:     "example@example.com",
-			Password: []byte("password"),
-			Salt:     []byte(""),
-		},
+		Mail: "example@example.com",
 
 		Period: models.Period{
 			CreateDate:   time.Now(),

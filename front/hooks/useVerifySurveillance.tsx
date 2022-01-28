@@ -47,6 +47,7 @@ const useVerifySurveillance = (): [
   // receiveが取得できたらcloseする
   React.useEffect(() => {
     if (receive && ref.current) {
+      ref.current.end(() => {});
       ref.current.close();
     }
   }, [receive]);

@@ -76,9 +76,7 @@ func TestVerifyChangeMail(t *testing.T) {
 		Verify:         false,
 		ChangeMailMode: true, // メールアドレス変更なので
 
-		UserMailPW: models.UserMailPW{
-			Mail: newMail,
-		},
+		Mail: newMail,
 
 		Period: models.Period{
 			CreateDate:   time.Now(),

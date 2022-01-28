@@ -1,6 +1,6 @@
-import {Flex, Button, Box, Text, Center, Stack} from '@chakra-ui/react';
-import NextLink from 'next/link';
+import {Flex, Box, Text, Center} from '@chakra-ui/react';
 import Logo from '../common/Logo';
+import LoginButtons from '../createAccount/LoginButtons';
 
 const TopPage = () => {
   return (
@@ -22,16 +22,9 @@ const TopPage = () => {
           </Text>
         </Center>
       </Box>
-      <Stack direction={['column', 'row']} spacing="10px">
-        <Button colorScheme="blue" variant="solid">
-          ログイン
-        </Button>
-        <NextLink href="/create" passHref>
-          <Button colorScheme="blue" variant="outline">
-            新規登録
-          </Button>
-        </NextLink>
-      </Stack>
+      <Box width={{base: '20rem', sm: 'auto'}}>
+        <LoginButtons />
+      </Box>
     </Flex>
   );
 };

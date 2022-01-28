@@ -38,7 +38,6 @@ func TestObserve(t *testing.T) {
 
 	form := &createaccount.PostForm{
 		Mail:      fmt.Sprintf("%s@example.com", utils.CreateID(4)),
-		Password:  "password",
 		ReCAPTCHA: "",
 	}
 	ip := "192.168.1.1"

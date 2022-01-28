@@ -11,6 +11,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/api/utils/secure"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 
@@ -20,6 +21,8 @@ type InfoRequestForm struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	UserName  string `json:"user_name"`
+
+	Password string `json:"password"`
 
 	Theme     string `json:"theme"`
 	AvatarUrl string `json:"avatar_url"`
@@ -43,7 +46,7 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 
 	ctx := r.Context()
 
-	login, userInfo, err := InsertUserInfo(ctx, userData.ClientToken, userData, ip, userAgent)
+	login, userInfo, err := InsertUserInfo(ctx, userData, ip, userAgent)
 	if err != nil {
 		return err
 	}
@@ -59,14 +62,14 @@ func CreateInfoHandler(w http.ResponseWriter, r *http.Request) error {
 // ユーザ情報を入力し、アカウントを正式に登録します
 //
 // 登録後、userIdを返します
-func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestForm, ip string, userAgent string) (*common.LoginTokens, *models.User, error) {
+func InsertUserInfo(ctx context.Context, user InfoRequestForm, ip string, userAgent string) (*common.LoginTokens, *models.User, error) {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
 		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
-	buffer, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
+	buffer, err := models.GetMailCertificationByClientToken(ctx, db, user.ClientToken)
 	if err != nil {
 		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
@@ -97,6 +100,11 @@ func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestFor
 
 	userId := utils.CreateID(30)
 
+	hashedPW, err := secure.PWHash(user.Password)
+	if err != nil {
+		return nil, nil, status.NewBadRequestError(err).Caller()
+	}
+
 	// ユーザ認証情報追加
 	certification := &models.Certification{
 		AccountCreateDate: time.Now(),
@@ -106,7 +114,12 @@ func InsertUserInfo(ctx context.Context, clientToken string, user InfoRequestFor
 		OnetimePasswordSecret:  "",
 		OnetimePasswordBackups: []string{},
 
-		UserMailPW: buffer.UserMailPW,
+		UserMailPW: models.UserMailPW{
+			Mail:     buffer.Mail,
+			Password: hashedPW.Key,
+			Salt:     hashedPW.Salt,
+		},
+
 		UserId: models.UserId{
 			UserId: userId,
 		},

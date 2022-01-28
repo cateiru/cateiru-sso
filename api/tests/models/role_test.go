@@ -40,4 +40,14 @@ func TestRole(t *testing.T) {
 
 		return entity != nil && entity.Role[0] == "user"
 	}, "roleが格納されて取得できる")
+
+	err = models.DeleteRoleByUserID(ctx, db, dummy.UserID)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetRoleByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return entity == nil
+	}, "削除できている")
 }

@@ -1,7 +1,7 @@
 import {Step, Steps} from 'chakra-ui-steps';
 
 const steps = [
-  {label: 'アカウント作成'},
+  {label: 'メールアドレス入力'},
   {label: 'メール確認'},
   {label: 'ユーザ情報登録'},
 ];

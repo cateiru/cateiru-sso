@@ -49,6 +49,11 @@ func Delete(ctx context.Context, db *database.Database, userId string) error {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
+	// ユーザのロール
+	if err := models.DeleteRoleByUserID(ctx, db, userId); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+
 	// TODO: 削除するユーザに紐付けられているSSOの情報や履歴なども削除する
 
 	return nil

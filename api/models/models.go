@@ -49,7 +49,8 @@ type MailCertification struct {
 	ChangeMailMode bool   `datastore:"changeMailMode" json:"change_mail_mode"`
 
 	Period
-	UserMailPW
+
+	Mail string `datastore:"mail" json:"mail"`
 
 	UserId string `datastore:"userId,omitempty" json:"user_id"` // Option
 }

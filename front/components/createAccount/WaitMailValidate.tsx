@@ -10,7 +10,7 @@ const WaitMail = React.memo<{mail: string; receive: boolean; close: boolean}>(
 
     return (
       <>
-        {close ? (
+        {close && !receive ? (
           <>
             <Heading>Oops! サーバとの接続が切れてしまいました</Heading>
             <Text mt="1rem">
