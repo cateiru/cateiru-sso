@@ -20,17 +20,18 @@ import (
 
 // 独自ステータスコード
 const (
-	Success        = iota // 成功
-	DefaultError          // エラー
-	ErrorIntoError        // ResponseError内でのエラー
-	BlockedError          // ブロックリストに入っていたエラー
-	ExistError            // メールアドレスなどが既に存在しているエラー
-	BotError              // Bot判定したためエラー
-	TimeOutError          // 時間切れ
-	AlreadyDone           // 既に認証済み
-	AccountNoExist        // アカウント無い
-	ExistUserName         // ユーザIDがすでにある
-	FailedLogin           // ログインできない
+	Success           = iota // 成功
+	DefaultError             // エラー
+	ErrorIntoError           // ResponseError内でのエラー
+	BlockedError             // ブロックリストに入っていたエラー
+	ExistError               // メールアドレスなどが既に存在しているエラー
+	BotError                 // Bot判定したためエラー
+	TimeOutError             // 時間切れ
+	AlreadyDone              // 既に認証済み
+	AccountNoExist           // アカウント無い
+	ExistUserName            // ユーザIDがすでにある
+	FailedLogin              // ログインできない
+	IncorrectUserName        // ユーザ名が正しくない
 )
 
 type AbstractResponse struct {

@@ -46,9 +46,12 @@ func TestMe(t *testing.T) {
 
 	require.Equal(t, userInfo.FirstName, "TestFirstName")
 	require.Equal(t, userInfo.LastName, "TestLastName")
-	require.Equal(t, userInfo.UserName, "TestUserName")
 	require.Equal(t, userInfo.UserId.UserId, dummy.UserID)
 	require.Equal(t, userInfo.Mail, dummy.Mail)
+
+	require.NotEmpty(t, userInfo.UserName)
+	require.NotEmpty(t, userInfo.UserNameFormatted)
+
 }
 
 func TestMeNotVerify(t *testing.T) {

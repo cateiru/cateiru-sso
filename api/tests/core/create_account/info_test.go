@@ -59,7 +59,7 @@ func TestInfo(t *testing.T) {
 
 		FirstName: "名前",
 		LastName:  "名字",
-		UserName:  utils.CreateID(20),
+		UserName:  utils.CreateID(10),
 
 		Theme:     "dark",
 		AvatarUrl: "",

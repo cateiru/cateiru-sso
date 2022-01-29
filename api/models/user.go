@@ -26,7 +26,7 @@ func GetUserDataByUserID(ctx context.Context, db *database.Database, userId stri
 }
 
 func GetUserDataByUserName(ctx context.Context, db *database.Database, userName string) (*User, error) {
-	query := datastore.NewQuery("User").Filter("userName =", userName)
+	query := datastore.NewQuery("User").Filter("userNameFormatted =", userName)
 
 	iter := db.Run(ctx, query)
 

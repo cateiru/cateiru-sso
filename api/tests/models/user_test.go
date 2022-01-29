@@ -26,9 +26,10 @@ func TestUser(t *testing.T) {
 	defer db.Close()
 
 	userData := &models.User{
-		FirstName: "あ",
-		LastName:  "い",
-		UserName:  userName,
+		FirstName:         "あ",
+		LastName:          "い",
+		UserName:          userName,
+		UserNameFormatted: userName,
 
 		AvatarUrl: "",
 
@@ -76,9 +77,10 @@ func TestTXUser(t *testing.T) {
 	defer db.Close()
 
 	userData := &models.User{
-		FirstName: "あ",
-		LastName:  "い",
-		UserName:  "cateiru",
+		FirstName:         "あ",
+		LastName:          "い",
+		UserName:          "cateiru",
+		UserNameFormatted: "cateiru",
 
 		AvatarUrl: "",
 

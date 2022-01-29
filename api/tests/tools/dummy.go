@@ -61,12 +61,15 @@ func (c *DummyUser) GenOTPCode() (string, error) {
 // ユーザを追加する
 // (テスト用)
 func (c *DummyUser) AddUserInfo(ctx context.Context, db *database.Database) (*models.User, error) {
+	userName := utils.CreateID(10)
+
 	userInfo := &models.User{
-		FirstName: "TestFirstName",
-		LastName:  "TestLastName",
-		UserName:  "TestUserName",
-		Theme:     "Dark",
-		AvatarUrl: "",
+		FirstName:         "TestFirstName",
+		LastName:          "TestLastName",
+		UserName:          userName,
+		UserNameFormatted: utils.FormantUserName(userName),
+		Theme:             "Dark",
+		AvatarUrl:         "",
 
 		Mail: c.Mail,
 

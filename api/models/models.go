@@ -84,9 +84,10 @@ type OnetimePasswordBuffer struct {
 
 // ユーザの情報
 type User struct {
-	FirstName string `datastore:"firstName" json:"first_name"`
-	LastName  string `datastore:"lastName" json:"last_name"`
-	UserName  string `datastore:"userName" json:"user_name"`
+	FirstName         string `datastore:"firstName" json:"first_name"`
+	LastName          string `datastore:"lastName" json:"last_name"`
+	UserName          string `datastore:"userName" json:"user_name"`
+	UserNameFormatted string `datastore:"userNameFormatted" json:"user_name_formatted"`
 
 	Mail string `datastore:"mail" json:"mail"`
 

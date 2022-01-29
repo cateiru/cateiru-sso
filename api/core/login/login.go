@@ -199,9 +199,10 @@ func LoginAdmin(ctx context.Context, db *database.Database, form *RequestFrom) (
 	}
 
 	newUser := &models.User{
-		FirstName: "Admin",
-		LastName:  "User",
-		UserName:  "admin",
+		FirstName:         "Admin",
+		LastName:          "User",
+		UserName:          "admin",
+		UserNameFormatted: "admin",
 
 		Mail: form.Mail,
 
