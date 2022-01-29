@@ -5,6 +5,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/core/user"
 	"github.com/cateiru/cateiru-sso/api/core/user/history"
+	"github.com/cateiru/cateiru-sso/api/core/user/info"
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/core/user/otp"
 	"github.com/cateiru/cateiru-sso/api/core/user/password"
@@ -89,6 +90,15 @@ func UserAvatorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func UserInfoChangeHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		ChangeUserInfoHandler(w, r)
+	default:
+		RootHandler(w, r)
+	}
+}
+
 // メールアドレス取得
 // 全ユーザ
 // `/me`でも取得できる
@@ -159,6 +169,12 @@ func AvatorPostHandler(w http.ResponseWriter, r *http.Request) {
 // アバター削除
 func AvatorDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	if err := user.DeleteAvatorHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+func ChangeUserInfoHandler(w http.ResponseWriter, r *http.Request) {
+	if err := info.ChangeInfoHandler(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }
