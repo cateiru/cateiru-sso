@@ -5,6 +5,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/core/user"
 	"github.com/cateiru/cateiru-sso/api/core/user/history"
+	"github.com/cateiru/cateiru-sso/api/core/user/info"
 	"github.com/cateiru/cateiru-sso/api/core/user/mail"
 	"github.com/cateiru/cateiru-sso/api/core/user/otp"
 	"github.com/cateiru/cateiru-sso/api/core/user/password"
@@ -78,12 +79,21 @@ func UserHistoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // アバターの設定
-func UserAvatorHandler(w http.ResponseWriter, r *http.Request) {
+func UserAvatarHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		AvatorPostHandler(w, r)
+		AvatarPostHandler(w, r)
 	case http.MethodDelete:
-		AvatorDeleteHandler(w, r)
+		AvatarDeleteHandler(w, r)
+	default:
+		RootHandler(w, r)
+	}
+}
+
+func UserInfoChangeHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		ChangeUserInfoHandler(w, r)
 	default:
 		RootHandler(w, r)
 	}
@@ -150,15 +160,21 @@ func userHistoryGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // アバター設定
-func AvatorPostHandler(w http.ResponseWriter, r *http.Request) {
-	if err := user.AvatorSetHandler(w, r); err != nil {
+func AvatarPostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := user.AvatarSetHandler(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }
 
 // アバター削除
-func AvatorDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	if err := user.DeleteAvatorHandler(w, r); err != nil {
+func AvatarDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	if err := user.DeleteAvatarHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+func ChangeUserInfoHandler(w http.ResponseWriter, r *http.Request) {
+	if err := info.ChangeInfoHandler(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }

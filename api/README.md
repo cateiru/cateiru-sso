@@ -55,8 +55,8 @@ COOKIE_DOMAIN=
 ADMIN_MAIL=
 ADMIN_PASSWORD=
 
-# cloud storageのドメイン
-STORAGE_DOMAIN=
+# cloud storageのURL
+STORAGE_URL=
 ```
 
 ## テスト

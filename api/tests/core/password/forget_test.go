@@ -29,6 +29,13 @@ func TestFrogetPW(t *testing.T) {
 	_, err = dummy.AddUserCert(ctx, db)
 	require.NoError(t, err)
 
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetCertificationByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return entity != nil
+	}, "")
+
 	err = password.CreateChangeMail(ctx, db, dummy.Mail)
 	require.NoError(t, err)
 

@@ -41,6 +41,20 @@ export class API {
     };
   }
 
+  postForm(data: FormData) {
+    this.config = {
+      method: 'POST',
+      credentials: 'include',
+      mode: 'cors',
+      headers: {
+        // ref. https://stackoverflow.com/questions/39280438/fetch-missing-boundary-in-multipart-form-data-post
+        // 意図的にcontent-typeを削除するとboundaryをブラウザが自動で付与します
+        // 'Content-Type': 'multipart/form-data',
+      },
+      body: data,
+    };
+  }
+
   get() {
     this.config = {
       method: 'GET',

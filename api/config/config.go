@@ -30,7 +30,7 @@ type Config struct {
 
 	DatastoreParentKey string
 
-	StorageDomain string
+	StorageURL    string
 	StorageBucket string
 }
 
@@ -62,7 +62,7 @@ func Init() {
 
 		DatastoreParentKey: GetDatastoreParentKey(),
 
-		StorageDomain: os.Getenv("STORAGE_DOMAIN"),
+		StorageURL:    os.Getenv("STORAGE_URL"),
 		StorageBucket: "cateiru-sso",
 	}
 }

@@ -3,6 +3,7 @@ package user_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/api/core/user"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/tests/tools"
@@ -17,17 +19,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func avatorServer() *http.ServeMux {
+func avatarServer() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/avator", handler.UserAvatorHandler)
+	mux.HandleFunc("/avatar", handler.UserAvatarHandler)
 
 	return mux
 }
 
 const LOGO_PATH = "logo.png"
 
-func TestAvator(t *testing.T) {
+func TestAvatar(t *testing.T) {
 	config.TestInit(t)
 
 	ctx := context.Background()
@@ -40,7 +42,7 @@ func TestAvator(t *testing.T) {
 	_, err = dummy.AddUserInfo(ctx, db)
 	require.NoError(t, err)
 
-	s := tools.NewTestServer(t, avatorServer(), true)
+	s := tools.NewTestServer(t, avatarServer(), true)
 	defer s.Close()
 	err = s.AddSession(ctx, db, dummy)
 	require.NoError(t, err)
@@ -56,13 +58,19 @@ func TestAvator(t *testing.T) {
 	require.NoError(t, err)
 	writer.Close() // defer使わないでCloseしてしまう!! <--- ここ大事！数時間格闘した！！
 
-	resp, err := s.Client.Post(s.Server.URL+"/avator", writer.FormDataContentType(), body)
+	resp, err := s.Client.Post(s.Server.URL+"/avatar", writer.FormDataContentType(), body)
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
+	var respBody user.SetAvatarResp
+	err = json.Unmarshal(tools.ConvertByteResp(resp), &respBody)
+	require.NoError(t, err)
+
+	require.NotEmpty(t, respBody.Url)
+
 	// --- ちゃんとセットされているか確認する
 
-	resp, err = s.Client.Get("http://" + os.Getenv("STORAGE_EMULATOR_HOST") + "/cateiru-sso/avator/" + dummy.UserID)
+	resp, err = s.Client.Get("http://" + os.Getenv("STORAGE_EMULATOR_HOST") + "/cateiru-sso/avatar/" + dummy.UserID)
 	require.NoError(t, err)
 	require.Equal(t, resp.StatusCode, 200)
 
@@ -70,12 +78,12 @@ func TestAvator(t *testing.T) {
 
 	// --- 削除する
 
-	s.Delete(t, "/avator")
+	s.Delete(t, "/avatar")
 
 	// // --- ちゃんと削除されているか
 
 	goretry.Retry(t, func() bool {
-		resp, err = s.Client.Get("http://" + os.Getenv("STORAGE_EMULATOR_HOST") + "/cateiru-sso/avator/" + dummy.UserID)
+		resp, err = s.Client.Get("http://" + os.Getenv("STORAGE_EMULATOR_HOST") + "/cateiru-sso/avatar/" + dummy.UserID)
 		require.NoError(t, err)
 
 		return resp.StatusCode == 404
