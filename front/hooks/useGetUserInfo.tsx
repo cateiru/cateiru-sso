@@ -15,18 +15,19 @@ export const useGetUserInfo = (): (() => void) => {
         const user = await getUserInfo();
         setUser(user);
 
-        if (user) {
-          switch (user.theme) {
-            case 'dark':
-              setColorMode('dark');
-              break;
-            case 'light':
-              setColorMode('light');
-              break;
-            default:
-              break;
-          }
-        }
+        // TODO: ユーザーアクセシビリティが低下するので
+        // if (user) {
+        //   switch (user.theme) {
+        //     case 'dark':
+        //       setColorMode('dark');
+        //       break;
+        //     case 'light':
+        //       setColorMode('light');
+        //       break;
+        //     default:
+        //       break;
+        //   }
+        // }
       } catch (error) {
         if (error instanceof Error) {
           setUser(null);

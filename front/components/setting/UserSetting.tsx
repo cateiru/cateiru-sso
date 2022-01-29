@@ -1,7 +1,6 @@
 import {
   Stack,
   Box,
-  Avatar,
   Center,
   Flex,
   FormControl,
@@ -20,6 +19,7 @@ import {changeUser} from '../../utils/api/change';
 import {checkUserName} from '../../utils/api/check';
 import {UserState} from '../../utils/state/atom';
 import {UserInfo} from '../../utils/state/types';
+import AvatarSetting from './AvatarSetting';
 
 const UserSetting = () => {
   const {
@@ -117,13 +117,11 @@ const UserSetting = () => {
       spacing="20px"
       height={{base: '', md: '50vh'}}
     >
-      <Center width={{base: '100%', md: '80%'}} marginY="2.4rem">
-        <Box width={{base: '80px', md: '120px'}}>
-          <Avatar src={user?.avatar_url} size="full" />
-        </Box>
+      <Center width={{base: '100%', md: '80%'}} mt="2.3rem" mb="1rem">
+        <AvatarSetting />
       </Center>
       <Box width="100%">
-        <Center mt={{base: '1rem', md: '0'}} mx=".5rem" height="100%">
+        <Center mx=".5rem" height="100%">
           <form onSubmit={handleSubmit(submit)}>
             <Flex>
               <FormControl isInvalid={errors.lastName} mr=".5rem">
