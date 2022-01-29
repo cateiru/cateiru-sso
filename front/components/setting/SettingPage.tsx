@@ -17,6 +17,9 @@ const SettingPage: React.FC<{index: number}> = ({index, children}) => {
       case 2:
         path = '/setting/password';
         break;
+      case 3:
+        path = '/setting/account';
+        break;
       default:
         break;
     }
@@ -30,8 +33,14 @@ const SettingPage: React.FC<{index: number}> = ({index, children}) => {
         <Center mb="1.7rem">
           <Heading>設定</Heading>
         </Center>
-        <Box overflow="auto">
-          <Box width={{base: '500px', sm: '100%'}}>
+        <Box
+          overflow="auto"
+          css={{
+            '&::-webkit-scrollbar': {display: 'none'},
+            scrollbarWidth: 'none',
+          }}
+        >
+          <Box width={{base: '800px', md: '100%'}}>
             <Tabs
               isFitted
               size="lg"
@@ -42,6 +51,7 @@ const SettingPage: React.FC<{index: number}> = ({index, children}) => {
                 <Tab>ユーザ情報</Tab>
                 <Tab>メールアドレス</Tab>
                 <Tab>パスワード</Tab>
+                <Tab>アカウント関連</Tab>
               </TabList>
             </Tabs>
           </Box>

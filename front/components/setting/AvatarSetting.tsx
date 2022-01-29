@@ -71,6 +71,13 @@ const AvatarSetting = () => {
                   avatar_url: url,
                 });
               }
+
+              toast({
+                title: '変更しました',
+                description: '画像が変更されない場合はリロードしてください',
+                status: 'info',
+                isClosable: true,
+              });
             } catch (error) {
               if (error instanceof Error) {
                 toast({

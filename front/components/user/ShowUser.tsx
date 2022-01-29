@@ -49,32 +49,41 @@ const ShowUser = () => {
             fontSize={{base: '3vw', md: '1.3rem'}}
             fontWeight="600"
             mt="2rem"
+            width="100%"
           >
-            <JSONPretty
-              data={user}
-              mainStyle={
-                colorMode === 'dark'
-                  ? "line-height:1.3;color:#A0AEC0;font-family: 'Source Code Pro', monospace;overflow:auto;"
-                  : "line-height:1.3;color:#4A5568;font-family: 'Source Code Pro', monospace;overflow:auto;"
-              }
-              errorStyle={
-                colorMode === 'dark'
-                  ? 'line-height:1.3;color:#C53030;'
-                  : 'line-height:1.3;color:#C53030;'
-              }
-              keyStyle={
-                colorMode === 'dark' ? 'color:#63B3ED;' : 'color:#4299E1;'
-              }
-              stringStyle={
-                colorMode === 'dark' ? 'color:#F6AD55;' : 'color:#DD6B20;'
-              }
-              valueStyle={
-                colorMode === 'dark' ? 'color:#68D391;' : 'color:#22543D;'
-              }
-              booleanStyle={
-                colorMode === 'dark' ? 'color:#68D391' : 'color:#22543D'
-              }
-            />
+            <Box
+              overflow="scroll"
+              css={{
+                '&::-webkit-scrollbar': {display: 'none'},
+                scrollbarWidth: 'none',
+              }}
+            >
+              <JSONPretty
+                data={user}
+                mainStyle={
+                  colorMode === 'dark'
+                    ? "line-height:1.3;color:#A0AEC0;font-family: 'Source Code Pro', monospace;"
+                    : "line-height:1.3;color:#4A5568;font-family: 'Source Code Pro', monospace;"
+                }
+                errorStyle={
+                  colorMode === 'dark'
+                    ? 'line-height:1.3;color:#C53030;'
+                    : 'line-height:1.3;color:#C53030;'
+                }
+                keyStyle={
+                  colorMode === 'dark' ? 'color:#63B3ED;' : 'color:#4299E1;'
+                }
+                stringStyle={
+                  colorMode === 'dark' ? 'color:#F6AD55;' : 'color:#DD6B20;'
+                }
+                valueStyle={
+                  colorMode === 'dark' ? 'color:#68D391;' : 'color:#22543D;'
+                }
+                booleanStyle={
+                  colorMode === 'dark' ? 'color:#68D391' : 'color:#22543D'
+                }
+              />
+            </Box>
           </Box>
         </>
       )}
