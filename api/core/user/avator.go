@@ -10,11 +10,16 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/storage"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 
+type SetAvatarResp struct {
+	Url string `json:"url"`
+}
+
 // ユーザのアバターを設定する
-func AvatorSetHandler(w http.ResponseWriter, r *http.Request) error {
+func AvatarSetHandler(w http.ResponseWriter, r *http.Request) error {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
@@ -45,12 +50,12 @@ func AvatorSetHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer s.Close()
 
-	if err := s.WriteFile(ctx, []string{"avator"}, userId, fileSrc, contentType); err != nil {
+	if err := s.WriteFile(ctx, []string{"avatar"}, userId, fileSrc, contentType); err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
-	// user_infoのavatorを書き換える（空の場合）
-	// avatorのURLはユーザごとに一意であり、画像が変わってもURLは変わらない必要があります
+	// user_infoのavatarを書き換える（空の場合）
+	// avatarのURLはユーザごとに一意であり、画像が変わってもURLは変わらない必要があります
 	user, err := models.GetUserDataByUserID(ctx, db, userId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
@@ -59,17 +64,21 @@ func AvatorSetHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewInternalServerErrorError(errors.New("user data is empty")).Caller()
 	}
 	if user.AvatarUrl == "" {
-		user.AvatarUrl = fmt.Sprintf("https://%s/%s/avator/%s", config.Defs.StorageDomain, config.Defs.StorageBucket, userId)
+		user.AvatarUrl = fmt.Sprintf("%s/%s/avatar/%s", config.Defs.StorageURL, config.Defs.StorageBucket, userId)
 		if err := user.Add(ctx, db); err != nil {
 			return status.NewInternalServerErrorError(err).Caller()
 		}
 	}
 
+	net.ResponseOK(w, SetAvatarResp{
+		Url: user.AvatarUrl,
+	})
+
 	return nil
 }
 
 // ユーザのアバターを削除する
-func DeleteAvatorHandler(w http.ResponseWriter, r *http.Request) error {
+func DeleteAvatarHandler(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	db, err := database.NewDatabase(ctx)
@@ -93,7 +102,7 @@ func DeleteAvatorHandler(w http.ResponseWriter, r *http.Request) error {
 
 	// アバターが設定されていない場合は400を返す
 	if user.AvatarUrl == "" {
-		return status.NewBadRequestError(errors.New("avator is null"))
+		return status.NewBadRequestError(errors.New("avatar is null"))
 	}
 
 	s, err := storage.NewStorage(ctx, config.Defs.StorageBucket)
@@ -101,16 +110,16 @@ func DeleteAvatorHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
-	exist, err := s.FileExist(ctx, []string{"avator"}, userId)
+	exist, err := s.FileExist(ctx, []string{"avatar"}, userId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 	// storageに存在しない場合は400を返す
 	if !exist {
-		return status.NewBadRequestError(errors.New("avator not found in gcs")).Caller()
+		return status.NewBadRequestError(errors.New("avatar not found in gcs")).Caller()
 	}
 
-	if err := s.Delete(ctx, []string{"avator"}, userId); err != nil {
+	if err := s.Delete(ctx, []string{"avatar"}, userId); err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 

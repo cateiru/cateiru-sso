@@ -24,3 +24,5 @@ services:
       - DATASTORE_PARENT_KEY=test-cateiru-sso
       - DATASTORE_PROJECT_ID=project-test
       - DATASTORE_EMULATOR_HOST=datastore:18001
+      - STORAGE_EMULATOR_HOST=gcs:4443
+      - STORAGE_URL=http://localhost:4443

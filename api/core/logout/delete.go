@@ -5,8 +5,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/storage"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 
@@ -52,6 +54,22 @@ func Delete(ctx context.Context, db *database.Database, userId string) error {
 	// ユーザのロール
 	if err := models.DeleteRoleByUserID(ctx, db, userId); err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
+	}
+
+	// アバター
+	s, err := storage.NewStorage(ctx, config.Defs.StorageBucket)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+
+	exist, err := s.FileExist(ctx, []string{"avatar"}, userId)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	if exist {
+		if err := s.Delete(ctx, []string{"avatar"}, userId); err != nil {
+			return status.NewInternalServerErrorError(err).Caller()
+		}
 	}
 
 	// TODO: 削除するユーザに紐付けられているSSOの情報や履歴なども削除する
