@@ -6,4 +6,6 @@ export interface UserInfo {
   theme: string;
   avatar_url: string;
   user_id: string;
+  user_name_formatted: string;
+  role: string[];
 }

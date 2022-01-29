@@ -128,15 +128,23 @@ func InsertUserInfo(ctx context.Context, user InfoRequestForm, ip string, userAg
 		return nil, nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
+	if !utils.CheckUserName(user.UserName) {
+		return nil, nil, status.NewBadRequestError(errors.New("incorrect username")).Caller().AddCode(net.IncorrectUserName)
+	}
+
 	// ユーザ情報追加
 	userInfo := &models.User{
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		UserName:  user.UserName,
-		Theme:     user.Theme,
-		AvatarUrl: user.AvatarUrl,
+		FirstName:         user.FirstName,
+		LastName:          user.LastName,
+		UserName:          user.UserName,
+		UserNameFormatted: utils.FormantUserName(user.UserName),
+		Theme:             user.Theme,
+		AvatarUrl:         user.AvatarUrl,
 
 		Mail: buffer.Mail,
+
+		// デフォルトは`user`のみ
+		Role: []string{"user"},
 
 		UserId: models.UserId{
 			UserId: userId,

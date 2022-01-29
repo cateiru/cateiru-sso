@@ -199,11 +199,14 @@ func LoginAdmin(ctx context.Context, db *database.Database, form *RequestFrom) (
 	}
 
 	newUser := &models.User{
-		FirstName: "Admin",
-		LastName:  "User",
-		UserName:  "admin",
+		FirstName:         "Admin",
+		LastName:          "User",
+		UserName:          "admin",
+		UserNameFormatted: "admin",
 
 		Mail: form.Mail,
+
+		Role: []string{"user", "pro", "admin"},
 
 		// TODO: 初期値設定する
 		Theme:     "",

@@ -8,18 +8,20 @@ export default function decodeErrorCode(code: number): string {
     // 1: DefaultError
     // 2: Response内でエラー
     // 3: ブロックリストに入っていたエラー
-    // 4: メールアドレスがすでに存在しているエラー
+    // 4:  メールアドレスが正しくないエラー
     // 5: Bot判定したためエラー
     // 6: 時間切れ
     // 7: すでに認証済み
     // 8: アカウントない
-    // 9: ログインできなかった
+    // 9: ユーザ名はすでに存在する
+    // 10: パスワードかメールアドレスが間違っている
+    // 11: ユーザ名が正しくない
     case 2:
       return '予測不可能なエラー';
     case 3:
       return 'あなたは許可されていないようです';
     case 4:
-      return 'そのメールアドレスはすでに登録されているようです';
+      return 'そのメールアドレスは使用できません';
     case 5:
       return 'あなたの操作がBotと判定されてしまいました';
     case 6:
@@ -32,6 +34,8 @@ export default function decodeErrorCode(code: number): string {
       return 'そのユーザIDはすでに存在しています';
     case 10:
       return 'ログインができませんでした。パスワードまたはメールアドレスが間違っています。';
+    case 11:
+      return 'ユーザ名が正しくありません。3文字以上15文字以内の英数字、アンダースコアが使用できます';
     default:
       return 'エラー';
   }

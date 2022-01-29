@@ -45,7 +45,7 @@ const CreateInfo = React.memo(() => {
   const [pwOK, setPwOK] = React.useState(false);
 
   React.useEffect(() => {
-    if (user) {
+    if (user && /^[a-zA-Z0-9_]{3,15}$/.test(user)) {
       const f = async () => {
         const exist = await checkUserName(user);
         setExistUser(exist);
@@ -79,13 +79,13 @@ const CreateInfo = React.memo(() => {
       <form onSubmit={handleSubmit(submit)}>
         <Flex>
           <FormControl isInvalid={errors.lastName} mr=".5rem">
-            <FormLabel htmlFor="lastName">名字</FormLabel>
+            <FormLabel htmlFor="lastName">姓</FormLabel>
             <Input
               id="lastName"
               type="name"
-              placeholder="名字"
+              placeholder="姓"
               {...register('lastName', {
-                required: '名字が必要です',
+                required: '姓の入力が必要です',
               })}
             />
             <FormErrorMessage>
@@ -93,13 +93,13 @@ const CreateInfo = React.memo(() => {
             </FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={errors.firstName}>
-            <FormLabel htmlFor="firstName">名前</FormLabel>
+            <FormLabel htmlFor="firstName">名</FormLabel>
             <Input
               id="firstName"
               type="name"
-              placeholder="名前"
+              placeholder="名"
               {...register('firstName', {
-                required: '名前が必要です',
+                required: '名が必要です',
               })}
             />
             <FormErrorMessage>
@@ -108,16 +108,17 @@ const CreateInfo = React.memo(() => {
           </FormControl>
         </Flex>
         <FormControl isInvalid={errors.userName || existUser} mt="1rem">
-          <FormLabel htmlFor="userName">ユーザ名（小文字英数字）</FormLabel>
+          <FormLabel htmlFor="userName">ユーザ名</FormLabel>
           <Input
             id="userName"
             type="name"
-            placeholder="ユーザ名（小文字英数字）"
+            placeholder="ユーザ名（英数字、アンダースコア）"
             {...register('userName', {
               required: 'ユーザ名が必要です',
               pattern: {
-                value: /^[a-z0-9]+$/,
-                message: 'ユーザ名は小文字英数字で入力してください',
+                value: /^[a-zA-Z0-9_]{3,15}$/,
+                message:
+                  'ユーザ名は英数字、アンダースコアで3~15文字で入力してください',
               },
               onBlur: e => setUser(e.target.value),
             })}
