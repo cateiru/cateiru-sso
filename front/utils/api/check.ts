@@ -14,7 +14,7 @@ export async function checkUserName(userName: string): Promise<boolean> {
   api.get();
 
   const resp = (await (
-    await api.connect(`/check/username?name=${userName}`)
+    await api.connect(`/check/username?name=${userName.toLowerCase()}`)
   ).json()) as CheckUserNameResponse;
 
   return resp.exist;

@@ -112,12 +112,13 @@ const CreateInfo = React.memo(() => {
           <Input
             id="userName"
             type="name"
-            placeholder="ユーザ名（小文字英数字）"
+            placeholder="ユーザ名（英数字、アンダースコア）"
             {...register('userName', {
               required: 'ユーザ名が必要です',
               pattern: {
-                value: /^[a-z0-9]+$/,
-                message: 'ユーザ名は小文字英数字で入力してください',
+                value: /^[a-zA-Z0-9_]{3,15}$/,
+                message:
+                  'ユーザ名は英数字、アンダースコアで3~15文字で入力してください',
               },
               onBlur: e => setUser(e.target.value),
             })}
