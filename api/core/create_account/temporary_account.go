@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/badoux/checkmail"
 	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
@@ -103,6 +104,11 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 		return "", status.NewForbiddenError(errors.New("ip is blocked")).Caller().AddCode(net.BlockedError)
 	}
 
+	// メールアドレスをチェックする
+	if err := checkmail.ValidateFormat(form.Mail); err != nil {
+		return "", status.NewBadRequestError(err).Caller().AddCode(net.IncorrectMail)
+	}
+
 	// メールアドレスが既に存在するかチェック
 	isMailExist, err := common.CheckExistMail(ctx, db, form.Mail)
 	if err != nil {
@@ -111,11 +117,11 @@ func CreateTemporaryAccount(ctx context.Context, form *PostForm, ip string) (str
 	// メールアドレスがすでに存在している = そのメールアドレスを持ったアカウントが作られている場合、
 	// あたらにそのメールアドレスでアカウントを作成することはできないため、403エラーを返す
 	if isMailExist {
-		return "", status.NewForbiddenError(errors.New("email already exists")).Caller().AddCode(net.ExistError)
+		return "", status.NewForbiddenError(errors.New("email already exists")).Caller().AddCode(net.IncorrectMail)
 	}
 	// Adminのメールアドレスは既に定義されており、ログインできるため弾く
 	if common.CheckAdminMail(form.Mail) {
-		return "", status.NewForbiddenError(errors.New("email is admin")).Caller().AddCode(net.ExistError)
+		return "", status.NewForbiddenError(errors.New("email is admin")).Caller().AddCode(net.IncorrectMail)
 	}
 
 	// ログを保存する

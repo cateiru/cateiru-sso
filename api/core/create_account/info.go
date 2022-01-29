@@ -143,6 +143,9 @@ func InsertUserInfo(ctx context.Context, user InfoRequestForm, ip string, userAg
 
 		Mail: buffer.Mail,
 
+		// デフォルトは`user`のみ
+		Role: []string{"user"},
+
 		UserId: models.UserId{
 			UserId: userId,
 		},

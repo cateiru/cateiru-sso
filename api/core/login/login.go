@@ -206,6 +206,8 @@ func LoginAdmin(ctx context.Context, db *database.Database, form *RequestFrom) (
 
 		Mail: form.Mail,
 
+		Role: []string{"user", "pro", "admin"},
+
 		// TODO: 初期値設定する
 		Theme:     "",
 		AvatarUrl: "",

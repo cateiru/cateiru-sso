@@ -19,6 +19,7 @@ require (
 	cloud.google.com/go/compute v1.1.0 // indirect
 	cloud.google.com/go/iam v0.1.1 // indirect
 	cloud.google.com/go/storage v1.19.0 // indirect
+	github.com/badoux/checkmail v1.2.1 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
 	github.com/cateiru/go-retry v0.0.0-20211211132223-214a67371dcc // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect

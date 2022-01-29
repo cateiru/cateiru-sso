@@ -164,3 +164,60 @@ func TestInfoUnauthenticated(t *testing.T) {
 	_, _, err = createaccount.InsertUserInfo(ctx, user, ip, userAgent)
 	require.Error(t, err)
 }
+
+func TestFailedUserName(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser()
+
+	clientToken := utils.CreateID(20)
+
+	buffer := models.MailCertification{
+		MailToken:      utils.CreateID(20),
+		ClientToken:    clientToken,
+		OpenNewWindow:  false,
+		Verify:         true,
+		ChangeMailMode: false,
+
+		Period: models.Period{
+			CreateDate:   time.Now(),
+			PeriodMinute: 30,
+		},
+
+		Mail: dummy.Mail,
+	}
+
+	err = buffer.Add(ctx, db)
+	require.NoError(t, err)
+
+	// メール認証がDBに格納されるまで待機
+	goretry.Retry(t, func() bool {
+		entry, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
+		require.NoError(t, err)
+
+		return entry != nil
+	}, "entryがある")
+
+	user := createaccount.InfoRequestForm{
+		FirstName: "名前",
+		LastName:  "名字",
+		UserName:  "あいうえ",
+
+		Theme:     "dark",
+		AvatarUrl: "",
+
+		Password: "password",
+	}
+
+	ip := "198.51.100.0"
+	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
+
+	_, _, err = createaccount.InsertUserInfo(ctx, user, ip, userAgent)
+	require.Error(t, err)
+}

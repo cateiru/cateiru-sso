@@ -24,7 +24,7 @@ const (
 	DefaultError             // エラー
 	ErrorIntoError           // ResponseError内でのエラー
 	BlockedError             // ブロックリストに入っていたエラー
-	ExistError               // メールアドレスなどが既に存在しているエラー
+	IncorrectMail            //  メールアドレスが正しくないエラー
 	BotError                 // Bot判定したためエラー
 	TimeOutError             // 時間切れ
 	AlreadyDone              // 既に認証済み

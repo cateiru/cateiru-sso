@@ -52,3 +52,18 @@ func TestSuccess(t *testing.T) {
 	now := time.Now()
 	require.NotEqual(t, now.Sub(element.CreateDate), time.Duration(0), "ちゃんと作成日時が定義されている")
 }
+
+func FailedMail(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	form := &createaccount.PostForm{
+		Mail:      "aaaaaaa",
+		ReCAPTCHA: "",
+	}
+	ip := "192.168.1.1"
+
+	_, err := createaccount.CreateTemporaryAccount(ctx, form, ip)
+	require.Error(t, err)
+}

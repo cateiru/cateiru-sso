@@ -94,6 +94,8 @@ type User struct {
 	Theme     string `datastore:"theme" json:"theme"`
 	AvatarUrl string `datastore:"avatarUrl" json:"avatar_url"`
 
+	Role []string `datastore:"role" json:"role"`
+
 	UserId
 }
 
