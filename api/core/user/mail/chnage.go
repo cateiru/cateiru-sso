@@ -155,6 +155,29 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail string, userId string) error {
 	mailToken := utils.CreateID(20)
 
+	// メールアドレスが既に存在するかチェック
+	isMailExist, err := common.CheckExistMail(ctx, db, newMail)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	// メールアドレスがすでに存在している = そのメールアドレスを持ったアカウントが作られている場合、
+	// あたらにそのメールアドレスでアカウントを作成することはできないため、403エラーを返す
+	if isMailExist {
+		return status.NewBadRequestError(errors.New("email already exists")).Caller().AddCode(net.IncorrectMail)
+	}
+	exist, err := common.CheckExistMail(ctx, db, newMail)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	// メールアドレスがすでに存在している場合は400を返す
+	if exist {
+		return status.NewBadRequestError(errors.New("email already exists")).Caller().AddCode(net.IncorrectMail)
+	}
+	// Adminのメールアドレスはだめ
+	if common.CheckAdminMail(newMail) {
+		return status.NewBadRequestError(errors.New("email is admin")).Caller().AddCode(net.IncorrectMail)
+	}
+
 	mailVerify := &models.MailCertification{
 		MailToken:   mailToken,
 		ClientToken: utils.CreateID(0), // 使わないが一応keyを指定しておく
@@ -186,7 +209,7 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 		}
 	} else {
 		logging.Sugar.Debugf(
-			"create mail token. url: https://%s/mail/change?m=%s", config.Defs.SiteDomain, mailToken)
+			"create mail token. url: https://%s/setting/mail?t=%s", config.Defs.SiteDomain, mailToken)
 	}
 
 	return nil
@@ -195,7 +218,7 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 // メールアドレス認証メールを送信する
 func sendVerifyMail(mailAddress string, mailToken string) error {
 	template := VerifyMailTemplate{
-		VerifyURL: fmt.Sprintf("https://%s/mail/change?m=%s", config.Defs.SiteDomain, mailToken),
+		VerifyURL: fmt.Sprintf("https://%s/setting/mail?t=%s", config.Defs.SiteDomain, mailToken),
 		Mail:      mailAddress,
 	}
 

@@ -126,3 +126,29 @@ func TestVerifyChangeMail(t *testing.T) {
 		return mailCert == nil
 	}, "mail certが削除されている")
 }
+
+func TestAlreadyMail(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser()
+
+	_, err = dummy.AddUserCert(ctx, db)
+	require.NoError(t, err)
+	_, err = dummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+	goretry.Retry(t, func() bool {
+		entity1, err := models.GetUserDataByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return entity1 != nil
+	}, "")
+
+	err = mail.ChangeMail(ctx, db, dummy.Mail, dummy.UserID)
+	require.Error(t, err)
+}
