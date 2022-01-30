@@ -44,6 +44,10 @@ func AvatarSetHandler(w http.ResponseWriter, r *http.Request) error {
 
 	contentType := fileHeader.Header.Get("Content-Type")
 
+	if contentType != "image/png" {
+		return status.NewBadRequestError(errors.New("content-type must be image/png")).Caller()
+	}
+
 	s, err := storage.NewStorage(ctx, config.Defs.StorageBucket)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()

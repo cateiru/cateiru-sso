@@ -58,7 +58,7 @@ const AvatarSetting = () => {
 
       canvas.toBlob(blob => {
         if (blob) {
-          const file = new File([blob], 'avatar', {type: 'image/*'});
+          const file = new File([blob], 'avatar', {type: 'image/png'});
 
           const f = async () => {
             try {
@@ -92,7 +92,7 @@ const AvatarSetting = () => {
 
           f();
         }
-      }, 'image/*');
+      }, 'image/png');
     }
 
     onClose();
