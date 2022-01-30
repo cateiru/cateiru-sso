@@ -7,19 +7,20 @@ import {
   Center,
   Heading,
   useToast,
+  Text,
 } from '@chakra-ui/react';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
-import {useRecoilValue, useSetRecoilState} from 'recoil';
+import {useRecoilValue, useRecoilState} from 'recoil';
 import {changeMail, changeMailVerify} from '../../utils/api/change';
 import {UserState} from '../../utils/state/atom';
 
 const MailSetting = () => {
   const [token, setToken] = React.useState('');
   const router = useRouter();
-  const setUser = useSetRecoilState(UserState);
+  const [user, setUser] = useRecoilState(UserState);
   const toast = useToast();
 
   React.useEffect(() => {
@@ -60,6 +61,8 @@ const MailSetting = () => {
           });
         }
       }
+
+      router.push('/setting/mail');
     };
 
     if (token) {
@@ -69,7 +72,7 @@ const MailSetting = () => {
 
   return (
     <>
-      <Center height={{base: 'auto', md: '50vh'}}>
+      <Center height={{base: 'auto', md: '50vh'}} mx=".5rem">
         <Box
           width={{base: '100%', sm: '90%', md: '600px'}}
           mt={{base: '3rem', md: '0'}}
@@ -77,6 +80,7 @@ const MailSetting = () => {
           <Heading fontSize="1.5rem" mb="1.5rem" textAlign="center">
             メールアドレスを変更する
           </Heading>
+          <Text>{user?.mail}</Text>
           <MailInput />
         </Box>
       </Center>
@@ -92,6 +96,7 @@ const MailInput = () => {
   } = useForm();
   const user = useRecoilValue(UserState);
   const toast = useToast();
+  const [isSubmit, setSubmit] = React.useState(false);
 
   const submitHandler = (values: FieldValues) => {
     const f = async () => {
@@ -103,6 +108,7 @@ const MailInput = () => {
           isClosable: true,
           duration: 9000,
         });
+        setSubmit(true);
       } catch (error) {
         if (error instanceof Error) {
           toast({
@@ -129,7 +135,7 @@ const MailInput = () => {
           id="email"
           type="email"
           placeholder="新しいメールアドレス"
-          defaultValue={user?.mail}
+          disabled={isSubmit}
           {...register('email', {
             required: 'メールアドレスが必要です',
             pattern: {
