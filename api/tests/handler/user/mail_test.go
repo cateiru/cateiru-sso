@@ -112,7 +112,12 @@ func TestChangeMail(t *testing.T) {
 		MailToken: mailToken,
 	}
 
-	s.Post(t, "/", changeForm)
+	resp := s.Post(t, "/", changeForm)
+
+	var respBody mail.VerifyMailResponse
+	json.Unmarshal(tools.ConvertByteResp(resp), &respBody)
+
+	require.Equal(t, newMail, respBody.NewMail)
 
 	// --- 確認
 

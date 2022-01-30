@@ -28,6 +28,10 @@ type ChangeMailRequest struct {
 	MailToken string `json:"mail_token"`
 }
 
+type VerifyMailResponse struct {
+	NewMail string `json:"new_mail"`
+}
+
 // テンプレートに適用する用の型
 type VerifyMailTemplate struct {
 	VerifyURL string
@@ -66,7 +70,12 @@ func CangeMailHandler(w http.ResponseWriter, r *http.Request) error {
 		return ChangeMail(ctx, db, request.NewMail, userId)
 	case "verify":
 		// メールトークンを使用して自分のアカウントのメールアドレスを変更します
-		return VerifyNewMail(ctx, db, request.MailToken, userId)
+		newMail, err := VerifyNewMail(ctx, db, request.MailToken, userId)
+		if err != nil {
+			return err
+		}
+		net.ResponseOK(w, VerifyMailResponse{NewMail: newMail})
+		return nil
 	default:
 		return status.NewBadRequestError(errors.New("parse failed")).Caller()
 	}
@@ -82,62 +91,62 @@ func ChangeMail(ctx context.Context, db *database.Database, newMail string, user
 }
 
 // メールトークンからメールアドレスを更新する
-func VerifyNewMail(ctx context.Context, db *database.Database, token string, userId string) error {
+func VerifyNewMail(ctx context.Context, db *database.Database, token string, userId string) (string, error) {
 	entity, err := models.GetMailCertificationByMailToken(ctx, db, token)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 	if entity == nil {
-		return status.NewBadRequestError(errors.New("mail cert is empty")).Caller()
+		return "", status.NewBadRequestError(errors.New("mail cert is empty")).Caller()
 	}
 
 	// 違うアカウントで認証しようとしたら400を返す
 	if entity.UserId != userId {
-		return status.NewBadRequestError(errors.New("bad account")).Caller()
+		return "", status.NewBadRequestError(errors.New("bad account")).Caller()
 	}
 
 	// 有効期限が切れている場合、400を返す
 	if common.CheckExpired(&entity.Period) {
-		return status.NewBadRequestError(errors.New("expired")).AddCode(net.TimeOutError).Caller().AddCode(net.TimeOutError)
+		return "", status.NewBadRequestError(errors.New("expired")).AddCode(net.TimeOutError).Caller().AddCode(net.TimeOutError)
 	}
 
 	// ---- Certを変更する
 
 	cert, err := models.GetCertificationByUserID(ctx, db, entity.UserId)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 	if cert == nil {
-		return status.NewInternalServerErrorError(errors.New("cert is empty")).Caller()
+		return "", status.NewInternalServerErrorError(errors.New("cert is empty")).Caller()
 	}
 
 	cert.Mail = entity.Mail // certのメールアドレスを更新
 
 	if err := cert.Add(ctx, db); err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	/// ---- UserInfoを変更する
 
 	info, err := models.GetUserDataByUserID(ctx, db, cert.UserId.UserId)
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 	if info == nil {
-		return status.NewInternalServerErrorError(errors.New("user info is empty")).Caller()
+		return "", status.NewInternalServerErrorError(errors.New("user info is empty")).Caller()
 	}
 
 	info.Mail = entity.Mail // user infoのメールアドレスを更新
 
 	if err := info.Add(ctx, db); err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
 	if err := models.DeleteMailCertification(ctx, db, entity.MailToken); err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
+		return "", status.NewInternalServerErrorError(err).Caller()
 	}
 
-	return nil
+	return cert.Mail, nil
 }
 
 // メール認証を開始します
@@ -145,6 +154,29 @@ func VerifyNewMail(ctx context.Context, db *database.Database, token string, use
 // client_check_token(wsを接続するのに使用するトークンを返します)
 func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail string, userId string) error {
 	mailToken := utils.CreateID(20)
+
+	// メールアドレスが既に存在するかチェック
+	isMailExist, err := common.CheckExistMail(ctx, db, newMail)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	// メールアドレスがすでに存在している = そのメールアドレスを持ったアカウントが作られている場合、
+	// あたらにそのメールアドレスでアカウントを作成することはできないため、403エラーを返す
+	if isMailExist {
+		return status.NewBadRequestError(errors.New("email already exists")).Caller().AddCode(net.IncorrectMail)
+	}
+	exist, err := common.CheckExistMail(ctx, db, newMail)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	// メールアドレスがすでに存在している場合は400を返す
+	if exist {
+		return status.NewBadRequestError(errors.New("email already exists")).Caller().AddCode(net.IncorrectMail)
+	}
+	// Adminのメールアドレスはだめ
+	if common.CheckAdminMail(newMail) {
+		return status.NewBadRequestError(errors.New("email is admin")).Caller().AddCode(net.IncorrectMail)
+	}
 
 	mailVerify := &models.MailCertification{
 		MailToken:   mailToken,
@@ -177,7 +209,7 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 		}
 	} else {
 		logging.Sugar.Debugf(
-			"create mail token. url: https://%s/mail/change?m=%s", config.Defs.SiteDomain, mailToken)
+			"create mail token. url: https://%s/setting/mail?t=%s", config.Defs.SiteDomain, mailToken)
 	}
 
 	return nil
@@ -186,7 +218,7 @@ func createVerifyChangeMail(ctx context.Context, db *database.Database, newMail 
 // メールアドレス認証メールを送信する
 func sendVerifyMail(mailAddress string, mailToken string) error {
 	template := VerifyMailTemplate{
-		VerifyURL: fmt.Sprintf("https://%s/mail/change?m=%s", config.Defs.SiteDomain, mailToken),
+		VerifyURL: fmt.Sprintf("https://%s/setting/mail?t=%s", config.Defs.SiteDomain, mailToken),
 		Mail:      mailAddress,
 	}
 
