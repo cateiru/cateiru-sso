@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"os"
 	"testing"
 
@@ -47,9 +48,13 @@ func TestAvatar(t *testing.T) {
 	err = s.AddSession(ctx, db, dummy)
 	require.NoError(t, err)
 
+	mh := make(textproto.MIMEHeader)
+	mh.Set("Content-Type", "image/png")
+	mh.Set("Content-Disposition", "form-data; name=\"upload\"; filename=\"logo.png\"")
+
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("upload", LOGO_PATH)
+	part, err := writer.CreatePart(mh)
 	require.NoError(t, err)
 	f, err := os.Open(LOGO_PATH)
 	require.NoError(t, err)
