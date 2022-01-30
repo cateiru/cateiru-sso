@@ -99,7 +99,7 @@ const AvatarSetting = () => {
   };
   return (
     <Box>
-      <Box width={{base: '80px', md: '120px'}}>
+      <Box width={{base: '100px', md: '140px'}}>
         <Avatar src={user?.avatar_url} size="full" />
       </Box>
       <label htmlFor="filename">

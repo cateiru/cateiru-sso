@@ -29,7 +29,7 @@ const SettingPage: React.FC<{index: number}> = ({index, children}) => {
 
   return (
     <Center>
-      <Box width={{base: '100%', lg: '75%'}} mt="2.5rem">
+      <Box width={{base: '100%', lg: '1000px'}} mt="2.5rem">
         <Center mb="1.7rem">
           <Heading>設定</Heading>
         </Center>
