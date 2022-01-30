@@ -84,7 +84,7 @@ func CangeMailHandler(w http.ResponseWriter, r *http.Request) error {
 // メールアドレス変更リクエストを受け付けます
 func ChangeMail(ctx context.Context, db *database.Database, newMail string, userId string) error {
 	if err := createVerifyChangeMail(ctx, db, newMail, userId); err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
+		return err
 	}
 
 	return nil
