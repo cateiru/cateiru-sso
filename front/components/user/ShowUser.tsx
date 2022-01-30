@@ -49,7 +49,7 @@ const ShowUser = () => {
             fontSize={{base: '3vw', md: '1.3rem'}}
             fontWeight="600"
             mt="2rem"
-            width="100%"
+            width={{base: '100%', lg: '800px'}}
           >
             <Box
               overflow="scroll"

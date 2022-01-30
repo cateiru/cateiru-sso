@@ -8,6 +8,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/storage"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
@@ -43,6 +44,11 @@ func AvatarSetHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	contentType := fileHeader.Header.Get("Content-Type")
+
+	logging.Sugar.Info(contentType)
+	if contentType != "image/png" {
+		return status.NewBadRequestError(errors.New("content-type must be image/png")).Caller()
+	}
 
 	s, err := storage.NewStorage(ctx, config.Defs.StorageBucket)
 	if err != nil {
