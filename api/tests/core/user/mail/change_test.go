@@ -91,14 +91,17 @@ func TestVerifyChangeMail(t *testing.T) {
 
 	// --- 変更する
 
+	var newMailresp string
 	goretry.Retry(t, func() bool {
-		err = mail.VerifyNewMail(ctx, db, mailToken, dummy.UserID)
+		newMailresp, err = mail.VerifyNewMail(ctx, db, mailToken, dummy.UserID)
 		if err != nil {
 			t.Log(err)
 			return false
 		}
 		return true
 	}, "")
+
+	require.Equal(t, newMail, newMailresp)
 
 	// --- 確認する
 
