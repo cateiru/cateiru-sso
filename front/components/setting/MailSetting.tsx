@@ -62,7 +62,7 @@ const MailSetting = () => {
         }
       }
 
-      router.push('/setting/mail');
+      router.replace('/setting/mail');
     };
 
     if (token) {

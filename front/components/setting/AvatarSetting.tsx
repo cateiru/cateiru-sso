@@ -116,6 +116,7 @@ const AvatarSetting = () => {
           display="none"
           id="filename"
           type="file"
+          accept="image/*"
           onChange={handleChange}
         />
       </label>
