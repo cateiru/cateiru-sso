@@ -32,6 +32,7 @@ const (
 	ExistUserName            // ユーザIDがすでにある
 	FailedLogin              // ログインできない
 	IncorrectUserName        // ユーザ名が正しくない
+	PasswordWrong            // パスワードが違う
 )
 
 type AbstractResponse struct {
