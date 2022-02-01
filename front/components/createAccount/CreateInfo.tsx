@@ -177,13 +177,13 @@ const CreateInfo = React.memo(() => {
           <PasswordStrengthBar
             password={pass}
             scoreWords={[
-              '短すぎかな',
+              '弱すぎかな',
               '弱いパスワードだと思う',
               '少し弱いパスワードかなと思う',
               'もう少し長くしてみない？',
               '最強!すごく良いよ!',
             ]}
-            shortScoreWord="8文字以上にしてみよう"
+            shortScoreWord="8文字以上にしてほしいな"
             minLength={8}
           />
           <FormErrorMessage>{errors.password}</FormErrorMessage>
