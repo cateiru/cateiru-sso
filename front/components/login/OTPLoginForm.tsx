@@ -56,9 +56,7 @@ const OTPLoginForm: React.FC<{token: string}> = ({token}) => {
           duration: 9000,
         });
       }
-      // 失敗したらloginページに飛ばす
       setLoad(false);
-      router.push('/login');
       return;
     }
 

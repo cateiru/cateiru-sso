@@ -44,3 +44,11 @@ export const changeMailVerify = async (token: string): Promise<string> => {
 
   return ((await resp.json()) as ChangeMailVerifyResponse).new_mail;
 };
+
+export const changePassword = async (oldPW: string, newPW: string) => {
+  const api = new API();
+
+  api.post(JSON.stringify({new_password: newPW, old_password: oldPW}));
+
+  await api.connect('/user/password');
+};

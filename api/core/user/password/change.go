@@ -63,7 +63,7 @@ func ChangePassword(ctx context.Context, db *database.Database, userId string, f
 
 	// old_passwordが違う場合は400を返す
 	if !secure.ValidatePW(form.OldPassword, cert.Password, cert.Salt) {
-		return status.NewBadRequestError(errors.New("password is not validate")).Caller()
+		return status.NewBadRequestError(errors.New("password is not validate")).Caller().AddCode(net.PasswordWrong)
 	}
 
 	newPassword, err := secure.PWHash(form.NewPassword)

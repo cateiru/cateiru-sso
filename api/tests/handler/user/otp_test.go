@@ -22,6 +22,7 @@ func otpServer() *http.ServeMux {
 
 	mux.HandleFunc("/otp", handler.UserOnetimePWHandler)
 	mux.HandleFunc("/otp/bup", handler.UserOnetimePWBackupHandler)
+	mux.HandleFunc("/me", handler.UserOTPMeHandler)
 
 	return mux
 }
@@ -93,4 +94,33 @@ func TestOTP(t *testing.T) {
 			t.Fatal("OTPが無いやつがある")
 		}
 	}
+}
+
+func TestOTPMe(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy, err := tools.NewDummyUser().NewOTP()
+	require.NoError(t, err)
+	_, err = dummy.AddUserCert(ctx, db)
+	require.NoError(t, err)
+	_, err = dummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+
+	s := tools.NewTestServer(t, otpServer(), true)
+	s.AddSession(ctx, db, dummy)
+
+	resp := s.Get(t, "/me")
+
+	var respBody otp.OTPMeResponse
+
+	err = json.Unmarshal(tools.ConvertByteResp(resp), &respBody)
+	require.NoError(t, err)
+
+	require.True(t, respBody.Enable)
 }

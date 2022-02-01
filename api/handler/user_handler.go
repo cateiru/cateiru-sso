@@ -99,6 +99,15 @@ func UserInfoChangeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func UserOTPMeHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		OTPMeHandler(w, r)
+	default:
+		RootHandler(w, r)
+	}
+}
+
 // メールアドレス取得
 // 全ユーザ
 // `/me`でも取得できる
@@ -175,6 +184,12 @@ func AvatarDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 func ChangeUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	if err := info.ChangeInfoHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+func OTPMeHandler(w http.ResponseWriter, r *http.Request) {
+	if err := otp.OTPMeHandler(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }
