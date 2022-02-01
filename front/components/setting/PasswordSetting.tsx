@@ -2,13 +2,11 @@ import {
   Box,
   Center,
   Heading,
-  Divider,
   Input,
   FormControl,
   FormErrorMessage,
   Button,
   useToast,
-  Text,
   InputRightElement,
   InputGroup,
   IconButton,
@@ -21,7 +19,6 @@ import type {FieldValues} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
 import PasswordStrengthBar from 'react-password-strength-bar';
 import {changePassword} from '../../utils/api/change';
-import OTP from './OTP';
 
 const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
   ssr: false,
