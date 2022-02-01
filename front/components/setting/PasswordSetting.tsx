@@ -21,6 +21,7 @@ import type {FieldValues} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
 import PasswordStrengthBar from 'react-password-strength-bar';
 import {changePassword} from '../../utils/api/change';
+import OTP from './OTP';
 
 const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
   ssr: false,
@@ -33,18 +34,10 @@ const PasswordSetting = () => {
         width={{base: '100%', sm: '90%', md: '600px'}}
         mt={{base: '3rem', md: '0'}}
       >
-        <Box>
-          <Heading fontSize="1.5rem" mb="1.5rem" textAlign="center">
-            ワンタイムパスワードを設定、変更する
-          </Heading>
-        </Box>
-        <Divider />
-        <Box mt="1.7rem">
-          <Heading fontSize="1.5rem" mb="1.5rem" textAlign="center">
-            パスワードを変更する
-          </Heading>
-          <ChangePassword />
-        </Box>
+        <Heading fontSize="1.5rem" mb="1.5rem" textAlign="center">
+          パスワードを変更する
+        </Heading>
+        <ChangePassword />
       </Box>
     </Center>
   );
