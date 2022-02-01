@@ -137,6 +137,7 @@ const OTP = () => {
             duration: 9000,
           });
         }
+        onClose();
       }
     };
 
@@ -156,6 +157,8 @@ const OTP = () => {
 
         await deleteotp(passcode);
 
+        deleteOtpModal.onClose();
+
         setPasscode('');
         setOTPEnable(OTPState.Disable);
 
@@ -174,6 +177,7 @@ const OTP = () => {
             duration: 9000,
           });
         }
+        deleteOtpModal.onClose();
       }
     };
 

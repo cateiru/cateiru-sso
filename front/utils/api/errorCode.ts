@@ -38,6 +38,8 @@ export default function decodeErrorCode(code: number): string {
       return 'ユーザ名が正しくありません。3文字以上15文字以内の英数字、アンダースコアが使用できます';
     case 12:
       return 'パスワードが違うようです';
+    case 13:
+      return 'ワンタイムパスワードが違うため認証できませんでした';
     default:
       return 'エラー';
   }

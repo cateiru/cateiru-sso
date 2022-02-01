@@ -6,6 +6,7 @@ const AccountSetting = () => {
   const logoutHandle = () => {
     const f = async () => {
       await logout();
+      window.location.reload();
     };
     f();
   };
@@ -13,6 +14,7 @@ const AccountSetting = () => {
   const deleteHandle = () => {
     const f = async () => {
       await deleteAccount();
+      window.location.reload();
     };
     f();
   };
@@ -31,8 +33,10 @@ const AccountSetting = () => {
             ログアウト
           </Heading>
           <Stack direction={['column', 'row']} spacing="1rem">
-            <Button colorScheme="blue">ログアウト</Button>
-            <Button variant="ghost" colorScheme="red">
+            <Button colorScheme="blue" onClick={logoutHandle}>
+              ログアウト
+            </Button>
+            <Button variant="ghost" colorScheme="red" onClick={deleteHandle}>
               アカウント削除
             </Button>
           </Stack>

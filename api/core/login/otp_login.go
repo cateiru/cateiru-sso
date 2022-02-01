@@ -92,7 +92,7 @@ func LoginOTP(ctx context.Context, id string, passcode string, ip string, userAg
 	ok, update := common.CheckOTP(passcode, cert, nil)
 	// OTPが認証できない場合は400を返す
 	if !ok {
-		return nil, status.NewBadRequestError(errors.New("otp not varidated")).Caller().AddCode(net.FailedLogin)
+		return nil, status.NewBadRequestError(errors.New("otp not varidated")).Caller().AddCode(net.FailedOTP)
 	}
 
 	// backupが更新された場合はDBを更新する
