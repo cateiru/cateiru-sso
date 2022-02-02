@@ -20,6 +20,7 @@ import {
   Divider,
   Text,
   SimpleGrid,
+  Skeleton,
 } from '@chakra-ui/react';
 import {useColorMode} from '@chakra-ui/react';
 import QRcode from 'qrcode.react';
@@ -380,7 +381,11 @@ const OTP = () => {
         </>
       );
     default:
-      return <></>;
+      return (
+        <Skeleton>
+          <Button></Button>
+        </Skeleton>
+      );
   }
 };
 
