@@ -12,6 +12,7 @@ import {
   Heading,
   Flex,
   useColorModeValue,
+  Tooltip,
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
@@ -63,11 +64,44 @@ const LoginLogPage = () => {
               {(() => {
                 switch (userAgent.device()) {
                   case Device.Mobile:
-                    return <IoPhonePortraitOutline size="25px" />;
+                    return (
+                      <Tooltip
+                        label="スマートフォン"
+                        placement="top"
+                        borderRadius="5px"
+                        hasArrow
+                      >
+                        <Box>
+                          <IoPhonePortraitOutline size="25px" />
+                        </Box>
+                      </Tooltip>
+                    );
                   case Device.Desktop:
-                    return <IoDesktopOutline size="25px" />;
+                    return (
+                      <Tooltip
+                        label="デスクトップ"
+                        placement="top"
+                        borderRadius="5px"
+                        hasArrow
+                      >
+                        <Box>
+                          <IoDesktopOutline size="25px" />
+                        </Box>
+                      </Tooltip>
+                    );
                   case Device.Tablet:
-                    return <IoTabletPortraitOutline size="25px" />;
+                    return (
+                      <Tooltip
+                        label="タブレット"
+                        placement="top"
+                        borderRadius="5px"
+                        hasArrow
+                      >
+                        <Box>
+                          <IoTabletPortraitOutline size="25px" />
+                        </Box>
+                      </Tooltip>
+                    );
                 }
               })()}
             </Box>
@@ -94,12 +128,7 @@ const LoginLogPage = () => {
 
   return (
     <Center>
-      <Box
-        width={{base: '100%', lg: '1000px'}}
-        mt="2rem"
-        minHeight="50vh"
-        maxHeight="100vh"
-      >
+      <Box width={{base: '100%', lg: '1000px'}} mt="2rem">
         <Box mx=".5rem">
           <Link href="/setting/account" passHref>
             <Button
@@ -112,8 +141,10 @@ const LoginLogPage = () => {
           </Link>
         </Box>
         <Heading textAlign="center">ログイン履歴</Heading>
-        <Box overflow="auto" mx=".5rem" height="100%" mt="2rem">
-          <Table variant="striped" minWidth="800px" size="lg">
+        {/* TODO: overflow: auto属性が親~先祖についていると position: stickyが適用されない */}
+        {/*        ref. https://github.com/w3c/csswg-drafts/issues/865 */}
+        <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="2rem">
+          <Table variant="striped" width="calc(1000px - 1rem)" size="lg">
             <Thead>
               <Tr>
                 <Header>ログイン日時</Header>
@@ -121,7 +152,7 @@ const LoginLogPage = () => {
                 <Header>端末</Header>
               </Tr>
             </Thead>
-            <Tbody overflowY="scroll">{log.map(v => element(v))}</Tbody>
+            <Tbody>{log.map(v => element(v))}</Tbody>
           </Table>
         </Box>
       </Box>
