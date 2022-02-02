@@ -10,6 +10,7 @@ import {
   Text,
   Button,
   Heading,
+  Flex,
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
@@ -51,10 +52,10 @@ const LoginLogPage = () => {
 
     return (
       <Tr key={v.access_id}>
-        <Td>{formatDate(new Date(v.date))}</Td>
+        <Td textAlign="center">{formatDate(new Date(v.date))}</Td>
         <Td textAlign="center">{v.ip_address}</Td>
         <Td>
-          <Center>
+          <Flex justifyContent="center" width="200px">
             <Box>
               {userAgent.isMobile() ? (
                 <IoPhonePortraitOutline size="25px" />
@@ -63,7 +64,7 @@ const LoginLogPage = () => {
               )}
             </Box>
             <Text ml=".5rem">{userAgent.uniqName()}</Text>
-          </Center>
+          </Flex>
         </Td>
       </Tr>
     );
@@ -88,7 +89,7 @@ const LoginLogPage = () => {
           <Table variant="striped" minWidth="800px" size="lg" mt="2rem">
             <Thead>
               <Tr>
-                <Th>ログイン日時</Th>
+                <Th textAlign="center">ログイン日時</Th>
                 <Th textAlign="center">IPアドレス</Th>
                 <Th textAlign="center">端末</Th>
               </Tr>

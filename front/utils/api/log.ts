@@ -1,7 +1,7 @@
 import {API} from './api';
 
 export interface LoginLogResponse {
-  date: Date;
+  date: string;
   access_id: string;
   ip_address: string;
   user_agent: string;
@@ -27,5 +27,5 @@ export const getLoginLog = async (
 
   const body = (await response.json()) as LoginLogResponse[];
 
-  return body;
+  return body.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 };
