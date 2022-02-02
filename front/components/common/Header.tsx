@@ -7,6 +7,7 @@ import {
   Tooltip,
   Center,
   Avatar,
+  Spinner,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import Link from 'next/link';
@@ -76,13 +77,22 @@ const Header = React.memo(() => {
             ></IconButton>
           </Tooltip>
         </Center>
-        {user !== null && user !== undefined ? (
-          <>
-            <Setting />
-            <UserAvatar />
-          </>
+        {user !== undefined ? (
+          user !== null ? (
+            // ログインしている
+            <>
+              <Setting />
+              <UserAvatar />
+            </>
+          ) : (
+            // ログインしていない
+            <></>
+          )
         ) : (
-          <></>
+          // 読込中
+          <Center ml=".5rem">
+            <Spinner thickness="2px" />
+          </Center>
         )}
       </Flex>
     </Box>
