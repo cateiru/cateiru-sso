@@ -88,7 +88,12 @@ const LoginLogPage = () => {
 
   return (
     <Center>
-      <Box width={{base: '100%', lg: '1000px'}} mt="2rem" minHeight="50vh">
+      <Box
+        width={{base: '100%', lg: '1000px'}}
+        mt="2rem"
+        minHeight="50vh"
+        maxHeight="100vh"
+      >
         <Box mx=".5rem">
           <Link href="/setting/account" passHref>
             <Button
@@ -101,7 +106,7 @@ const LoginLogPage = () => {
           </Link>
         </Box>
         <Heading textAlign="center">ログイン履歴</Heading>
-        <Box overflow="auto" mx=".5rem" height="20vh" mt="2rem">
+        <Box overflow="auto" mx=".5rem" height="100%" mt="2rem">
           <Table variant="striped" minWidth="800px" size="lg">
             <Thead>
               <Tr>

@@ -5,7 +5,7 @@ import LoginLogPage from '../../components/log/LoginLogPage';
 const LoginLog = () => {
   return (
     <Require isLogin={true} path="/">
-      <Title title="ログインログ | CateiruSSO" />
+      <Title title="ログイン履歴 | CateiruSSO" />
       <LoginLogPage />
     </Require>
   );
