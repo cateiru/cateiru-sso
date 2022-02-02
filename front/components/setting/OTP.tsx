@@ -46,6 +46,7 @@ const OTP = () => {
   const backSaveModal = useDisclosure();
   const deleteOtpModal = useDisclosure();
 
+  const [otpGenerate, setOTPGenerate] = React.useState(false);
   const [otpEnable, setOTPEnable] = React.useState<OTPState>(OTPState.Loading);
   const [otpToken, setOTPToken] = React.useState<OTPGetResponse>();
   const [passcode, setPasscode] = React.useState('');
@@ -87,7 +88,6 @@ const OTP = () => {
       try {
         const resp = await getToken();
         setOTPToken(resp);
-        onOpen();
       } catch (error) {
         if (error instanceof Error) {
           toast({
@@ -101,6 +101,16 @@ const OTP = () => {
     };
 
     f();
+  };
+
+  const generate = () => {
+    setOTPGenerate(true);
+    setOTP();
+  };
+
+  const closeCreateModal = () => {
+    setOTPGenerate(false);
+    onClose();
   };
 
   // パスコードを送信してOTPを設定する
@@ -131,12 +141,14 @@ const OTP = () => {
       } catch (error) {
         if (error instanceof Error) {
           toast({
-            title: error.message,
+            title: 'ワンタイムパスワードの設定に失敗しました',
+            description: error.message,
             status: 'error',
             isClosable: true,
             duration: 9000,
           });
         }
+        setOTPGenerate(false);
         onClose();
       }
     };
@@ -210,16 +222,16 @@ const OTP = () => {
     case OTPState.Disable:
       return (
         <>
-          <Button onClick={setOTP} width={{base: '100%', sm: 'auto'}}>
+          <Button onClick={onOpen} width={{base: '100%', sm: 'auto'}}>
             二段階認証を設定する
           </Button>
-          <Modal isOpen={isOpen} onClose={onClose} isCentered>
+          <Modal isOpen={isOpen} onClose={closeCreateModal} isCentered>
             <ModalOverlay />
             <ModalContent>
               <ModalHeader>二段階認証を設定します</ModalHeader>
               <ModalCloseButton size="lg" />
               <ModalBody>
-                {otpToken ? (
+                {otpToken && otpGenerate ? (
                   <Center>
                     <Box>
                       <Center>
@@ -264,17 +276,21 @@ const OTP = () => {
                     </Box>
                   </Center>
                 ) : (
-                  <Center>
-                    <Spinner />
+                  <Center my="2rem">
+                    <Button onClick={generate} colorScheme="blue">
+                      ワンタイムパスワードのトークンを生成する
+                    </Button>
                   </Center>
                 )}
               </ModalBody>
 
-              <ModalFooter>
-                <Button colorScheme="blue" mr={3} onClick={submitOTP}>
-                  設定する
-                </Button>
-              </ModalFooter>
+              {otpGenerate && (
+                <ModalFooter>
+                  <Button colorScheme="blue" mr={3} onClick={submitOTP}>
+                    設定する
+                  </Button>
+                </ModalFooter>
+              )}
             </ModalContent>
           </Modal>
         </>
