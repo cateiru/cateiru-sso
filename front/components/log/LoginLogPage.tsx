@@ -20,13 +20,14 @@ import {
   IoPhonePortraitOutline,
   IoDesktopOutline,
   IoArrowBackOutline,
+  IoTabletPortraitOutline,
 } from 'react-icons/io5';
 import {useSetRecoilState} from 'recoil';
 import useLoginLog from '../../hooks/useLoginLog';
 import {LoginLogResponse} from '../../utils/api/log';
 import {formatDate} from '../../utils/date';
 import {LoadState} from '../../utils/state/atom';
-import UserAgent from '../../utils/ua';
+import UserAgent, {Device} from '../../utils/ua';
 
 const LoginLogPage = () => {
   const [log, load, getLog] = useLoginLog();
@@ -59,11 +60,16 @@ const LoginLogPage = () => {
         <Td>
           <Flex justifyContent="start">
             <Box>
-              {userAgent.isMobile() ? (
-                <IoPhonePortraitOutline size="25px" />
-              ) : (
-                <IoDesktopOutline size="25px" />
-              )}
+              {(() => {
+                switch (userAgent.device()) {
+                  case Device.Mobile:
+                    return <IoPhonePortraitOutline size="25px" />;
+                  case Device.Desktop:
+                    return <IoDesktopOutline size="25px" />;
+                  case Device.Tablet:
+                    return <IoTabletPortraitOutline size="25px" />;
+                }
+              })()}
             </Box>
             <Text ml=".5rem">{userAgent.uniqName()}</Text>
           </Flex>

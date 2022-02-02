@@ -12,6 +12,12 @@ export interface UserAgentType {
   string: string;
 }
 
+export enum Device {
+  Mobile,
+  Desktop,
+  Tablet,
+}
+
 export default class UserAgent {
   private userAgent: UserAgentType;
 
@@ -19,8 +25,14 @@ export default class UserAgent {
     this.userAgent = JSON.parse(userAgent) as UserAgentType;
   }
 
-  isMobile(): boolean {
-    return this.userAgent.mobile && !this.userAgent.desktop;
+  device(): Device {
+    if (this.userAgent.mobile) {
+      return Device.Mobile;
+    } else if (this.userAgent.desktop) {
+      return Device.Desktop;
+    }
+
+    return Device.Tablet;
   }
 
   uniqName(): string {
