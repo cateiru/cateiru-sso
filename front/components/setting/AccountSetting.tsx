@@ -1,24 +1,8 @@
-import {Button, Center, Box, Heading, Stack} from '@chakra-ui/react';
-import {logout, deleteAccount} from '../../utils/api/logout';
+import {Center, Box, Heading} from '@chakra-ui/react';
+import LogoutDelete from './LogoutDelete';
 import OTP from './OTP';
 
 const AccountSetting = () => {
-  const logoutHandle = () => {
-    const f = async () => {
-      await logout();
-      window.location.reload();
-    };
-    f();
-  };
-
-  const deleteHandle = () => {
-    const f = async () => {
-      await deleteAccount();
-      window.location.reload();
-    };
-    f();
-  };
-
   return (
     <Center>
       <Box width={{base: '100%', lg: '800px'}} mx=".5rem" mt="2.5rem">
@@ -32,14 +16,7 @@ const AccountSetting = () => {
           <Heading size="1.8rem" mb=".7rem">
             ログアウト
           </Heading>
-          <Stack direction={['column', 'row']} spacing="1rem">
-            <Button colorScheme="blue" onClick={logoutHandle}>
-              ログアウト
-            </Button>
-            <Button variant="ghost" colorScheme="red" onClick={deleteHandle}>
-              アカウント削除
-            </Button>
-          </Stack>
+          <LogoutDelete />
         </Box>
       </Box>
     </Center>
