@@ -11,6 +11,7 @@ import {
   Button,
   Heading,
   Flex,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
@@ -31,6 +32,7 @@ const LoginLogPage = () => {
   const [log, load, getLog] = useLoginLog();
   const router = useRouter();
   const setLoad = useSetRecoilState(LoadState);
+  const tableHeadBG = useColorModeValue('white', 'gray.800');
 
   React.useEffect(() => {
     if (!router.isReady) return;
@@ -55,7 +57,7 @@ const LoginLogPage = () => {
         <Td textAlign="center">{formatDate(new Date(v.date))}</Td>
         <Td textAlign="center">{v.ip_address}</Td>
         <Td>
-          <Flex justifyContent="center" width="200px">
+          <Flex justifyContent="start">
             <Box>
               {userAgent.isMobile() ? (
                 <IoPhonePortraitOutline size="25px" />
@@ -67,6 +69,20 @@ const LoginLogPage = () => {
           </Flex>
         </Td>
       </Tr>
+    );
+  };
+
+  const Header: React.FC = ({children}) => {
+    return (
+      <Th
+        textAlign="center"
+        position={['sticky', '-webkit-sticky']}
+        zIndex="1"
+        top="0"
+        backgroundColor={tableHeadBG}
+      >
+        {children}
+      </Th>
     );
   };
 
@@ -85,16 +101,16 @@ const LoginLogPage = () => {
           </Link>
         </Box>
         <Heading textAlign="center">ログイン履歴</Heading>
-        <Box overflow="auto" mx=".5rem">
-          <Table variant="striped" minWidth="800px" size="lg" mt="2rem">
+        <Box overflow="auto" mx=".5rem" height="20vh" mt="2rem">
+          <Table variant="striped" minWidth="800px" size="lg">
             <Thead>
               <Tr>
-                <Th textAlign="center">ログイン日時</Th>
-                <Th textAlign="center">IPアドレス</Th>
-                <Th textAlign="center">端末</Th>
+                <Header>ログイン日時</Header>
+                <Header>IPアドレス</Header>
+                <Header>端末</Header>
               </Tr>
             </Thead>
-            <Tbody>{log.map(v => element(v))}</Tbody>
+            <Tbody overflowY="scroll">{log.map(v => element(v))}</Tbody>
           </Table>
         </Box>
       </Box>
