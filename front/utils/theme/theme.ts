@@ -1,4 +1,4 @@
-import {extendTheme, } from '@chakra-ui/react';
+import {extendTheme} from '@chakra-ui/react';
 import {StepsStyleConfig as Steps} from 'chakra-ui-steps';
 
 const theme = extendTheme({
@@ -17,7 +17,7 @@ const theme = extendTheme({
     Steps,
   },
   styles: {
-    global: (props: any) => ({
+    global: (props: {colorMode: string}) => ({
       // Chrome
       '&::-webkit-scrollbar': {
         width: '10px',
@@ -30,7 +30,7 @@ const theme = extendTheme({
       html: {
         scrollbarWidth: 'thin',
         scrollbarColor: props.colorMode === 'dark' ? 'gray.600' : 'gray.300',
-      }
+      },
     }),
   },
 });
