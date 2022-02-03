@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
@@ -12,6 +13,13 @@ import (
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
+
+type LoginHistory struct {
+	ThisDevice    bool      `json:"this_device"`
+	LastLoginDate time.Time `json:"last_login_date"`
+
+	models.LoginHistory
+}
 
 func UserLoginHistoryHandler(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
@@ -44,7 +52,41 @@ func UserLoginHistoryHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	net.ResponseOK(w, histories)
+	var newHistories []LoginHistory
+
+	refreshes, err := models.GetRefreshTokenByUserId(ctx, db, userId)
+	if err != nil {
+		return status.NewInsufficientStorageError(err).Caller()
+	}
+
+	for _, history := range histories {
+		write := false
+		for _, refresh := range refreshes {
+			if history.AccessId == refresh.AccessID {
+				thisDevice := false
+				if history.AccessId == c.AccessID {
+					thisDevice = true
+				}
+
+				newHistories = append(newHistories, LoginHistory{
+					ThisDevice:    thisDevice,
+					LastLoginDate: refresh.CreateDate,
+
+					LoginHistory: history,
+				})
+				write = true
+				break
+			}
+		}
+		if !write {
+			newHistories = append(newHistories, LoginHistory{
+				ThisDevice:   false,
+				LoginHistory: history,
+			})
+		}
+	}
+
+	net.ResponseOK(w, newHistories)
 	return nil
 }
 

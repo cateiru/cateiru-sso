@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/api/config"
+	historyType "github.com/cateiru/cateiru-sso/api/core/user/history"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/handler"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -38,6 +39,27 @@ func TestLoginHistory(t *testing.T) {
 	_, err = dummy.AddUserCert(ctx, db)
 	require.NoError(t, err)
 
+	s := tools.NewTestServer(t, historyServer(), true)
+	err = s.AddSession(ctx, db, dummy)
+	require.NoError(t, err)
+
+	// ログインしているやつの履歴
+	history := &models.LoginHistory{
+		AccessId:     dummy.AccessID,
+		Date:         time.Now(),
+		IpAddress:    "192.168.0.1",
+		IsSSO:        false,
+		SSOPublicKey: "",
+		UserAgent:    "",
+
+		UserId: models.UserId{
+			UserId: dummy.UserID,
+		},
+	}
+
+	err = history.Add(ctx, db)
+	require.NoError(t, err)
+
 	for i := 0; 10 > i; i++ {
 		history := &models.LoginHistory{
 			AccessId:     utils.CreateID(20),
@@ -61,27 +83,31 @@ func TestLoginHistory(t *testing.T) {
 		histores, err := models.GetAllLoginHistory(ctx, db, dummy.UserID)
 		require.NoError(t, err)
 
-		return len(histores) == 10 && histores[0].IpAddress == "192.168.0.1"
+		return len(histores) == 11 && histores[0].IpAddress == "192.168.0.1"
 	}, "Entityが10個ある")
-
-	s := tools.NewTestServer(t, historyServer(), true)
-	err = s.AddSession(ctx, db, dummy)
-	require.NoError(t, err)
 
 	resp := s.Get(t, "/login")
 
-	var histories []models.LoginHistory
+	var histories []historyType.LoginHistory
 
 	err = json.Unmarshal(tools.ConvertByteResp(resp), &histories)
 	require.NoError(t, err)
 
-	require.Len(t, histories, 10)
+	require.Len(t, histories, 11)
+
+	isThisDevice := 0
+	for _, history := range histories {
+		if history.ThisDevice {
+			isThisDevice += 1
+		}
+	}
+	require.Equal(t, 1, isThisDevice)
 
 	// --- limit指定
 
 	respLimit := s.Get(t, "/login?limit=3")
 
-	var historiesLimit []models.LoginHistory
+	var historiesLimit []*historyType.LoginHistory
 
 	err = json.Unmarshal(tools.ConvertByteResp(respLimit), &historiesLimit)
 	require.NoError(t, err)
