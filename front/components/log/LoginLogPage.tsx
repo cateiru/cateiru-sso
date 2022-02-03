@@ -26,7 +26,7 @@ import {
 import {useSetRecoilState} from 'recoil';
 import useLoginLog from '../../hooks/useLoginLog';
 import {LoginLogResponse} from '../../utils/api/log';
-import {formatDate} from '../../utils/date';
+import {formatDate, hawManyDaysAgo} from '../../utils/date';
 import {LoadState} from '../../utils/state/atom';
 import UserAgent, {Device} from '../../utils/ua';
 
@@ -54,9 +54,57 @@ const LoginLogPage = () => {
   const element = (v: LoginLogResponse) => {
     const userAgent = new UserAgent(v.user_agent);
 
+    let date: Date;
+    if (v.is_logout) {
+      date = new Date(v.date);
+    } else {
+      date = new Date(v.last_login_date);
+    }
+
     return (
       <Tr key={v.access_id}>
-        <Td textAlign="center">{formatDate(new Date(v.date))}</Td>
+        <Td textAlign="center">
+          <Tooltip
+            label={formatDate(date)}
+            placement="top"
+            borderRadius="5px"
+            hasArrow
+          >
+            {hawManyDaysAgo(date)}
+          </Tooltip>
+        </Td>
+        <Td textAlign="center">
+          <Flex justifyContent="start" alignItems="center">
+            <Box
+              width="10px"
+              height="10px"
+              borderRadius="256px"
+              backgroundColor={
+                v.this_device
+                  ? 'yellow.500'
+                  : v.is_logout
+                  ? 'red.500'
+                  : 'green.500'
+              }
+              boxShadow={
+                v.this_device
+                  ? '0 0px 10px 0 #DD6B20'
+                  : v.is_logout
+                  ? '0 0px 10px 0 #E53E3E'
+                  : '0 0px 10px 0 #38A169'
+              }
+              mr=".5rem"
+              mt="3px"
+            />
+            <Text>
+              {v.this_device
+                ? 'このデバイス'
+                : v.is_logout
+                ? 'ログアウト済み'
+                : 'ログイン中'}
+            </Text>
+          </Flex>
+        </Td>
         <Td textAlign="center">{v.ip_address}</Td>
         <Td>
           <Flex justifyContent="start">
@@ -144,10 +192,11 @@ const LoginLogPage = () => {
         {/* TODO: overflow: auto属性が親~先祖についていると position: stickyが適用されない */}
         {/*        ref. https://github.com/w3c/csswg-drafts/issues/865 */}
         <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="2rem">
-          <Table variant="striped" width="calc(1000px - 1rem)" size="lg">
+          <Table variant="striped" minWidth="calc(1000px - 1rem)" size="lg">
             <Thead>
               <Tr>
                 <Header>ログイン日時</Header>
+                <Header>ステータス</Header>
                 <Header>IPアドレス</Header>
                 <Header>端末</Header>
               </Tr>

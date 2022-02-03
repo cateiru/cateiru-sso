@@ -12,3 +12,18 @@ export const formatDate = (date: Date): string => {
     '00' + minutes
   ).slice(-2)}`;
 };
+
+export const hawManyDaysAgo = (date: Date): string => {
+  const now = new Date();
+  const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffSec < 3600) {
+    return `${Math.floor(diffSec / 60)}分前`;
+  } else if (diffSec < 86400) {
+    return `${Math.floor(diffSec / 3600)}時間前`;
+  } else if (diffSec < 86400 * 7) {
+    return `${Math.floor(diffSec / 86400)}日前`;
+  } else {
+    return formatDate(date);
+  }
+};

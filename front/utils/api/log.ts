@@ -1,6 +1,9 @@
 import {API} from './api';
 
 export interface LoginLogResponse {
+  this_device: boolean;
+  is_logout: boolean;
+  last_login_date: string;
   date: string;
   access_id: string;
   ip_address: string;

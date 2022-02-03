@@ -16,6 +16,7 @@ import (
 
 type LoginHistory struct {
 	ThisDevice    bool      `json:"this_device"`
+	IsLogout      bool      `json:"is_logout"`
 	LastLoginDate time.Time `json:"last_login_date"`
 
 	models.LoginHistory
@@ -70,6 +71,7 @@ func UserLoginHistoryHandler(w http.ResponseWriter, r *http.Request) error {
 
 				newHistories = append(newHistories, LoginHistory{
 					ThisDevice:    thisDevice,
+					IsLogout:      false,
 					LastLoginDate: refresh.CreateDate,
 
 					LoginHistory: history,
@@ -81,6 +83,7 @@ func UserLoginHistoryHandler(w http.ResponseWriter, r *http.Request) error {
 		if !write {
 			newHistories = append(newHistories, LoginHistory{
 				ThisDevice:   false,
+				IsLogout:     true,
 				LoginHistory: history,
 			})
 		}
