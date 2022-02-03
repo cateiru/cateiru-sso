@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/core/login"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -36,10 +37,15 @@ func TestLogin(t *testing.T) {
 		Password: "password",
 	}
 
-	var loginState *login.LoginState
+	c := &common.Cert{
+		Ip:        ip,
+		UserAgent: userAgent,
+	}
+
+	var loginState *login.Response
 
 	goretry.Retry(t, func() bool {
-		loginState, err = login.Login(ctx, form, ip, userAgent)
+		loginState, err = login.Login(ctx, form, c)
 		if err != nil {
 			t.Log(err)
 			return false
@@ -48,8 +54,8 @@ func TestLogin(t *testing.T) {
 	}, "ログインできる")
 
 	require.False(t, loginState.IsOTP)
-	require.NotEmpty(t, loginState.RefreshToken)
-	require.NotEmpty(t, loginState.SessionToken)
+	require.NotEmpty(t, c.RefreshToken)
+	require.NotEmpty(t, c.SessionToken)
 
 	// -----
 
@@ -58,7 +64,7 @@ func TestLogin(t *testing.T) {
 		Mail:     dummy.Mail,
 		Password: "asd3as",
 	}
-	_, err = login.Login(ctx, form, ip, userAgent)
+	_, err = login.Login(ctx, form, c)
 	require.Error(t, err)
 }
 
@@ -80,12 +86,17 @@ func TestLoginAdmin(t *testing.T) {
 		Password: adminPW,
 	}
 
-	loginState, err := login.Login(ctx, form, ip, userAgent)
+	c := &common.Cert{
+		Ip:        ip,
+		UserAgent: userAgent,
+	}
+
+	loginState, err := login.Login(ctx, form, c)
 	require.NoError(t, err)
 
 	require.False(t, loginState.IsOTP)
-	require.NotEmpty(t, loginState.RefreshToken)
-	require.NotEmpty(t, loginState.SessionToken)
+	require.NotEmpty(t, c.RefreshToken)
+	require.NotEmpty(t, c.SessionToken)
 
 	db, err := database.NewDatabase(ctx)
 	require.NoError(t, err)
@@ -125,10 +136,15 @@ func TestLoginOTP(t *testing.T) {
 		Password: "password",
 	}
 
-	var loginState *login.LoginState
+	c := &common.Cert{
+		Ip:        ip,
+		UserAgent: userAgent,
+	}
+
+	var loginState *login.Response
 
 	goretry.Retry(t, func() bool {
-		loginState, err = login.Login(ctx, form, ip, userAgent)
+		loginState, err = login.Login(ctx, form, c)
 		if err != nil {
 			t.Log(err)
 			return false

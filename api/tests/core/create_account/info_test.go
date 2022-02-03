@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/api/core/common"
 	createaccount "github.com/cateiru/cateiru-sso/api/core/create_account"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -70,22 +71,27 @@ func TestInfo(t *testing.T) {
 	ip := "198.51.100.0"
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
-	login, userInfo, err := createaccount.InsertUserInfo(ctx, user, ip, userAgent)
+	c := &common.Cert{
+		Ip:        ip,
+		UserAgent: userAgent,
+	}
+
+	userInfo, err := createaccount.InsertUserInfo(ctx, user, c)
 	require.NoError(t, err)
 
 	require.Equal(t, userInfo.FirstName, "名前")
 
 	goretry.Retry(t, func() bool {
-		session, err := models.GetSessionToken(ctx, db, login.SessionToken)
+		session, err := models.GetSessionToken(ctx, db, c.SessionToken)
 		require.NoError(t, err)
 		return session != nil
 	}, "sessionTokenがある")
 
-	session, err := models.GetSessionToken(ctx, db, login.SessionToken)
+	session, err := models.GetSessionToken(ctx, db, c.SessionToken)
 	require.NoError(t, err)
 	require.NotNil(t, session)
 
-	refresh, err := models.GetRefreshToken(ctx, db, login.RefreshToken)
+	refresh, err := models.GetRefreshToken(ctx, db, c.RefreshToken)
 	require.NoError(t, err)
 	require.NotNil(t, refresh)
 
@@ -161,7 +167,12 @@ func TestInfoUnauthenticated(t *testing.T) {
 	ip := "198.51.100.0"
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
-	_, _, err = createaccount.InsertUserInfo(ctx, user, ip, userAgent)
+	c := &common.Cert{
+		Ip:        ip,
+		UserAgent: userAgent,
+	}
+
+	_, err = createaccount.InsertUserInfo(ctx, user, c)
 	require.Error(t, err)
 }
 
@@ -218,6 +229,11 @@ func TestFailedUserName(t *testing.T) {
 	ip := "198.51.100.0"
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
-	_, _, err = createaccount.InsertUserInfo(ctx, user, ip, userAgent)
+	c := &common.Cert{
+		Ip:        ip,
+		UserAgent: userAgent,
+	}
+
+	_, err = createaccount.InsertUserInfo(ctx, user, c)
 	require.Error(t, err)
 }

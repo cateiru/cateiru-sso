@@ -31,86 +31,83 @@ func OTPLoginHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(err).Caller()
 	}
 
-	ip := net.GetIPAddress(r)
-	userAgent := net.GetUserAgent(r)
+	c := common.NewCert(w, r).AddUser()
 
-	login, err := LoginOTP(ctx, otpRequest.OtpToken, otpRequest.Passcode, ip, userAgent)
-	if err != nil {
+	if err := LoginOTP(ctx, otpRequest.OtpToken, otpRequest.Passcode, c); err != nil {
 		return err
 	}
 
-	common.LoginSetCookie(w, login)
+	c.SetCookie()
 
 	return nil
 }
 
-func LoginOTP(ctx context.Context, id string, passcode string, ip string, userAgent string) (*common.LoginTokens, error) {
+func LoginOTP(ctx context.Context, id string, passcode string, c *common.Cert) error {
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
 
 	if len(id) == 0 || len(passcode) == 0 {
-		return nil, status.NewBadRequestError(errors.New("incomplete form"))
+		return status.NewBadRequestError(errors.New("incomplete form"))
 	}
 
 	buffer, err := models.GetOTPBufferByID(ctx, db, id)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// idが存在しない場合は400を返す
 	if buffer == nil {
-		return nil, status.NewBadRequestError(errors.New("entity not found")).Caller().AddCode(net.FailedLogin)
+		return status.NewBadRequestError(errors.New("entity not found")).Caller().AddCode(net.FailedLogin)
 	}
 
 	// bufferの有効期限切れの場合は400を返す
 	if common.CheckExpired(&buffer.Period) {
-		return nil, status.NewBadRequestError(err).Caller().AddCode(net.TimeOutError).AddCode(net.TimeOutError)
+		return status.NewBadRequestError(err).Caller().AddCode(net.TimeOutError).AddCode(net.TimeOutError)
 	}
 
 	// （ないとは思うが）isLoginをチェックする
 	if !buffer.IsLogin {
-		return nil, status.NewInternalServerErrorError(errors.New("no IsLogin")).Caller()
+		return status.NewInternalServerErrorError(errors.New("no IsLogin")).Caller()
 	}
 
 	cert, err := models.GetCertificationByUserID(ctx, db, buffer.UserId.UserId)
 	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 
 	if cert == nil {
-		return nil, status.NewInternalServerErrorError(errors.New("entity not found")).Caller()
+		return status.NewInternalServerErrorError(errors.New("entity not found")).Caller()
 	}
 
 	// OTPが設定されていない場合は400を返す
 	if len(cert.OnetimePasswordSecret) == 0 {
-		return nil, status.NewBadRequestError(errors.New("otp not set")).Caller().AddCode(net.FailedLogin)
+		return status.NewBadRequestError(errors.New("otp not set")).Caller().AddCode(net.FailedLogin)
 	}
 
 	ok, update := common.CheckOTP(passcode, cert, nil)
 	// OTPが認証できない場合は400を返す
 	if !ok {
-		return nil, status.NewBadRequestError(errors.New("otp not varidated")).Caller().AddCode(net.FailedOTP)
+		return status.NewBadRequestError(errors.New("otp not varidated")).Caller().AddCode(net.FailedOTP)
 	}
 
 	// backupが更新された場合はDBを更新する
 	if update {
 		if err := cert.Add(ctx, db); err != nil {
-			return nil, status.NewInternalServerErrorError(err).Caller()
+			return status.NewInternalServerErrorError(err).Caller()
 		}
 	}
 
 	if err := models.DeleteOTPBuffer(ctx, db, id); err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 
 	// ログイントークンをセットする
-	login, err := common.LoginByUserID(ctx, db, cert.UserId.UserId, ip, userAgent)
-	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+	if err := c.NewLogin(ctx, db, cert.UserId.UserId); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
 	}
 
-	return login, nil
+	return nil
 }

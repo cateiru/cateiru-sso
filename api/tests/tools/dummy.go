@@ -18,10 +18,11 @@ import (
 )
 
 type DummyUser struct {
-	UserID string
-	Mail   string
-	Otp    *secure.OnetimePassword
-	Roles  []string
+	UserID   string
+	Mail     string
+	Otp      *secure.OnetimePassword
+	Roles    []string
+	AccessID string
 }
 
 func NewDummyUser() *DummyUser {
@@ -147,8 +148,12 @@ func (c *DummyUser) AddLoginToken(ctx context.Context, db *database.Database, no
 	sessionToken := utils.CreateID(0)
 	refreshToken := utils.CreateID(0)
 
+	c.AccessID = utils.CreateID(0)
+
 	session := &models.SessionInfo{
 		SessionToken: sessionToken,
+
+		AccessID: c.AccessID,
 
 		Period: models.Period{
 			CreateDate: now,
@@ -161,6 +166,8 @@ func (c *DummyUser) AddLoginToken(ctx context.Context, db *database.Database, no
 	refresh := &models.RefreshInfo{
 		RefreshToken: refreshToken,
 		SessionToken: sessionToken,
+
+		AccessID: c.AccessID,
 
 		Period: models.Period{
 			CreateDate: now,

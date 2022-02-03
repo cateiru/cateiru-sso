@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/core/login"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
@@ -57,24 +58,29 @@ func TestOTPLogin(t *testing.T) {
 	passcode, err := dummy.GenOTPCode()
 	require.NoError(t, err)
 
+	c := &common.Cert{
+		Ip:        ip,
+		UserAgent: userAgent,
+	}
+
 	// 違うパスワードではできない
 	dummyPasscode := "hogehoge"
-	_, err = login.LoginOTP(ctx, id, dummyPasscode, ip, userAgent)
+	err = login.LoginOTP(ctx, id, dummyPasscode, c)
 	require.Error(t, err)
 
 	goretry.Retry(t, func() bool {
-		loginToken, err := login.LoginOTP(ctx, id, passcode, ip, userAgent)
+		err := login.LoginOTP(ctx, id, passcode, c)
 		if err != nil {
 			t.Log(err)
 			return false
 		}
-		return len(loginToken.SessionToken) != 0
+		return len(c.SessionToken) != 0
 	}, "ログインできる")
 
 	// ---
 
 	// 同じidで複数回はできない
-	_, err = login.LoginOTP(ctx, id, passcode, ip, userAgent)
+	err = login.LoginOTP(ctx, id, passcode, c)
 	require.Error(t, err)
 }
 
@@ -85,6 +91,8 @@ func TestFailedID(t *testing.T) {
 
 	id := "hogehoge"
 
-	_, err := login.LoginOTP(ctx, id, "", "", "")
+	c := &common.Cert{}
+
+	err := login.LoginOTP(ctx, id, "", c)
 	require.Error(t, err)
 }

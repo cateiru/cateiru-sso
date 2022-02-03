@@ -22,11 +22,11 @@ func UserLoginHistoryHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer db.Close()
 
-	userId, err := common.GetUserID(ctx, db, w, r)
-	if err != nil {
+	c := common.NewCert(w, r)
+	if err := c.Login(ctx, db); err != nil {
 		return err
 	}
-
+	userId := c.UserId
 	// limitを設定する
 	// 例: ?limit=10
 	// もし設定しない場合はすべての要素を返します

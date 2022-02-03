@@ -130,6 +130,8 @@ type SSOLogins struct {
 type SessionInfo struct {
 	SessionToken string `datastore:"sessionToken" json:"session_token"`
 
+	AccessID string `datastore:"accessId" json:"access_id"`
+
 	Period
 	UserId
 }
@@ -138,6 +140,8 @@ type SessionInfo struct {
 type RefreshInfo struct {
 	RefreshToken string `datastore:"refreshToken" json:"refresh_token"`
 	SessionToken string `datastore:"sessionToken" json:"session_token"`
+
+	AccessID string `datastore:"accessId" json:"access_id"`
 
 	Period
 	UserId

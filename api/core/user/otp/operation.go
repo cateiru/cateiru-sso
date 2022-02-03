@@ -37,10 +37,11 @@ func OTPHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer db.Close()
 
-	userId, err := common.GetUserID(ctx, db, w, r)
-	if err != nil {
+	c := common.NewCert(w, r)
+	if err := c.Login(ctx, db); err != nil {
 		return err
 	}
+	userId := c.UserId
 
 	var request OTPRequest
 

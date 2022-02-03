@@ -27,12 +27,6 @@ type Response struct {
 	OTPToken string `json:"otp_token"`
 }
 
-type LoginState struct {
-	Response
-
-	common.LoginTokens
-}
-
 func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	// contents-type: application/json 以外では400エラーを返す
 	if !net.CheckContentType(r) {
@@ -47,10 +41,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(err).Caller()
 	}
 
-	ip := net.GetIPAddress(r)
-	userAgent := net.GetUserAgent(r)
+	c := common.NewCert(w, r).AddUser()
 
-	loginState, err := Login(ctx, &request, ip, userAgent)
+	loginState, err := Login(ctx, &request, c)
 	if err != nil {
 		return err
 	}
@@ -58,10 +51,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	if !loginState.IsOTP {
 		// OTPが設定されていない場合
 		// ログイントークンをcookieにセットする
-		common.LoginSetCookie(w, &loginState.LoginTokens)
+		c.SetCookie()
 	}
 
-	net.ResponseOK(w, loginState.Response)
+	net.ResponseOK(w, loginState)
 
 	return nil
 }
@@ -70,10 +63,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) error {
 // もし、OTPが設定されている場合はパスコードの入力を求めます
 //
 // TODO: admin userの設定
-func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) (*LoginState, error) {
+func Login(ctx context.Context, form *RequestFrom, c *common.Cert) (*Response, error) {
 	// reCAPTCHA
 	if config.Defs.DeployMode == "production" {
-		isOk, err := secure.NewReCaptcha().Validate(form.ReCAPTCHA, ip)
+		isOk, err := secure.NewReCaptcha().Validate(form.ReCAPTCHA, c.Ip)
 		if err != nil {
 			return nil, err
 		}
@@ -103,16 +96,12 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 				return nil, err
 			}
 			// ログイントークンをセットする
-			login, err := common.LoginByUserID(ctx, db, userId, ip, userAgent)
-			if err != nil {
-				return nil, status.NewInternalServerErrorError(err).Caller()
+			if err := c.NewLogin(ctx, db, userId); err != nil {
+				return nil, err
 			}
 
-			return &LoginState{
-				Response: Response{
-					IsOTP: false, // OTPはセットされていないためfalse
-				},
-				LoginTokens: *login,
+			return &Response{
+				IsOTP: false, // OTPはセットされていないためfalse
 			}, nil
 
 		} else {
@@ -140,11 +129,9 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 			return nil, status.NewInternalServerErrorError(err).Caller()
 		}
 
-		return &LoginState{
-			Response: Response{
-				IsOTP:    true,
-				OTPToken: id,
-			},
+		return &Response{
+			IsOTP:    true,
+			OTPToken: id,
 		}, nil
 	}
 
@@ -155,16 +142,12 @@ func Login(ctx context.Context, form *RequestFrom, ip string, userAgent string) 
 	}
 
 	// ログイントークンをセットする
-	login, err := common.LoginByUserID(ctx, db, cert.UserId.UserId, ip, userAgent)
-	if err != nil {
-		return nil, status.NewInternalServerErrorError(err).Caller()
+	if err := c.NewLogin(ctx, db, cert.UserId.UserId); err != nil {
+		return nil, err
 	}
 
-	return &LoginState{
-		Response: Response{
-			IsOTP: false, // OTPはセットされていないためfalse
-		},
-		LoginTokens: *login,
+	return &Response{
+		IsOTP: false, // OTPはセットされていないためfalse
 	}, nil
 }
 
