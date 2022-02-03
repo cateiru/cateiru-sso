@@ -1,43 +1,37 @@
 package common_test
 
 import (
-	"context"
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/common"
-	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/utils"
-	goretry "github.com/cateiru/go-retry"
 	ua "github.com/mileusna/useragent"
 	"github.com/stretchr/testify/require"
 )
 
 // ログイン履歴が正しく残されているか
-func TestLoginHistory(t *testing.T) {
-	config.TestInit(t)
+// func TestLoginHistory(t *testing.T) {
+// 	config.TestInit(t)
 
-	ctx := context.Background()
+// 	ctx := context.Background()
 
-	db, err := database.NewDatabase(ctx)
-	require.NoError(t, err)
-	defer db.Close()
+// 	db, err := database.NewDatabase(ctx)
+// 	require.NoError(t, err)
+// 	defer db.Close()
 
-	userId := utils.CreateID(30)
-	ip := "198.51.100.0"
-	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
+// 	userId := utils.CreateID(30)
+// 	ip := "198.51.100.0"
+// 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
-	err = common.SetLoginHistory(ctx, db, userId, ip, userAgent)
-	require.NoError(t, err)
+// 	err = common.SetLoginHistory(ctx, db, userId, ip, userAgent)
+// 	require.NoError(t, err)
 
-	goretry.Retry(t, func() bool {
-		loginHistories, err := models.GetAllLoginHistory(ctx, db, userId)
-		require.NoError(t, err)
+// 	goretry.Retry(t, func() bool {
+// 		loginHistories, err := models.GetAllLoginHistory(ctx, db, userId)
+// 		require.NoError(t, err)
 
-		return len(loginHistories) == 1 && loginHistories[0].IpAddress == ip
-	}, "ログイン履歴が格納できている")
-}
+// 		return len(loginHistories) == 1 && loginHistories[0].IpAddress == ip
+// 	}, "ログイン履歴が格納できている")
+// }
 
 func TestUserAgent(t *testing.T) {
 	userAgents := []string{
