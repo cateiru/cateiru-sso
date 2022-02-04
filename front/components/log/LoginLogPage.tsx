@@ -13,6 +13,7 @@ import {
   Flex,
   useColorModeValue,
   Tooltip,
+  Stack,
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
@@ -64,45 +65,35 @@ const LoginLogPage = () => {
     return (
       <Tr key={v.access_id}>
         <Td textAlign="center">
-          <Tooltip
-            label={formatDate(date)}
-            placement="top"
-            borderRadius="5px"
-            hasArrow
-          >
-            {hawManyDaysAgo(date)}
-          </Tooltip>
-        </Td>
-        <Td textAlign="center">
-          <Flex justifyContent="start" alignItems="center">
+          <Flex justifyContent="center" alignItems="center">
             <Box
               width="10px"
               height="10px"
               borderRadius="256px"
               backgroundColor={
                 v.this_device
-                  ? 'yellow.500'
+                  ? 'green.500'
                   : v.is_logout
                   ? 'red.500'
-                  : 'green.500'
+                  : 'yellow.500'
               }
               boxShadow={
                 v.this_device
-                  ? '0 0px 10px 0 #DD6B20'
+                  ? '0 0px 10px 0 #38A169'
                   : v.is_logout
                   ? '0 0px 10px 0 #E53E3E'
-                  : '0 0px 10px 0 #38A169'
+                  : '0 0px 10px 0 #DD6B20'
               }
               mr=".5rem"
-              mt="3px"
             />
-            <Text>
-              {v.this_device
-                ? 'このデバイス'
-                : v.is_logout
-                ? 'ログアウト済み'
-                : 'ログイン中'}
-            </Text>
+            <Tooltip
+              label={formatDate(date)}
+              placement="top"
+              borderRadius="5px"
+              hasArrow
+            >
+              {hawManyDaysAgo(date)}
+            </Tooltip>
           </Flex>
         </Td>
         <Td textAlign="center">{v.ip_address}</Td>
@@ -189,14 +180,54 @@ const LoginLogPage = () => {
           </Link>
         </Box>
         <Heading textAlign="center">ログイン履歴</Heading>
+        <Flex
+          justifyContent={{base: 'left', md: 'right'}}
+          mx="1rem"
+          mt="1.5rem"
+        >
+          <Stack direction={{base: 'column', md: 'row'}} spacing="1rem">
+            <Flex alignItems="center" justifyContent="left" mr="1rem">
+              <Box
+                width="10px"
+                height="10px"
+                borderRadius="256px"
+                backgroundColor="green.500"
+                boxShadow="0 0px 10px 0 #38A169"
+                mr=".5rem"
+              />
+              <Text>このデバイス</Text>
+            </Flex>
+            <Flex alignItems="center" justifyContent="left" mr="1rem">
+              <Box
+                width="10px"
+                height="10px"
+                borderRadius="256px"
+                backgroundColor="yellow.500"
+                boxShadow="0 0px 10px 0 #E53E3E"
+                mr=".5rem"
+              />
+              <Text>ログイン済み</Text>
+            </Flex>
+            <Flex alignItems="center" justifyContent="left" mr="1rem">
+              <Box
+                width="10px"
+                height="10px"
+                borderRadius="256px"
+                backgroundColor="red.500"
+                boxShadow="0 0px 10px 0 #DD6B20"
+                mr=".5rem"
+              />
+              <Text>ログアウト済み</Text>
+            </Flex>
+          </Stack>
+        </Flex>
         {/* TODO: overflow: auto属性が親~先祖についていると position: stickyが適用されない */}
         {/*        ref. https://github.com/w3c/csswg-drafts/issues/865 */}
-        <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="2rem">
+        <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="1rem">
           <Table variant="striped" minWidth="calc(1000px - 1rem)" size="lg">
             <Thead>
               <Tr>
                 <Header>ログイン日時</Header>
-                <Header>ステータス</Header>
                 <Header>IPアドレス</Header>
                 <Header>端末</Header>
               </Tr>

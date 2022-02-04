@@ -30,5 +30,29 @@ export const getLoginLog = async (
 
   const body = (await response.json()) as LoginLogResponse[];
 
-  return body.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+  return body.sort((a, b) => {
+    // このデバイスの履歴は無条件にトップに持ってくる
+    if (a.this_device) {
+      return -1;
+    } else if (b.this_device) {
+      return 1;
+    }
+
+    let current: number;
+    let target: number;
+
+    if (a.is_logout) {
+      current = Date.parse(a.last_login_date);
+    } else {
+      current = Date.parse(a.date);
+    }
+
+    if (b.is_logout) {
+      target = Date.parse(b.last_login_date);
+    } else {
+      target = Date.parse(b.date);
+    }
+
+    return target - current;
+  });
 };
