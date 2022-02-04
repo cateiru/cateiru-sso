@@ -1,6 +1,6 @@
 import {Flex, Box, Text, Center} from '@chakra-ui/react';
-import Logo from '../common/Logo';
 import LoginButtons from '../createAccount/LoginButtons';
+import AnimationLogo from './AnimationLogo';
 
 const TopPage = () => {
   return (
@@ -14,7 +14,7 @@ const TopPage = () => {
     >
       <Box marginBottom="1rem">
         <Box width={{base: '20rem', md: '30rem', lg: '45rem'}}>
-          <Logo />
+          <AnimationLogo />
         </Box>
         <Center>
           <Text fontSize={{base: '1rem', md: '1.5rem'}}>
