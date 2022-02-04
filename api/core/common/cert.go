@@ -106,8 +106,8 @@ func (c *Cert) RefreshLogin(ctx context.Context, db *database.Database) error {
 		return status.NewForbiddenError(errors.New("cookie is not find")).Caller().AddCode(net.FailedLogin)
 	}
 
-	newSessionToken := utils.CreateID(0)
-	newRefreshToken := utils.CreateID(0)
+	c.SessionToken = utils.CreateID(0)
+	c.RefreshToken = utils.CreateID(0)
 
 	var refresh *models.RefreshInfo
 
@@ -149,7 +149,7 @@ func (c *Cert) RefreshLogin(ctx context.Context, db *database.Database) error {
 
 		// 新しいsession-tokenを作成する
 		session := &models.SessionInfo{
-			SessionToken: newSessionToken,
+			SessionToken: c.SessionToken,
 
 			AccessID: refresh.AccessID,
 
@@ -166,8 +166,8 @@ func (c *Cert) RefreshLogin(ctx context.Context, db *database.Database) error {
 
 		// 新しいrefresh-tokenを作成する
 		newRefresh := &models.RefreshInfo{
-			RefreshToken: newRefreshToken,
-			SessionToken: newSessionToken,
+			RefreshToken: c.RefreshToken,
+			SessionToken: c.SessionToken,
 
 			AccessID: refresh.AccessID,
 

@@ -117,6 +117,8 @@ func TestSuccessLogin(t *testing.T) {
 
 	userId := tools.ConvertResp(resp)
 	require.Equal(t, userId, dummy.UserID)
+
+	s.FindCookies(t, []string{"session-token", "refresh-token"})
 }
 
 func TestSuccessRefresh(t *testing.T) {
@@ -146,6 +148,8 @@ func TestSuccessRefresh(t *testing.T) {
 
 	userId := tools.ConvertResp(resp)
 	require.Equal(t, userId, dummy.UserID)
+
+	s.FindCookies(t, []string{"session-token", "refresh-token"})
 }
 
 func TestFailed(t *testing.T) {
@@ -198,6 +202,8 @@ func TestExistSessionRefreshLogin(t *testing.T) {
 
 	userId := tools.ConvertResp(resp)
 	require.Equal(t, userId, dummy.UserID)
+
+	s.FindCookies(t, []string{"session-token", "refresh-token"})
 }
 
 func TestExpiredSession(t *testing.T) {
@@ -229,6 +235,8 @@ func TestExpiredSession(t *testing.T) {
 
 	userId := tools.ConvertResp(resp)
 	require.Equal(t, userId, dummy.UserID)
+
+	s.FindCookies(t, []string{"session-token", "refresh-token"})
 }
 
 func TestExpiredRefresh(t *testing.T) {
