@@ -1,0 +1,8 @@
+indexes:
+
+- kind: LoginHistory
+  properties:
+  - name: date
+    direction: desc
+  - name: userId
+    direction: asc

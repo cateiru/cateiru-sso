@@ -16,7 +16,7 @@ func GetAllLoginHistory(ctx context.Context, db *database.Database, userId strin
 		}
 	}
 
-	query := datastore.NewQuery("LoginHistory").Filter("userId =", userId).Limit(limitNum).Order("-date")
+	query := datastore.NewQuery("LoginHistory").Filter("userId =", userId).Limit(limitNum)
 	var entries []LoginHistory
 
 	if _, err := db.GetAll(ctx, query, &entries); err != nil {
