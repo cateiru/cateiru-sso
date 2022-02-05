@@ -76,6 +76,7 @@ const UserPassword: React.FC<{
           colorScheme="blue"
           isLoading={isSubmitting}
           type="submit"
+          width={{base: '100%', md: 'auto'}}
         >
           メールアドレスを認証する
         </Button>

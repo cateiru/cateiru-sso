@@ -146,6 +146,7 @@ const CreateInfo = React.memo(() => {
           isLoading={isSubmitting}
           type="submit"
           disabled={existUser || !pwOK}
+          width={{base: '100%', md: 'auto'}}
         >
           これでOK
         </Button>
