@@ -14,7 +14,10 @@ import {
   useColorModeValue,
   Tooltip,
   Stack,
+  Spacer,
 } from '@chakra-ui/react';
+import type {ResponsiveValue} from '@chakra-ui/react';
+import {Property} from 'csstype';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import React from 'react';
@@ -64,8 +67,8 @@ const LoginLogPage = () => {
 
     return (
       <Tr key={v.access_id}>
-        <Td textAlign="center">
-          <Flex justifyContent="center" alignItems="center">
+        <Td>
+          <Flex justifyContent="left" alignItems="center">
             <Box
               width="10px"
               height="10px"
@@ -151,10 +154,13 @@ const LoginLogPage = () => {
     );
   };
 
-  const Header: React.FC = ({children}) => {
+  const Header: React.FC<{align?: ResponsiveValue<Property.TextAlign>}> = ({
+    children,
+    align = 'center',
+  }) => {
     return (
       <Th
-        textAlign="center"
+        textAlign={align}
         position={['sticky', '-webkit-sticky']}
         zIndex="1"
         top="0"
@@ -224,10 +230,15 @@ const LoginLogPage = () => {
         {/* TODO: overflow: auto属性が親~先祖についていると position: stickyが適用されない */}
         {/*        ref. https://github.com/w3c/csswg-drafts/issues/865 */}
         <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="1rem">
-          <Table variant="striped" minWidth="calc(1000px - 1rem)" size="lg">
+          <Table
+            variant="striped"
+            minWidth="calc(1000px - 1rem)"
+            size="lg"
+            alignItems="center"
+          >
             <Thead>
               <Tr>
-                <Header>ログイン日時</Header>
+                <Header align="left">ログイン日時</Header>
                 <Header>IPアドレス</Header>
                 <Header>端末</Header>
               </Tr>
