@@ -10,8 +10,12 @@ import (
 )
 
 // Pro以上のユーザのみ
-func ProMoreOnly(ctx context.Context, db *database.Database, userId string) error {
-	return findRole(ctx, db, userId, []string{"pro", "admin"})
+func ProOnly(ctx context.Context, db *database.Database, userId string) error {
+	return findRole(ctx, db, userId, []string{"pro"})
+}
+
+func AdminOnly(ctx context.Context, db *database.Database, userId string) error {
+	return findRole(ctx, db, userId, []string{"admin"})
 }
 
 // roleを見る

@@ -159,3 +159,35 @@ func TestDeleteUser(t *testing.T) {
 		return entity == nil
 	}, "削除された")
 }
+
+func TestGetAll(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	var dummies []*tools.DummyUser
+
+	for i := 0; i < 10; i++ {
+		dummy := tools.NewDummyUser()
+		_, err = dummy.AddUserInfo(ctx, db)
+		require.NoError(t, err)
+
+		dummies = append(dummies, dummy)
+	}
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetUserDataByUserID(ctx, db, dummies[9].UserID)
+		require.NoError(t, err)
+
+		return entity != nil
+	}, "")
+
+	entities, err := models.GetAllUsers(ctx, db)
+	require.NoError(t, err)
+
+	require.True(t, len(entities) != 0)
+}
