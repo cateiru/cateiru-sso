@@ -43,7 +43,7 @@ const AdminPage = () => {
 
   const user = (user: UserInfo) => {
     return (
-      <Tr cursor="pointer" key={user.user_id}>
+      <Tr key={user.user_id}>
         <Td>
           <Center>
             <Avatar src={user.avatar_url} size="sm" />
@@ -64,7 +64,7 @@ const AdminPage = () => {
     <Center>
       <Box width={{base: '100%', lg: '1000px'}} mt="2rem">
         <Heading textAlign="center">
-          すべてのユーザ（全{user.length}人）
+          すべてのユーザ（全{users.length}人）
         </Heading>
         <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="1rem">
           <Table
@@ -78,7 +78,7 @@ const AdminPage = () => {
                 <Th></Th>
                 <Th textAlign="center">ユーザ名</Th>
                 <Th textAlign="center">メールアドレス</Th>
-                <Th textAlign="center">本名</Th>
+                <Th textAlign="center">名前</Th>
               </Tr>
             </Thead>
             <Tbody>{users.map(value => user(value))}</Tbody>

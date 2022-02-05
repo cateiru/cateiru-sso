@@ -1,12 +1,26 @@
 import {Center, Box, Heading, Button} from '@chakra-ui/react';
 import Link from 'next/link';
+import {useRecoilValue} from 'recoil';
+import {UserState} from '../../utils/state/atom';
 import LogoutDelete from './LogoutDelete';
 import OTP from './OTP';
 
 const AccountSetting = () => {
+  const user = useRecoilValue(UserState);
+
   return (
     <Center>
       <Box width={{base: '100%', lg: '800px'}} mx=".5rem" mt="2.5rem">
+        {user?.role.includes('admin') && (
+          <Box my="1rem">
+            <Heading size="1.8rem" mb=".7rem">
+              Adminページ
+            </Heading>
+            <Link href="/admin" passHref>
+              <Button width={{base: '100%', sm: 'auto'}}>全ユーザー参照</Button>
+            </Link>
+          </Box>
+        )}
         <Box my="1rem">
           <Heading size="1.8rem" mb=".7rem">
             ログイン履歴確認
