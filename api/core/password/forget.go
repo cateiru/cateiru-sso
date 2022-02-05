@@ -85,7 +85,7 @@ func CreateChangeMail(ctx context.Context, db *database.Database, mail string) e
 		}
 	} else {
 		logging.Sugar.Debugf(
-			"create pw_forget token. url: https://%s/pw/change?m=%s", config.Defs.SiteDomain, forgetToken)
+			"create pw_forget token. url: https://%s/forget?t=%s", config.Defs.SiteDomain, forgetToken)
 	}
 
 	return nil
@@ -93,7 +93,7 @@ func CreateChangeMail(ctx context.Context, db *database.Database, mail string) e
 
 func sendPwMail(mail string, forgetToken string) error {
 	template := ChangePWMailTemplate{
-		VerifyURL: fmt.Sprintf("https://%s/pw/change?m=%s", config.Defs.SiteDomain, forgetToken),
+		VerifyURL: fmt.Sprintf("https://%s/forget?t=%s", config.Defs.SiteDomain, forgetToken),
 		Mail:      mail,
 	}
 

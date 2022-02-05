@@ -8,6 +8,7 @@ import {
   FormErrorMessage,
   useToast,
 } from '@chakra-ui/react';
+import {useRouter} from 'next/router';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 import {sendForget} from '../../utils/api/forget';
@@ -19,6 +20,7 @@ const Forget = () => {
     formState: {errors, isSubmitting},
   } = useForm();
   const toast = useToast();
+  const router = useRouter();
 
   const submit = (values: FieldValues) => {
     const f = async () => {
@@ -31,6 +33,7 @@ const Forget = () => {
           isClosable: true,
           duration: 9000,
         });
+        router.reload();
       } catch (error) {
         if (error instanceof Error) {
           toast({

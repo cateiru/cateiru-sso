@@ -11,6 +11,7 @@ import {
   IconButton,
   FormLabel,
 } from '@chakra-ui/react';
+import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
@@ -41,6 +42,7 @@ const ChangePassword = () => {
     formState: {errors, isSubmitting},
   } = useForm();
   const [pwOk, setPWOK] = React.useState(false);
+  const router = useRouter();
 
   const [showOld, setShowOld] = React.useState(false);
 
@@ -56,6 +58,7 @@ const ChangePassword = () => {
           isClosable: true,
           duration: 9000,
         });
+        router.reload();
       } catch (error) {
         if (error instanceof Error) {
           toast({

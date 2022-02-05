@@ -1,7 +1,9 @@
 import {Flex, Heading, Box, Button, useToast} from '@chakra-ui/react';
+import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
+import {acceptPassword} from '../../utils/api/forget';
 import Password from '../common/form/Password';
 
 const AcceptPage: React.FC<{token: string}> = ({token}) => {
@@ -12,9 +14,34 @@ const AcceptPage: React.FC<{token: string}> = ({token}) => {
   } = useForm();
   const toast = useToast();
   const [pwOk, setPWOK] = React.useState(false);
+  const router = useRouter();
 
   const submit = (values: FieldValues) => {
-    console.log(values.password);
+    const f = async () => {
+      try {
+        await acceptPassword(token, values.password);
+        toast({
+          title: 'パスワードを変更しました',
+          status: 'info',
+          isClosable: true,
+          duration: 9000,
+        });
+        router.replace('/login');
+      } catch (error) {
+        if (error instanceof Error) {
+          toast({
+            title: 'このメールを送信できませんでした',
+            description: error.message,
+            status: 'error',
+            isClosable: true,
+            duration: 9000,
+          });
+        }
+      }
+    };
+
+    f();
+
     return () => {};
   };
 
@@ -45,7 +72,7 @@ const AcceptPage: React.FC<{token: string}> = ({token}) => {
             width={{base: '100%', md: 'auto'}}
             disabled={!pwOk}
           >
-            再登録メールを送信する
+            パスワードを変更する
           </Button>
         </form>
       </Box>

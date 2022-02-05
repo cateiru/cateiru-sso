@@ -16,7 +16,7 @@ const ForgetPage = () => {
     }
   }, [router.isReady, router.query]);
 
-  return <>{token ? <AcceptPage /> : <Forget />}</>;
+  return <>{token ? <AcceptPage token={token} /> : <Forget />}</>;
 };
 
 export default ForgetPage;
