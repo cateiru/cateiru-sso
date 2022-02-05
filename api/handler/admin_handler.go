@@ -1,6 +1,11 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/cateiru/cateiru-sso/api/core/admin"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
+)
 
 // Proユーザの操作をする
 func AdminProHandler(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +73,9 @@ func adminProDeleteHandler(w http.ResponseWriter, r *http.Request) {
 // 全ユーザ情報取得
 // adminユーザのみ
 func adminUserGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := admin.AllUsersHand(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // `?id=[id]`を指定して該当ユーザを削除

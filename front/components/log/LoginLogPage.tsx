@@ -14,7 +14,6 @@ import {
   useColorModeValue,
   Tooltip,
   Stack,
-  Spacer,
 } from '@chakra-ui/react';
 import type {ResponsiveValue} from '@chakra-ui/react';
 import {Property} from 'csstype';

@@ -8,6 +8,18 @@ import (
 	"google.golang.org/api/iterator"
 )
 
+func GetAllUsers(ctx context.Context, db *database.Database) ([]User, error) {
+	query := datastore.NewQuery("User")
+
+	var entities []User
+
+	if _, err := db.GetAll(ctx, query, &entities); err != nil {
+		return nil, err
+	}
+
+	return entities, nil
+}
+
 func GetUserDataByUserID(ctx context.Context, db *database.Database, userId string) (*User, error) {
 	key := database.CreateNameKey("User", userId)
 	var entry User

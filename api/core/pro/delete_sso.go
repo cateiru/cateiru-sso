@@ -28,7 +28,7 @@ func DeleteSSOHandler(w http.ResponseWriter, r *http.Request) error {
 	userId := c.UserId
 
 	// Pro以上のユーザのみ使用可
-	if err := common.ProMoreOnly(ctx, db, userId); err != nil {
+	if err := common.ProOnly(ctx, db, userId); err != nil {
 		return err
 	}
 

@@ -3,9 +3,10 @@ import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 
-const Require: React.FC<{isLogin: boolean; path: string}> = ({
+const Require: React.FC<{isLogin: boolean; path: string; role?: string}> = ({
   isLogin,
   path,
+  role,
   children,
 }) => {
   const user = useRecoilValue(UserState);
@@ -19,7 +20,12 @@ const Require: React.FC<{isLogin: boolean; path: string}> = ({
       if ((user === null) === isLogin) {
         router.replace(path);
       } else {
-        setShow(true);
+        // ロールが設定されている場合でそのロールのユーザではない場合は表示させない
+        if (role && !user?.role.includes(role)) {
+          router.replace(path);
+        } else {
+          setShow(true);
+        }
       }
     }
   }, [user]);
