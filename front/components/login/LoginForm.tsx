@@ -11,7 +11,10 @@ import {
   InputRightElement,
   IconButton,
   useToast,
+  Link,
+  Divider,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
@@ -150,6 +153,11 @@ const LoginForm = () => {
             {errors.password && errors.password.message}
           </FormErrorMessage>
         </FormControl>
+        <Box mt="1rem">
+          <NextLink href="/forget" passHref>
+            <Link>パスワードを忘れましたか？</Link>
+          </NextLink>
+        </Box>
         <Button
           marginTop="1rem"
           colorScheme="blue"
@@ -160,6 +168,12 @@ const LoginForm = () => {
           ログインする
         </Button>
       </form>
+      <Divider my="1rem" />
+      <Center>
+        <NextLink href="/create" passHref>
+          <Link>アカウントを作成する</Link>
+        </NextLink>
+      </Center>
     </Box>
   );
 };

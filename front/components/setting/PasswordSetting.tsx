@@ -4,7 +4,6 @@ import {
   Heading,
   Input,
   FormControl,
-  FormErrorMessage,
   Button,
   useToast,
   InputRightElement,
@@ -12,17 +11,13 @@ import {
   IconButton,
   FormLabel,
 } from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
+import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
-import PasswordStrengthBar from 'react-password-strength-bar';
 import {changePassword} from '../../utils/api/change';
-
-const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
-  ssr: false,
-});
+import Password from '../common/form/Password';
 
 const PasswordSetting = () => {
   return (
@@ -46,11 +41,10 @@ const ChangePassword = () => {
     register,
     formState: {errors, isSubmitting},
   } = useForm();
-  const [pass, setPass] = React.useState('');
   const [pwOk, setPWOK] = React.useState(false);
+  const router = useRouter();
 
   const [showOld, setShowOld] = React.useState(false);
-  const [showNew, setShowNew] = React.useState(false);
 
   const toast = useToast();
 
@@ -64,6 +58,7 @@ const ChangePassword = () => {
           isClosable: true,
           duration: 9000,
         });
+        router.reload();
       } catch (error) {
         if (error instanceof Error) {
           toast({
@@ -113,79 +108,20 @@ const ChangePassword = () => {
           </InputRightElement>
         </InputGroup>
       </FormControl>
-      <FormControl isInvalid={errors.newPassword} mt="1rem">
-        <FormLabel htmlFor="newPassword" marginTop="1rem">
-          新しいパスワード（8文字以上128文字以下）
-        </FormLabel>
-        <InputGroup>
-          <Input
-            id="newPassword"
-            type={showNew ? 'text' : 'password'}
-            placeholder="パスワード"
-            {...register('newPassword', {
-              required: true,
-              onChange: e => setPass(e.target.value || ''),
-            })}
-          />
-          <InputRightElement>
-            <IconButton
-              variant="ghost"
-              aria-label="show password"
-              icon={
-                showNew ? (
-                  <IoEyeOutline size="25px" />
-                ) : (
-                  <IoEyeOffOutline size="25px" />
-                )
-              }
-              size="sm"
-              onClick={() => setShowNew(!showNew)}
-            />
-          </InputRightElement>
-        </InputGroup>
-        <PasswordStrengthBar
-          password={pass}
-          scoreWords={[
-            '弱すぎかな',
-            '弱いパスワードだと思う',
-            '少し弱いパスワードかなと思う',
-            'もう少し長くしてみない？',
-            '最強!すごく良いよ!',
-          ]}
-          shortScoreWord="8文字以上にしてほしいな"
-          minLength={8}
-        />
-        <FormErrorMessage>{errors.password}</FormErrorMessage>
-      </FormControl>
-      <Box marginTop=".5rem">
-        <PasswordChecklist
-          rules={['minLength', 'specialChar', 'number', 'capital']}
-          minLength={8}
-          value={pass}
-          messages={{
-            minLength: 'パスワードは8文字以上',
-            specialChar: 'パスワードに記号が含まれている',
-            number: 'パスワードに数字が含まれている',
-            capital: 'パスワードに大文字が含まれている',
-          }}
-          onChange={isValid => {
-            let unmounted = false;
-            if (pwOk !== isValid && !unmounted) {
-              setPWOK(isValid);
-            }
-
-            return () => {
-              unmounted = true;
-            };
-          }}
-        />
-      </Box>
+      <Password
+        errors={errors}
+        register={register}
+        onChange={status => setPWOK(status)}
+      >
+        新しいパスワード（8文字以上128文字以下）
+      </Password>
       <Button
         marginTop="1rem"
         colorScheme="blue"
         isLoading={isSubmitting}
         type="submit"
         width={{base: '100%', md: 'auto'}}
+        disabled={!pwOk}
       >
         変更する
       </Button>

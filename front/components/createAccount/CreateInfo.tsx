@@ -7,25 +7,16 @@ import {
   Button,
   Select,
   FormErrorMessage,
-  InputGroup,
-  InputRightElement,
-  IconButton,
 } from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
-import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
-import PasswordStrengthBar from 'react-password-strength-bar';
 import {useSetRecoilState} from 'recoil';
 import useCreateInfo from '../../hooks/useCreateInfo';
 import {checkUserName} from '../../utils/api/check';
 import {CTState, LoadState} from '../../utils/state/atom';
-
-const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
-  ssr: false,
-});
+import Password from '../common/form/Password';
 
 const CreateInfo = React.memo(() => {
   const {
@@ -40,8 +31,6 @@ const CreateInfo = React.memo(() => {
   const setCT = useSetRecoilState(CTState);
   const setLoad = useSetRecoilState(LoadState);
 
-  const [show, setShow] = React.useState(false);
-  const [pass, setPass] = React.useState('');
   const [pwOK, setPwOK] = React.useState(false);
 
   React.useEffect(() => {
@@ -144,79 +133,20 @@ const CreateInfo = React.memo(() => {
             {errors.theme && errors.theme.message}
           </FormErrorMessage>
         </FormControl>
-        <FormControl isInvalid={errors.password} mt="1rem">
-          <FormLabel htmlFor="password" marginTop="1rem">
-            パスワード（8文字以上128文字以下）
-          </FormLabel>
-          <InputGroup>
-            <Input
-              id="password"
-              type={show ? 'text' : 'password'}
-              placeholder="パスワード"
-              {...register('password', {
-                required: true,
-                onChange: e => setPass(e.target.value || ''),
-              })}
-            />
-            <InputRightElement>
-              <IconButton
-                variant="ghost"
-                aria-label="show password"
-                icon={
-                  show ? (
-                    <IoEyeOutline size="25px" />
-                  ) : (
-                    <IoEyeOffOutline size="25px" />
-                  )
-                }
-                size="sm"
-                onClick={() => setShow(!show)}
-              />
-            </InputRightElement>
-          </InputGroup>
-          <PasswordStrengthBar
-            password={pass}
-            scoreWords={[
-              '弱すぎかな',
-              '弱いパスワードだと思う',
-              '少し弱いパスワードかなと思う',
-              'もう少し長くしてみない？',
-              '最強!すごく良いよ!',
-            ]}
-            shortScoreWord="8文字以上にしてほしいな"
-            minLength={8}
-          />
-          <FormErrorMessage>{errors.password}</FormErrorMessage>
-        </FormControl>
-        <Box marginTop=".5rem">
-          <PasswordChecklist
-            rules={['minLength', 'specialChar', 'number', 'capital']}
-            minLength={8}
-            value={pass}
-            messages={{
-              minLength: 'パスワードは8文字以上',
-              specialChar: 'パスワードに記号が含まれている',
-              number: 'パスワードに数字が含まれている',
-              capital: 'パスワードに大文字が含まれている',
-            }}
-            onChange={isValid => {
-              let unmounted = false;
-              if (pwOK !== isValid && !unmounted) {
-                setPwOK(isValid);
-              }
-
-              return () => {
-                unmounted = true;
-              };
-            }}
-          />
-        </Box>
+        <Password
+          errors={errors}
+          register={register}
+          onChange={status => setPwOK(status)}
+        >
+          パスワード（8文字以上128文字以下）
+        </Password>
         <Button
           marginTop="1.5rem"
           colorScheme="blue"
           isLoading={isSubmitting}
           type="submit"
           disabled={existUser || !pwOK}
+          width={{base: '100%', md: 'auto'}}
         >
           これでOK
         </Button>
