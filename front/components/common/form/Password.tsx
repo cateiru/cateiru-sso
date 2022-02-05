@@ -10,8 +10,7 @@ import {
 } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import React from 'react';
-import {useForm} from 'react-hook-form';
-import type {FieldValues, UseFormRegister} from 'react-hook-form';
+import type {FieldValues, UseFormRegister, FieldErrors} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
 import PasswordStrengthBar from 'react-password-strength-bar';
 
@@ -20,18 +19,18 @@ const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
 });
 
 const Password: React.FC<{
-  errors: {[x: string]: any};
+  errors: FieldErrors<FieldValues>;
   register: UseFormRegister<FieldValues>;
-  onChange: (status: boolean) => void,
-  label?: string,
-}> = ({errors, register, onChange, label = "password", children}) => {
+  onChange: (status: boolean) => void;
+  label?: string;
+}> = ({errors, register, onChange, label = 'password', children}) => {
   const [show, setShow] = React.useState(false);
   const [pwOk, setPWOK] = React.useState(false);
   const [pass, setPass] = React.useState('');
 
   React.useEffect(() => {
-    onChange(pwOk)
-  }, [pwOk])
+    onChange(pwOk);
+  }, [pwOk]);
 
   return (
     <>
