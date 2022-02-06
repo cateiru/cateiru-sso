@@ -80,6 +80,9 @@ func adminUserGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // `?id=[id]`を指定して該当ユーザを削除
 func adminUserDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	if err := admin.DeleteUserHand(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // ユーザをメールアドレスでBanする

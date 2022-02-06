@@ -99,3 +99,16 @@ func (c *RefreshInfo) AddTX(tx *database.Transaction) error {
 	key := database.CreateNameKey("RefreshInfo", c.RefreshToken)
 	return tx.Put(key, c)
 }
+
+func DeleteRefreshByUserId(ctx context.Context, db *database.Database, userId string) error {
+	query := datastore.NewQuery("RefreshInfo").Filter("userId =", userId)
+
+	var dummy []RefreshInfo
+
+	keys, err := db.GetAll(ctx, query, &dummy)
+	if err != nil {
+		return err
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}

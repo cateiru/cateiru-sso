@@ -144,3 +144,46 @@ func TestRefreshTokenTX(t *testing.T) {
 		return entity == nil
 	}, "削除されている")
 }
+
+func TestDeleteRefresh(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	userId := utils.CreateID(30)
+	sessionToken := utils.CreateID(0)
+	refreshToken := utils.CreateID(0)
+
+	session := &models.RefreshInfo{
+		RefreshToken: refreshToken,
+		SessionToken: sessionToken,
+
+		Period: models.Period{
+			CreateDate: time.Now(),
+			PeriodHour: 6,
+		},
+
+		UserId: models.UserId{
+			UserId: userId,
+		},
+	}
+
+	err = session.Add(ctx, db)
+	require.NoError(t, err)
+
+	// ---
+
+	err = models.DeleteRefreshByUserId(ctx, db, userId)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetRefreshToken(ctx, db, refreshToken)
+		require.NoError(t, err)
+
+		return entity == nil
+	}, "")
+}
