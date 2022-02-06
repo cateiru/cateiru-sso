@@ -8,14 +8,10 @@ import (
 )
 
 // Proユーザの操作をする
-func AdminProHandler(w http.ResponseWriter, r *http.Request) {
+func AdminRoleHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case http.MethodGet:
-		adminProGetHandler(w, r)
 	case http.MethodPost:
-		adminProPostHandler(w, r)
-	case http.MethodDelete:
-		adminProDeleteHandler(w, r)
+		adminRolePostHandler(w, r)
 	default:
 		RootHandler(w, r)
 	}
@@ -55,19 +51,12 @@ func AdminStatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Proユーザ一覧を取得
+// Roleの追加、削除
 // adminユーザのみ
-func adminProGetHandler(w http.ResponseWriter, r *http.Request) {
-}
-
-// Proユーザ追加
-// adminユーザのみ
-func adminProPostHandler(w http.ResponseWriter, r *http.Request) {
-}
-
-// Proユーザを削除
-// adminユーザのみ
-func adminProDeleteHandler(w http.ResponseWriter, r *http.Request) {
+func adminRolePostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := admin.AdminRoleHand(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // 全ユーザ情報取得
