@@ -112,6 +112,7 @@ const ChangePassword = () => {
         errors={errors}
         register={register}
         onChange={status => setPWOK(status)}
+        label="newPassword"
       >
         新しいパスワード（8文字以上128文字以下）
       </Password>
