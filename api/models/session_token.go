@@ -80,3 +80,16 @@ func (c *SessionInfo) AddTX(tx *database.Transaction) error {
 	key := database.CreateNameKey("SessionInfo", c.SessionToken)
 	return tx.Put(key, c)
 }
+
+func DeleteSessionByUserId(ctx context.Context, db *database.Database, userId string) error {
+	query := datastore.NewQuery("SessionInfo").Filter("userId =", userId)
+
+	var dummy []RefreshInfo
+
+	keys, err := db.GetAll(ctx, query, &dummy)
+	if err != nil {
+		return err
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}

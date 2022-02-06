@@ -133,3 +133,44 @@ func TestSessionTX(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, entity)
 }
+
+func TestDeleteSession(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	userId := utils.CreateID(30)
+	sessionToken := utils.CreateID(30)
+
+	session := &models.SessionInfo{
+		SessionToken: sessionToken,
+
+		Period: models.Period{
+			CreateDate: time.Now(),
+			PeriodHour: 6,
+		},
+
+		UserId: models.UserId{
+			UserId: userId,
+		},
+	}
+
+	err = session.Add(ctx, db)
+	require.NoError(t, err)
+
+	// ---
+
+	err = models.DeleteSessionByUserId(ctx, db, userId)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetSessionToken(ctx, db, sessionToken)
+		require.NoError(t, err)
+
+		return entity == nil
+	}, "")
+}

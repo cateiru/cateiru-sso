@@ -22,7 +22,7 @@ func Routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/me", handler.MeHandler)
 
-	mux.HandleFunc("/admin/pro", handler.AdminProHandler)
+	mux.HandleFunc("/admin/role", handler.AdminRoleHandler)
 	mux.HandleFunc("/admin/user", handler.AdminUserHandler)
 	mux.HandleFunc("/admin/ban", handler.AdminBanHandler)
 	mux.HandleFunc("/admin/status", handler.AdminStatusHandler)

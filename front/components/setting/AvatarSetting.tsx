@@ -99,8 +99,16 @@ const AvatarSetting = () => {
   };
   return (
     <Box>
-      <Box width={{base: '100px', md: '140px'}}>
-        <Avatar src={user?.avatar_url} size="full" />
+      <Box
+        width={{base: '100px', md: '140px'}}
+        backgroundColor="white"
+        borderRadius="256"
+      >
+        <Avatar
+          src={user?.avatar_url}
+          size="full"
+          boxShadow="0 5px 30px -10px black"
+        />
       </Box>
       <label htmlFor="filename">
         <Text
