@@ -46,7 +46,14 @@ const AdminPage = () => {
       <Tr key={user.user_id}>
         <Td>
           <Center>
-            <Avatar src={user.avatar_url} size="sm" />
+            <Avatar
+              src={user.avatar_url}
+              size="sm"
+              borderColor={
+                user.role.includes('admin') ? 'red.400' : 'yellow.400'
+              }
+              borderWidth={user.role.length !== 1 ? '2px' : '0'}
+            />
           </Center>
         </Td>
         <Td textAlign="center">

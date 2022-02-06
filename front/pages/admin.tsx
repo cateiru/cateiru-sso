@@ -4,7 +4,7 @@ import Title from '../components/common/Title';
 
 const Admin = () => {
   return (
-    <Require isLogin={true} path="/hello" role="admin">
+    <Require isLogin={true} path="/" role="admin">
       <Title title="Admin | CateiruSSO" />
       <AdminPage />
     </Require>

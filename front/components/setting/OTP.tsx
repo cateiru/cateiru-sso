@@ -34,7 +34,6 @@ import {
   getBackups,
   deleteotp,
 } from '../../utils/api/otp';
-import Spinner from '../common/Spinner';
 
 enum OTPState {
   Loading,

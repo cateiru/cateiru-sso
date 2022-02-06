@@ -48,6 +48,9 @@ func AllUsersHand(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return status.NewInternalServerErrorError(err).Caller()
 		}
+		if user == nil {
+			return status.NewBadRequestError(errors.New("user not found")).Caller()
+		}
 
 		net.ResponseOK(w, []models.User{*user})
 	}

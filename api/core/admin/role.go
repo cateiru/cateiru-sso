@@ -94,6 +94,9 @@ func AddRole(ctx context.Context, db *database.Database, role string, userId str
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
+	if user == nil {
+		return status.NewBadRequestError(errors.New("user is empty")).Caller()
+	}
 
 	user.Role = append(user.Role, role)
 
@@ -104,6 +107,9 @@ func AddRole(ctx context.Context, db *database.Database, role string, userId str
 	roleEntity, err := models.GetRoleByUserID(ctx, db, userId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
+	}
+	if roleEntity == nil {
+		return status.NewBadRequestError(errors.New("role is empty")).Caller()
 	}
 
 	roleEntity.Role = append(roleEntity.Role, role)
@@ -120,6 +126,9 @@ func DeleteRole(ctx context.Context, db *database.Database, role string, userId 
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
+	if user == nil {
+		return status.NewBadRequestError(errors.New("user is empty")).Caller()
+	}
 
 	user.Role, err = remove(user.Role, role)
 	if err != nil {
@@ -133,6 +142,9 @@ func DeleteRole(ctx context.Context, db *database.Database, role string, userId 
 	roleEntity, err := models.GetRoleByUserID(ctx, db, userId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
+	}
+	if roleEntity == nil {
+		return status.NewBadRequestError(errors.New("role is empty")).Caller()
 	}
 
 	roleEntity.Role, err = remove(roleEntity.Role, role)
