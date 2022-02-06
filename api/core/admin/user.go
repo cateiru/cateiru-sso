@@ -34,12 +34,23 @@ func AllUsersHand(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	users, err := models.GetAllUsers(ctx, db)
-	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
-	}
+	id, emptyErr := net.GetQuery(r, "id")
 
-	net.ResponseOK(w, users)
+	if emptyErr != nil {
+		users, err := models.GetAllUsers(ctx, db)
+		if err != nil {
+			return status.NewInternalServerErrorError(err).Caller()
+		}
+
+		net.ResponseOK(w, users)
+	} else {
+		user, err := models.GetUserDataByUserID(ctx, db, id)
+		if err != nil {
+			return status.NewInternalServerErrorError(err).Caller()
+		}
+
+		net.ResponseOK(w, []models.User{*user})
+	}
 
 	return nil
 }

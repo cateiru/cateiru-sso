@@ -66,6 +66,44 @@ func TestGetAllUser(t *testing.T) {
 	require.True(t, len(respBody) != 0)
 }
 
+func TestGetOneUser(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	targetDummy := tools.NewDummyUser()
+	_, err = targetDummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+
+	dummy := tools.NewDummyUser().AddRole("admin")
+	_, err = dummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetUserDataByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return entity != nil
+	}, "")
+
+	s := tools.NewTestServer(t, adminserver(), true)
+	defer s.Close()
+
+	err = s.AddSession(ctx, db, dummy)
+	require.NoError(t, err)
+
+	resp := s.Get(t, fmt.Sprintf("/user?id=%s", targetDummy.UserID))
+	var respBody []models.User
+	err = json.Unmarshal(tools.ConvertByteResp(resp), &respBody)
+	require.NoError(t, err)
+
+	require.Len(t, respBody, 1)
+}
+
 func TestDeleteUser(t *testing.T) {
 	config.TestInit(t)
 
