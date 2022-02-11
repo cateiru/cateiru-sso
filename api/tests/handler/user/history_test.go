@@ -45,12 +45,10 @@ func TestLoginHistory(t *testing.T) {
 
 	// ログインしているやつの履歴
 	history := &models.LoginHistory{
-		AccessId:     dummy.AccessID,
-		Date:         time.Now(),
-		IpAddress:    "192.168.0.1",
-		IsSSO:        false,
-		SSOPublicKey: "",
-		UserAgent:    "",
+		AccessId:  dummy.AccessID,
+		Date:      time.Now(),
+		IpAddress: "192.168.0.1",
+		UserAgent: "",
 
 		UserId: models.UserId{
 			UserId: dummy.UserID,
@@ -62,12 +60,10 @@ func TestLoginHistory(t *testing.T) {
 
 	for i := 0; 10 > i; i++ {
 		history := &models.LoginHistory{
-			AccessId:     utils.CreateID(20),
-			Date:         time.Now(),
-			IpAddress:    "192.168.0.1",
-			IsSSO:        false,
-			SSOPublicKey: "",
-			UserAgent:    "",
+			AccessId:  utils.CreateID(20),
+			Date:      time.Now(),
+			IpAddress: "192.168.0.1",
+			UserAgent: "",
 
 			UserId: models.UserId{
 				UserId: dummy.UserID,

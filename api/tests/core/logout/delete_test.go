@@ -36,12 +36,10 @@ func TestDelete(t *testing.T) {
 
 	// ログイン履歴
 	history := &models.LoginHistory{
-		AccessId:     utils.CreateID(20),
-		Date:         time.Now(),
-		IpAddress:    "192.168.0.1",
-		IsSSO:        false,
-		SSOPublicKey: "",
-		UserAgent:    "",
+		AccessId:  utils.CreateID(20),
+		Date:      time.Now(),
+		IpAddress: "192.168.0.1",
+		UserAgent: "",
 
 		UserId: models.UserId{
 			UserId: dummy.UserID,

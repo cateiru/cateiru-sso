@@ -28,12 +28,10 @@ func TestLoginHistory(t *testing.T) {
 	// 10個入れる
 	for i := 0; 10 > i; i++ {
 		history := &models.LoginHistory{
-			AccessId:     utils.CreateID(20),
-			Date:         time.Now(),
-			IpAddress:    "192.168.0.1",
-			IsSSO:        false,
-			SSOPublicKey: "",
-			UserAgent:    "",
+			AccessId:  utils.CreateID(20),
+			Date:      time.Now(),
+			IpAddress: "192.168.0.1",
+			UserAgent: "",
 
 			UserId: models.UserId{
 				UserId: dummy.UserID,

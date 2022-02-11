@@ -158,8 +158,6 @@ type SSOService struct {
 	FromUrl []string `datastore:"fromUrl" json:"from_url"`
 	ToUrl   []string `datastore:"toUrl" json:"to_url"`
 
-	RefreshTokenPeriod int `datastore:"refreshTokenPeriod,omitempty" json:"refresh_token_period"`
-
 	UserId
 }
 
