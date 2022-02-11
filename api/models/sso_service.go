@@ -7,8 +7,8 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 )
 
-func GetSSOServiceByPublicKey(ctx context.Context, db *database.Database, publicKey string) (*SSOService, error) {
-	key := database.CreateNameKey("SSOService", publicKey)
+func GetSSOServiceByClientId(ctx context.Context, db *database.Database, clientId string) (*SSOService, error) {
+	key := database.CreateNameKey("SSOService", clientId)
 
 	var entity SSOService
 	isEmpty, err := db.Get(ctx, key, &entity)
@@ -35,14 +35,14 @@ func GetSSOServiceByUserID(ctx context.Context, db *database.Database, userID st
 	return entities, nil
 }
 
-func DeleteSSOServiceByPublicKey(ctx context.Context, db *database.Database, publicKey string) error {
-	key := database.CreateNameKey("SSOService", publicKey)
+func DeleteSSOServiceByClientId(ctx context.Context, db *database.Database, clientId string) error {
+	key := database.CreateNameKey("SSOService", clientId)
 
 	return db.Delete(ctx, key)
 }
 
 func (c *SSOService) Add(ctx context.Context, db *database.Database) error {
-	key := database.CreateNameKey("SSOService", c.SSOPublicKey)
+	key := database.CreateNameKey("SSOService", c.ClientID)
 
 	return db.Put(ctx, key, c)
 }
