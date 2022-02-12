@@ -286,3 +286,142 @@ func TestToken(t *testing.T) {
 	require.NotEqual(t, tokenRespBody.AccessToken, newTokenBody.AccessToken)
 	require.NotEqual(t, tokenRespBody.RefreshToken, newTokenBody.RefreshToken)
 }
+
+func TestTokenError(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	clientId := utils.CreateID(30)
+
+	service := models.SSOService{
+		ClientID:    clientId,
+		TokenSecret: utils.CreateID(0),
+
+		Name:        "test",
+		ServiceIcon: "image",
+
+		FromUrl: []string{"https://example.com"},
+		ToUrl:   []string{"https://example.com/login"},
+
+		UserId: models.UserId{
+			UserId: utils.CreateID(0),
+		},
+	}
+	err = service.Add(ctx, db)
+	require.NoError(t, err)
+
+	dummy := tools.NewDummyUser()
+	_, err = dummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+
+	accessToken := models.SSOAccessToken{
+		SSOAccessToken:  utils.CreateID(0),
+		SSORefreshToken: "",
+
+		ClientID: clientId,
+
+		RedirectURI: "https://example.com/login",
+
+		Create: time.Now(),
+
+		Period: models.Period{
+			CreateDate:   time.Now(),
+			PeriodMinute: 10,
+		},
+
+		UserId: models.UserId{
+			UserId: dummy.UserID,
+		},
+	}
+	err = accessToken.Add(ctx, db)
+	require.NoError(t, err)
+
+	s := tools.NewTestServer(t, oauthServer(), false)
+
+	req, err := http.NewRequest("GET",
+		fmt.Sprintf("%s/token?grant_type=authorization_code&code=%s&redirect_uri=%s",
+			s.Server.URL, accessToken.SSOAccessToken, accessToken.RedirectURI), nil)
+	require.NoError(t, err)
+
+	req.Header.Set("Authorization", "Basic dummy")
+	// req.SetBasicAuth("", service.TokenSecret)
+
+	resp, err := s.Client.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 403)
+
+	// ---
+
+	req, err = http.NewRequest("GET",
+		fmt.Sprintf("%s/token?code=%s&redirect_uri=%s",
+			s.Server.URL, accessToken.SSOAccessToken, accessToken.RedirectURI), nil)
+	require.NoError(t, err)
+
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", service.TokenSecret))
+	// req.SetBasicAuth("", service.TokenSecret)
+
+	resp, err = s.Client.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 400)
+
+	// ---
+
+	req, err = http.NewRequest("GET",
+		fmt.Sprintf("%s/token?grant_type=authorization_code&redirect_uri=%s",
+			s.Server.URL, accessToken.RedirectURI), nil)
+	require.NoError(t, err)
+
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", service.TokenSecret))
+	// req.SetBasicAuth("", service.TokenSecret)
+
+	resp, err = s.Client.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 400)
+
+	// ---
+
+	req, err = http.NewRequest("GET",
+		fmt.Sprintf("%s/token?grant_type=authorization_code&code=%s&redirect_uri=%s",
+			s.Server.URL, accessToken.SSOAccessToken, "hoge"), nil)
+	require.NoError(t, err)
+
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", service.TokenSecret))
+	// req.SetBasicAuth("", service.TokenSecret)
+
+	resp, err = s.Client.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 400)
+
+	// ---
+
+	req, err = http.NewRequest("GET",
+		fmt.Sprintf("%s/token?grant_type=authorization_code&code=%s",
+			s.Server.URL, accessToken.SSOAccessToken), nil)
+	require.NoError(t, err)
+
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", service.TokenSecret))
+	// req.SetBasicAuth("", service.TokenSecret)
+
+	resp, err = s.Client.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 400)
+
+	// ---
+
+	req, err = http.NewRequest("GET",
+		fmt.Sprintf("%s/token?grant_type=authorization_code&code=%s&redirect_uri=%s",
+			s.Server.URL, "dummy", accessToken.RedirectURI), nil)
+	require.NoError(t, err)
+
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", service.TokenSecret))
+	// req.SetBasicAuth("", service.TokenSecret)
+
+	resp, err = s.Client.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 400)
+}
