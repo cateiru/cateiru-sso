@@ -8,6 +8,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
@@ -69,4 +70,47 @@ func TestSSOServiceLog(t *testing.T) {
 
 		return len(logs) == 0
 	}, "")
+}
+
+func TestDeleteServiceLogByUserId(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	clientId := utils.CreateID(0)
+	dummy := tools.NewDummyUser()
+
+	entity := models.SSOServiceLog{
+		LogId:      utils.CreateID(0),
+		AcceptDate: time.Now(),
+		ClientID:   clientId,
+
+		UserId: models.UserId{
+			UserId: dummy.UserID,
+		},
+	}
+
+	err = entity.Add(ctx, db)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		logs, err := models.GetSSOServiceLogsByClientId(ctx, db, clientId)
+		require.NoError(t, err)
+
+		return len(logs) == 1
+	}, "")
+
+	err = models.DeleteSSOServiceLogByUserId(ctx, db, dummy.UserID)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		logs, err := models.GetSSOServiceLogsByClientId(ctx, db, clientId)
+		require.NoError(t, err)
+
+		return len(logs) == 0
+	}, "削除されている")
 }
