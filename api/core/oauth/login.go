@@ -48,7 +48,7 @@ func ServiceLogin(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(err).Caller()
 	}
 
-	accessToken, err := LoginOAuth(ctx, db, service.ClientID, c.UserId)
+	accessToken, err := LoginOAuth(ctx, db, service.ClientID, request.RedirectURL, c.UserId)
 	if err != nil {
 		return err
 	}
@@ -74,13 +74,15 @@ func ServiceLogin(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func LoginOAuth(ctx context.Context, db *database.Database, clientId string, userId string) (string, error) {
+func LoginOAuth(ctx context.Context, db *database.Database, clientId string, redirectUri string, userId string) (string, error) {
 	accessToken := utils.CreateID(0)
 
 	access := models.SSOAccessToken{
 		SSOAccessToken: accessToken,
 
 		ClientID: clientId,
+
+		RedirectURI: redirectUri,
 
 		Period: models.Period{
 			CreateDate:   time.Now(),

@@ -204,16 +204,12 @@ func SetImage(w http.ResponseWriter, r *http.Request) error {
 }
 
 // URLが正しいかチェックする
-//
-// 対象URL:
-//	https?://.+..{2,4}
-//	direct             : リダイレクトしない場合（allowDirectがtrueの場合のみ）
 func CheckURL(urls []string, allowDirect bool) error {
 
-	pattan := `https?://[\w/:%#\$&\?\(\)~\.=\+\-]+`
+	pattan := `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|localhost)`
 
 	if allowDirect {
-		pattan = `(https?://[\w/:%#\$&\?\(\)~\.=\+\-]+|direct)`
+		pattan = `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|localhost|direct)`
 	}
 
 	for _, url := range urls {

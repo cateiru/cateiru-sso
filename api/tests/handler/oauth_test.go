@@ -138,7 +138,7 @@ func TestOauthLogin(t *testing.T) {
 		entity, err := models.GetAccessTokenByAccessToken(ctx, db, respBody.AccessToken)
 		require.NoError(t, err)
 
-		return entity != nil && entity.ClientID == clientId && entity.UserId.UserId == dummy.UserID
+		return entity != nil && entity.ClientID == clientId && entity.UserId.UserId == dummy.UserID && entity.RedirectURI == "https://example.com/login"
 	}, "")
 
 	goretry.Retry(t, func() bool {

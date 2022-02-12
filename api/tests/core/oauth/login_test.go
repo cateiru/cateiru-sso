@@ -49,7 +49,7 @@ func TestOAuthLogin(t *testing.T) {
 		return entity != nil
 	}, "")
 
-	accessToken, err := oauth.LoginOAuth(ctx, db, clientId, "")
+	accessToken, err := oauth.LoginOAuth(ctx, db, clientId, "", "")
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {

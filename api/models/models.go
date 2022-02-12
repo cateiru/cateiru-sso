@@ -166,6 +166,8 @@ type SSOAccessToken struct {
 
 	ClientID string `datastore:"clientId" json:"client_id"`
 
+	RedirectURI string `datastore:"redirectURI" json:"redirect_uri"`
+
 	Period
 	UserId
 }

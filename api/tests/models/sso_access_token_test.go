@@ -75,6 +75,8 @@ func TestDeleteSSOAccessTokenByUserId(t *testing.T) {
 		SSOAccessToken: utils.CreateID(0),
 		ClientID:       utils.CreateID(0),
 
+		RedirectURI: "https://example.com",
+
 		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 5,

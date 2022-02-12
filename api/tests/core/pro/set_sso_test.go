@@ -10,11 +10,12 @@ import (
 func TestCheckURL(t *testing.T) {
 	urls := map[string]bool{
 		"https://cateiru.com":       true,
-		"http://example.com":        true,
 		"https://uie.jp":            true,
 		"https://www.example.com":   true,
 		"https://cateiru.com/login": true,
 		"https://cateiru.com/":      true,
+		"localhost":                 true,
+		"http://example.com":        false,
 		"https://":                  false,
 		"ftp:":                      false,
 		"aaaaaa":                    false,

@@ -1,6 +1,13 @@
 package oauth
 
-import "time"
+import (
+	"context"
+	"errors"
+
+	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/go-http-error/httperror/status"
+)
 
 // ref. http://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#IDToken
 type IDToken struct {
@@ -11,27 +18,47 @@ type IDToken struct {
 	Iat      string `json:"iat"`
 	AuthTime string `json:"auth_time"`
 	Nonce    string `json:"nonce"`
-
-	Claim
 }
 
-// ref. http://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#StandardClaims
-type Claim struct {
-	Sub                 string    `json:"sub"`
-	Name                string    `json:"name"`
-	GivenName           string    `json:"given_name"`
-	FamilyName          string    `json:"family_name"`
-	MiddleName          string    `json:"middle_name"`
-	PreferredUserName   string    `json:"preferred_username"`
-	Profile             string    `json:"profile"`
-	Picture             string    `json:"picture"`
-	Website             string    `json:"website"`
-	Email               string    `json:"email"`
-	EmailVerified       bool      `json:"email_verified"`
-	Gender              string    `json:"gender"`
-	Birthdate           time.Time `json:"birthdate"`
-	Zoneinfo            string    `json:"zoneinfo"`
-	PhoneNumber         string    `json:"phone_number"`
-	PhoneNumberVerified bool      `json:"phone_number_verified"`
-	UpdatedAt           string    `json:"updated_at"`
+// ref. RFC6749: OAuth2.0 ---- 4.1.3.  Access Token Request
+type TokenRequest struct {
+	GrantType   string `json:"grant_type"`
+	Code        string `json:"code"`
+	RedirectUri string `json:"redirect_uri"`
+}
+
+func (c *TokenRequest) Required(ctx context.Context, db *database.Database) (*models.SSOAccessToken, error) {
+	if c.GrantType != "authorization_code" {
+		return nil, status.NewBadRequestError(errors.New("grant_type must be `authorization_code`")).Caller()
+	}
+	if len(c.Code) == 0 {
+		return nil, status.NewBadRequestError(errors.New("code is null")).Caller()
+	}
+	if len(c.RedirectUri) == 0 {
+		return nil, status.NewBadRequestError(errors.New("redirect_uri is null")).Caller()
+	}
+
+	accessToken, err := models.GetAccessTokenByAccessToken(ctx, db, c.Code)
+	if err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller()
+	}
+
+	if accessToken == nil {
+		return nil, status.NewBadRequestError(errors.New("code is failed")).Caller()
+	}
+
+	if c.RedirectUri != accessToken.RedirectURI {
+		return nil, status.NewBadRequestError(errors.New("redirect uri")).Caller()
+	}
+
+	return accessToken, nil
+}
+
+// ref. OpenIDConnect 1.0: 12.1. Refresh Request
+type RefreshRequest struct {
+	GrantType    string   `json:"grant_type"`
+	ClientID     string   `json:"client_id"`
+	ClientSecret string   `json:"client_secret"`
+	RefreshToken string   `json:"refresh_token"`
+	Scope        []string `json:"scope"`
 }
