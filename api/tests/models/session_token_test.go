@@ -162,6 +162,13 @@ func TestDeleteSession(t *testing.T) {
 	err = session.Add(ctx, db)
 	require.NoError(t, err)
 
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetSessionToken(ctx, db, sessionToken)
+		require.NoError(t, err)
+
+		return entity != nil
+	}, "")
+
 	// ---
 
 	err = models.DeleteSessionByUserId(ctx, db, userId)

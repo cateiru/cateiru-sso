@@ -16,7 +16,7 @@ type ResponsePerview struct {
 }
 
 // そのSSOサービスの存在可否をチェックしてサービス名、アイコンを返す
-func ServicePrevier(w http.ResponseWriter, r *http.Request) error {
+func ServicePreview(w http.ResponseWriter, r *http.Request) error {
 	// contents-type: application/json 以外では400エラーを返す
 	if !net.CheckContentType(r) {
 		return status.NewBadRequestError(errors.New("requests contets-type is not application/json")).Caller()

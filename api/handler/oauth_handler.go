@@ -1,33 +1,38 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
 
-// ssoのセッショントークンを使用してユーザを認証し、情報を取得する
-func OAuthCertHandler(w http.ResponseWriter, r *http.Request) {
+	"github.com/cateiru/cateiru-sso/api/core/oauth"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
+)
+
+func OAuthPreview(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		oauthCertPostHandler(w, r)
+		oauthPerviewPost(w, r)
 	default:
 		RootHandler(w, r)
 	}
 }
 
-// ssoのセッショントークンをリフレッシュトークンを使用して更新する
-func OAuthUpdateHandler(w http.ResponseWriter, r *http.Request) {
+func OAuthLogin(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
-		oauthUpdatePostHandler(w, r)
+		oauthLoginPost(w, r)
 	default:
 		RootHandler(w, r)
 	}
 }
 
-// セッショントークンでユーザ情報取得
-// login_onlyがfalseのみ返す
-// /user/accessでユーザはこれを停止できる
-func oauthCertPostHandler(w http.ResponseWriter, r *http.Request) {
+func oauthPerviewPost(w http.ResponseWriter, r *http.Request) {
+	if err := oauth.ServicePreview(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
-// ssoのセッショントークンをリフレッシュトークンを使用して更新する
-func oauthUpdatePostHandler(w http.ResponseWriter, r *http.Request) {
+func oauthLoginPost(w http.ResponseWriter, r *http.Request) {
+	if err := oauth.ServiceLogin(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }

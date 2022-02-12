@@ -28,6 +28,8 @@ func (c *Service) Required(ctx context.Context, db *database.Database) (*models.
 		return nil, errors.New("client id is null")
 	} else if len(c.RedirectURL) == 0 {
 		return nil, errors.New("redirect url is null")
+	} else if len(c.FromURL) == 0 {
+		return nil, errors.New("from url is null")
 	}
 
 	isOpenIDScope := false

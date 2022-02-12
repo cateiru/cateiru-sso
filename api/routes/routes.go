@@ -44,6 +44,6 @@ func Routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/logout", handler.LogoutHandler)
 
-	mux.HandleFunc("/oauth/cert", handler.OAuthCertHandler)
-	mux.HandleFunc("/oauth/update", handler.OAuthUpdateHandler)
+	mux.HandleFunc("/oauth/perview", handler.OAuthPreview)
+	mux.HandleFunc("/oauth/login", handler.OAuthLogin)
 }
