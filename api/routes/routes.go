@@ -47,5 +47,6 @@ func Routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/oauth/perview", handler.OAuthPreview)
 	mux.HandleFunc("/oauth/login", handler.OAuthLogin)
+	mux.HandleFunc("/oauth/token", handler.OAuthToken)
 	mux.HandleFunc("/oauth/jwt/key", handler.OAuthJWTKey)
 }
