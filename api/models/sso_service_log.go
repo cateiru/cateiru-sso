@@ -86,6 +86,19 @@ func DeleteSSOServiceLogByUserId(ctx context.Context, db *database.Database, use
 	return db.DeleteMulti(ctx, keys)
 }
 
+func DeleteSSOServiceLogByUserIDAndClientId(ctx context.Context, db *database.Database, userId string, clientId string) error {
+	query := datastore.NewQuery("SSOServiceLog").Filter("userId =", userId).Filter("clientId =", clientId)
+
+	var dummy []SSOServiceLog
+
+	keys, err := db.GetAll(ctx, query, &dummy)
+	if err != nil {
+		return err
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 func (c *SSOServiceLog) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("SSOServiceLog", c.LogId)
 	return db.Put(ctx, key, c)

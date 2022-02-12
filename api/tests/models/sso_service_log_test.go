@@ -114,3 +114,46 @@ func TestDeleteServiceLogByUserId(t *testing.T) {
 		return len(logs) == 0
 	}, "削除されている")
 }
+
+func TestDeleteServiceLogByUserIDAndClientId(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	clientId := utils.CreateID(0)
+	dummy := tools.NewDummyUser()
+
+	entity := models.SSOServiceLog{
+		LogId:      utils.CreateID(0),
+		AcceptDate: time.Now(),
+		ClientID:   clientId,
+
+		UserId: models.UserId{
+			UserId: dummy.UserID,
+		},
+	}
+
+	err = entity.Add(ctx, db)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		logs, err := models.GetSSOServiceLogsByClientId(ctx, db, clientId)
+		require.NoError(t, err)
+
+		return len(logs) == 1
+	}, "")
+
+	err = models.DeleteSSOServiceLogByUserIDAndClientId(ctx, db, dummy.UserID, clientId)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		logs, err := models.GetSSOServiceLogsByClientId(ctx, db, clientId)
+		require.NoError(t, err)
+
+		return len(logs) == 0
+	}, "削除されている")
+}

@@ -212,5 +212,7 @@ func oauthGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func oauthDeleteHandler(w http.ResponseWriter, r *http.Request) {
-
+	if err := user.DeleteOAth(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }

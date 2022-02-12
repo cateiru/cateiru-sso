@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/cateiru/cateiru-sso/api/core/common"
@@ -72,6 +73,51 @@ func OAuthShow(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	net.ResponseOK(w, log)
+
+	return nil
+}
+
+func DeleteOAth(w http.ResponseWriter, r *http.Request) error {
+	clientId, err := net.GetQuery(r, "id")
+	if err != nil {
+		return status.NewBadRequestError(err).Caller()
+	}
+	if clientId == "" {
+		return status.NewBadRequestError(errors.New("client id required")).Caller()
+	}
+
+	ctx := r.Context()
+
+	db, err := database.NewDatabase(ctx)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	defer db.Close()
+
+	c := common.NewCert(w, r)
+	if err := c.Login(ctx, db); err != nil {
+		return err
+	}
+
+	// ClientIDが存在するか確認する
+	service, err := models.GetSSOServiceByClientId(ctx, db, clientId)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	if service == nil {
+		return status.NewBadRequestError(errors.New("service empty")).Caller()
+	}
+
+	if err := models.DeleteAccessTokenByUserId(ctx, db, c.UserId); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	if err := models.DeleteSSORefreshTokenByUserId(ctx, db, c.UserId); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+
+	if err := models.DeleteSSOServiceLogByUserIDAndClientId(ctx, db, c.UserId, clientId); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
 
 	return nil
 }
