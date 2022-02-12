@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAccessToken(t *testing.T) {
+func TestSSORefresh(t *testing.T) {
 	config.TestInit(t)
 
 	ctx := context.Background()
@@ -25,9 +25,11 @@ func TestAccessToken(t *testing.T) {
 
 	dummy := tools.NewDummyUser()
 
-	entity := models.SSOAccessToken{
-		SSOAccessToken: utils.CreateID(0),
-		ClientID:       utils.CreateID(0),
+	entity := models.SSORefreshToken{
+		SSOAccessToken:  utils.CreateID(0),
+		SSORefreshToken: utils.CreateID(0),
+
+		ClientID: utils.CreateID(0),
 
 		Period: models.Period{
 			CreateDate:   time.Now(),
@@ -42,18 +44,18 @@ func TestAccessToken(t *testing.T) {
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {
-		getE, err := models.GetAccessTokenByAccessToken(ctx, db, entity.SSOAccessToken)
+		getE, err := models.GetSSORefreshTokenByRefreshToken(ctx, db, entity.SSORefreshToken)
 		require.NoError(t, err)
 
 		return getE != nil && getE.UserId.UserId == dummy.UserID
 	}, "")
 
 	// 削除
-	err = models.DeleteAccessTokenByClientID(ctx, db, entity.ClientID)
+	err = models.DeleteSSORefreshTokenByClientId(ctx, db, entity.ClientID)
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {
-		getE, err := models.GetAccessTokenByAccessToken(ctx, db, entity.SSOAccessToken)
+		getE, err := models.GetSSORefreshTokenByRefreshToken(ctx, db, entity.SSOAccessToken)
 		require.NoError(t, err)
 
 		return getE == nil

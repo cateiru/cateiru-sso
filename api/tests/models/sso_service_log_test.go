@@ -1,0 +1,72 @@
+package models_test
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
+	"github.com/stretchr/testify/require"
+)
+
+func TestSSOServiceLog(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	clientId := utils.CreateID(0)
+	userIds := []string{
+		utils.CreateID(0),
+		utils.CreateID(0),
+	}
+
+	for _, userid := range userIds {
+		entity := models.SSOServiceLog{
+			LogId:      utils.CreateID(0),
+			AcceptDate: time.Now(),
+			ClientID:   clientId,
+
+			UserId: models.UserId{
+				UserId: userid,
+			},
+		}
+
+		err = entity.Add(ctx, db)
+		require.NoError(t, err)
+	}
+
+	goretry.Retry(t, func() bool {
+		logs, err := models.GetSSOServiceLogsByClientId(ctx, db, clientId)
+		require.NoError(t, err)
+
+		return len(logs) == 2
+	}, "")
+
+	count, err := models.CountSSOServiceLogByClientId(ctx, db, clientId)
+	require.NoError(t, err)
+
+	require.Equal(t, count, 2)
+
+	logs, err := models.GetSSOServiceLogsByUserId(ctx, db, userIds[0])
+	require.NoError(t, err)
+
+	require.Len(t, logs, 1)
+
+	err = models.DeleteSSOServiceLogByClientId(ctx, db, clientId)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		logs, err := models.GetSSOServiceLogsByClientId(ctx, db, clientId)
+		require.NoError(t, err)
+
+		return len(logs) == 0
+	}, "")
+}
