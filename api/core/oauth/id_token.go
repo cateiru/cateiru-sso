@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 
@@ -47,6 +49,10 @@ func (c *TokenRequest) Required(ctx context.Context, db *database.Database) (*mo
 		return nil, status.NewBadRequestError(errors.New("code is failed")).Caller()
 	}
 
+	if common.CheckExpired(&accessToken.Period) {
+		return nil, status.NewBadRequestError(errors.New("expired")).Caller().AddCode(net.TimeOutError)
+	}
+
 	if c.RedirectUri != accessToken.RedirectURI {
 		return nil, status.NewBadRequestError(errors.New("redirect uri")).Caller()
 	}
@@ -61,4 +67,42 @@ type RefreshRequest struct {
 	ClientSecret string   `json:"client_secret"`
 	RefreshToken string   `json:"refresh_token"`
 	Scope        []string `json:"scope"`
+}
+
+func (c *RefreshRequest) Required(ctx context.Context, db *database.Database) (*models.SSORefreshToken, error) {
+	if c.GrantType != "refresh_token" {
+		return nil, status.NewBadRequestError(errors.New("grant_type must be `authorization_code`")).Caller()
+	} else if len(c.ClientID) == 0 {
+		return nil, status.NewBadRequestError(errors.New("client id is null")).Caller()
+	} else if len(c.ClientSecret) == 0 {
+		return nil, status.NewBadRequestError(errors.New("client secret is null")).Caller()
+	} else if len(c.RefreshToken) == 0 {
+		return nil, status.NewBadRequestError(errors.New("refresh token is null")).Caller()
+	}
+
+	isOpenIDScope := false
+	for _, v := range c.Scope {
+		if v == "openid" {
+			isOpenIDScope = true
+			break
+		}
+	}
+	if !isOpenIDScope {
+		return nil, status.NewBadRequestError(errors.New("no exist openid value in scope filed")).Caller()
+	}
+
+	refresh, err := models.GetSSORefreshTokenByRefreshToken(ctx, db, c.RefreshToken)
+	if err != nil {
+		return nil, status.NewInternalServerErrorError(err).Caller()
+	}
+
+	if refresh == nil {
+		return nil, status.NewBadRequestError(errors.New("refresh")).Caller()
+	}
+
+	if common.CheckExpired(&refresh.Period) {
+		return nil, status.NewBadRequestError(errors.New("expired")).Caller().AddCode(net.TimeOutError)
+	}
+
+	return refresh, nil
 }

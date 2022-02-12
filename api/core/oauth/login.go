@@ -78,11 +78,14 @@ func LoginOAuth(ctx context.Context, db *database.Database, clientId string, red
 	accessToken := utils.CreateID(0)
 
 	access := models.SSOAccessToken{
-		SSOAccessToken: accessToken,
+		SSOAccessToken:  accessToken,
+		SSORefreshToken: "", // まだ空（初回アクセス時に適用させる）
 
 		ClientID: clientId,
 
 		RedirectURI: redirectUri,
+
+		Create: time.Now(),
 
 		Period: models.Period{
 			CreateDate:   time.Now(),

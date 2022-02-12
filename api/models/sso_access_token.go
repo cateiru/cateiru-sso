@@ -49,6 +49,12 @@ func DeleteAccessTokenByUserId(ctx context.Context, db *database.Database, userI
 	return db.DeleteMulti(ctx, keys)
 }
 
+func DeleteAccessTokenByAccessToken(ctx context.Context, db *database.Database, accessToken string) error {
+	key := database.CreateNameKey("SSOAccessToken", accessToken)
+
+	return db.Delete(ctx, key)
+}
+
 func (c *SSOAccessToken) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("SSOAccessToken", c.SSOAccessToken)
 	return db.Put(ctx, key, c)

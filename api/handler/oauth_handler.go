@@ -44,6 +44,12 @@ func OAuthToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func OAuthJWTKey(w http.ResponseWriter, r *http.Request) {
+	if err := oauth.JWTPublicHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
 func oauthPerviewPost(w http.ResponseWriter, r *http.Request) {
 	if err := oauth.ServicePreview(w, r); err != nil {
 		net.ResponseError(w, err)

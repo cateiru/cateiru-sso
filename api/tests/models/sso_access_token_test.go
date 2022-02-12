@@ -29,6 +29,8 @@ func TestAccessToken(t *testing.T) {
 		SSOAccessToken: utils.CreateID(0),
 		ClientID:       utils.CreateID(0),
 
+		Create: time.Now(),
+
 		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 5,
@@ -75,6 +77,8 @@ func TestDeleteSSOAccessTokenByUserId(t *testing.T) {
 		SSOAccessToken: utils.CreateID(0),
 		ClientID:       utils.CreateID(0),
 
+		Create: time.Now(),
+
 		RedirectURI: "https://example.com",
 
 		Period: models.Period{
@@ -97,6 +101,55 @@ func TestDeleteSSOAccessTokenByUserId(t *testing.T) {
 	}, "")
 
 	err = models.DeleteAccessTokenByUserId(ctx, db, dummy.UserID)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		getE, err := models.GetAccessTokenByAccessToken(ctx, db, entity.SSOAccessToken)
+		require.NoError(t, err)
+
+		return getE == nil
+	}, "削除されている")
+}
+
+func TestDeleteSSOAccessTokenByAccessToken(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser()
+
+	entity := models.SSOAccessToken{
+		SSOAccessToken: utils.CreateID(0),
+		ClientID:       utils.CreateID(0),
+
+		Create: time.Now(),
+
+		RedirectURI: "https://example.com",
+
+		Period: models.Period{
+			CreateDate:   time.Now(),
+			PeriodMinute: 5,
+		},
+		UserId: models.UserId{
+			UserId: dummy.UserID,
+		},
+	}
+
+	err = entity.Add(ctx, db)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		getE, err := models.GetAccessTokenByAccessToken(ctx, db, entity.SSOAccessToken)
+		require.NoError(t, err)
+
+		return getE != nil
+	}, "")
+
+	err = models.DeleteAccessTokenByAccessToken(ctx, db, entity.SSOAccessToken)
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {

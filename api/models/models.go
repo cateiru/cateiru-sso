@@ -162,11 +162,14 @@ type SSOService struct {
 }
 
 type SSOAccessToken struct {
-	SSOAccessToken string `datastore:"ssoAccessToken" json:"sso_access_token"`
+	SSOAccessToken  string `datastore:"ssoAccessToken" json:"sso_access_token"`
+	SSORefreshToken string `datastore:"ssoRefreshToken" json:"sso_refresh_token"`
 
 	ClientID string `datastore:"clientId" json:"client_id"`
 
 	RedirectURI string `datastore:"redirectURI" json:"redirect_uri"`
+
+	Create time.Time `datastore:"create" json:"create"`
 
 	Period
 	UserId
@@ -178,6 +181,8 @@ type SSORefreshToken struct {
 	SSORefreshToken string `datastore:"ssoRefreshToken" json:"sso_refresh_token"`
 
 	ClientID string `datastore:"clientId" json:"client_id"`
+
+	RedirectURI string `datastore:"redirectURI" json:"redirect_uri"`
 
 	Period
 	UserId

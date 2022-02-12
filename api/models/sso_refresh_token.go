@@ -49,6 +49,12 @@ func DeleteSSORefreshTokenByUserId(ctx context.Context, db *database.Database, u
 	return db.DeleteMulti(ctx, keys)
 }
 
+func DeleteSSORefreshTokenByRefreshToken(ctx context.Context, db *database.Database, refresh string) error {
+	key := database.CreateNameKey("SSORefreshToken", refresh)
+
+	return db.Delete(ctx, key)
+}
+
 func (c *SSORefreshToken) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("SSORefreshToken", c.SSORefreshToken)
 
