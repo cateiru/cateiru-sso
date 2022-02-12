@@ -18,7 +18,6 @@ func Routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/login", handler.LoginHandler)
 	mux.HandleFunc("/login/onetime", handler.LoginOnetimeHandler)
-	mux.HandleFunc("/login/sso", handler.LoginSSOHandler)
 
 	mux.HandleFunc("/me", handler.MeHandler)
 
