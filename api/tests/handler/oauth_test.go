@@ -140,4 +140,11 @@ func TestOauthLogin(t *testing.T) {
 
 		return entity != nil && entity.ClientID == clientId && entity.UserId.UserId == dummy.UserID
 	}, "")
+
+	goretry.Retry(t, func() bool {
+		logs, err := models.GetSSOServiceLogsByUserId(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return len(logs) == 1 && logs[0].ClientID == clientId
+	}, "")
 }

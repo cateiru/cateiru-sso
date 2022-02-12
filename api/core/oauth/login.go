@@ -53,6 +53,20 @@ func ServiceLogin(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	log := models.SSOServiceLog{
+		LogId:      utils.CreateID(0),
+		AcceptDate: time.Now(),
+		ClientID:   service.ClientID,
+
+		UserId: models.UserId{
+			UserId: c.UserId,
+		},
+	}
+
+	if err := log.Add(ctx, db); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+
 	net.ResponseOK(w, LoginResponse{
 		AccessToken: accessToken,
 	})
