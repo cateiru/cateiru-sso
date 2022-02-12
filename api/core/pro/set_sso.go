@@ -118,6 +118,10 @@ func SetService(w http.ResponseWriter, r *http.Request) error {
 			service.TokenSecret = utils.CreateID(0)
 		}
 
+		if err := service.Add(ctx, db); err != nil {
+			return status.NewInternalServerErrorError(err).Caller()
+		}
+
 		net.ResponseOK(w, service)
 	}
 
@@ -131,7 +135,7 @@ func SetImage(w http.ResponseWriter, r *http.Request) error {
 	}
 	fileSrc, fileHeader, err := r.FormFile("image")
 	if err != nil {
-		return status.NewInternalServerErrorError(err).Caller()
+		return status.NewBadRequestError(err).Caller()
 	}
 	defer fileSrc.Close()
 
@@ -206,10 +210,10 @@ func SetImage(w http.ResponseWriter, r *http.Request) error {
 //	direct             : リダイレクトしない場合（allowDirectがtrueの場合のみ）
 func CheckURL(urls []string, allowDirect bool) error {
 
-	pattan := "https?://.+..{2,4}"
+	pattan := `https?://[\w/:%#\$&\?\(\)~\.=\+\-]+`
 
 	if allowDirect {
-		pattan = "(https?://.+..{2,4}|direct)"
+		pattan = `(https?://[\w/:%#\$&\?\(\)~\.=\+\-]+|direct)`
 	}
 
 	for _, url := range urls {

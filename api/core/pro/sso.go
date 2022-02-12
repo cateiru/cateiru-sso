@@ -17,10 +17,6 @@ type SSOService struct {
 	models.SSOService
 }
 
-type DeleteRequest struct {
-	ClientId string `json:"client_id"`
-}
-
 func GetSSOServices(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
@@ -85,12 +81,12 @@ func DeleteService(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	var from DeleteRequest
-	if err := net.GetJsonForm(w, r, &from); err != nil {
+	clientId, err := net.GetQuery(r, "id")
+	if err != nil {
 		return status.NewBadRequestError(err).Caller()
 	}
 
-	service, err := models.GetSSOServiceByClientId(ctx, db, from.ClientId)
+	service, err := models.GetSSOServiceByClientId(ctx, db, clientId)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
