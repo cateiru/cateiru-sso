@@ -23,15 +23,12 @@ type TokenResponse struct {
 	IDToken      string `json:"id_token"`
 }
 
-func TokenEndpoint(w http.ResponseWriter, r *http.Request, query url.Values) error {
-	auth := r.Header.Get("Authorization")
-	if len(auth) == 0 {
-		return status.NewBadRequestError(errors.New("authorization heder required")).Caller()
+func TokenEndpoint(w http.ResponseWriter, r *http.Request) error {
+	if err := r.ParseForm(); err != nil {
+		return status.NewBadRequestError(err).Caller()
 	}
-	authSplitted := strings.Split(auth, " ")
-	if authSplitted[0] != "Basic" && len(authSplitted[1]) == 0 {
-		return status.NewBadRequestError(errors.New("authorization heder must be basic")).Caller()
-	}
+
+	query := r.Form
 
 	ctx := r.Context()
 
@@ -43,6 +40,15 @@ func TokenEndpoint(w http.ResponseWriter, r *http.Request, query url.Values) err
 
 	switch query.Get("grant_type") {
 	case "authorization_code":
+		auth := r.Header.Get("Authorization")
+		if len(auth) == 0 {
+			return status.NewBadRequestError(errors.New("authorization heder required")).Caller()
+		}
+		authSplitted := strings.Split(auth, " ")
+		if authSplitted[0] != "Basic" && len(authSplitted[1]) == 0 {
+			return status.NewBadRequestError(errors.New("authorization heder must be basic")).Caller()
+		}
+
 		resp, err := AuthorizationCode(ctx, db, query, authSplitted[1])
 		if err != nil {
 			return err
@@ -50,7 +56,7 @@ func TokenEndpoint(w http.ResponseWriter, r *http.Request, query url.Values) err
 		net.ResponseOK(w, resp)
 		return nil
 	case "refresh_token":
-		resp, err := Refresh(ctx, db, query, authSplitted[1])
+		resp, err := Refresh(ctx, db, query)
 		if err != nil {
 			return err
 		}
@@ -131,7 +137,7 @@ func AuthorizationCode(ctx context.Context, db *database.Database, query url.Val
 	}, nil
 }
 
-func Refresh(ctx context.Context, db *database.Database, query url.Values, tokenSecret string) (*TokenResponse, error) {
+func Refresh(ctx context.Context, db *database.Database, query url.Values) (*TokenResponse, error) {
 	request := RefreshRequest{
 		GrantType:    "refresh_token",
 		ClientID:     query.Get("client_id"),
@@ -151,7 +157,7 @@ func Refresh(ctx context.Context, db *database.Database, query url.Values, token
 	}
 
 	// token secretを検証する
-	if service.TokenSecret != tokenSecret {
+	if service.TokenSecret != request.ClientSecret {
 		return nil, status.NewForbiddenError(errors.New("secret")).Caller()
 	}
 

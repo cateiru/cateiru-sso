@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	"github.com/golang-jwt/jwt"
@@ -95,8 +94,6 @@ func (c *Claims) ConvertJWT() (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	logging.Sugar.Info(string(signBytes))
 
 	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
 	if err != nil {
