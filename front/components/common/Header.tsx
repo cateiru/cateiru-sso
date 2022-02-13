@@ -12,7 +12,7 @@ import {
 import NextLink from 'next/link';
 import Link from 'next/link';
 import React from 'react';
-import {IoSettingsOutline} from 'react-icons/io5';
+import {IoSettingsOutline, IoGridOutline} from 'react-icons/io5';
 import {MdOutlineDarkMode, MdOutlineLightMode} from 'react-icons/md';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
@@ -42,8 +42,28 @@ const Header = React.memo(() => {
 
   const UserAvatar = () => {
     return (
-      <Center>
-        <Avatar size="md" src={user?.avatar_url} />
+      <NextLink href="/hello">
+        <Center cursor="pointer">
+          <Avatar size="md" src={user?.avatar_url} />
+        </Center>
+      </NextLink>
+    );
+  };
+
+  const Dashboard = () => {
+    return (
+      <Center ml=".5rem">
+        <Tooltip label="ダッシュボード" hasArrow borderRadius="4px">
+          <Box>
+            <Link href="/sso" passHref>
+              <IconButton
+                aria-label="change color mode"
+                icon={<IoGridOutline size="30px" />}
+                variant="ghost"
+              ></IconButton>
+            </Link>
+          </Box>
+        </Tooltip>
       </Center>
     );
   };
@@ -81,6 +101,7 @@ const Header = React.memo(() => {
           user !== null ? (
             // ログインしている
             <>
+              {user.role.includes('pro') && <Dashboard />}
               <Setting />
               <UserAvatar />
             </>
