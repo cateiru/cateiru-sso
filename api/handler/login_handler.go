@@ -26,16 +26,6 @@ func LoginOnetimeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// SSOでログインする
-func LoginSSOHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		loginSSOPostHandler(w, r)
-	default:
-		RootHandler(w, r)
-	}
-}
-
 // メアド、パスワードを送信してcookieを作成
 // userがadminの場合で初回ログインの場合はワンタイムパスワードはいらない
 func loginPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,8 +39,4 @@ func loginOnetimePostHandler(w http.ResponseWriter, r *http.Request) {
 	if err := login.OTPLoginHandler(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
-}
-
-// sso_public_keyを送信してトークンを作成する
-func loginSSOPostHandler(w http.ResponseWriter, r *http.Request) {
 }

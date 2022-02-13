@@ -22,21 +22,20 @@ func TestSSOService(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	publicKeys := []string{utils.CreateID(0), utils.CreateID(0)}
+	clientIds := []string{utils.CreateID(0), utils.CreateID(0)}
 	dummy := tools.NewDummyUser()
 
 	// 複数追加する
-	for _, publicKey := range publicKeys {
+	for _, publicKey := range clientIds {
 		entity := models.SSOService{
-			SSOPublicKey: publicKey,
+			ClientID: publicKey,
 
-			SSOSecretKey:  utils.CreateID(0),
-			SSOPrivateKey: utils.CreateID(0),
+			TokenSecret: utils.CreateID(0),
 
-			Name:      "Test",
-			FromUrl:   []string{"https://example.com/login"},
-			ToUrl:     []string{"https://example.com/login/redirect"},
-			LoginOnly: false,
+			Name:        "Test",
+			ServiceIcon: "",
+			FromUrl:     []string{"https://example.com/login"},
+			ToUrl:       []string{"https://example.com/login/redirect"},
 
 			UserId: models.UserId{
 				UserId: dummy.UserID,
@@ -48,7 +47,7 @@ func TestSSOService(t *testing.T) {
 	}
 
 	goretry.Retry(t, func() bool {
-		a, err := models.GetSSOServiceByPublicKey(ctx, db, publicKeys[0])
+		a, err := models.GetSSOServiceByClientId(ctx, db, clientIds[0])
 		require.NoError(t, err)
 
 		return a != nil && a.UserId.UserId == dummy.UserID
@@ -61,7 +60,7 @@ func TestSSOService(t *testing.T) {
 		return len(entities) == 2
 	}, "UserIDをkeyにして複数取得できる")
 
-	err = models.DeleteSSOServiceByPublicKey(ctx, db, publicKeys[1])
+	err = models.DeleteSSOServiceByClientId(ctx, db, clientIds[1])
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {

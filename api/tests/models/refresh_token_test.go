@@ -175,6 +175,13 @@ func TestDeleteRefresh(t *testing.T) {
 	err = session.Add(ctx, db)
 	require.NoError(t, err)
 
+	goretry.Retry(t, func() bool {
+		entity, err := models.GetRefreshToken(ctx, db, refreshToken)
+		require.NoError(t, err)
+
+		return entity != nil
+	}, "")
+
 	// ---
 
 	err = models.DeleteRefreshByUserId(ctx, db, userId)

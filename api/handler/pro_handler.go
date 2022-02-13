@@ -21,10 +21,19 @@ func ProSSOHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func ProSSOImage(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		proSSOSetImageHandler(w, r)
+	default:
+		RootHandler(w, r)
+	}
+}
+
 // 自分のSSO情報取得
 // pro以上のユーザのみ
 func proSSOGetHandler(w http.ResponseWriter, r *http.Request) {
-	if err := pro.GetSSOHandler(w, r); err != nil {
+	if err := pro.GetSSOServices(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }
@@ -32,7 +41,7 @@ func proSSOGetHandler(w http.ResponseWriter, r *http.Request) {
 // SSO追加
 // pro以上のユーザのみ
 func proSSOPostHandler(w http.ResponseWriter, r *http.Request) {
-	if err := pro.AddSSOHandler(w, r); err != nil {
+	if err := pro.SetService(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }
@@ -40,7 +49,13 @@ func proSSOPostHandler(w http.ResponseWriter, r *http.Request) {
 // SSO削除
 // pro以上のユーザのみ
 func proSSODeleteHandler(w http.ResponseWriter, r *http.Request) {
-	if err := pro.DeleteSSOHandler(w, r); err != nil {
+	if err := pro.DeleteService(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+func proSSOSetImageHandler(w http.ResponseWriter, r *http.Request) {
+	if err := pro.SetImage(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }

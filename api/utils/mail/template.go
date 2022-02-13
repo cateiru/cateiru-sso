@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
 )
 
@@ -15,11 +14,7 @@ import (
 func Template(path string, elements interface{}) (string, error) {
 	logging.Sugar.Debugf("Use %v template.", path)
 
-	TEMPLATE_DIR_PATH := "/templates"
-
-	if config.Defs.DeployMode != "production" {
-		TEMPLATE_DIR_PATH = "../../../templates"
-	}
+	TEMPLATE_DIR_PATH := "templates"
 
 	templ, err := template.ParseFiles(fmt.Sprintf("%s/%s", TEMPLATE_DIR_PATH, path))
 	if err != nil {

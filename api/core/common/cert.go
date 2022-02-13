@@ -303,12 +303,10 @@ func (c *Cert) setLoginHistory(ctx context.Context, db *database.Database) error
 
 	// ログイン履歴を取る
 	history := &models.LoginHistory{
-		AccessId:     c.AccessID,
-		Date:         time.Now(),
-		IpAddress:    c.Ip,
-		UserAgent:    string(userAgentInfo),
-		IsSSO:        false,
-		SSOPublicKey: "",
+		AccessId:  c.AccessID,
+		Date:      time.Now(),
+		IpAddress: c.Ip,
+		UserAgent: string(userAgentInfo),
 		UserId: models.UserId{
 			UserId: c.UserId,
 		},

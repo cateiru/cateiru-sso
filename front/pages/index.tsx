@@ -5,7 +5,7 @@ import TopPage from '../components/top/TopPage';
 const Home: NextPage = () => {
   return (
     <>
-      <Title title="Top | CateiruSSO" />
+      <Title title="CateiruSSO | CateiruのSSOサービス" />
       <TopPage />
     </>
   );

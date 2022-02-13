@@ -108,6 +108,17 @@ func UserOTPMeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func UserOAuthHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		oauthGetHandler(w, r)
+	case http.MethodDelete:
+		oauthDeleteHandler(w, r)
+	default:
+		RootHandler(w, r)
+	}
+}
+
 // メールアドレス取得
 // 全ユーザ
 // `/me`でも取得できる
@@ -190,6 +201,18 @@ func ChangeUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 func OTPMeHandler(w http.ResponseWriter, r *http.Request) {
 	if err := otp.OTPMeHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+func oauthGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := user.OAuthShow(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+func oauthDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	if err := user.DeleteOAth(w, r); err != nil {
 		net.ResponseError(w, err)
 	}
 }

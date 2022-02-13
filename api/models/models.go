@@ -109,12 +109,10 @@ type Role struct {
 // ログイン履歴（個別）
 // IsSSOとSSOPublicKeyはOptional
 type LoginHistory struct {
-	AccessId     string    `datastore:"accessId" json:"access_id"`
-	Date         time.Time `datastore:"date" json:"date"`
-	IpAddress    string    `datastore:"ipAddress" json:"ip_address"`
-	UserAgent    string    `datastore:"userAgent" json:"user_agent"`
-	IsSSO        bool      `datastore:"isSSO,omitempty" json:"is_sso"`
-	SSOPublicKey string    `datastore:"ssoPublicKey,omitempty" json:"sso_publickey"`
+	AccessId  string    `datastore:"accessId" json:"access_id"`
+	Date      time.Time `datastore:"date" json:"date"`
+	IpAddress string    `datastore:"ipAddress" json:"ip_address"`
+	UserAgent string    `datastore:"userAgent" json:"user_agent"`
 
 	UserId
 }
@@ -150,25 +148,28 @@ type RefreshInfo struct {
 // SSO情報
 // SessionTokenPeriod, RefreshTokenPeriodはOptional
 type SSOService struct {
-	SSOPublicKey string `datastore:"ssoPublicKey" json:"sso_publickey"`
+	ClientID string `datastore:"clientId" json:"client_id"`
 
-	SSOSecretKey  string `datastore:"ssoSecretKey" json:"sso_secretkey"`
-	SSOPrivateKey string `datastore:"ssoPrivateKey" json:"sso_privatekey"`
+	TokenSecret string `datastore:"tokenSecret" json:"token_secret"`
 
-	Name      string   `datastore:"name" json:"name"`
-	FromUrl   []string `datastore:"fromUrl" json:"from_url"`
-	ToUrl     []string `datastore:"toUrl" json:"to_url"`
-	LoginOnly bool     `datastore:"loginOnly" json:"login_only"`
+	Name        string `datastore:"name" json:"name"`
+	ServiceIcon string `datastore:"serviceIcon" json:"service_icon"`
 
-	SessionTokenPeriod int `datastore:"sessionTokenPeriod,omitempty" json:"session_token_period"`
-	RefreshTokenPeriod int `datastore:"refreshTokenPeriod,omitempty" json:"refresh_token_period"`
+	FromUrl []string `datastore:"fromUrl" json:"from_url"`
+	ToUrl   []string `datastore:"toUrl" json:"to_url"`
 
 	UserId
 }
 
-// SSOのセッショントークン
-type SSOSession struct {
-	SSOSessionToken string `datastore:"ssoSessionToken" json:"sso_session_token"`
+type SSOAccessToken struct {
+	SSOAccessToken  string `datastore:"ssoAccessToken" json:"sso_access_token"`
+	SSORefreshToken string `datastore:"ssoRefreshToken" json:"sso_refresh_token"`
+
+	ClientID string `datastore:"clientId" json:"client_id"`
+
+	RedirectURI string `datastore:"redirectURI" json:"redirect_uri"`
+
+	Create time.Time `datastore:"create" json:"create"`
 
 	Period
 	UserId
@@ -176,8 +177,12 @@ type SSOSession struct {
 
 // SSOのリフレッシュトークン
 type SSORefreshToken struct {
-	SSOSessionToken string `datastore:"ssoSessionToken" json:"sso_session_token"`
+	SSOAccessToken  string `datastore:"ssoAccessToken" json:"sso_access_token"`
 	SSORefreshToken string `datastore:"ssoRefreshToken" json:"sso_refresh_token"`
+
+	ClientID string `datastore:"clientId" json:"client_id"`
+
+	RedirectURI string `datastore:"redirectURI" json:"redirect_uri"`
 
 	Period
 	UserId
@@ -209,4 +214,12 @@ type TryCreateAccountLog struct {
 	IP         string    `datastore:"ip" json:"ip"`
 	TryDate    time.Time `datastore:"tryDate" json:"try_date"`
 	TargetMail string    `datastore:"targetMail" json:"target_mail"`
+}
+
+type SSOServiceLog struct {
+	LogId      string    `datastore:"logId" json:"log_id"`
+	AcceptDate time.Time `datastore:"acceptDate" json:"accept_date"`
+	ClientID   string    `datastore:"clientId" json:"client_id"`
+
+	UserId
 }

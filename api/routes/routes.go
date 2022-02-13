@@ -18,7 +18,6 @@ func Routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/login", handler.LoginHandler)
 	mux.HandleFunc("/login/onetime", handler.LoginOnetimeHandler)
-	mux.HandleFunc("/login/sso", handler.LoginSSOHandler)
 
 	mux.HandleFunc("/me", handler.MeHandler)
 
@@ -28,6 +27,7 @@ func Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/admin/status", handler.AdminStatusHandler)
 
 	mux.HandleFunc("/pro/sso", handler.ProSSOHandler)
+	mux.HandleFunc("/pro/sso/image", handler.ProSSOImage)
 
 	mux.HandleFunc("/password/forget", handler.PasswordForgetHandler)
 	mux.HandleFunc("/password/forget/accept", handler.PasswordForgetAcceptHandler)
@@ -41,9 +41,12 @@ func Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/user/history/access", handler.UserAccessHandler)
 	mux.HandleFunc("/user/history/login", handler.UserHistoryHandler)
 	mux.HandleFunc("/user/avatar", handler.UserAvatarHandler)
+	mux.HandleFunc("/user/oauth", handler.UserOAuthHandler)
 
 	mux.HandleFunc("/logout", handler.LogoutHandler)
 
-	mux.HandleFunc("/oauth/cert", handler.OAuthCertHandler)
-	mux.HandleFunc("/oauth/update", handler.OAuthUpdateHandler)
+	mux.HandleFunc("/oauth/perview", handler.OAuthPreview)
+	mux.HandleFunc("/oauth/login", handler.OAuthLogin)
+	mux.HandleFunc("/oauth/token", handler.OAuthToken)
+	mux.HandleFunc("/oauth/jwt/key", handler.OAuthJWTKey)
 }

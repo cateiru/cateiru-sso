@@ -193,35 +193,49 @@ const UserDetails = () => {
               </Thead>
               <Tbody>
                 <Tr>
-                  <Td fontWeight="bold">ユーザ名</Td>
+                  <Td fontWeight="bold" whiteSpace="nowrap">
+                    ユーザ名
+                  </Td>
                   <Td>
                     {user?.user_name} ({user?.user_name_formatted})
                   </Td>
                 </Tr>
                 <Tr>
-                  <Td fontWeight="bold">メールアドレス</Td>
+                  <Td fontWeight="bold" whiteSpace="nowrap">
+                    メールアドレス
+                  </Td>
                   <Td>{user?.mail}</Td>
                 </Tr>
                 <Tr>
-                  <Td fontWeight="bold">ユーザID</Td>
+                  <Td fontWeight="bold" whiteSpace="nowrap">
+                    ユーザID
+                  </Td>
                   <Td>{user?.user_id}</Td>
                 </Tr>
                 <Tr>
-                  <Td fontWeight="bold">名前</Td>
+                  <Td fontWeight="bold" whiteSpace="nowrap">
+                    名前
+                  </Td>
                   <Td>
                     {user?.last_name} {user?.first_name}
                   </Td>
                 </Tr>
                 <Tr>
-                  <Td fontWeight="bold">テーマ</Td>
+                  <Td fontWeight="bold" whiteSpace="nowrap">
+                    テーマ
+                  </Td>
                   <Td>{user?.theme || 'null'}</Td>
                 </Tr>
                 <Tr>
-                  <Td fontWeight="bold">アバター</Td>
+                  <Td fontWeight="bold" whiteSpace="nowrap">
+                    アバター
+                  </Td>
                   <Td>{user?.avatar_url || 'null'}</Td>
                 </Tr>
                 <Tr>
-                  <Td fontWeight="bold">権限</Td>
+                  <Td fontWeight="bold" whiteSpace="nowrap">
+                    権限
+                  </Td>
                   <Td>
                     {user?.role
                       ? user?.role.map(v => (
