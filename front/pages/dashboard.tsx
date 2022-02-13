@@ -5,7 +5,7 @@ import SSOPage from '../components/sso/SSOPage';
 const SSO = () => {
   return (
     <Require isLogin={true} path="/" role="pro">
-      <Title title="SSO | CateiruSSO" />
+      <Title title="ダッシュボード | CateiruSSO" />
       <SSOPage />
     </Require>
   );

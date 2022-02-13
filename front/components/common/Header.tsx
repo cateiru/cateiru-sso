@@ -55,7 +55,7 @@ const Header = React.memo(() => {
       <Center ml=".5rem">
         <Tooltip label="ダッシュボード" hasArrow borderRadius="4px">
           <Box>
-            <Link href="/sso" passHref>
+            <Link href="/dashboard" passHref>
               <IconButton
                 aria-label="change color mode"
                 icon={<IoGridOutline size="30px" />}
