@@ -115,7 +115,7 @@ const UserSetting = () => {
     <Stack
       direction={{base: 'column', md: 'row'}}
       spacing="20px"
-      height={{base: '', md: '50vh'}}
+      mt={{base: '3rem', md: '5rem'}}
     >
       <Center width={{base: '100%', md: '80%'}} mt="2.3rem" mb="1rem">
         <AvatarSetting />

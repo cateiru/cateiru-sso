@@ -60,7 +60,7 @@ func SetService(w http.ResponseWriter, r *http.Request) error {
 
 	// URLが正しいかチェックする
 	if len(form.FromURL) != 0 {
-		if err := CheckURL(form.FromURL, false); err != nil {
+		if err := CheckURL(form.FromURL, true); err != nil {
 			return err
 		}
 	}
@@ -206,10 +206,10 @@ func SetImage(w http.ResponseWriter, r *http.Request) error {
 // URLが正しいかチェックする
 func CheckURL(urls []string, allowDirect bool) error {
 
-	pattan := `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|localhost)`
+	pattan := `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://localhost)`
 
 	if allowDirect {
-		pattan = `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|localhost|direct)`
+		pattan = `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://localhost|direct)`
 	}
 
 	for _, url := range urls {

@@ -116,7 +116,7 @@ func AuthorizationCode(ctx context.Context, db *database.Database, query url.Val
 			RedirectURI:     accessToken.RedirectURI,
 			Period: models.Period{
 				CreateDate: time.Now(),
-				PeriodDay:  7,
+				PeriodDay:  150, // Googleが6ヶ月なのでこのくらいでもいいでしょう！
 			},
 			UserId: accessToken.UserId,
 		}
@@ -204,7 +204,7 @@ func Refresh(ctx context.Context, db *database.Database, query url.Values) (*Tok
 
 		Period: models.Period{
 			CreateDate: time.Now(),
-			PeriodDay:  7,
+			PeriodDay:  150, // Googleが6ヶ月なのでこのくらいでもいいでしょう！
 		},
 		UserId: refresh.UserId,
 	}

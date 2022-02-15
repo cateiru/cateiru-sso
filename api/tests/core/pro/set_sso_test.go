@@ -14,7 +14,7 @@ func TestCheckURL(t *testing.T) {
 		"https://www.example.com":   true,
 		"https://cateiru.com/login": true,
 		"https://cateiru.com/":      true,
-		"localhost":                 true,
+		"http://localhost":          true,
 		"http://example.com":        false,
 		"https://":                  false,
 		"ftp:":                      false,

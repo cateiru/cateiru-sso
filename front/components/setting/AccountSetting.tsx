@@ -23,6 +23,16 @@ const AccountSetting = () => {
         )}
         <Box my="1rem">
           <Heading size="1.8rem" mb=".7rem">
+            SSOアカウント
+          </Heading>
+          <Link href="/setting/connected" passHref>
+            <Button width={{base: '100%', sm: 'auto'}}>
+              連携しているSSOアカウント確認
+            </Button>
+          </Link>
+        </Box>
+        <Box my="1rem">
+          <Heading size="1.8rem" mb=".7rem">
             ログイン履歴確認
           </Heading>
           <Link href="/log/login" passHref>
