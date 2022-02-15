@@ -21,10 +21,10 @@ import Password from '../common/form/Password';
 
 const PasswordSetting = () => {
   return (
-    <Center height={{base: 'auto', md: '50vh'}} mx=".5rem">
+    <Center mx=".5rem">
       <Box
         width={{base: '100%', sm: '90%', md: '600px'}}
-        mt={{base: '3rem', md: '0'}}
+        mt={{base: '3rem', md: '5rem'}}
       >
         <Heading fontSize="1.5rem" mb="1.5rem" textAlign="center">
           パスワードを変更する
