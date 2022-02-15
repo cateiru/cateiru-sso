@@ -241,21 +241,19 @@ const ServiceDetails: React.FC<{
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{service?.name}の詳細</ModalHeader>
+          <ModalHeader pr="5rem">{service?.name}の詳細</ModalHeader>
           <ModalCloseButton size="lg" />
           <ModalBody>
             <Center>
-              <Box>
-                <Avatar
-                  size="lg"
-                  name={service?.name}
-                  src={service?.service_icon}
-                />
-                <Text textAlign="center" fontWeight="bold">
-                  {service?.name}
-                </Text>
-              </Box>
+              <Avatar
+                size="lg"
+                name={service?.name}
+                src={service?.service_icon}
+              />
             </Center>
+            <Text textAlign="center" fontWeight="bold">
+              {service?.name}
+            </Text>
             <Text mt="1rem" mb=".2rem" fontSize="1.2rem">
               Client ID
             </Text>
@@ -400,7 +398,7 @@ const ServiceDetails: React.FC<{
       <Modal isOpen={editModal.isOpen} onClose={editModal.onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{service?.name}の編集</ModalHeader>
+          <ModalHeader pr="5rem">{service?.name}の編集</ModalHeader>
           <ModalCloseButton size="lg" />
           <form onSubmit={handleSubmit(submit)}>
             <ModalBody>

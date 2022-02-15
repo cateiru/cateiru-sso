@@ -23,3 +23,11 @@ export const getUserSSO = async (): Promise<ServiceLogInfo[]> => {
 
   return (await resp.json()) as ServiceLogInfo[];
 };
+
+export const deleteSSO = async (id: string) => {
+  const api = new API();
+
+  api.delete();
+
+  await api.connect(`/user/oauth?id=${id}`);
+};

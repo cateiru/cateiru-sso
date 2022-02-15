@@ -46,8 +46,8 @@ const SSOPage = () => {
     return (
       <Box
         key={s.client_id}
-        width="100%"
-        maxWidth="500px"
+        maxWidth="350px"
+        minWidth="300px"
         height="10rem"
         borderRadius="23px"
         cursor="pointer"
@@ -72,7 +72,13 @@ const SSOPage = () => {
         }}
       >
         <Avatar mt="1.2rem" ml="2rem" name={s.name} src={s.service_icon} />
-        <Heading mt=".5rem" ml="2rem">
+        <Heading
+          mt=".5rem"
+          ml="2rem"
+          textOverflow="ellipsis"
+          overflow="hidden"
+          whiteSpace="nowrap"
+        >
           {s.name} ({s.login_count || 0})
         </Heading>
         <Text

@@ -77,8 +77,7 @@ const CreateSSO: React.FC<{setService: (s: Service) => void}> = ({
 
   return (
     <Box
-      width="100%"
-      maxWidth="500px"
+      maxWidth="350px"
       minWidth="300px"
       height="10rem"
       borderRadius="23px"
