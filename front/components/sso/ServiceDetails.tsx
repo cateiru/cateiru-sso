@@ -30,6 +30,7 @@ import {
   SliderFilledTrack,
   SliderThumb,
   useColorMode,
+  Stack,
 } from '@chakra-ui/react';
 import React from 'react';
 import AvatarEditor from 'react-avatar-editor';
@@ -336,30 +337,42 @@ const ServiceDetails: React.FC<{
             <Text mt="1rem" mb=".2rem" fontSize="1.2rem">
               編集
             </Text>
-            <label htmlFor="filename">
-              <Button type="submit" mr={3} as="p" cursor="pointer">
-                画像を設定する
-              </Button>
-              <Input
-                ref={inputRef}
-                display="none"
-                id="filename"
-                type="file"
-                accept="image/*"
-                onChange={handlerSetImage}
-              />
-            </label>
-            <Button
-              type="submit"
-              mr={3}
-              onClick={() => {
-                onClose();
-                reset();
-                editModal.onOpen();
-              }}
+            <Stack
+              direction={['column', 'row']}
+              spacing="10px"
+              width={{base: '100%', sm: 'auto'}}
             >
-              名前、URLを変更する
-            </Button>
+              <label htmlFor="filename">
+                <Button
+                  type="submit"
+                  mr={3}
+                  as="p"
+                  cursor="pointer"
+                  width="100%"
+                >
+                  画像を設定する
+                </Button>
+                <Input
+                  ref={inputRef}
+                  display="none"
+                  id="filename"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlerSetImage}
+                />
+              </label>
+              <Button
+                type="submit"
+                mr={3}
+                onClick={() => {
+                  onClose();
+                  reset();
+                  editModal.onOpen();
+                }}
+              >
+                名前、URLを変更する
+              </Button>
+            </Stack>
             <Text mt="1rem" mb=".2rem" fontSize="1.2rem">
               削除
             </Text>
