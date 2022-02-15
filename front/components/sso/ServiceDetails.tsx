@@ -442,7 +442,8 @@ const ServiceDetails: React.FC<{
                     {...register(`fromurl${index}`, {
                       required: '送信元URL の入力が必要です',
                       pattern: {
-                        value: /(https:\/\/[\w/:%#$&?()~.=+-]+|localhost)/,
+                        value:
+                          /(https:\/\/[\w/:%#$&?()~.=+-]+|http:\/\/localhost|direct)/,
                         message: 'URLの形式が違うようです',
                       },
                     })}
@@ -497,7 +498,7 @@ const ServiceDetails: React.FC<{
                       required: 'リダイレクトURL の入力が必要です',
                       pattern: {
                         value:
-                          /(https:\/\/[\w/:%#$&?()~.=+-]+|localhost|direct)/,
+                          /(https:\/\/[\w/:%#$&?()~.=+-]+|http:\/\/localhost|direct)/,
                         message: 'URLの形式が違うようです',
                       },
                     })}

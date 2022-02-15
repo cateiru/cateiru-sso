@@ -152,7 +152,8 @@ const CreateSSO: React.FC<{setService: (s: Service) => void}> = ({
                     {...register(`fromurl${index}`, {
                       required: '送信元URL の入力が必要です',
                       pattern: {
-                        value: /(https:\/\/[\w/:%#$&?()~.=+-]+|localhost)/,
+                        value:
+                          /(https:\/\/[\w/:%#$&?()~.=+-]+|http:\/\/localhost|direct)/,
                         message: 'URLの形式が違うようです',
                       },
                     })}
@@ -206,7 +207,7 @@ const CreateSSO: React.FC<{setService: (s: Service) => void}> = ({
                       required: 'リダイレクトURL の入力が必要です',
                       pattern: {
                         value:
-                          /(https:\/\/[\w/:%#$&?()~.=+-]+|localhost|direct)/,
+                          /(https:\/\/[\w/:%#$&?()~.=+-]+|http:\/\/localhost|direct)/,
                         message: 'URLの形式が違うようです',
                       },
                     })}
