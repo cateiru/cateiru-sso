@@ -57,6 +57,19 @@ func GetTryCreateAccountLogByIP(ctx context.Context, db *database.Database, ip s
 	return logs, nil
 }
 
+func GetAllTryCreateAccountLog(ctx context.Context, db *database.Database) ([]TryCreateAccountLog, error) {
+	query := datastore.NewQuery("TryCreateAccountLog")
+
+	var entities []TryCreateAccountLog
+
+	_, err := db.GetAll(ctx, query, &entities)
+	if err != nil {
+		return nil, err
+	}
+
+	return entities, nil
+}
+
 // 要素をDatastoreに追加
 func (c *TryCreateAccountLog) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("TryCreateAccountLog", c.LogId)

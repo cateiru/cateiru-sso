@@ -39,6 +39,15 @@ func AdminBanHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func AdminMailCertLog(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		adminGetMailCertLog(w, r)
+	default:
+		RootHandler(w, r)
+	}
+}
+
 // workerログ取得やworkerを動かす
 func AdminStatusHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -76,6 +85,10 @@ func adminUserDeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 // ユーザをメールアドレスでBanする
 func adminBanPostHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func adminGetMailCertLog(w http.ResponseWriter, r *http.Request) {
+
 }
 
 // Workerの動作ログを取得
