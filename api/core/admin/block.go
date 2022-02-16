@@ -11,6 +11,11 @@ import (
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 
+type BanRequest struct {
+	IP   string `json:"ip"`
+	Mail string `json:"mail"`
+}
+
 func SetBanHandler(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
