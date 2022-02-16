@@ -65,7 +65,11 @@ export const mailCertLog = async (): Promise<MailCertLog[]> => {
 
   const resp = await api.connect('/admin/certlog');
 
-  return (await resp.json()) as MailCertLog[];
+  const logs = (await resp.json()) as MailCertLog[];
+
+  return logs.sort((a, b) => {
+    return Date.parse(b.try_date) - Date.parse(a.try_date);
+  });
 };
 
 export const getMailBanList = async (): Promise<string[]> => {
