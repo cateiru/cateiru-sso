@@ -32,9 +32,7 @@ const AccountSetting = () => {
             </Box>
             <Box>
               <Link href="/admin/ban" passHref>
-                <Button width={{base: '100%', sm: 'auto'}}>
-                  Banしてるユーザ
-                </Button>
+                <Button width={{base: '100%', sm: 'auto'}}>Ban操作</Button>
               </Link>
             </Box>
           </Box>

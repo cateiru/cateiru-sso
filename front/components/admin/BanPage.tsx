@@ -160,7 +160,7 @@ const BanPage = () => {
   return (
     <Center>
       <Box width={{base: '100%', lg: '1000px'}} mt="2rem">
-        <Heading textAlign="center">Banしているユーザ</Heading>
+        <Heading textAlign="center">Ban操作</Heading>
         <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="1rem">
           <Heading fontSize="1.5rem" mt="1rem">
             IPs
