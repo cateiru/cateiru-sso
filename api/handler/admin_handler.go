@@ -88,7 +88,9 @@ func adminBanPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminGetMailCertLog(w http.ResponseWriter, r *http.Request) {
-
+	if err := admin.MailCertLogHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 // Workerの動作ログを取得
