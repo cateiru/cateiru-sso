@@ -60,7 +60,7 @@ func GetTryCreateAccountLogByIP(ctx context.Context, db *database.Database, ip s
 func GetAllTryCreateAccountLog(ctx context.Context, db *database.Database) ([]TryCreateAccountLog, error) {
 	query := datastore.NewQuery("TryCreateAccountLog")
 
-	var entities []TryCreateAccountLog
+	entities := []TryCreateAccountLog{}
 
 	_, err := db.GetAll(ctx, query, &entities)
 	if err != nil {
