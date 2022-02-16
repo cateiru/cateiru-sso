@@ -32,8 +32,12 @@ func AdminUserHandler(w http.ResponseWriter, r *http.Request) {
 // ユーザをban
 func AdminBanHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case http.MethodGet:
+		adminBanGetHandler(w, r)
 	case http.MethodPost:
 		adminBanPostHandler(w, r)
+	case http.MethodDelete:
+		adminBanDeleteHandler(w, r)
 	default:
 		RootHandler(w, r)
 	}
@@ -83,8 +87,23 @@ func adminUserDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ユーザをメールアドレスでBanする
+func adminBanGetHandler(w http.ResponseWriter, r *http.Request) {
+	if err := admin.BanHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+// ユーザをメールアドレス、IPでBanする
 func adminBanPostHandler(w http.ResponseWriter, r *http.Request) {
+	if err := admin.SetBanHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
+}
+
+func adminBanDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	if err := admin.DeleteBlocks(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
 
 func adminGetMailCertLog(w http.ResponseWriter, r *http.Request) {

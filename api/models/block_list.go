@@ -46,6 +46,42 @@ func GetBlockListByMail(ctx context.Context, db *database.Database, mail string)
 	return &entry, nil
 }
 
+func GetAllBlocMail(ctx context.Context, db *database.Database) ([]MailBlockList, error) {
+	query := datastore.NewQuery("MailBlockList")
+
+	mails := []MailBlockList{}
+
+	if _, err := db.GetAll(ctx, query, &mails); err != nil {
+		return nil, err
+	}
+
+	return mails, nil
+}
+
+func GetAllBlocIP(ctx context.Context, db *database.Database) ([]IPBlockList, error) {
+	query := datastore.NewQuery("IPBlockList")
+
+	mails := []IPBlockList{}
+
+	if _, err := db.GetAll(ctx, query, &mails); err != nil {
+		return nil, err
+	}
+
+	return mails, nil
+}
+
+func DeleteBlockMail(ctx context.Context, db *database.Database, mail string) error {
+	key := database.CreateNameKey("MailBlockList", mail)
+
+	return db.Delete(ctx, key)
+}
+
+func DeleteBlockIP(ctx context.Context, db *database.Database, ip string) error {
+	key := database.CreateNameKey("IPBlockList", ip)
+
+	return db.Delete(ctx, key)
+}
+
 // IPのブラックリストを追加
 func (c *IPBlockList) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("IPBlockList", c.IP)

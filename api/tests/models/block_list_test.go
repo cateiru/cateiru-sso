@@ -44,6 +44,20 @@ func TestIPBlockListDB(t *testing.T) {
 	result, err := models.GetBlockListByIP(ctx, db, "256.256.256.256")
 	require.NoError(t, err)
 	require.Nil(t, result, "block ipのentryはない")
+
+	result2, err := models.GetAllBlocIP(ctx, db)
+	require.NoError(t, err)
+	require.True(t, len(result2) > 0)
+
+	err = models.DeleteBlockIP(ctx, db, ip)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		result, err := models.GetBlockListByIP(ctx, db, ip)
+		require.NoError(t, err)
+
+		return result == nil
+	}, "")
 }
 
 func TestMailBlockListDB(t *testing.T) {
@@ -75,4 +89,18 @@ func TestMailBlockListDB(t *testing.T) {
 	result, err := models.GetBlockListByMail(ctx, db, "example@example.com")
 	require.NoError(t, err)
 	require.Nil(t, result, "block mailのentryはない")
+
+	result2, err := models.GetAllBlocMail(ctx, db)
+	require.NoError(t, err)
+	require.True(t, len(result2) > 0)
+
+	err = models.DeleteBlockMail(ctx, db, mail)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		result, err := models.GetBlockListByMail(ctx, db, mail)
+		require.NoError(t, err)
+
+		return result == nil
+	}, "")
 }
