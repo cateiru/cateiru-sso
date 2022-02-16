@@ -1,4 +1,4 @@
-import {Center, Box, Heading, Button} from '@chakra-ui/react';
+import {Center, Box, Heading, Button, Stack} from '@chakra-ui/react';
 import Link from 'next/link';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
@@ -16,9 +16,25 @@ const AccountSetting = () => {
             <Heading size="1.8rem" mb=".7rem">
               Adminページ
             </Heading>
-            <Link href="/admin" passHref>
-              <Button width={{base: '100%', sm: 'auto'}}>全ユーザー参照</Button>
-            </Link>
+            <Box mb=".5rem">
+              <Link href="/admin" passHref>
+                <Button width={{base: '100%', sm: 'auto'}}>
+                  全ユーザー参照
+                </Button>
+              </Link>
+            </Box>
+            <Box mb=".5rem">
+              <Link href="/admin/create_log" passHref>
+                <Button width={{base: '100%', sm: 'auto'}}>
+                  メール認証ログ参照
+                </Button>
+              </Link>
+            </Box>
+            <Box>
+              <Link href="/admin/ban" passHref>
+                <Button width={{base: '100%', sm: 'auto'}}>Ban操作</Button>
+              </Link>
+            </Box>
           </Box>
         )}
         <Box my="1rem">

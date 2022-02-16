@@ -71,4 +71,8 @@ func TestTryCreateAccountLog(t *testing.T) {
 	logs, err = models.GetTryCreateAccountLogByMail(ctx, db, fmt.Sprintf("%s@example.com", utils.CreateID(5)))
 	require.NoError(t, err)
 	require.Equal(t, len(logs), 0, "なにも要素は見つからない")
+
+	allLogs, err := models.GetAllTryCreateAccountLog(ctx, db)
+	require.NoError(t, err)
+	require.True(t, len(allLogs) >= 0)
 }
