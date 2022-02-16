@@ -3,26 +3,28 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
-  TableCaption,
   Center,
   Box,
   Heading,
   Tooltip,
 } from '@chakra-ui/react';
 import React from 'react';
+import {useSetRecoilState} from 'recoil';
 import {mailCertLog, MailCertLog} from '../../utils/api/admin';
 import {formatDate, hawManyDaysAgo} from '../../utils/date';
+import {LoadState} from '../../utils/state/atom';
 
 const MailCertLog = () => {
   const toast = useToast();
   const [logs, setLogs] = React.useState<MailCertLog[]>([]);
+  const setLoad = useSetRecoilState(LoadState);
 
   React.useEffect(() => {
     const f = async () => {
+      setLoad(true);
       try {
         const logs = await mailCertLog();
         setLogs(logs);
@@ -36,6 +38,7 @@ const MailCertLog = () => {
           });
         }
       }
+      setLoad(false);
     };
 
     f();

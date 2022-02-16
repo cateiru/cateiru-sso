@@ -14,15 +14,19 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import React from 'react';
+import {useSetRecoilState} from 'recoil';
 import {getAllUsers} from '../../utils/api/admin';
+import {LoadState} from '../../utils/state/atom';
 import {UserInfo} from '../../utils/state/types';
 
 const AdminPage = () => {
   const [users, setUsers] = React.useState<UserInfo[]>([]);
   const toast = useToast();
+  const setLoad = useSetRecoilState(LoadState);
 
   React.useEffect(() => {
     const f = async () => {
+      setLoad(true);
       try {
         const users = await getAllUsers();
         setUsers(users);
@@ -36,6 +40,7 @@ const AdminPage = () => {
           });
         }
       }
+      setLoad(false);
     };
 
     f();

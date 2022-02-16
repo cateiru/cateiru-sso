@@ -28,9 +28,9 @@ import Link from 'next/link';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {IoArrowBackOutline} from 'react-icons/io5';
-import {useRecoilValue} from 'recoil';
+import {useRecoilValue, useSetRecoilState} from 'recoil';
 import {deleteUser, getUsers, role} from '../../utils/api/admin';
-import {UserState} from '../../utils/state/atom';
+import {UserState, LoadState} from '../../utils/state/atom';
 import {UserInfo} from '../../utils/state/types';
 
 const selectRoleColor = (v: string) => {
@@ -53,6 +53,7 @@ const UserDetails = () => {
   const [editRole, setEditRole] = React.useState('');
   const thisUser = useRecoilValue(UserState);
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const setLoad = useSetRecoilState(LoadState);
 
   React.useEffect(() => {
     if (!router.isReady) return;
@@ -61,10 +62,13 @@ const UserDetails = () => {
     if (typeof query['id'] === 'string') {
       const id = query['id'];
       const f = async () => {
+        setLoad(true);
         try {
           const users = await getUsers(id);
           setUser(users[0]);
+          setLoad(false);
         } catch (error) {
+          setLoad(false);
           if (error instanceof Error) {
             toast({
               title: error.message,

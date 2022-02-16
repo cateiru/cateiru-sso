@@ -23,10 +23,17 @@ const AccountSetting = () => {
                 </Button>
               </Link>
             </Box>
-            <Box>
+            <Box mb=".5rem">
               <Link href="/admin/create_log" passHref>
                 <Button width={{base: '100%', sm: 'auto'}}>
                   メール認証ログ参照
+                </Button>
+              </Link>
+            </Box>
+            <Box>
+              <Link href="/admin/ban" passHref>
+                <Button width={{base: '100%', sm: 'auto'}}>
+                  Banしてるユーザ
                 </Button>
               </Link>
             </Box>
