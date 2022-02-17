@@ -23,7 +23,7 @@ import type {FieldValues} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
 import {useSetRecoilState, useResetRecoilState} from 'recoil';
 import {login} from '../../utils/api/login';
-import {LoadState, UserState} from '../../utils/state/atom';
+import {UserState, NoLoginState} from '../../utils/state/atom';
 
 const LoginForm = () => {
   const {
@@ -38,7 +38,7 @@ const LoginForm = () => {
   const router = useRouter();
   const toast = useToast();
   const resetUser = useResetRecoilState(UserState);
-  const setRLoad = useSetRecoilState(LoadState);
+  const setNoLogin = useSetRecoilState(NoLoginState);
 
   const {executeRecaptcha} = useGoogleReCaptcha();
   const handleReCaptchaVerify = React.useCallback(async () => {
@@ -111,12 +111,12 @@ const LoginForm = () => {
       } else {
         // me情報を取得するためにuserを初期化する
         resetUser();
+        setNoLogin(true);
 
         // redirectが定義されている場合はそれに飛ぶ
         if (redirect !== '') {
           router.push(redirect);
         } else {
-          setRLoad(true);
           router.push('/hello');
         }
       }

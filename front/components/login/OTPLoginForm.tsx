@@ -14,7 +14,7 @@ import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 import {useSetRecoilState, useResetRecoilState} from 'recoil';
 import {loginOTP} from '../../utils/api/login';
-import {LoadState, UserState} from '../../utils/state/atom';
+import {UserState, NoLoginState} from '../../utils/state/atom';
 
 const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
   token,
@@ -26,8 +26,8 @@ const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
     formState: {errors, isSubmitting},
   } = useForm();
   const [load, setLoad] = React.useState(false);
-  const setRLoad = useSetRecoilState(LoadState);
   const resetUser = useResetRecoilState(UserState);
+  const setNoLogin = useSetRecoilState(NoLoginState);
   const router = useRouter();
   const toast = useToast();
 
@@ -66,11 +66,11 @@ const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
 
     // me情報を取得するためにuserを初期化する
     resetUser();
+    setNoLogin(true);
 
     if (redirect !== '') {
       router.push(redirect);
     } else {
-      setRLoad(true);
       router.push('/hello');
     }
   };

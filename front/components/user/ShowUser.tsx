@@ -1,21 +1,22 @@
 import {Box, Flex, Heading, useColorMode} from '@chakra-ui/react';
 import React from 'react';
 import JSONPretty from 'react-json-pretty';
-import {useRecoilState, useRecoilValue} from 'recoil';
+import {useSetRecoilState, useRecoilValue} from 'recoil';
 import {useGetUserInfo} from '../../hooks/useGetUserInfo';
-import {UserState, LoadState} from '../../utils/state/atom';
+import {UserState, LoadState, NoLoginState} from '../../utils/state/atom';
 import Spinner from '../common/Spinner';
 import LoginButtons from '../createAccount/LoginButtons';
 
 const ShowUser = () => {
   const user = useRecoilValue(UserState);
   const {colorMode} = useColorMode();
-  const [load, setLoad] = useRecoilState(LoadState);
+  const setLoad = useSetRecoilState(LoadState);
+  const noLoad = useRecoilValue(NoLoginState);
   const get = useGetUserInfo();
 
   React.useEffect(() => {
     // ロードしながらこのページに飛んだときにロードを削除する
-    if (load) {
+    if (noLoad) {
       setLoad(false);
 
       if (typeof user === 'undefined') {

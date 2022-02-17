@@ -20,3 +20,8 @@ export const LoadState = atom<boolean>({
   key: 'Load',
   default: false,
 });
+
+export const NoLoginState = atom<boolean>({
+  key: 'noLogin',
+  default: false,
+});
