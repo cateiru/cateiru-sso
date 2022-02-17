@@ -13,10 +13,10 @@ import {
 import {useRouter} from 'next/router';
 import React from 'react';
 import {IoCheckmarkOutline} from 'react-icons/io5';
-import {useRecoilValue, useSetRecoilState} from 'recoil';
+import {useRecoilValue} from 'recoil';
 import {login, preview, ServicePreview} from '../../../utils/api/loginSSO';
 import {OIDCRequestQuery} from '../../../utils/sso/login';
-import {UserState, LoadState} from '../../../utils/state/atom';
+import {UserState} from '../../../utils/state/atom';
 import Spinner from '../../common/Spinner';
 
 enum LoginState {
