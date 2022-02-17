@@ -32,11 +32,11 @@ const LoginPage: React.FC<{
   const [service, setService] = React.useState<ServicePreview>();
   const [token, setToken] = React.useState<string | undefined>();
   const [status, setStatus] = React.useState(LoginState.Loading);
+  const [load, setLoad] = React.useState(false);
 
   const router = useRouter();
   const toast = useToast();
   const user = useRecoilValue(UserState);
-  const setLoad = useSetRecoilState(LoadState);
   const {hasCopied, onCopy} = useClipboard(token || '');
 
   React.useEffect(() => {
@@ -81,7 +81,6 @@ const LoginPage: React.FC<{
         }
         const resp = await login(oidc, from);
 
-        setLoad(false);
         if (oidc.redirectURL !== 'direct') {
           let url = `${oidc.redirectURL}?code=${resp.access_token}`;
           if (oidc.state !== '') {
@@ -163,6 +162,7 @@ const LoginPage: React.FC<{
                         w="95%"
                         size="md"
                         onClick={submit}
+                        isLoading={load}
                       >
                         ログインする
                       </Button>
