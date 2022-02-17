@@ -250,7 +250,7 @@ func TestToken(t *testing.T) {
 
 	// JWT IDTokenを検証する
 
-	verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(jwtPublic.PKCS8)
+	verifyKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(jwtPublic.PKCS8))
 	require.NoError(t, err)
 
 	token, err := jwt.Parse(IDToken, func(t *jwt.Token) (interface{}, error) {

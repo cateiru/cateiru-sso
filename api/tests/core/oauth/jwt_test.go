@@ -46,7 +46,7 @@ func TestCreateJWT(t *testing.T) {
 	key, err := oauth.GetPublicKey()
 	require.NoError(t, err)
 
-	verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(key.PKCS8)
+	verifyKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(key.PKCS8))
 	require.NoError(t, err)
 
 	token, err := jwt.Parse(result, func(t *jwt.Token) (interface{}, error) {

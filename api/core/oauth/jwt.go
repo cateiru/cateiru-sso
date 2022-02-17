@@ -16,7 +16,7 @@ const JWT_PRIVATE_KEY_PATH = "jwt/jwt_key.rsa"
 const JWT_PUBLIC_PKCS8_PATH = "jwt/jwt_key.rsa.pkcs8"
 
 type JWTPublic struct {
-	PKCS8 []byte `json:"pkcs8"`
+	PKCS8 string `json:"pkcs8"`
 }
 
 // ref. http://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#StandardClaims
@@ -110,6 +110,6 @@ func GetPublicKey() (*JWTPublic, error) {
 	}
 
 	return &JWTPublic{
-		PKCS8: pkcs8,
+		PKCS8: string(pkcs8),
 	}, nil
 }
