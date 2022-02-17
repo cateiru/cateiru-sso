@@ -33,10 +33,12 @@ const LoginForm = () => {
   } = useForm();
   const [recaptcha, setRecaptcha] = React.useState('');
   const [show, setShow] = React.useState(false);
-  const setLoad = useSetRecoilState(LoadState);
+  const [load, setLoad] = React.useState(false);
+  const [redirect, setRedirect] = React.useState('');
   const router = useRouter();
   const toast = useToast();
   const resetUser = useResetRecoilState(UserState);
+  const setRLoad = useSetRecoilState(LoadState);
 
   const {executeRecaptcha} = useGoogleReCaptcha();
   const handleReCaptchaVerify = React.useCallback(async () => {
@@ -59,8 +61,24 @@ const LoginForm = () => {
     };
   }, [executeRecaptcha]);
 
+  React.useEffect(() => {
+    if (!router.isReady) return;
+    const query = router.query;
+
+    if (typeof query['redirect'] === 'string') {
+      setRedirect(query['redirect']);
+    }
+  }, [router.isReady, router.query]);
+
   const submit = (values: FieldValues) => {
     if (recaptcha.length === 0) {
+      toast({
+        title: 'reCAPTCHAのトークンを取得できませんでした',
+        status: 'error',
+        isClosable: true,
+        duration: 9000,
+      });
+      router.reload();
       return;
     }
 
@@ -83,12 +101,24 @@ const LoginForm = () => {
       }
 
       if (token) {
-        router.push(`/login/otp?t=${token}`);
+        if (redirect !== '') {
+          router.push(
+            `/login/otp?t=${token}&redirect=${encodeURIComponent(redirect)}`
+          );
+        } else {
+          router.push(`/login/otp?t=${token}`);
+        }
       } else {
         // me情報を取得するためにuserを初期化する
         resetUser();
 
-        router.push('/hello');
+        // redirectが定義されている場合はそれに飛ぶ
+        if (redirect !== '') {
+          router.push(redirect);
+        } else {
+          setRLoad(true);
+          router.push('/hello');
+        }
       }
     };
 
@@ -161,7 +191,7 @@ const LoginForm = () => {
         <Button
           marginTop="1rem"
           colorScheme="blue"
-          isLoading={isSubmitting}
+          isLoading={isSubmitting || load}
           type="submit"
           width={{base: '100%', md: 'auto'}}
         >
