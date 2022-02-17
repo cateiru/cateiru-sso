@@ -16,13 +16,17 @@ import {useSetRecoilState, useResetRecoilState} from 'recoil';
 import {loginOTP} from '../../utils/api/login';
 import {LoadState, UserState} from '../../utils/state/atom';
 
-const OTPLoginForm: React.FC<{token: string}> = ({token}) => {
+const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
+  token,
+  redirect,
+}) => {
   const {
     handleSubmit,
     register,
     formState: {errors, isSubmitting},
   } = useForm();
-  const setLoad = useSetRecoilState(LoadState);
+  const [load, setLoad] = React.useState(false);
+  const setRLoad = useSetRecoilState(LoadState);
   const resetUser = useResetRecoilState(UserState);
   const router = useRouter();
   const toast = useToast();
@@ -63,7 +67,12 @@ const OTPLoginForm: React.FC<{token: string}> = ({token}) => {
     // me情報を取得するためにuserを初期化する
     resetUser();
 
-    router.push('/hello');
+    if (redirect !== '') {
+      router.push(redirect);
+    } else {
+      setRLoad(true);
+      router.push('/hello');
+    }
   };
 
   return (
@@ -92,7 +101,7 @@ const OTPLoginForm: React.FC<{token: string}> = ({token}) => {
             <Button
               marginTop="1rem"
               colorScheme="blue"
-              isLoading={isSubmitting}
+              isLoading={isSubmitting || load}
               type="submit"
               width={{base: '100%', md: 'auto'}}
             >

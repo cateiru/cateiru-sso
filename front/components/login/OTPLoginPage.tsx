@@ -8,6 +8,7 @@ import OTPLoginForm from './OTPLoginForm';
 
 const OTPLoginPage = () => {
   const [token, setToken] = React.useState('');
+  const [redirect, setRedirect] = React.useState('');
   const router = useRouter();
   const setLoad = useSetRecoilState(LoadState);
 
@@ -20,6 +21,9 @@ const OTPLoginPage = () => {
       setToken(query['t']);
       setLoad(false);
     }
+    if (typeof query['redirect'] === 'string') {
+      setRedirect(query['redirect']);
+    }
   }, [router.isReady, router.query]);
 
   return (
@@ -31,7 +35,7 @@ const OTPLoginPage = () => {
       height="80vh"
       px={{base: '1rem', md: '5rem'}}
     >
-      {token ? <OTPLoginForm token={token} /> : <Spinner />}
+      {token ? <OTPLoginForm token={token} redirect={redirect} /> : <Spinner />}
     </Flex>
   );
 };

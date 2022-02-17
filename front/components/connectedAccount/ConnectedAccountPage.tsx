@@ -23,8 +23,10 @@ import {
 import Link from 'next/link';
 import React from 'react';
 import {IoArrowBackOutline} from 'react-icons/io5';
+import {useSetRecoilState} from 'recoil';
 import {getUserSSO, ServiceLogInfo, deleteSSO} from '../../utils/api/userSSO';
 import {hawManyDaysAgo, formatDate} from '../../utils/date';
+import {LoadState} from '../../utils/state/atom';
 
 const ConnectedAccountPage = () => {
   const {colorMode} = useColorMode();
@@ -33,9 +35,11 @@ const ConnectedAccountPage = () => {
   const [selectService, setSelectService] = React.useState<ServiceLogInfo>();
   const [selectIndex, setSelectIndex] = React.useState(0);
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const setLoad = useSetRecoilState(LoadState);
 
   React.useEffect(() => {
     const f = async () => {
+      setLoad(true);
       try {
         const s = await getUserSSO();
         setServices(s);
@@ -49,6 +53,7 @@ const ConnectedAccountPage = () => {
           });
         }
       }
+      setLoad(false);
     };
 
     f();

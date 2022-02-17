@@ -10,7 +10,9 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import React from 'react';
+import {useSetRecoilState} from 'recoil';
 import {getSSOs, Service} from '../../utils/api/proSSO';
+import {LoadState} from '../../utils/state/atom';
 import CreateSSO from './CreateSSO';
 import ServiceDetails from './ServiceDetails';
 
@@ -21,9 +23,11 @@ const SSOPage = () => {
   const [selectService, setSelectService] = React.useState<Service>();
   const [selectIndex, setSelectIndex] = React.useState(0);
   const detailsModal = useDisclosure();
+  const setLoad = useSetRecoilState(LoadState);
 
   React.useEffect(() => {
     const f = async () => {
+      setLoad(true);
       try {
         const getServices = await getSSOs();
         setServices(getServices);
@@ -37,6 +41,7 @@ const SSOPage = () => {
           });
         }
       }
+      setLoad(false);
     };
 
     f();
