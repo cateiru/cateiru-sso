@@ -5,6 +5,7 @@ import {useRecoilValue} from 'recoil';
 import Require from '../../components/common/Require';
 import Title from '../../components/common/Title';
 import LoginPage from '../../components/sso/login/LoginPage';
+import LoginSkeleton from '../../components/sso/login/LoginSkeleton';
 import {useGetUserInfo} from '../../hooks/useGetUserInfo';
 import {Login, OIDCRequestQuery} from '../../utils/sso/login';
 import {NoLoginState} from '../../utils/state/atom';
@@ -27,6 +28,7 @@ const SSOLogin: NextPage<{
     <Require
       isLogin={true}
       path={`/login?redirect=${encodeURIComponent(router.asPath)}`}
+      loading={<LoginSkeleton />}
     >
       <Title title="ログイン | CateiruSSO" />
       <LoginPage oidc={oidc} require={require} />

@@ -3,12 +3,12 @@ import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 
-const Require: React.FC<{isLogin: boolean; path: string; role?: string}> = ({
-  isLogin,
-  path,
-  role,
-  children,
-}) => {
+const Require: React.FC<{
+  isLogin: boolean;
+  path: string;
+  role?: string;
+  loading?: JSX.Element;
+}> = ({isLogin, path, role, loading, children}) => {
   const user = useRecoilValue(UserState);
   const router = useRouter();
   const [show, setShow] = React.useState(false);
@@ -30,7 +30,7 @@ const Require: React.FC<{isLogin: boolean; path: string; role?: string}> = ({
     }
   }, [user]);
 
-  return <>{show && children}</>;
+  return <>{show ? children : loading}</>;
 };
 
 export default Require;
