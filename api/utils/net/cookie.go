@@ -63,9 +63,27 @@ func (c *Cookie) Set(w http.ResponseWriter, key string, value string, exp *Cooki
 	http.SetCookie(w, cookie)
 }
 
+func (c *Cookie) Delete(w http.ResponseWriter, key string) {
+	cookie := &http.Cookie{
+		Name:  key,
+		Value: "",
+
+		Secure:   c.Secure,
+		Path:     c.Path,
+		Domain:   c.Domain,
+		HttpOnly: c.HttpOnly,
+		SameSite: c.SomeSite,
+
+		Expires: time.Unix(0, 0),
+		MaxAge:  -1,
+	}
+
+	http.SetCookie(w, cookie)
+}
+
 // cookieを削除
 func DeleteCookie(w http.ResponseWriter, req *http.Request, key string) error {
-	cookie, err := req.Cookie(key)
+	_, err := req.Cookie(key)
 	// cookieがない場合は何もしない
 	if err == http.ErrNoCookie {
 		return nil
@@ -74,16 +92,14 @@ func DeleteCookie(w http.ResponseWriter, req *http.Request, key string) error {
 		return err
 	}
 
-	logging.Sugar.Debugf("Delete cookie. key: %s, value: %s", key, cookie.Value)
-
-	cookie.Expires = time.Unix(0, 0)
-	cookie.MaxAge = -1
-
+	secure := false
 	if config.Defs.DeployMode == "production" {
-		cookie.Secure = true
+		secure = true
 	}
 
-	http.SetCookie(w, cookie)
+	c := NewCookie(config.Defs.CookieDomain, secure, http.SameSiteDefaultMode, false)
+
+	c.Delete(w, key)
 
 	return nil
 }
