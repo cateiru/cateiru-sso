@@ -52,7 +52,7 @@ const App = ({Component, pageProps}: AppProps) => {
           scriptProps={{
             async: false,
             defer: false,
-            appendTo: 'body',
+            appendTo: 'head',
             nonce: undefined,
           }}
         >
