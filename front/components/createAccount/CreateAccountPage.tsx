@@ -22,7 +22,7 @@ const CreateAccountPage: React.FC = () => {
         scriptProps={{
           async: false,
           defer: false,
-          appendTo: 'head',
+          appendTo: 'body',
           nonce: undefined,
         }}
       >

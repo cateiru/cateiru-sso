@@ -20,7 +20,7 @@ const LoginPage = () => {
         scriptProps={{
           async: false,
           defer: false,
-          appendTo: 'head',
+          appendTo: 'body',
           nonce: undefined,
         }}
       >
