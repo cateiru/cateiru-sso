@@ -3,6 +3,7 @@ import type {AppProps} from 'next/app';
 import Router, {useRouter} from 'next/router';
 import nprogress from 'nprogress';
 import {useEffect} from 'react';
+import {GoogleReCaptchaProvider} from 'react-google-recaptcha-v3';
 import {RecoilRoot} from 'recoil';
 import Font from '../components/common/Font';
 import Load from '../components/common/Load';
@@ -13,6 +14,8 @@ import theme from '../utils/theme/theme';
 import 'nprogress/nprogress.css';
 
 nprogress.configure({showSpinner: false, speed: 400, minimum: 0.25});
+
+const reCAPTCHA = process.env.NEXT_PUBLIC_RE_CAPTCHA;
 
 const App = ({Component, pageProps}: AppProps) => {
   const router = useRouter();
@@ -43,13 +46,24 @@ const App = ({Component, pageProps}: AppProps) => {
   return (
     <RecoilRoot>
       <ChakraProvider theme={theme}>
-        <Font />
-        <Load />
-        <Me>
-          <Page>
-            <Component {...pageProps} />
-          </Page>
-        </Me>
+        <GoogleReCaptchaProvider
+          reCaptchaKey={reCAPTCHA}
+          language="ja"
+          scriptProps={{
+            async: false,
+            defer: false,
+            appendTo: 'body',
+            nonce: undefined,
+          }}
+        >
+          <Font />
+          <Load />
+          <Me>
+            <Page>
+              <Component {...pageProps} />
+            </Page>
+          </Me>
+        </GoogleReCaptchaProvider>
       </ChakraProvider>
     </RecoilRoot>
   );
