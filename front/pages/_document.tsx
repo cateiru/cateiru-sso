@@ -52,6 +52,8 @@ export default class MyDocument extends Document {
           <meta name="twitter:site" content="@cateiru" />
           <meta name="twitter:creator" content="@cateiru" />
 
+          <meta name="referrer" content="strict-origin-when-cross-origin" />
+
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         </Head>
         <body>
