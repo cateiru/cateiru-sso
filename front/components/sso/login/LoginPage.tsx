@@ -168,7 +168,12 @@ const LoginPage: React.FC<{
                       </Button>
                     </Center>
                     <Center mt=".5rem" mb={{base: '3rem', sm: '5rem'}}>
-                      <Button w="95%" size="md" onClick={cancel}>
+                      <Button
+                        w="95%"
+                        size="md"
+                        onClick={cancel}
+                        disabled={load}
+                      >
                         キャンセルする
                       </Button>
                     </Center>
