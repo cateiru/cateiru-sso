@@ -110,6 +110,12 @@ func Login(ctx context.Context, form *RequestFrom, c *common.Cert) (*Response, e
 		}
 	}
 
+	// パスワードを検証
+	// パスワードが違う場合は400を返す
+	if !secure.ValidatePW(form.Password, cert.Password, cert.Salt) {
+		return nil, status.NewBadRequestError(errors.New("no validate password")).Caller().AddCode(net.FailedLogin)
+	}
+
 	// OTPが設定されている場合
 	if len(cert.OnetimePasswordSecret) != 0 {
 		id := utils.CreateID(0)
@@ -133,12 +139,6 @@ func Login(ctx context.Context, form *RequestFrom, c *common.Cert) (*Response, e
 			IsOTP:    true,
 			OTPToken: id,
 		}, nil
-	}
-
-	// パスワードを検証
-	// パスワードが違う場合は400を返す
-	if !secure.ValidatePW(form.Password, cert.Password, cert.Salt) {
-		return nil, status.NewBadRequestError(errors.New("no validate password")).Caller().AddCode(net.FailedLogin)
 	}
 
 	// ログイントークンをセットする
