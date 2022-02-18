@@ -65,13 +65,13 @@ const SelectCreate: React.FC = () => {
     }
   }, [next]);
 
-  const submit = (values: FieldValues, recaptcha: string) => {
+  const submit = (values: FieldValues) => {
     setMail(values.email);
     nextStep();
     setSelectType(CreateType.SendMail);
 
     // API叩く
-    create(values.email, recaptcha);
+    create(values.email);
   };
 
   // 認証確認Websocket

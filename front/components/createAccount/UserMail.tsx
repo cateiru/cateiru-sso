@@ -7,12 +7,11 @@ import {
   Box,
 } from '@chakra-ui/react';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 
 const UserPassword: React.FC<{
-  submit: (values: FieldValues, recaptcha: string) => void;
+  submit: (values: FieldValues) => void;
 }> = ({submit}) => {
   const {
     handleSubmit,
@@ -20,31 +19,8 @@ const UserPassword: React.FC<{
     formState: {errors, isSubmitting},
   } = useForm();
 
-  const [recaptcha, setRecaptcha] = React.useState('');
-
-  const {executeRecaptcha} = useGoogleReCaptcha();
-  const handleReCaptchaVerify = React.useCallback(async () => {
-    if (!executeRecaptcha) {
-      return;
-    }
-    const token = await executeRecaptcha();
-
-    setRecaptcha(token);
-  }, [executeRecaptcha, setRecaptcha]);
-
-  // reCAPTCHAのトークンを取得する
-  React.useEffect(() => {
-    let unmounted = false;
-    if (!unmounted) {
-      handleReCaptchaVerify();
-    }
-    return () => {
-      unmounted = true;
-    };
-  }, [executeRecaptcha]);
-
   const submitHandler = (values: FieldValues) => {
-    submit(values, recaptcha);
+    submit(values);
 
     return () => {};
   };

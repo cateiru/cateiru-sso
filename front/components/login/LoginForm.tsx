@@ -31,7 +31,6 @@ const LoginForm = () => {
     register,
     formState: {errors, isSubmitting},
   } = useForm();
-  const [recaptcha, setRecaptcha] = React.useState('');
   const [show, setShow] = React.useState(false);
   const [load, setLoad] = React.useState(false);
   const [redirect, setRedirect] = React.useState('');
@@ -41,25 +40,6 @@ const LoginForm = () => {
   const setNoLogin = useSetRecoilState(NoLoginState);
 
   const {executeRecaptcha} = useGoogleReCaptcha();
-  const handleReCaptchaVerify = React.useCallback(async () => {
-    if (!executeRecaptcha) {
-      return;
-    }
-    const token = await executeRecaptcha();
-
-    setRecaptcha(token);
-  }, [executeRecaptcha, setRecaptcha]);
-
-  // reCAPTCHAのトークンを取得する
-  React.useEffect(() => {
-    let unmounted = false;
-    if (!unmounted) {
-      handleReCaptchaVerify();
-    }
-    return () => {
-      unmounted = true;
-    };
-  }, [executeRecaptcha]);
 
   React.useEffect(() => {
     if (!router.isReady) return;
@@ -71,19 +51,15 @@ const LoginForm = () => {
   }, [router.isReady, router.query]);
 
   const submit = (values: FieldValues) => {
-    if (recaptcha.length === 0) {
-      toast({
-        title: 'reCAPTCHAのトークンを取得できませんでした',
-        status: 'error',
-        isClosable: true,
-        duration: 9000,
-      });
-      router.reload();
+    if (!executeRecaptcha) {
       return;
     }
 
     const f = async () => {
       setLoad(true);
+
+      const recaptcha = await executeRecaptcha();
+
       let token: string | undefined;
       try {
         token = await login(values.email, values.password, recaptcha);
