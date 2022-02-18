@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/logging"
 )
 
@@ -77,6 +78,10 @@ func DeleteCookie(w http.ResponseWriter, req *http.Request, key string) error {
 
 	cookie.Expires = time.Unix(0, 0)
 	cookie.MaxAge = -1
+
+	if config.Defs.DeployMode == "production" {
+		cookie.Secure = true
+	}
 
 	http.SetCookie(w, cookie)
 
