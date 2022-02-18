@@ -49,6 +49,19 @@ func DeleteAccessTokenByUserId(ctx context.Context, db *database.Database, userI
 	return db.DeleteMulti(ctx, keys)
 }
 
+func DeleteAccessTokenByUserIdAndClientId(ctx context.Context, db *database.Database, userId string, clientId string) error {
+	query := datastore.NewQuery("SSOAccessToken").Filter("userId =", userId).Filter("clientId =", clientId)
+
+	var dummy []SSOAccessToken
+
+	keys, err := db.GetAll(ctx, query, &dummy)
+	if err != nil {
+		return err
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 func DeleteAccessTokenByAccessToken(ctx context.Context, db *database.Database, accessToken string) error {
 	key := database.CreateNameKey("SSOAccessToken", accessToken)
 

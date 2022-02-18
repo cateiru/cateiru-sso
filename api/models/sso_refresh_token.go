@@ -49,6 +49,19 @@ func DeleteSSORefreshTokenByUserId(ctx context.Context, db *database.Database, u
 	return db.DeleteMulti(ctx, keys)
 }
 
+func DeleteSSORefreshTokenByUserIdAndClientID(ctx context.Context, db *database.Database, userId string, clientId string) error {
+	query := datastore.NewQuery("SSORefreshToken").Filter("userId =", userId).Filter("clientId =", clientId)
+
+	var dummy []SSORefreshToken
+
+	keys, err := db.GetAll(ctx, query, &dummy)
+	if err != nil {
+		return err
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 func DeleteSSORefreshTokenByRefreshToken(ctx context.Context, db *database.Database, refresh string) error {
 	key := database.CreateNameKey("SSORefreshToken", refresh)
 

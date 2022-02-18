@@ -108,10 +108,10 @@ func DeleteOAth(w http.ResponseWriter, r *http.Request) error {
 		return status.NewBadRequestError(errors.New("service empty")).Caller()
 	}
 
-	if err := models.DeleteAccessTokenByUserId(ctx, db, c.UserId); err != nil {
+	if err := models.DeleteAccessTokenByUserIdAndClientId(ctx, db, c.UserId, clientId); err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
-	if err := models.DeleteSSORefreshTokenByUserId(ctx, db, c.UserId); err != nil {
+	if err := models.DeleteSSORefreshTokenByUserIdAndClientID(ctx, db, c.UserId, clientId); err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 

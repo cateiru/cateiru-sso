@@ -155,3 +155,50 @@ func TestDeleteSSORefreshByRefreshToken(t *testing.T) {
 		return getE == nil
 	}, "削除されている")
 }
+
+func TestDeleteSSORefreshTokenByClientAndUserID(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser()
+
+	entity := models.SSORefreshToken{
+		SSOAccessToken:  utils.CreateID(0),
+		SSORefreshToken: utils.CreateID(0),
+
+		ClientID: utils.CreateID(0),
+
+		Period: models.Period{
+			CreateDate:   time.Now(),
+			PeriodMinute: 5,
+		},
+		UserId: models.UserId{
+			UserId: dummy.UserID,
+		},
+	}
+
+	err = entity.Add(ctx, db)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		getE, err := models.GetSSORefreshTokenByRefreshToken(ctx, db, entity.SSORefreshToken)
+		require.NoError(t, err)
+
+		return getE != nil
+	}, "")
+
+	err = models.DeleteSSORefreshTokenByUserIdAndClientID(ctx, db, dummy.UserID, entity.ClientID)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		getE, err := models.GetSSORefreshTokenByRefreshToken(ctx, db, entity.SSORefreshToken)
+		require.NoError(t, err)
+
+		return getE == nil
+	}, "削除されている")
+}

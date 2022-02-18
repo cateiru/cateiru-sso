@@ -156,6 +156,10 @@ func Refresh(ctx context.Context, db *database.Database, query url.Values) (*Tok
 		return nil, status.NewInternalServerErrorError(err).Caller()
 	}
 
+	if service == nil {
+		return nil, status.NewBadRequestError(err).Caller()
+	}
+
 	// token secretを検証する
 	if service.TokenSecret != request.ClientSecret {
 		return nil, status.NewForbiddenError(errors.New("secret")).Caller()
