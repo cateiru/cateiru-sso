@@ -32,6 +32,8 @@ type Config struct {
 
 	StorageURL    string
 	StorageBucket string
+
+	WorkerPassword string
 }
 
 var Defs Config
@@ -64,6 +66,8 @@ func Init() {
 
 		StorageURL:    os.Getenv("STORAGE_URL"),
 		StorageBucket: "cateiru-sso",
+
+		WorkerPassword: os.Getenv("WORKER_PASSWORD"),
 	}
 }
 

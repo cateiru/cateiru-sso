@@ -57,12 +57,21 @@ ADMIN_PASSWORD=
 
 # cloud storageのURL
 STORAGE_URL=
+
+# workerのパスワード
+WORKER_PASSWORD=
 ```
 
 ## テスト
 
 ```bash
 make test
+```
+
+## Dev
+
+```bash
+make dev
 ```
 
 ### [カスタム] DBの実行

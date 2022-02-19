@@ -26,3 +26,4 @@ services:
       - DATASTORE_EMULATOR_HOST=datastore:18001
       - STORAGE_EMULATOR_HOST=gcs:4443
       - STORAGE_URL=http://192.168.3.253:4443
+      - WORKER_PASSWORD=password

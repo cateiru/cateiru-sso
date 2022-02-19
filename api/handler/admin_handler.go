@@ -110,5 +110,7 @@ func adminGetMailCertLog(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminWorkerGet(w http.ResponseWriter, r *http.Request) {
-
+	if err := admin.WorkerHandler(w, r); err != nil {
+		net.ResponseError(w, err)
+	}
 }
