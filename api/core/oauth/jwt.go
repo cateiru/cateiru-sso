@@ -40,7 +40,9 @@ type Claims struct {
 	PhoneNumberVerified bool   `json:"phone_number_verified"`
 	UpdatedAt           int64  `json:"updated_at"`
 
-	Role string `json:"role"`
+	ID    string `json:"id"`
+	Role  string `json:"role"`
+	Theme string `json:"theme"`
 
 	Iat      int64 `json:"iat"`
 	AuthTime int64 `json:"auth_time"`
@@ -81,7 +83,9 @@ func NewJWT(user *models.User, clientId string, authTime time.Time) *Claims {
 		PhoneNumberVerified: false,
 		UpdatedAt:           time.Now().Unix(), // めんどくさいので今の時間
 
-		Role: strings.Join(user.Role, " "),
+		ID:    user.UserId.UserId,
+		Role:  strings.Join(user.Role, " "),
+		Theme: user.Theme,
 	}
 
 	return claims
