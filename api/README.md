@@ -1,4 +1,4 @@
-# Cateiru認証 API
+# CateiruSSO API
 
 [![codecov](https://codecov.io/gh/cateiru/cateiru-sso/branch/main/graph/badge.svg?token=YNVP7LX4WK)](https://codecov.io/gh/cateiru/cateiru-sso)
 [![Lint](https://github.com/cateiru/cateiru-sso/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/cateiru/cateiru-sso/actions/workflows/test.yml)

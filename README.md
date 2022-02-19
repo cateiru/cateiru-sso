@@ -1,6 +1,10 @@
-# Cateiru認証
+# Cateiru SSO
 
-Cateiru Single Sign On
+Cateiru's Single Sign On
+
+## 仕様
+
+- [OpenID Connect 仕様](./documents//OIDC.md)
 
 ## LINKS
 
