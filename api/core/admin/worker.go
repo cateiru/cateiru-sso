@@ -8,6 +8,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/api/logging"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
@@ -33,6 +34,8 @@ func WorkerHandler(w http.ResponseWriter, r *http.Request) error {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 	defer db.Close()
+
+	logging.Sugar.Info("Run worker")
 
 	return Worker(ctx, db)
 }
