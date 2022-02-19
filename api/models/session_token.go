@@ -84,11 +84,33 @@ func (c *SessionInfo) AddTX(tx *database.Transaction) error {
 func DeleteSessionByUserId(ctx context.Context, db *database.Database, userId string) error {
 	query := datastore.NewQuery("SessionInfo").Filter("userId =", userId)
 
-	var dummy []RefreshInfo
+	var dummy []SessionInfo
 
 	keys, err := db.GetAll(ctx, query, &dummy)
 	if err != nil {
 		return err
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
+func DeleteSessionTokenPeriod(ctx context.Context, db *database.Database) error {
+	query := datastore.NewQuery("SessionInfo")
+
+	var entities []SessionInfo
+
+	_, err := db.GetAll(ctx, query, &entities)
+	if err != nil {
+		return err
+	}
+
+	var keys []*datastore.Key
+
+	for _, entity := range entities {
+		if CheckExpired(&entity.Period) {
+			key := database.CreateNameKey("SessionInfo", entity.SessionToken)
+			keys = append(keys, key)
+		}
 	}
 
 	return db.DeleteMulti(ctx, keys)

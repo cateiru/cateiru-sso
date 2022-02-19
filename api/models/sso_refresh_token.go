@@ -68,6 +68,28 @@ func DeleteSSORefreshTokenByRefreshToken(ctx context.Context, db *database.Datab
 	return db.Delete(ctx, key)
 }
 
+func DeleteSSORefreshTokenPeriod(ctx context.Context, db *database.Database) error {
+	query := datastore.NewQuery("SSORefreshToken")
+
+	var entities []SSORefreshToken
+
+	_, err := db.GetAll(ctx, query, &entities)
+	if err != nil {
+		return err
+	}
+
+	var keys []*datastore.Key
+
+	for _, entity := range entities {
+		if CheckExpired(&entity.Period) {
+			key := database.CreateNameKey("SSORefreshToken", entity.SSORefreshToken)
+			keys = append(keys, key)
+		}
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 func (c *SSORefreshToken) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("SSORefreshToken", c.SSORefreshToken)
 

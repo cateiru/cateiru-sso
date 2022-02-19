@@ -52,13 +52,10 @@ func AdminMailCertLog(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// workerログ取得やworkerを動かす
-func AdminStatusHandler(w http.ResponseWriter, r *http.Request) {
+func AdminWorker(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		adminStatusGetHandler(w, r)
-	case http.MethodPost:
-		adminStatusPostHandler(w, r)
+		adminWorkerGet(w, r)
 	default:
 		RootHandler(w, r)
 	}
@@ -112,11 +109,6 @@ func adminGetMailCertLog(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Workerの動作ログを取得
-func adminStatusGetHandler(w http.ResponseWriter, r *http.Request) {
-}
+func adminWorkerGet(w http.ResponseWriter, r *http.Request) {
 
-// mail_tokenなどの有効期限切れのエンティティを削除など操作をする
-// workerはここをcronで叩く（TODO: 専用のPWを使用する）
-func adminStatusPostHandler(w http.ResponseWriter, r *http.Request) {
 }

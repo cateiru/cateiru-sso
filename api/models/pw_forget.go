@@ -48,6 +48,28 @@ func GetPWForgetByMail(ctx context.Context, db *database.Database, mail string) 
 	return entities, nil
 }
 
+func DeletePWForgetPeriod(ctx context.Context, db *database.Database) error {
+	query := datastore.NewQuery("PWForget")
+
+	var entities []PWForget
+
+	_, err := db.GetAll(ctx, query, &entities)
+	if err != nil {
+		return err
+	}
+
+	var keys []*datastore.Key
+
+	for _, entity := range entities {
+		if CheckExpired(&entity.Period) {
+			key := database.CreateNameKey("PWForget", entity.ForgetToken)
+			keys = append(keys, key)
+		}
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 func DeletePWForgetByToken(ctx context.Context, db *database.Database, token string) error {
 	key := database.CreateNameKey("PWForget", token)
 	return db.Delete(ctx, key)

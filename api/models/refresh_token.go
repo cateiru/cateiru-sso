@@ -80,6 +80,28 @@ func GetRefreshTokenTX(tx *database.Transaction, refreshToken string) (*RefreshI
 	return &entry, nil
 }
 
+func DeleteRefreshTokenPeriod(ctx context.Context, db *database.Database) error {
+	query := datastore.NewQuery("RefreshInfo")
+
+	var entities []RefreshInfo
+
+	_, err := db.GetAll(ctx, query, &entities)
+	if err != nil {
+		return err
+	}
+
+	var keys []*datastore.Key
+
+	for _, entity := range entities {
+		if CheckExpired(&entity.Period) {
+			key := database.CreateNameKey("RefreshInfo", entity.RefreshToken)
+			keys = append(keys, key)
+		}
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 func DeleteRefreshTokenTX(tx *database.Transaction, refreshToken string) error {
 	key := database.CreateNameKey("RefreshInfo", refreshToken)
 	return tx.Delete(key)

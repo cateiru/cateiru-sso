@@ -25,7 +25,7 @@ func Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/admin/user", handler.AdminUserHandler)
 	mux.HandleFunc("/admin/ban", handler.AdminBanHandler)
 	mux.HandleFunc("/admin/certlog", handler.AdminMailCertLog)
-	mux.HandleFunc("/admin/status", handler.AdminStatusHandler)
+	mux.HandleFunc("/admin/worker", handler.AdminWorker)
 
 	mux.HandleFunc("/pro/sso", handler.ProSSOHandler)
 	mux.HandleFunc("/pro/sso/image", handler.ProSSOImage)

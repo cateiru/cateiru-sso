@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/tests/tools"
 	"github.com/cateiru/cateiru-sso/api/utils"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
@@ -70,4 +71,48 @@ func TestMailCertification(t *testing.T) {
 	require.NoError(t, err)
 	require.Nil(t, result, "要素が見つからない")
 
+}
+
+func TestDeletePeriod(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	mailToken := utils.CreateID(10)
+
+	entry := &models.MailCertification{
+		MailToken:      mailToken,
+		ClientToken:    utils.CreateID(0),
+		OpenNewWindow:  false,
+		Verify:         false,
+		ChangeMailMode: false,
+		Mail:           tools.NewDummyUser().Mail,
+		Period: models.Period{
+			CreateDate:   time.Now().Add(time.Duration(-1) * time.Hour),
+			PeriodMinute: 30,
+		},
+	}
+	err = entry.Add(ctx, db)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		result, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
+		require.NoError(t, err)
+
+		return result != nil
+	}, "entryがある")
+
+	err = models.DeleteMailCertPeriod(ctx, db)
+	require.NoError(t, err)
+
+	goretry.Retry(t, func() bool {
+		result, err := models.GetMailCertificationByMailToken(ctx, db, mailToken)
+		require.NoError(t, err)
+
+		return result == nil
+	}, "削除されている")
 }

@@ -46,6 +46,28 @@ func GetMailCertificationByClientToken(ctx context.Context, db *database.Databas
 	return &entry, nil
 }
 
+func DeleteMailCertPeriod(ctx context.Context, db *database.Database) error {
+	query := datastore.NewQuery("MailCertification")
+
+	var entities []MailCertification
+
+	_, err := db.GetAll(ctx, query, &entities)
+	if err != nil {
+		return err
+	}
+
+	var keys []*datastore.Key
+
+	for _, entity := range entities {
+		if CheckExpired(&entity.Period) {
+			key := database.CreateNameKey("MailCertification", entity.MailToken)
+			keys = append(keys, key)
+		}
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 // 削除
 func DeleteMailCertification(ctx context.Context, db *database.Database, mailToken string) error {
 	key := database.CreateNameKey("MailCertification", mailToken)

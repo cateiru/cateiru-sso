@@ -68,6 +68,28 @@ func DeleteAccessTokenByAccessToken(ctx context.Context, db *database.Database, 
 	return db.Delete(ctx, key)
 }
 
+func DeleteAccessTokenPeriod(ctx context.Context, db *database.Database) error {
+	query := datastore.NewQuery("SSOAccessToken")
+
+	var entities []SSOAccessToken
+
+	_, err := db.GetAll(ctx, query, &entities)
+	if err != nil {
+		return err
+	}
+
+	var keys []*datastore.Key
+
+	for _, entity := range entities {
+		if CheckExpired(&entity.Period) {
+			key := database.CreateNameKey("SSOAccessToken", entity.SSOAccessToken)
+			keys = append(keys, key)
+		}
+	}
+
+	return db.DeleteMulti(ctx, keys)
+}
+
 func (c *SSOAccessToken) Add(ctx context.Context, db *database.Database) error {
 	key := database.CreateNameKey("SSOAccessToken", c.SSOAccessToken)
 	return db.Put(ctx, key, c)
