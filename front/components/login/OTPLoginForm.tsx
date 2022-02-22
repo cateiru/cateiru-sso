@@ -26,10 +26,18 @@ const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
     formState: {errors, isSubmitting},
   } = useForm();
   const [load, setLoad] = React.useState(false);
+  const [failedCount, setFailedCount] = React.useState(0);
   const resetUser = useResetRecoilState(UserState);
   const setNoLogin = useSetRecoilState(NoLoginState);
   const router = useRouter();
   const toast = useToast();
+
+  React.useEffect(() => {
+    if (failedCount >= 5) {
+      // 5回以上失敗した場合は最初から
+      router.replace('/login');
+    }
+  }, [failedCount]);
 
   const submit = (values: FieldValues) => {
     validate(values.otp);
@@ -61,6 +69,7 @@ const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
         });
       }
       setLoad(false);
+      setFailedCount(i => (i += 1));
       return;
     }
 

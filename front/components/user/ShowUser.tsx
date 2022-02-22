@@ -15,10 +15,9 @@ const ShowUser = () => {
   const get = useGetUserInfo();
 
   React.useEffect(() => {
-    // ロードしながらこのページに飛んだときにロードを削除する
-    if (noLoad) {
-      setLoad(false);
+    setLoad(false);
 
+    if (noLoad) {
       if (typeof user === 'undefined') {
         get();
       }

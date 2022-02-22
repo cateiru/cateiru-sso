@@ -90,6 +90,19 @@ func LoginOTP(ctx context.Context, id string, passcode string, c *common.Cert) e
 	ok, update := common.CheckOTP(passcode, cert, nil)
 	// OTPが認証できない場合は400を返す
 	if !ok {
+		// 総当り対策で、4回間違えると認証不可になる
+		if buffer.FailedCount < 3 {
+			buffer.FailedCount += 1
+
+			if err := buffer.Add(ctx, db); err != nil {
+				return status.NewInternalServerErrorError(err).Caller()
+			}
+		} else {
+			if err := models.DeleteOTPBuffer(ctx, db, id); err != nil {
+				return status.NewInternalServerErrorError(err).Caller()
+			}
+		}
+
 		return status.NewBadRequestError(errors.New("otp not varidated")).Caller().AddCode(net.FailedOTP)
 	}
 

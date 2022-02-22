@@ -123,6 +123,8 @@ func Login(ctx context.Context, form *RequestFrom, c *common.Cert) (*Response, e
 			Id:      id,
 			IsLogin: true,
 
+			FailedCount: 0,
+
 			Period: models.Period{
 				CreateDate:   time.Now(),
 				PeriodMinute: 10,

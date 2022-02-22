@@ -33,6 +33,8 @@ func TestOTPBuffer(t *testing.T) {
 
 		IsLogin: false,
 
+		FailedCount: 0,
+
 		Period: models.Period{
 			CreateDate:   time.Now(),
 			PeriodMinute: 10,
@@ -82,6 +84,8 @@ func TestDeleteOTPNBufferPeriod(t *testing.T) {
 		SecretKey: "secret",
 
 		IsLogin: false,
+
+		FailedCount: 0,
 
 		Period: models.Period{
 			CreateDate:   time.Now().Add(time.Duration(-1) * time.Hour),

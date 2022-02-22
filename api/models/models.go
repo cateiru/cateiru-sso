@@ -78,6 +78,8 @@ type OnetimePasswordBuffer struct {
 
 	IsLogin bool `datastore:"isLogin" json:"is_login"`
 
+	FailedCount int `datastore:"failedCount" json:"failed_count"`
+
 	Period
 	UserId
 }
