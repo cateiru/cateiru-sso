@@ -9,3 +9,9 @@ export interface UserInfo {
   user_name_formatted: string;
   role: string[];
 }
+
+export enum OTPState {
+  Loading,
+  Enable,
+  Disable,
+}

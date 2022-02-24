@@ -1,5 +1,5 @@
 import {atom} from 'recoil';
-import {UserInfo} from './types';
+import {OTPState, UserInfo} from './types';
 
 export const CTState = atom<string>({
   key: 'CT',
@@ -24,4 +24,9 @@ export const LoadState = atom<boolean>({
 export const NoLoginState = atom<boolean>({
   key: 'noLogin',
   default: false,
+});
+
+export const OTPEnableState = atom<OTPState>({
+  key: 'otpEnable',
+  default: OTPState.Loading,
 });

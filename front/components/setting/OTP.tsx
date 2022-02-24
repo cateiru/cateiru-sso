@@ -26,6 +26,7 @@ import {useColorMode} from '@chakra-ui/react';
 import QRcode from 'qrcode.react';
 import React from 'react';
 import {IoCopyOutline, IoCheckmarkSharp} from 'react-icons/io5';
+import {useSetRecoilState, useRecoilState} from 'recoil';
 import {isEnableOTP} from '../../utils/api/check';
 import {
   OTPGetResponse,
@@ -34,12 +35,8 @@ import {
   getBackups,
   deleteotp,
 } from '../../utils/api/otp';
-
-enum OTPState {
-  Loading,
-  Enable,
-  Disable,
-}
+import {LoadState, OTPEnableState} from '../../utils/state/atom';
+import {OTPState} from '../../utils/state/types';
 
 const OTP = () => {
   const {isOpen, onOpen, onClose} = useDisclosure();
@@ -47,7 +44,7 @@ const OTP = () => {
   const deleteOtpModal = useDisclosure();
 
   const [otpGenerate, setOTPGenerate] = React.useState(false);
-  const [otpEnable, setOTPEnable] = React.useState<OTPState>(OTPState.Loading);
+  const [otpEnable, setOTPEnable] = useRecoilState(OTPEnableState);
   const [otpToken, setOTPToken] = React.useState<OTPGetResponse>();
   const [passcode, setPasscode] = React.useState('');
   const [backups, setBackups] = React.useState<string[]>([]);
@@ -57,9 +54,15 @@ const OTP = () => {
   const backupCopy = useClipboard(backups.join(', '));
   const [isError, setIsError] = React.useState(false);
 
+  const setLoad = useSetRecoilState(LoadState);
+
   // OTPが設定されているかを確認する
   React.useEffect(() => {
     const f = async () => {
+      if (otpEnable !== OTPState.Loading) {
+        return;
+      }
+
       try {
         const isOTP = await isEnableOTP();
         if (isOTP) {
@@ -116,14 +119,15 @@ const OTP = () => {
   // パスコードを送信してOTPを設定する
   const submitOTP = () => {
     const f = async () => {
-      try {
-        // パスコードが入力されていな場合はエラーにする
-        if (!passcode) {
-          setIsError(true);
-          return;
-        }
-        setIsError(false);
+      // パスコードが入力されていな場合はエラーにする
+      if (!passcode) {
+        setIsError(true);
+        return;
+      }
+      setIsError(false);
+      setLoad(true);
 
+      try {
         const backups = await setToken(otpToken?.id || '', passcode);
         setBackups(backups);
 
@@ -151,6 +155,8 @@ const OTP = () => {
         setOTPGenerate(false);
         onClose();
       }
+
+      setLoad(false);
     };
 
     f();
@@ -159,6 +165,7 @@ const OTP = () => {
   // OTPを削除する
   const deleteOTP = () => {
     const f = async () => {
+      setLoad(true);
       try {
         // パスコードが入力されていな場合はエラーにする
         if (!passcode) {
@@ -191,6 +198,7 @@ const OTP = () => {
         }
         deleteOtpModal.onClose();
       }
+      setLoad(false);
     };
 
     f();
@@ -199,6 +207,7 @@ const OTP = () => {
   // バックアップコードモーダルを開く
   const openBackups = () => {
     const f = async () => {
+      setLoad(true);
       try {
         const backups = await getBackups();
         setBackups(backups);
@@ -213,6 +222,7 @@ const OTP = () => {
           });
         }
       }
+      setLoad(false);
     };
 
     f();
