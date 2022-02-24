@@ -42,15 +42,15 @@ export const getLoginLog = async (
     let target: number;
 
     if (a.is_logout) {
-      current = Date.parse(a.last_login_date);
-    } else {
       current = Date.parse(a.date);
+    } else {
+      current = Date.parse(a.last_login_date);
     }
 
     if (b.is_logout) {
-      target = Date.parse(b.last_login_date);
-    } else {
       target = Date.parse(b.date);
+    } else {
+      target = Date.parse(b.last_login_date);
     }
 
     return target - current;
