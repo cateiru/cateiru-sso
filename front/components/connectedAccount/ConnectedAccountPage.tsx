@@ -120,6 +120,7 @@ const ConnectedAccountPage = () => {
 
   const deleteService = () => {
     const f = async () => {
+      setLoad(true);
       try {
         await deleteSSO(selectService?.client_id || '');
         setServices(s => {
@@ -139,6 +140,7 @@ const ConnectedAccountPage = () => {
           });
         }
       }
+      setLoad(false);
     };
 
     f();
