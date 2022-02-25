@@ -1,4 +1,6 @@
 import {Text, Flex} from '@chakra-ui/react';
+import React from 'react';
+import KeyAA from './KeyAA';
 
 const NotFoundPage = () => {
   return (
@@ -13,18 +15,7 @@ const NotFoundPage = () => {
       <Text fontSize="2.5rem" fontWeight="light" marginBottom="1.5rem">
         404 | Not Found.
       </Text>
-      <Text fontSize="1.5rem" fontWeight="light">
-        ﾊﾞﾝﾊﾞﾝﾊﾞﾝﾊﾞﾝﾊﾞﾝﾊﾞﾝﾊﾞﾝ
-        <br />
-        ﾊﾞﾝ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ﾊﾞﾝﾊﾞﾝﾊﾞﾝ
-        <br />
-        ﾊﾞﾝ&nbsp;&nbsp;(∩`･ω･)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ﾊﾞﾝﾊﾞﾝ
-        <br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;＿/_ﾐつ/￣￣￣/
-        <br />
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;＼/＿＿＿/￣￣
-        <br />
-      </Text>
+      <KeyAA />
     </Flex>
   );
 };
