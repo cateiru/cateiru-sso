@@ -243,7 +243,10 @@ const OTP = () => {
               <ModalBody>
                 {otpToken && otpGenerate ? (
                   <Center>
-                    <Box>
+                    <Box width="100%">
+                      <Text mb="1rem">
+                        アプリでQRコードを読み込むか、URLをコピーしてワンタイムパスワードを生成してください。
+                      </Text>
                       <Center>
                         <QRcode
                           value={otpToken?.otp_token}
@@ -254,7 +257,6 @@ const OTP = () => {
                       </Center>
                       <InputGroup mt="1rem">
                         <Input
-                          width="20rem"
                           placeholder="OTPのURL"
                           type="url"
                           defaultValue={otpToken?.otp_token}
@@ -277,8 +279,7 @@ const OTP = () => {
                       </InputGroup>
                       <Divider my="1rem" />
                       <Input
-                        width="20rem"
-                        placeholder="確認コードを入力"
+                        placeholder="確認のため、生成されたコードを入力"
                         type="number"
                         onChange={e => setPasscode(e.target.value)}
                         isInvalid={isError}
@@ -286,11 +287,25 @@ const OTP = () => {
                     </Box>
                   </Center>
                 ) : (
-                  <Center my="2rem">
-                    <Button onClick={generate} colorScheme="blue">
-                      ワンタイムパスワードのトークンを生成する
-                    </Button>
-                  </Center>
+                  <>
+                    <Text>
+                      二段階認証を設定すると、アカウントのセキュリティがより強化されます。
+                    </Text>
+                    <Text mt=".2rem">
+                      この機能を使用するには、
+                      <strong>ワンタイムパスワードを生成できるアプリ</strong>
+                      が必要です。
+                    </Text>
+                    <Center my="2rem">
+                      <Button
+                        onClick={generate}
+                        colorScheme="blue"
+                        width="100%"
+                      >
+                        ワンタイムパスワードを有効にする
+                      </Button>
+                    </Center>
+                  </>
                 )}
               </ModalBody>
 
