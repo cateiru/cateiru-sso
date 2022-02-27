@@ -1,6 +1,5 @@
 import {
   Box,
-  Avatar,
   Text,
   Modal,
   ModalOverlay,
@@ -25,6 +24,7 @@ import AvatarEditor from 'react-avatar-editor';
 import {useRecoilState} from 'recoil';
 import {setAvatar} from '../../utils/api/avatar';
 import {UserState} from '../../utils/state/atom';
+import Avatar from '../common/Avatar';
 
 const AvatarSetting = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -104,11 +104,7 @@ const AvatarSetting = () => {
         backgroundColor="white"
         borderRadius="256"
       >
-        <Avatar
-          src={user?.avatar_url}
-          size="full"
-          boxShadow="0 5px 30px -10px black"
-        />
+        <Avatar src={user?.avatar_url} size="full" isShadow />
       </Box>
       <label htmlFor="filename">
         <Text

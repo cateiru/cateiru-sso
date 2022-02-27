@@ -5,7 +5,6 @@ import {
   SimpleGrid,
   useColorMode,
   useToast,
-  Avatar,
   Text,
   Modal,
   ModalOverlay,
@@ -27,6 +26,7 @@ import {useSetRecoilState} from 'recoil';
 import {getUserSSO, ServiceLogInfo, deleteSSO} from '../../utils/api/userSSO';
 import {hawManyDaysAgo, formatDate} from '../../utils/date';
 import {LoadState} from '../../utils/state/atom';
+import Avatar from '../common/Avatar';
 
 const ConnectedAccountPage = () => {
   const {colorMode} = useColorMode();
@@ -185,6 +185,7 @@ const ConnectedAccountPage = () => {
                 size="xl"
                 name={selectService?.name}
                 src={selectService?.service_icon}
+                isShadow
               />
             </Center>
             <Heading textAlign="center" fontWeight="bold" fontSize="1.5rem">

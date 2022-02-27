@@ -5,7 +5,6 @@ import {
   Heading,
   Text,
   useColorMode,
-  Avatar,
   Center,
   useDisclosure,
 } from '@chakra-ui/react';
@@ -13,6 +12,7 @@ import React from 'react';
 import {useSetRecoilState} from 'recoil';
 import {getSSOs, Service} from '../../utils/api/proSSO';
 import {LoadState} from '../../utils/state/atom';
+import Avatar from '../common/Avatar';
 import CreateSSO from './CreateSSO';
 import ServiceDetails from './ServiceDetails';
 

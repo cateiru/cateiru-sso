@@ -3,7 +3,6 @@ import {
   Box,
   Stack,
   Center,
-  Avatar,
   Heading,
   Table,
   Thead,
@@ -32,6 +31,7 @@ import {useRecoilValue, useSetRecoilState} from 'recoil';
 import {deleteUser, getUsers, role} from '../../utils/api/admin';
 import {UserState, LoadState} from '../../utils/state/atom';
 import {UserInfo} from '../../utils/state/types';
+import Avatar from '../common/Avatar';
 
 const selectRoleColor = (v: string) => {
   switch (v) {
@@ -179,11 +179,7 @@ const UserDetails = () => {
             backgroundColor="white"
             borderRadius="256"
           >
-            <Avatar
-              src={user?.avatar_url}
-              size="full"
-              boxShadow="0 5px 30px -10px black"
-            />
+            <Avatar src={user?.avatar_url} size="full" isShadow />
           </Box>
         </Center>
         <Box width="100%">

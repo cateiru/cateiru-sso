@@ -2,7 +2,6 @@ import {useToast} from '@chakra-ui/react';
 import {
   Box,
   Center,
-  Avatar,
   Heading,
   Text,
   Button,
@@ -18,6 +17,7 @@ import {useRecoilValue} from 'recoil';
 import {login, preview, ServicePreview} from '../../../utils/api/loginSSO';
 import {OIDCRequestQuery} from '../../../utils/sso/login';
 import {UserState} from '../../../utils/state/atom';
+import Avatar from '../../common/Avatar';
 import Spinner from '../../common/Spinner';
 
 enum LoginState {
@@ -143,7 +143,7 @@ const LoginPage: React.FC<{
                 {!token ? (
                   <>
                     <Center mt="2rem" mb="1rem">
-                      <Avatar src={user?.avatar_url} size="xl" />
+                      <Avatar src={user?.avatar_url} size="xl" isShadow />
                       <Text fontSize="1.5rem" fontWeight="bold" mx="1rem">
                         …
                       </Text>
@@ -151,6 +151,7 @@ const LoginPage: React.FC<{
                         name={service?.name}
                         src={service?.service_icon}
                         size="xl"
+                        isShadow
                       />
                     </Center>
                     <Heading textAlign="center">{service?.name}</Heading>

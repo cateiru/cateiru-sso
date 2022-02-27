@@ -16,7 +16,6 @@ import {
   useClipboard,
   InputGroup,
   InputRightElement,
-  Avatar,
   Center,
   Box,
   useDisclosure,
@@ -48,6 +47,7 @@ import {
   editSSO,
   Service,
 } from '../../utils/api/proSSO';
+import Avatar from '../common/Avatar';
 
 const ServiceDetails: React.FC<{
   service: Service | undefined;
@@ -249,6 +249,7 @@ const ServiceDetails: React.FC<{
                 size="lg"
                 name={service?.name}
                 src={service?.service_icon}
+                isShadow
               />
             </Center>
             <Text textAlign="center" fontWeight="bold">

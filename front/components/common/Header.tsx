@@ -6,7 +6,6 @@ import {
   useColorMode,
   Tooltip,
   Center,
-  Avatar,
   Spinner,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
@@ -16,6 +15,7 @@ import {IoSettingsOutline, IoGridOutline} from 'react-icons/io5';
 import {MdOutlineDarkMode, MdOutlineLightMode} from 'react-icons/md';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
+import Avatar from './Avatar';
 import Logo from './Logo';
 
 const Header = React.memo(() => {

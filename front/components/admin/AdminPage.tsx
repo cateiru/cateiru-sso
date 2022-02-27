@@ -6,7 +6,6 @@ import {
   Th,
   Td,
   Center,
-  Avatar,
   Link,
   useToast,
   Heading,
@@ -18,6 +17,7 @@ import {useSetRecoilState} from 'recoil';
 import {getAllUsers} from '../../utils/api/admin';
 import {LoadState} from '../../utils/state/atom';
 import {UserInfo} from '../../utils/state/types';
+import Avatar from '../common/Avatar';
 
 const AdminPage = () => {
   const [users, setUsers] = React.useState<UserInfo[]>([]);
