@@ -185,11 +185,13 @@ const LoginPage: React.FC<{
                           リダイレクトせずトークンが表示されます
                         </Text>
                       ) : (
-                        <Text fontSize=".8rem">
+                        <Text fontSize=".8rem" textAlign="center">
                           <Link href={oidc.redirectURL} isExternal>
                             {oidc.redirectURL}
                           </Link>
-                          へリダイレクトします
+                          <Text as="span" whiteSpace="nowrap">
+                            へリダイレクトします
+                          </Text>
                         </Text>
                       )}
                     </Center>
