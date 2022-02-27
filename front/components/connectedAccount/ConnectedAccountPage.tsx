@@ -35,6 +35,7 @@ const ConnectedAccountPage = () => {
   const [selectService, setSelectService] = React.useState<ServiceLogInfo>();
   const [selectIndex, setSelectIndex] = React.useState(0);
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const deleteModal = useDisclosure();
   const setLoad = useSetRecoilState(LoadState);
 
   React.useEffect(() => {
@@ -129,7 +130,7 @@ const ConnectedAccountPage = () => {
 
           return cloneServices;
         });
-        onClose();
+        deleteModal.onClose();
       } catch (error) {
         if (error instanceof Error) {
           toast({
@@ -212,13 +213,43 @@ const ConnectedAccountPage = () => {
             <Heading fontSize="1.2rem" mb=".5rem" mt="1rem">
               連携解除
             </Heading>
-            <Button variant="ghost" colorScheme="red" onClick={deleteService}>
+            <Button
+              variant="ghost"
+              colorScheme="red"
+              onClick={() => {
+                onClose();
+                deleteModal.onOpen();
+              }}
+            >
               連携を解除する
             </Button>
           </ModalBody>
 
           <ModalFooter>
             <Button mr={3} onClick={onClose}>
+              閉じる
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.onClose}
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader pr="5rem">{selectService?.name}の連携を解除</ModalHeader>
+          <ModalCloseButton size="lg" />
+          <ModalBody>
+            連携を解除すると、そのサービスからログアウトされる可能性があります。
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="red" onClick={deleteService}>
+              連携を解除する
+            </Button>
+            <Button ml=".2rem" variant="ghost" onClick={deleteModal.onClose}>
               閉じる
             </Button>
           </ModalFooter>
