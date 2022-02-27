@@ -9,6 +9,7 @@ import {
   Flex,
   Textarea,
   useClipboard,
+  Link,
 } from '@chakra-ui/react';
 import {useRouter} from 'next/router';
 import React from 'react';
@@ -167,7 +168,7 @@ const LoginPage: React.FC<{
                         ログインする
                       </Button>
                     </Center>
-                    <Center mt=".5rem" mb={{base: '3rem', sm: '5rem'}}>
+                    <Center mt=".5rem">
                       <Button
                         w="95%"
                         size="md"
@@ -176,6 +177,20 @@ const LoginPage: React.FC<{
                       >
                         キャンセルする
                       </Button>
+                    </Center>
+                    <Center mt="1rem">
+                      {oidc.redirectURL === 'direct' ? (
+                        <Text fontSize=".8rem">
+                          リダイレクトせずトークンが表示されます
+                        </Text>
+                      ) : (
+                        <Text fontSize=".8rem">
+                          <Link href={oidc.redirectURL} isExternal>
+                            {oidc.redirectURL}
+                          </Link>
+                          へリダイレクトします
+                        </Text>
+                      )}
                     </Center>
                   </>
                 ) : (
