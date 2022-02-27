@@ -23,7 +23,12 @@ export const hawManyDaysAgo = (date: Date): string => {
     return `${Math.floor(diffSec / 3600)}時間前`;
   } else if (diffSec < 86400 * 7) {
     return `${Math.floor(diffSec / 86400)}日前`;
+  } else if (diffSec < 86400 * 30) {
+    return `${Math.floor(diffSec / (86400 * 7))}週間前`;
+  } else if (diffSec < 86400 * 90) {
+    // 3ヶ月前（90日）まで表示する
+    return `${Math.floor(diffSec / (86400 * 30))}ヶ月前`;
   } else {
-    return formatDate(date);
+    return '3ヶ月以上前';
   }
 };
