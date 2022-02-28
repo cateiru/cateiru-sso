@@ -3,6 +3,7 @@ import type {AppProps} from 'next/app';
 import Router, {useRouter} from 'next/router';
 import nprogress from 'nprogress';
 import {useEffect} from 'react';
+import React from 'react';
 import {GoogleReCaptchaProvider} from 'react-google-recaptcha-v3';
 import {RecoilRoot} from 'recoil';
 import Font from '../components/common/Font';
@@ -18,7 +19,20 @@ nprogress.configure({showSpinner: false, speed: 400, minimum: 0.25});
 const reCAPTCHA = process.env.NEXT_PUBLIC_RE_CAPTCHA;
 
 const App = ({Component, pageProps}: AppProps) => {
+  const [scriptProps] = React.useState<{
+    nonce?: string;
+    defer?: boolean;
+    async?: boolean;
+    appendTo?: 'head' | 'body';
+    id?: string;
+  }>({
+    async: false,
+    defer: false,
+    appendTo: 'head',
+  });
+
   const router = useRouter();
+
   useEffect(() => {
     if (!GA_TRACKING_ID) return;
 
@@ -49,12 +63,7 @@ const App = ({Component, pageProps}: AppProps) => {
         <GoogleReCaptchaProvider
           reCaptchaKey={reCAPTCHA}
           language="ja"
-          scriptProps={{
-            async: false,
-            defer: false,
-            appendTo: 'head',
-            nonce: undefined,
-          }}
+          scriptProps={scriptProps}
         >
           <Font />
           <Load />
