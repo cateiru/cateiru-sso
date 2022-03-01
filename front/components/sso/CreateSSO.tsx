@@ -251,7 +251,7 @@ const CreateSSO: React.FC<{setService: (s: Service) => void}> = ({
                 <Input
                   id="roles"
                   type="text"
-                  placeholder="ロール"
+                  placeholder="ロール（,区切り）"
                   {...register('roles', {
                     pattern: {
                       value: /(,?[0-9a-z]+)*/,
