@@ -343,3 +343,65 @@ func TestSetImage(t *testing.T) {
 
 	require.NotEmpty(t, tools.ConvertByteResp(resp))
 }
+
+func TestSSOAllowRole(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser().AddRole("pro")
+	_, err = dummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+
+	s := tools.NewTestServer(t, ssoServer(), true)
+	s.AddSession(ctx, db, dummy)
+
+	// --- SSOを追加する
+
+	form := pro.SetRequest{
+		Name:       "Test",
+		FromURL:    []string{"https://example.com/login"},
+		ToURL:      []string{"https://example.com/login/redirect"},
+		AllowRoles: []string{"test"},
+	}
+
+	resp := s.Post(t, "/", form)
+
+	var keys models.SSOService
+	err = json.Unmarshal(tools.ConvertByteResp(resp), &keys)
+	require.NoError(t, err)
+
+	require.NotEmpty(t, keys.ClientID)
+	require.Equal(t, keys.Name, form.Name)
+	require.NotEmpty(t, keys.TokenSecret)
+
+	// --- SSO一覧を取得する
+
+	resp = s.Get(t, "/")
+
+	var sso []pro.SSOService
+	err = json.Unmarshal(tools.ConvertByteResp(resp), &sso)
+	require.NoError(t, err)
+
+	require.Len(t, sso, 1)
+	require.Equal(t, sso[0].UserId.UserId, dummy.UserID)
+	require.Equal(t, sso[0].LoginCount, 0)
+	require.Equal(t, sso[0].AllowRoles[0], "test")
+
+	// --- SSOを削除する
+
+	s.Delete(t, fmt.Sprintf("/?id=%s", keys.ClientID))
+
+	// --- もう一度一覧を取得する（削除されたか確認する）
+
+	resp = s.Get(t, "/")
+
+	err = json.Unmarshal(tools.ConvertByteResp(resp), &sso)
+	require.NoError(t, err)
+
+	require.Len(t, sso, 0)
+}

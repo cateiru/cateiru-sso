@@ -160,6 +160,8 @@ type SSOService struct {
 	FromUrl []string `datastore:"fromUrl" json:"from_url"`
 	ToUrl   []string `datastore:"toUrl" json:"to_url"`
 
+	AllowRoles []string `datastore:"allowRoles,omitempty" json:"allow_roles"`
+
 	UserId
 }
 

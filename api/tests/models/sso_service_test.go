@@ -37,6 +37,8 @@ func TestSSOService(t *testing.T) {
 			FromUrl:     []string{"https://example.com/login"},
 			ToUrl:       []string{"https://example.com/login/redirect"},
 
+			AllowRoles: []string{"hoge"},
+
 			UserId: models.UserId{
 				UserId: dummy.UserID,
 			},

@@ -24,6 +24,8 @@ type SetRequest struct {
 	FromURL []string `json:"from_url"`
 	ToURL   []string `json:"to_url"`
 
+	AllowRoles []string `json:"allow_roles"`
+
 	ChangeTokenSecert bool `json:"change_token_secret"`
 }
 
@@ -84,6 +86,10 @@ func SetService(w http.ResponseWriter, r *http.Request) error {
 			UserId: models.UserId{
 				UserId: userId,
 			},
+		}
+
+		if len(form.AllowRoles) != 0 {
+			newService.AllowRoles = form.AllowRoles
 		}
 
 		if err := newService.Add(ctx, db); err != nil {
