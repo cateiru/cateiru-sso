@@ -123,6 +123,14 @@ func SetService(w http.ResponseWriter, r *http.Request) error {
 		if form.ChangeTokenSecert {
 			service.TokenSecret = utils.CreateID(0)
 		}
+		if len(form.AllowRoles) != 0 {
+			if len(form.AllowRoles) == 1 && form.AllowRoles[0] == "" {
+				service.AllowRoles = []string{}
+			} else {
+				service.AllowRoles = form.AllowRoles
+			}
+
+		}
 
 		if err := service.Add(ctx, db); err != nil {
 			return status.NewInternalServerErrorError(err).Caller()

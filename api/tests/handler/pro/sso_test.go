@@ -223,6 +223,8 @@ func TestChangeServiceInfo(t *testing.T) {
 		ClientId: keys.ClientID,
 		FromURL:  []string{"https://cateiru.com"},
 
+		AllowRoles: []string{"test"},
+
 		ChangeTokenSecert: true,
 	}
 
@@ -238,9 +240,13 @@ func TestChangeServiceInfo(t *testing.T) {
 	require.NotEqual(t, keys.TokenSecret, keys2.TokenSecret)
 	require.NotEqual(t, keys.FromUrl[0], keys2.FromUrl[0])
 
+	require.Equal(t, keys2.AllowRoles[0], "test")
+
 	changeForm2 := pro.SetRequest{
 		ClientId: keys.ClientID,
 		ToURL:    []string{"https://cateiru.com/login"},
+
+		AllowRoles: []string{""},
 
 		Name: "new",
 	}
@@ -256,6 +262,7 @@ func TestChangeServiceInfo(t *testing.T) {
 
 	require.Equal(t, keys2.TokenSecret, keys3.TokenSecret)
 	require.Equal(t, keys2.FromUrl[0], keys3.FromUrl[0])
+	require.Len(t, keys3.AllowRoles, 0)
 
 }
 

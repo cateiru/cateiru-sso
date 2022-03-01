@@ -100,10 +100,12 @@ const ServiceDetails: React.FC<{
       .fill('')
       .map((_, index) => values[`tourl${index}`])
       .sort();
+    const roles = values.roles.split(',');
 
     let changedName = '';
     let changedFromURL: string[] = [];
     let changedToURL: string[] = [];
+    let changedRoles: string[] = [];
     let isChanged = false;
     if (service?.name !== values.name) {
       changedName = values.name;
@@ -115,6 +117,13 @@ const ServiceDetails: React.FC<{
     }
     if (JSON.stringify(service?.to_url.sort()) !== JSON.stringify(toURL)) {
       changedToURL = toURL;
+      isChanged = true;
+    }
+    if (
+      JSON.stringify(service?.allow_roles?.sort()) !==
+      JSON.stringify(roles.sort())
+    ) {
+      changedRoles = roles;
       isChanged = true;
     }
     if (values.secret) {
@@ -132,7 +141,8 @@ const ServiceDetails: React.FC<{
           changedName,
           changedFromURL,
           changedToURL,
-          values.secret
+          values.secret,
+          changedRoles
         );
         changeService(newService);
         toast({
@@ -333,6 +343,22 @@ const ServiceDetails: React.FC<{
                 );
               })}
             </UnorderedList>
+            {(service?.allow_roles || service?.allow_roles?.length === 0) && (
+              <>
+                <Text mt="1rem" mb=".2rem" fontSize="1.2rem">
+                  ロール
+                </Text>
+                <UnorderedList>
+                  {service?.allow_roles.map(v => {
+                    return (
+                      <ListItem key={v} ml="1rem">
+                        {v}
+                      </ListItem>
+                    );
+                  })}
+                </UnorderedList>
+              </>
+            )}
             <Text mt="1rem" mb=".2rem" fontSize="1.2rem">
               編集
             </Text>
@@ -533,6 +559,26 @@ const ServiceDetails: React.FC<{
                   }}
                 />
               </ButtonGroup>
+              <FormControl isInvalid={errors.roles}>
+                <FormLabel htmlFor="roles" mt="1rem">
+                  ロール（オプション）
+                </FormLabel>
+                <Input
+                  id="roles"
+                  type="text"
+                  placeholder="ロール"
+                  defaultValue={service?.allow_roles?.join(',')}
+                  {...register('roles', {
+                    pattern: {
+                      value: /(,?[0-9a-z]+)*/,
+                      message: 'ロールはコンマ区切りで入力してください',
+                    },
+                  })}
+                />
+                <FormErrorMessage>
+                  {errors.roles && errors.roles.message}
+                </FormErrorMessage>
+              </FormControl>
               <FormLabel mt="1rem">Token Secret</FormLabel>
               <Switch size="md" {...register('secret')}>
                 Token Secretを更新する

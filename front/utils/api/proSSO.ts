@@ -9,6 +9,7 @@ export interface Service {
   from_url: string[];
   to_url: string[];
   user_id: string;
+  allow_roles?: string[];
 }
 
 export const getSSOs = async (): Promise<Service[]> => {
@@ -24,11 +25,19 @@ export const getSSOs = async (): Promise<Service[]> => {
 export const setSSOs = async (
   name: string,
   fromURLs: string[],
-  toURLs: string[]
+  toURLs: string[],
+  roles: string[]
 ): Promise<Service> => {
   const api = new API();
 
-  api.post(JSON.stringify({name: name, from_url: fromURLs, to_url: toURLs}));
+  api.post(
+    JSON.stringify({
+      name: name,
+      from_url: fromURLs,
+      to_url: toURLs,
+      allow_roles: roles,
+    })
+  );
 
   const resp = await api.connect('/pro/sso');
 
@@ -40,7 +49,8 @@ export const editSSO = async (
   name: string,
   fromURLs: string[],
   toURLs: string[],
-  changeTokenSecret: boolean
+  changeTokenSecret: boolean,
+  roles: string[]
 ) => {
   const api = new API();
 
@@ -51,6 +61,7 @@ export const editSSO = async (
       from_url: fromURLs,
       to_url: toURLs,
       change_token_secret: changeTokenSecret,
+      allow_roles: roles,
     })
   );
 

@@ -50,8 +50,10 @@ const CreateSSO: React.FC<{setService: (s: Service) => void}> = ({
         .fill('')
         .map((_, index) => values[`tourl${index}`]);
 
+      const roles = values.roles.length === 0 ? [] : values.roles.split(',');
+
       try {
-        const service = await setSSOs(values.name, fromURL, toURL);
+        const service = await setSSOs(values.name, fromURL, toURL, roles);
         setService(service);
         toast({
           title: '作成しました',
@@ -242,6 +244,25 @@ const CreateSSO: React.FC<{setService: (s: Service) => void}> = ({
                   }}
                 />
               </ButtonGroup>
+              <FormControl isInvalid={errors.roles}>
+                <FormLabel htmlFor="roles" mt="1rem">
+                  ロール（オプション）
+                </FormLabel>
+                <Input
+                  id="roles"
+                  type="text"
+                  placeholder="ロール"
+                  {...register('roles', {
+                    pattern: {
+                      value: /(,?[0-9a-z]+)*/,
+                      message: 'ロールはコンマ区切りで入力してください',
+                    },
+                  })}
+                />
+                <FormErrorMessage>
+                  {errors.roles && errors.roles.message}
+                </FormErrorMessage>
+              </FormControl>
             </ModalBody>
             <ModalFooter>
               <Button colorScheme="blue" type="submit" mr={3}>
