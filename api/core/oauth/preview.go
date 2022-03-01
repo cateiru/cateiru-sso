@@ -42,9 +42,9 @@ func ServicePreview(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	service, err := request.Required(ctx, db)
+	service, err, errCode := request.Required(ctx, db)
 	if err != nil {
-		return status.NewBadRequestError(err).Caller()
+		return status.NewBadRequestError(err).Caller().AddCode(errCode)
 	}
 
 	// roleが設定している場合、そのユーザは対象のroleがあるかチェックする
@@ -68,7 +68,7 @@ func ServicePreview(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		if !ok {
-			return status.NewBadRequestError(errors.New("role")).Caller()
+			return status.NewBadRequestError(errors.New("role")).Caller().AddCode(net.NoRole)
 		}
 	}
 

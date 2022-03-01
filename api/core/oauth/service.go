@@ -6,6 +6,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 )
 
 type Service struct {
@@ -19,17 +20,17 @@ type Service struct {
 	FromURL string `json:"from_url"`
 }
 
-func (c *Service) Required(ctx context.Context, db *database.Database) (*models.SSOService, error) {
+func (c *Service) Required(ctx context.Context, db *database.Database) (*models.SSOService, error, int) {
 	if len(c.Scope) == 0 {
-		return nil, errors.New("scope is null")
+		return nil, errors.New("scope is null"), net.IncorrectOIDC
 	} else if len(c.ResponseType) == 0 {
-		return nil, errors.New("response type is null")
+		return nil, errors.New("response type is null"), net.IncorrectOIDC
 	} else if len(c.ClientID) == 0 {
-		return nil, errors.New("client id is null")
+		return nil, errors.New("client id is null"), net.IncorrectOIDC
 	} else if len(c.RedirectURL) == 0 {
-		return nil, errors.New("redirect url is null")
+		return nil, errors.New("redirect url is null"), net.IncorrectOIDC
 	} else if len(c.FromURL) == 0 {
-		return nil, errors.New("from url is null")
+		return nil, errors.New("from url is null"), net.IncorrectOIDC
 	}
 
 	isOpenIDScope := false
@@ -40,16 +41,16 @@ func (c *Service) Required(ctx context.Context, db *database.Database) (*models.
 		}
 	}
 	if !isOpenIDScope {
-		return nil, errors.New("no exist openid value in scope filed")
+		return nil, errors.New("no exist openid value in scope filed"), net.IncorrectOIDC
 	}
 
 	ssoService, err := models.GetSSOServiceByClientId(ctx, db, c.ClientID)
 	if err != nil {
-		return nil, err
+		return nil, err, 1
 	}
 
 	if ssoService == nil {
-		return nil, errors.New("service not found")
+		return nil, errors.New("service not found"), net.NotExistService
 	}
 
 	isRedirectURL := false
@@ -60,7 +61,7 @@ func (c *Service) Required(ctx context.Context, db *database.Database) (*models.
 		}
 	}
 	if !isRedirectURL {
-		return nil, errors.New("redirect url is not exist")
+		return nil, errors.New("redirect url is not exist"), net.NoRedirectURI
 	}
 
 	isFromURL := false
@@ -71,8 +72,8 @@ func (c *Service) Required(ctx context.Context, db *database.Database) (*models.
 		}
 	}
 	if !isFromURL {
-		return nil, errors.New("from url is not")
+		return nil, errors.New("from url is not"), net.NoRefererURI
 	}
 
-	return ssoService, nil
+	return ssoService, nil, 0
 }

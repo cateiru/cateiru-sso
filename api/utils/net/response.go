@@ -34,6 +34,11 @@ const (
 	IncorrectUserName        // ユーザ名が正しくない
 	PasswordWrong            // パスワードが違う
 	FailedOTP                // OTPが違う
+	NoRedirectURI            // SSO serviceのリダイレクトURIが違う
+	NoRefererURI             // SSO serviceのrefer uriが違う
+	NoRole                   // roleが違う
+	NotExistService          // そのようなSSO Serviceは存在しない
+	IncorrectOIDC            // OpenID Connectの仕様に沿っていない
 )
 
 type AbstractResponse struct {
