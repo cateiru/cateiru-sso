@@ -34,6 +34,7 @@ const LoginPage: React.FC<{
   const [token, setToken] = React.useState<string | undefined>();
   const [status, setStatus] = React.useState(LoginState.Loading);
   const [load, setLoad] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState('値が不正です');
 
   const router = useRouter();
   const toast = useToast();
@@ -58,13 +59,7 @@ const LoginPage: React.FC<{
       } catch (error) {
         if (error instanceof Error) {
           setStatus(LoginState.Failed);
-          toast({
-            title: 'エラー',
-            description: error.message,
-            status: 'error',
-            isClosable: true,
-            duration: 9000,
-          });
+          setErrorMessage(error.message);
         }
       }
     };
@@ -242,9 +237,7 @@ const LoginPage: React.FC<{
             <Flex height="100%" alignItems="center" color="red.600">
               <Box width="100%">
                 <Heading textAlign="center">エラー</Heading>
-                <Text textAlign="center">
-                  URLが間違っているか、サービスが存在しません
-                </Text>
+                <Text textAlign="center">{errorMessage}</Text>
               </Box>
             </Flex>
           </Box>

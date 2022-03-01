@@ -40,6 +40,16 @@ export default function decodeErrorCode(code: number): string {
       return 'パスワードが違うようです';
     case 13:
       return 'ワンタイムパスワードが違うため認証できませんでした';
+    case 14:
+      return 'リダイレクトURLが不正です';
+    case 15:
+      return '不正なページからこのページに移動してきました';
+    case 16:
+      return 'あなたは権限がありません';
+    case 17:
+      return 'そのようなサービスは存在しません';
+    case 18:
+      return 'OpenID Connectの仕様に沿っていないようです';
     default:
       return 'エラー';
   }
