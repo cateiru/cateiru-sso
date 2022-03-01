@@ -9,6 +9,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
@@ -59,7 +60,7 @@ func TestService(t *testing.T) {
 		FromURL:      "https://example.com",
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, _ = s.Required(ctx, db)
 	require.NoError(t, err)
 
 	// 失敗
@@ -74,8 +75,9 @@ func TestService(t *testing.T) {
 		FromURL:      "https://example.com",
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, code := s.Required(ctx, db)
 	require.Error(t, err)
+	require.Equal(t, code, net.IncorrectOIDC)
 
 	s = oauth.Service{
 		Scope:        []string{"openid"},
@@ -87,8 +89,9 @@ func TestService(t *testing.T) {
 		FromURL:      "https://example.com",
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, code = s.Required(ctx, db)
 	require.Error(t, err)
+	require.Equal(t, code, net.NoRedirectURI)
 
 	s = oauth.Service{
 		Scope:        []string{"openid"},
@@ -100,8 +103,9 @@ func TestService(t *testing.T) {
 		FromURL:      "https://example.com/hoge", //from urlが定義されてない
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, code = s.Required(ctx, db)
 	require.Error(t, err)
+	require.Equal(t, code, net.NoRefererURI)
 
 	s = oauth.Service{
 		Scope:        []string{}, //空
@@ -113,8 +117,9 @@ func TestService(t *testing.T) {
 		FromURL:      "https://example.com",
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, code = s.Required(ctx, db)
 	require.Error(t, err)
+	require.Equal(t, code, net.IncorrectOIDC)
 
 	s = oauth.Service{
 		Scope:        []string{"openid"},
@@ -126,8 +131,9 @@ func TestService(t *testing.T) {
 		FromURL:      "https://example.com",
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, code = s.Required(ctx, db)
 	require.Error(t, err)
+	require.Equal(t, code, net.IncorrectOIDC)
 
 	s = oauth.Service{
 		Scope:        []string{"openid"},
@@ -139,8 +145,9 @@ func TestService(t *testing.T) {
 		FromURL:      "https://example.com",
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, code = s.Required(ctx, db)
 	require.Error(t, err)
+	require.Equal(t, code, net.IncorrectOIDC)
 
 	s = oauth.Service{
 		Scope:        []string{"openid"},
@@ -152,8 +159,9 @@ func TestService(t *testing.T) {
 		FromURL:      "", // 空
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, code = s.Required(ctx, db)
 	require.Error(t, err)
+	require.Equal(t, code, net.IncorrectOIDC)
 
 	s = oauth.Service{
 		Scope:        []string{"openid"},
@@ -165,6 +173,7 @@ func TestService(t *testing.T) {
 		FromURL:      "https://example.com", // 空
 	}
 
-	_, err = s.Required(ctx, db)
+	_, err, code = s.Required(ctx, db)
 	require.Error(t, err)
+	require.Equal(t, code, net.IncorrectOIDC)
 }
