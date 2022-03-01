@@ -6,6 +6,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/api/core/common"
 	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
@@ -44,6 +45,31 @@ func ServicePreview(w http.ResponseWriter, r *http.Request) error {
 	service, err := request.Required(ctx, db)
 	if err != nil {
 		return status.NewBadRequestError(err).Caller()
+	}
+
+	// roleが設定している場合、そのユーザは対象のroleがあるかチェックする
+	if len(service.AllowRoles) != 0 {
+		roles, err := models.GetRoleByUserID(ctx, db, c.UserId)
+		if err != nil {
+			return status.NewInternalServerErrorError(err).Caller()
+		}
+		if roles == nil {
+			return status.NewInternalServerErrorError(errors.New("role empty")).Caller()
+		}
+		ok := false
+
+		for _, role := range roles.Role {
+			for _, requiredRole := range service.AllowRoles {
+				if role == requiredRole {
+					ok = true
+					break
+				}
+			}
+		}
+
+		if !ok {
+			return status.NewBadRequestError(errors.New("role")).Caller()
+		}
 	}
 
 	net.ResponseOK(w, ResponsePerview{
