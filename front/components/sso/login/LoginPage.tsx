@@ -34,10 +34,10 @@ const LoginPage: React.FC<{
   const [token, setToken] = React.useState<string | undefined>();
   const [status, setStatus] = React.useState(LoginState.Loading);
   const [load, setLoad] = React.useState(false);
+  const [cancelLoad, setCancelLoad] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('値が不正です');
 
   const router = useRouter();
-  const toast = useToast();
   const user = useRecoilValue(UserState);
   const {hasCopied, onCopy} = useClipboard(token || '');
 
@@ -95,6 +95,7 @@ const LoginPage: React.FC<{
   };
 
   const cancel = () => {
+    setCancelLoad(true);
     errorResp('consent_required');
   };
 
@@ -160,8 +161,9 @@ const LoginPage: React.FC<{
                         size="md"
                         onClick={submit}
                         isLoading={load}
+                        disabled={cancelLoad}
                       >
-                        ログインする
+                        許可する
                       </Button>
                     </Center>
                     <Center mt=".5rem">
@@ -169,7 +171,7 @@ const LoginPage: React.FC<{
                         w="95%"
                         size="md"
                         onClick={cancel}
-                        disabled={load}
+                        disabled={load || cancelLoad}
                       >
                         キャンセルする
                       </Button>
