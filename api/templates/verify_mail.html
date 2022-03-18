@@ -5,59 +5,133 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>メールアドレス認証のお知らせ</title>
+    <title>メールアドレスの認証</title>
     <style>
-        h1 {
-            font-size: 1.5rem;
-            text-align: center;
+        .box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            margin: 1rem;
+
+            background-color: white;
+
+            border-radius: 33px;
+
+            border: #CBD5E0 solid 2px
         }
 
-        .verify-button {
-            font-size: 1.3rem;
-            border-radius: 20px;
-            padding: .5rem 1rem;
-            background-color: #4ab065;
-            color: #e6e6e6;
+        .logo {
+            margin: 1rem;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .description {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 2rem 0 2rem;
+            color: #000000;
+        }
+
+        .verify {
+            margin-top: 2rem;
+            width: 306px;
+            height: 60px;
+            background-color: #48BB78;
+            color: #EDF2F7;
             text-decoration: none;
+            font-size: 25px;
+            font-weight: bold;
+            border-radius: 13px;
 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            -moz-box-shadow: -1px 16px 25px -6px rgba(0, 0, 0, 0.34);
+            -webkit-box-shadow: -1px 16px 25px -6px rgba(0, 0, 0, 0.34);
+            -ms-box-shadow: -1px 16px 25px -6px rgba(0, 0, 0, 0.34);
+            box-shadow: -1px 16px 25px -6px rgba(0, 0, 0, 0.34);
         }
 
-        .verify-button:hover {
-            background-color: #75df91;
-            color: #4e4e4e;
+        .verify:hover {
+            background-color: #38A169;
         }
 
-        .center {
+        .comment {
+            margin: 1rem 0 0 0;
+            color: #4A5568;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .contact {
             text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 2.5rem 2rem 2rem 2rem;
         }
 
-        .button {
-            margin: 2rem;
+        .title {
+            font-size: 1.1rem;
+            color: #171923;
+        }
+
+        .text {
+            color: #171923;
+        }
+
+        @media screen and (max-width:480px) {
+            .box {
+                margin: .5rem;
+            }
+
+            .description {
+                margin: 0 1rem 0 1rem;
+                font-size: 15px;
+            }
+
+            .contact {
+                margin: 2rem 1rem 1rem 1rem;
+            }
+        }
+
+        @media screen and (min-width:781px) {
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .box {
+                width: 700px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>メールアドレス認証のお知らせ</h1>
-    <p class="center">CateiruSSOをご利用いただきありがとうございます。<br />
-        以下のボタンを押してメールアドレスを認証してください。</p>
-    <p class="center">このURLの有効時間は30分です。</p>
-
-    <div class="button">
-        <p class="center">
-            <a class="verify-button" href="{{.VerifyURL}}">メールアドレスを認証する</a>
-        </p>
+    <div class="box">
+        <div class="logo">
+            <img src="https://sso.cateiru.com/ogp.png" width="90%" />
+        </div>
+        <p class="description">アカウントを作成するには、下のボタンをクリックして、メールアドレスを認証してください。</p>
+        <a href="{{.VerifyURL}}" aria-label="verify" class="verify">認証する</a>
+        <p class="comment">認証の有効期限は30分です。</p>
+        <div class="contact">
+            <p class="title">ご登録の覚えがないのにこのメールが届いたという方</p>
+            <p class="text">
+                ご迷惑おかけし申し訳ございません。お手数ですが、<a
+                    href="https://cateiru.com/contact?title=%E7%99%BB%E9%8C%B2%E3%81%97%E3%81%9F%E8%A6%9A%E3%81%88%E3%81%8C%E3%81%AA%E3%81%84%E3%81%AB%E8%AA%8D%E8%A8%BC%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%8C%E5%B1%8A%E3%81%84%E3%81%9F">お問い合わせフォーム</a>までご連絡お願い致します。
+            </p>
+        </div>
     </div>
-
-    <h3 class="center">ご登録の覚えがないのにこのメールが届いたという方</h3>
-    <p class="center">ご迷惑をおかけし申し訳ありません。大変お手数ですが下記フォームまでご連絡をお願いいたします。</p>
-    <p class="center">
-        <a
-            href="https://cateiru.com/contact?title=%E7%99%BB%E9%8C%B2%E3%81%97%E3%81%9F%E8%A6%9A%E3%81%88%E3%81%8C%E3%81%AA%E3%81%84%E3%81%AB%E8%AA%8D%E8%A8%BC%E3%83%A1%E3%83%BC%E3%83%AB%E3%81%8C%E5%B1%8A%E3%81%84%E3%81%9F">
-            お問い合わせフォーム
-        </a>
-    </p>
-
 </body>
 
 </html>
