@@ -3,7 +3,9 @@ name: Lint
 
 on:
   push:
-    branches: [ main ]
+    paths:
+      - 'api/**'
+      - 'front/**'
   pull_request:
     branches: [ main ]
 
