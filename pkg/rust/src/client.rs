@@ -23,6 +23,6 @@ mod tests {
 
         let uri = client::create_uri(client_id, redirect);
 
-        assert_eq!(uri, "https://sso.cateiru.com/sso/login?scope=openid&response_type=code&client_id=hoge&redirect_uri=https://example.com&prompt=consent")
+        assert_eq!(uri, "https://sso.cateiru.com/sso/login?scope=openid&response_type=code&client_id=hoge&redirect_uri=https%3A%2F%2Fexample.com&prompt=consent")
     }
 }
