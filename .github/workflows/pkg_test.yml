@@ -2,10 +2,13 @@ name: Package test
 
 on:
   push:
+    branches: [ main ]
     paths:
       - 'pkg/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'pkg/**'
 
 jobs:
   go:
