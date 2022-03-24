@@ -11,3 +11,18 @@ pub fn create_uri(client_id: &str, redirect: &str) -> String {
         SSO_ENDPOINT, encoded_client_id, encoded_redirect
     );
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::client;
+
+    #[test]
+    fn create_uri() {
+        let client_id = "hoge";
+        let redirect = "https://example.com";
+
+        let uri = client::create_uri(client_id, redirect);
+
+        assert_eq!(uri, "https://sso.cateiru.com/sso/login?scope=openid&response_type=code&client_id=hoge&redirect_uri=https://example.com&prompt=consent")
+    }
+}
