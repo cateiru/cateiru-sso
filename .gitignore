@@ -453,3 +453,5 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/go,node,linux,react,macos,windows,visualstudiocode,rust,python,venv
+
+front/certification/localhost*
