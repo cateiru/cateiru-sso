@@ -20,7 +20,9 @@ jobs:
         go-version: 1.18
 
     - name: Build
+      working-directory: ./pkg/go
       run: go build -v ./...
 
     - name: Test
+      working-directory: ./pkg/go
       run: go test -v ./...
