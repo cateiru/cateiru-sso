@@ -3,7 +3,7 @@ import Title from '../../components/common/Title';
 import AccountSetting from '../../components/setting/AccountSetting';
 import SettingPage from '../../components/setting/SettingPage';
 
-const MailSetting = () => {
+const Account = () => {
   return (
     <Require isLogin={true} path="/">
       <Title title="設定 | CateiruSSO" />
@@ -14,4 +14,4 @@ const MailSetting = () => {
   );
 };
 
-export default MailSetting;
+export default Account;
