@@ -47,6 +47,8 @@ func UACHToJson(r *http.Request) ([]byte, error) {
 
 	if len(device) == 0 {
 		device = "Unknown"
+	} else if device[0] == '"' {
+		device = device[1 : len(device)-1]
 	}
 
 	converted := &UserAgent{

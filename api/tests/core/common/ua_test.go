@@ -68,7 +68,7 @@ func TestClientHints(t *testing.T) {
 		Header: http.Header{
 			"Sec-Ch-Ua":          {` Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100`},
 			"Sec-Ch-Ua-Mobile":   {"?0"},
-			"Sec-Ch-Ua-Platform": {"Windows"},
+			"Sec-Ch-Ua-Platform": {"\"Windows\""},
 		},
 	}
 
