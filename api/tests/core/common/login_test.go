@@ -66,8 +66,12 @@ func TestNewLogin(t *testing.T) {
 	dummy := tools.NewDummyUser()
 
 	c := &common.Cert{
-		Ip:        "192.168.1.0",
-		UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+		Ip: "192.168.1.0",
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"},
+			},
+		},
 	}
 
 	err = c.NewLogin(ctx, db, dummy.UserID)

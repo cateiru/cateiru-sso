@@ -23,4 +23,4 @@ services:
       - 4443:4443
     volumes:
       - ./.data:/data/cateiru-sso:cached
-    command: -scheme http -public-host 192.168.3.253:4443
+    command: -scheme http -public-host localhost:4443

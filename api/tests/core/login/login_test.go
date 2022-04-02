@@ -2,6 +2,7 @@ package login_test
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/api/config"
@@ -38,8 +39,12 @@ func TestLogin(t *testing.T) {
 	}
 
 	c := &common.Cert{
-		Ip:        ip,
-		UserAgent: userAgent,
+		Ip: ip,
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {userAgent},
+			},
+		},
 	}
 
 	var loginState *login.Response
@@ -87,8 +92,12 @@ func TestLoginAdmin(t *testing.T) {
 	}
 
 	c := &common.Cert{
-		Ip:        ip,
-		UserAgent: userAgent,
+		Ip: ip,
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {userAgent},
+			},
+		},
 	}
 
 	loginState, err := login.Login(ctx, form, c)
@@ -137,8 +146,12 @@ func TestLoginOTP(t *testing.T) {
 	}
 
 	c := &common.Cert{
-		Ip:        ip,
-		UserAgent: userAgent,
+		Ip: ip,
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {userAgent},
+			},
+		},
 	}
 
 	var loginState *login.Response

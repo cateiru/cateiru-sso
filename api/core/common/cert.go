@@ -26,8 +26,7 @@ type Cert struct {
 
 	AccessID string
 
-	Ip        string
-	UserAgent string
+	Ip string
 }
 
 func NewCert(w http.ResponseWriter, r *http.Request) *Cert {
@@ -39,7 +38,6 @@ func NewCert(w http.ResponseWriter, r *http.Request) *Cert {
 
 func (c *Cert) AddUser() *Cert {
 	c.Ip = net.GetIPAddress(c.Request)
-	c.UserAgent = net.GetUserAgent(c.Request)
 
 	return c
 }
