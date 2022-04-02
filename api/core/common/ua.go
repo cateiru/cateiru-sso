@@ -2,7 +2,9 @@ package common
 
 import (
 	"encoding/json"
+	"net/http"
 
+	"github.com/cateiru/cateiru-sso/api/utils/net"
 	ua "github.com/mileusna/useragent"
 )
 
@@ -18,6 +20,43 @@ type UserAgent struct {
 	Bot       bool   `json:"bot"`
 	URL       string `json:"url"`
 	String    string `json:"string"`
+}
+
+func ParseUserData(r *http.Request) ([]byte, error) {
+	if len(r.Header.Get("Sec-Ch-Ua")) != 0 {
+		return UACHToJson(r)
+	} else {
+		userAgent := net.GetUserAgent(r)
+		return UserAgentToJson(userAgent)
+	}
+}
+
+func UACHToJson(r *http.Request) ([]byte, error) {
+	ch := r.Header.Get("Sec-Ch-Ua")
+	mobile := r.Header.Get("Sec-Ch-Ua-Mobile")
+	device := r.Header.Get("Sec-Ch-Ua-Platform")
+
+	isMobile := false
+	isDeskTop := false
+
+	if mobile == "?1" {
+		isMobile = true
+	} else if mobile == "?0" {
+		isDeskTop = true
+	}
+
+	if len(device) == 0 {
+		device = "Unknown"
+	}
+
+	converted := &UserAgent{
+		Device:  device,
+		Mobile:  isMobile,
+		Desktop: isDeskTop,
+		String:  ch,
+	}
+
+	return json.Marshal(converted)
 }
 
 // userAgentを解析し、json形式で返します

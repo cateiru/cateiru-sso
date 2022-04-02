@@ -296,7 +296,7 @@ func (c *Cert) deleteTokenTx(tx *database.Transaction, sessionToken string, refr
 
 // ログイン履歴を保存する
 func (c *Cert) setLoginHistory(ctx context.Context, db *database.Database) error {
-	userAgentInfo, err := UserAgentToJson(c.UserAgent)
+	userAgentInfo, err := ParseUserData(c.Request)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}
