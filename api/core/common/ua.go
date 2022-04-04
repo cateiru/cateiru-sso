@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/cateiru/cateiru-sso/api/utils/net"
 	ua "github.com/mileusna/useragent"
@@ -51,8 +52,40 @@ func UACHToJson(r *http.Request) ([]byte, error) {
 		device = device[1 : len(device)-1]
 	}
 
+	brandsBuf := strings.Split(ch, ", ")
+	blowser := ""
+	version := ""
+
+brandLabel:
+	for _, brand := range brandsBuf {
+		c := strings.Split(brand, ";v=")
+
+		switch c[0][1 : len(c[0])-1] {
+		case "Google Chrome":
+			blowser = "Chrome"
+			version = c[1][1 : len(c[1])-1]
+			break brandLabel
+		case "Microsoft Edge":
+			blowser = "Edge"
+			version = c[1][1 : len(c[1])-1]
+			break brandLabel
+		case "Opera":
+			blowser = "Opera"
+			version = c[1][1 : len(c[1])-1]
+			break brandLabel
+		case "Chromium":
+			// blowserに値が設定されていない場合のみ設定する
+			if blowser == "" {
+				blowser = "Chromium"
+				version = c[1][1 : len(c[1])-1]
+			}
+		}
+	}
+
 	converted := &UserAgent{
 		Device:  device,
+		Version: version,
+		Name:    blowser,
 		Mobile:  isMobile,
 		Desktop: isDeskTop,
 		String:  ch,

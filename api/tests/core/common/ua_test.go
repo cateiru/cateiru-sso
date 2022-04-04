@@ -66,7 +66,7 @@ func TestUserAgent(t *testing.T) {
 func TestClientHints(t *testing.T) {
 	r := &http.Request{
 		Header: http.Header{
-			"Sec-Ch-Ua":          {` Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100`},
+			"Sec-Ch-Ua":          {`" Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"`},
 			"Sec-Ch-Ua-Mobile":   {"?0"},
 			"Sec-Ch-Ua-Platform": {"\"Windows\""},
 		},
@@ -80,6 +80,8 @@ func TestClientHints(t *testing.T) {
 	err = json.Unmarshal(result, &ua)
 
 	require.Equal(t, ua.Device, "Windows")
+	require.Equal(t, ua.Name, "Chrome")
+	require.Equal(t, ua.Version, "100")
 	require.Equal(t, ua.Desktop, true)
 	require.Equal(t, ua.Mobile, false)
 }
@@ -87,7 +89,7 @@ func TestClientHints(t *testing.T) {
 func TestUserData(t *testing.T) {
 	r := &http.Request{
 		Header: http.Header{
-			"Sec-Ch-Ua":          {` Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100`},
+			"Sec-Ch-Ua":          {`" Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"`},
 			"Sec-Ch-Ua-Mobile":   {"?0"},
 			"Sec-Ch-Ua-Platform": {"Windows"},
 		},
