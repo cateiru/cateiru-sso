@@ -1,4 +1,4 @@
-import {Center, Box, Heading, Button, Stack} from '@chakra-ui/react';
+import {Center, Box, Heading, Button} from '@chakra-ui/react';
 import Link from 'next/link';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
