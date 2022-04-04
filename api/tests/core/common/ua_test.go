@@ -79,7 +79,7 @@ func TestClientHints(t *testing.T) {
 
 	err = json.Unmarshal(result, &ua)
 
-	require.Equal(t, ua.Device, "Windows")
+	require.Equal(t, ua.OS, "Windows")
 	require.Equal(t, ua.Name, "Chrome")
 	require.Equal(t, ua.Version, "100")
 	require.Equal(t, ua.Desktop, true)

@@ -35,7 +35,7 @@ func ParseUserData(r *http.Request) ([]byte, error) {
 func UACHToJson(r *http.Request) ([]byte, error) {
 	ch := r.Header.Get("Sec-Ch-Ua")
 	mobile := r.Header.Get("Sec-Ch-Ua-Mobile")
-	device := r.Header.Get("Sec-Ch-Ua-Platform")
+	os := r.Header.Get("Sec-Ch-Ua-Platform")
 
 	isMobile := false
 	isDeskTop := false
@@ -46,10 +46,10 @@ func UACHToJson(r *http.Request) ([]byte, error) {
 		isDeskTop = true
 	}
 
-	if len(device) == 0 {
-		device = "Unknown"
-	} else if device[0] == '"' {
-		device = device[1 : len(device)-1]
+	if len(os) == 0 {
+		os = "Unknown"
+	} else if os[0] == '"' {
+		os = os[1 : len(os)-1]
 	}
 
 	brandsBuf := strings.Split(ch, ", ")
@@ -83,8 +83,8 @@ brandLabel:
 	}
 
 	converted := &UserAgent{
-		Device:  device,
 		Version: version,
+		OS:      os,
 		Name:    blowser,
 		Mobile:  isMobile,
 		Desktop: isDeskTop,
