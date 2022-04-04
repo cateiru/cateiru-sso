@@ -19,9 +19,14 @@ const WaitMail = React.memo<{mail: string; receive: boolean; close: boolean}>(
           </>
         ) : (
           <>
-            <Heading>{mail} に確認メールを送信しました</Heading>
-            <Text mt="1rem">
-              メールアドレスが確認されるとこのページで続きをすることができます
+            <Heading
+              fontSize={{base: '1.2rem', md: '1.5rem'}}
+              textAlign="center"
+            >
+              {mail} に確認メールを送信しました
+            </Heading>
+            <Text mt="1rem" textAlign="center">
+              メールアドレスが確認されるとこのページで続きをすることができます。
             </Text>
             {receive ? (
               <Button
