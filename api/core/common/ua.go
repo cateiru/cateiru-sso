@@ -15,7 +15,7 @@ type UserAgent struct {
 	OSVersion string `json:"os_version"`
 	Device    string `json:"device"`
 	Mobile    bool   `json:"mobile"`
-	Tablet    bool   `json:"access_id"`
+	Tablet    bool   `json:"tablet"`
 	Desktop   bool   `json:"desktop"`
 	Bot       bool   `json:"bot"`
 	URL       string `json:"url"`
