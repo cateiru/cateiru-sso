@@ -2,6 +2,7 @@ package createaccount_test
 
 import (
 	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -72,8 +73,12 @@ func TestInfo(t *testing.T) {
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
 	c := &common.Cert{
-		Ip:        ip,
-		UserAgent: userAgent,
+		Ip: ip,
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {userAgent},
+			},
+		},
 	}
 
 	userInfo, err := createaccount.InsertUserInfo(ctx, user, c)
@@ -168,8 +173,12 @@ func TestInfoUnauthenticated(t *testing.T) {
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
 	c := &common.Cert{
-		Ip:        ip,
-		UserAgent: userAgent,
+		Ip: ip,
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {userAgent},
+			},
+		},
 	}
 
 	_, err = createaccount.InsertUserInfo(ctx, user, c)
@@ -230,8 +239,12 @@ func TestFailedUserName(t *testing.T) {
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
 	c := &common.Cert{
-		Ip:        ip,
-		UserAgent: userAgent,
+		Ip: ip,
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {userAgent},
+			},
+		},
 	}
 
 	_, err = createaccount.InsertUserInfo(ctx, user, c)

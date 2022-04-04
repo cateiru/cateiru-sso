@@ -26,7 +26,7 @@ import {setAvatar} from '../../utils/api/avatar';
 import {UserState} from '../../utils/state/atom';
 import Avatar from '../common/Avatar';
 
-const AvatarSetting = () => {
+const AvatarSetting = React.memo(() => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const editorRef = React.useRef<AvatarEditor>(null);
 
@@ -97,6 +97,7 @@ const AvatarSetting = () => {
 
     onClose();
   };
+
   return (
     <Box>
       <Box
@@ -179,6 +180,8 @@ const AvatarSetting = () => {
       </Modal>
     </Box>
   );
-};
+});
+
+AvatarSetting.displayName = 'avatarSetting';
 
 export default AvatarSetting;

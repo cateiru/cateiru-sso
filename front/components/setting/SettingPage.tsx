@@ -1,6 +1,5 @@
 import {Center, Box, Heading, Tabs, TabList, Tab} from '@chakra-ui/react';
 import {useRouter} from 'next/router';
-import Setting from './Setting';
 
 const SettingPage: React.FC<{index: number}> = ({index, children}) => {
   const router = useRouter();

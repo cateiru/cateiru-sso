@@ -25,6 +25,7 @@ import {
   IoDesktopOutline,
   IoArrowBackOutline,
   IoTabletPortraitOutline,
+  IoHelpOutline,
 } from 'react-icons/io5';
 import {useSetRecoilState} from 'recoil';
 import useLoginLog from '../../hooks/useLoginLog';
@@ -140,6 +141,19 @@ const LoginLogPage = () => {
                       >
                         <Box>
                           <IoTabletPortraitOutline size="25px" />
+                        </Box>
+                      </Tooltip>
+                    );
+                  default:
+                    return (
+                      <Tooltip
+                        label="不明"
+                        placement="top"
+                        borderRadius="5px"
+                        hasArrow
+                      >
+                        <Box>
+                          <IoHelpOutline size="25px" />
                         </Box>
                       </Tooltip>
                     );

@@ -2,6 +2,7 @@ package login_test
 
 import (
 	"context"
+	"net/http"
 	"testing"
 	"time"
 
@@ -61,8 +62,12 @@ func TestOTPLogin(t *testing.T) {
 	require.NoError(t, err)
 
 	c := &common.Cert{
-		Ip:        ip,
-		UserAgent: userAgent,
+		Ip: ip,
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {userAgent},
+			},
+		},
 	}
 
 	// 違うパスワードではできない
@@ -171,8 +176,12 @@ func TestTwoFailedOTP(t *testing.T) {
 	userAgent := "Mozilla/5.0 (platform; rv:geckoversion) Gecko/geckotrail Firefox/firefoxversion"
 
 	c := &common.Cert{
-		Ip:        ip,
-		UserAgent: userAgent,
+		Ip: ip,
+		Request: &http.Request{
+			Header: http.Header{
+				"User-Agent": {userAgent},
+			},
+		},
 	}
 
 	passcode, err := dummy.GenOTPCode()

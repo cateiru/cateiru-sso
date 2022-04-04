@@ -150,6 +150,7 @@ const SelectCreate: React.FC = () => {
       <Center
         width={{base: '90%', md: '50rem'}}
         marginBottom={{base: '1rem', sm: '3rem', md: '4rem'}}
+        mt="2rem"
       >
         <Flow step={activeStep} />
       </Center>

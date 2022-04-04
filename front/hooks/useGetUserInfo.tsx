@@ -1,5 +1,4 @@
 import {useToast} from '@chakra-ui/react';
-import {useColorMode} from '@chakra-ui/react';
 import {useSetRecoilState} from 'recoil';
 import getUserInfo from '../utils/api/userInfo';
 import {UserState} from '../utils/state/atom';
@@ -7,7 +6,6 @@ import {UserState} from '../utils/state/atom';
 export const useGetUserInfo = (): (() => void) => {
   const toast = useToast();
   const setUser = useSetRecoilState(UserState);
-  const {setColorMode} = useColorMode();
 
   const get = () => {
     const f = async () => {

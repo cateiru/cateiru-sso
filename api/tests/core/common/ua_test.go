@@ -1,6 +1,8 @@
 package common_test
 
 import (
+	"encoding/json"
+	"net/http"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/api/core/common"
@@ -59,4 +61,53 @@ func TestUserAgent(t *testing.T) {
 		require.Equal(t, ex.Version, parse.Version)
 		// 他は省略
 	}
+}
+
+func TestClientHints(t *testing.T) {
+	r := &http.Request{
+		Header: http.Header{
+			"Sec-Ch-Ua":          {`" Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"`},
+			"Sec-Ch-Ua-Mobile":   {"?0"},
+			"Sec-Ch-Ua-Platform": {"\"Windows\""},
+		},
+	}
+
+	result, err := common.UACHToJson(r)
+	require.NoError(t, err)
+
+	var ua common.UserAgent
+
+	err = json.Unmarshal(result, &ua)
+
+	require.Equal(t, ua.OS, "Windows")
+	require.Equal(t, ua.Name, "Chrome")
+	require.Equal(t, ua.Version, "100")
+	require.Equal(t, ua.Desktop, true)
+	require.Equal(t, ua.Mobile, false)
+}
+
+func TestUserData(t *testing.T) {
+	r := &http.Request{
+		Header: http.Header{
+			"Sec-Ch-Ua":          {`" Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"`},
+			"Sec-Ch-Ua-Mobile":   {"?0"},
+			"Sec-Ch-Ua-Platform": {"Windows"},
+		},
+	}
+
+	re, err := common.ParseUserData(r)
+	require.NoError(t, err)
+
+	require.NotEmpty(t, re)
+
+	r = &http.Request{
+		Header: http.Header{
+			"User-Agent": {`Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36`},
+		},
+	}
+
+	re, err = common.ParseUserData(r)
+	require.NoError(t, err)
+
+	require.NotEmpty(t, re)
 }

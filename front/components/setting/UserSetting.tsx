@@ -21,7 +21,7 @@ import {UserState} from '../../utils/state/atom';
 import {UserInfo} from '../../utils/state/types';
 import AvatarSetting from './AvatarSetting';
 
-const UserSetting = () => {
+const UserSetting = React.memo(() => {
   const {
     handleSubmit,
     register,
@@ -110,6 +110,8 @@ const UserSetting = () => {
 
     return () => {};
   };
+
+  console.log('setting');
 
   return (
     <Stack
@@ -209,6 +211,8 @@ const UserSetting = () => {
       </Box>
     </Stack>
   );
-};
+});
+
+UserSetting.displayName = 'userSetting';
 
 export default UserSetting;

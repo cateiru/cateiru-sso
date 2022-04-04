@@ -26,8 +26,7 @@ type Cert struct {
 
 	AccessID string
 
-	Ip        string
-	UserAgent string
+	Ip string
 }
 
 func NewCert(w http.ResponseWriter, r *http.Request) *Cert {
@@ -39,7 +38,6 @@ func NewCert(w http.ResponseWriter, r *http.Request) *Cert {
 
 func (c *Cert) AddUser() *Cert {
 	c.Ip = net.GetIPAddress(c.Request)
-	c.UserAgent = net.GetUserAgent(c.Request)
 
 	return c
 }
@@ -296,7 +294,7 @@ func (c *Cert) deleteTokenTx(tx *database.Transaction, sessionToken string, refr
 
 // ログイン履歴を保存する
 func (c *Cert) setLoginHistory(ctx context.Context, db *database.Database) error {
-	userAgentInfo, err := UserAgentToJson(c.UserAgent)
+	userAgentInfo, err := ParseUserData(c.Request)
 	if err != nil {
 		return status.NewInternalServerErrorError(err).Caller()
 	}

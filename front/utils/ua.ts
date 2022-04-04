@@ -16,6 +16,7 @@ export enum Device {
   Mobile,
   Desktop,
   Tablet,
+  Unknown,
 }
 
 export default class UserAgent {
@@ -30,9 +31,11 @@ export default class UserAgent {
       return Device.Mobile;
     } else if (this.userAgent.desktop) {
       return Device.Desktop;
+    } else if (this.userAgent.tablet) {
+      return Device.Tablet;
     }
 
-    return Device.Tablet;
+    return Device.Unknown;
   }
 
   uniqName(): string {

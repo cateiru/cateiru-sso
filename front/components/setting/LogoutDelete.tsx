@@ -15,7 +15,8 @@ import {
 import {useRouter} from 'next/router';
 import {useSetRecoilState} from 'recoil';
 import {logout, deleteAccount} from '../../utils/api/logout';
-import {UserState} from '../../utils/state/atom';
+import {UserState, OTPEnableState} from '../../utils/state/atom';
+import {OTPState} from '../../utils/state/types';
 
 const LogoutDelete = () => {
   const deleteModal = useDisclosure();
@@ -23,17 +24,19 @@ const LogoutDelete = () => {
   const toast = useToast();
   const setUser = useSetRecoilState(UserState);
   const router = useRouter();
+  const setOTPEnable = useSetRecoilState(OTPEnableState);
 
   const logoutHandle = () => {
     const f = async () => {
       try {
         await logout();
         toast({
-          title: 'ログインしました',
+          title: 'ログアウトしました',
           status: 'info',
           isClosable: true,
         });
         setUser(null);
+        setOTPEnable(OTPState.Loading);
         router.replace('/');
       } catch (error) {
         if (error instanceof Error) {
@@ -59,6 +62,7 @@ const LogoutDelete = () => {
           isClosable: true,
         });
         setUser(null);
+        setOTPEnable(OTPState.Loading);
         router.replace('/');
       } catch (error) {
         if (error instanceof Error) {
