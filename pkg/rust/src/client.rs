@@ -15,6 +15,7 @@ pub fn create_uri(client_id: &str, redirect: &str) -> String {
 #[cfg(test)]
 mod tests {
     use crate::client;
+    use urlencoding::encode;
 
     #[test]
     fn create_uri() {
@@ -23,6 +24,12 @@ mod tests {
 
         let uri = client::create_uri(client_id, redirect);
 
-        assert_eq!(uri, "https://sso.cateiru.com/sso/login?scope=openid&response_type=code&client_id=hoge&redirect_uri=https%3A%2F%2Fexample.com&prompt=consent")
+        let encoded_client_id = encode(client_id);
+        let encoded_redirect = encode(redirect);
+
+        assert_eq!(uri, format!(
+            "https://sso.cateiru.com/sso/login?scope=openid&response_type=code&client_id={}&redirect_uri={}&prompt=consent",
+            encoded_client_id, encoded_redirect
+        ))
     }
 }
