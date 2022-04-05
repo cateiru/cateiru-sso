@@ -29,3 +29,18 @@ jobs:
     - name: Test
       working-directory: ./pkg/go
       run: go test -v ./...
+  rust:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v2
+    - name: Update rustup
+      # Update rustup version to latest stable, because this repository used 2021 rust edition.
+      # if is updated rust version in actions, delete this logic.
+      run: rustup update stable
+    - name: Build
+      working-directory: ./pkg/rust
+      run: cargo build --verbose
+    - name: Run tests
+      working-directory: ./pkg/rust
+      run: cargo test --verbose
