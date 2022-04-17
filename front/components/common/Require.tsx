@@ -1,3 +1,4 @@
+import {Box} from '@chakra-ui/react';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
@@ -30,7 +31,11 @@ const Require: React.FC<{
     }
   }, [user]);
 
-  return <>{show ? children : loading}</>;
+  const LoadPage = () => {
+    return loading || <Box h="80vh"></Box>;
+  };
+
+  return <>{show ? children : <LoadPage />}</>;
 };
 
 export default Require;
