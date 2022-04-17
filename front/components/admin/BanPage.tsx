@@ -9,7 +9,9 @@ import {
   Button,
   Flex,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import React from 'react';
+import {IoArrowBackOutline} from 'react-icons/io5';
 import {useSetRecoilState} from 'recoil';
 import {
   getIPBanList,
@@ -160,6 +162,17 @@ const BanPage = () => {
   return (
     <Center>
       <Box width={{base: '100%', lg: '1000px'}} mt="2rem">
+        <Box mx=".5rem">
+          <NextLink href="/setting/account" passHref>
+            <Button
+              pl=".5rem"
+              variant="ghost"
+              leftIcon={<IoArrowBackOutline size="25px" />}
+            >
+              戻る
+            </Button>
+          </NextLink>
+        </Box>
         <Heading textAlign="center">Ban操作</Heading>
         <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="1rem">
           <Heading fontSize="1.5rem" mt="1rem">
