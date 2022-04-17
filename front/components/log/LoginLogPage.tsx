@@ -14,6 +14,7 @@ import {
   useColorModeValue,
   Tooltip,
   Stack,
+  Skeleton,
 } from '@chakra-ui/react';
 import type {ResponsiveValue} from '@chakra-ui/react';
 import {Property} from 'csstype';
@@ -27,17 +28,14 @@ import {
   IoTabletPortraitOutline,
   IoHelpOutline,
 } from 'react-icons/io5';
-import {useSetRecoilState} from 'recoil';
 import useLoginLog from '../../hooks/useLoginLog';
 import {LoginLogResponse} from '../../utils/api/log';
 import {formatDate, hawManyDaysAgo} from '../../utils/date';
-import {LoadState} from '../../utils/state/atom';
 import UserAgent, {Device} from '../../utils/ua';
 
 const LoginLogPage = () => {
   const [log, load, getLog] = useLoginLog();
   const router = useRouter();
-  const setLoad = useSetRecoilState(LoadState);
   const tableHeadBG = useColorModeValue('white', 'gray.800');
 
   React.useEffect(() => {
@@ -50,10 +48,6 @@ const LoginLogPage = () => {
       getLog(undefined);
     }
   }, [router.isReady, router.query]);
-
-  React.useEffect(() => {
-    setLoad(load);
-  }, [load]);
 
   const element = (v: LoginLogResponse) => {
     const userAgent = new UserAgent(v.user_agent);
@@ -242,7 +236,13 @@ const LoginLogPage = () => {
         </Flex>
         {/* TODO: overflow: auto属性が親~先祖についていると position: stickyが適用されない */}
         {/*        ref. https://github.com/w3c/csswg-drafts/issues/865 */}
-        <Box mx=".5rem" overflowX={{base: 'auto', lg: 'visible'}} mt="1rem">
+        <Skeleton
+          isLoaded={!load}
+          mx=".5rem"
+          overflowX={{base: 'auto', lg: 'visible'}}
+          mt="1rem"
+          minHeight="40vh"
+        >
           <Table
             variant="striped"
             minWidth="calc(1000px - 1rem)"
@@ -258,7 +258,7 @@ const LoginLogPage = () => {
             </Thead>
             <Tbody>{log.map(v => element(v))}</Tbody>
           </Table>
-        </Box>
+        </Skeleton>
       </Box>
     </Center>
   );
