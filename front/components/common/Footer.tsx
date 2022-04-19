@@ -50,7 +50,11 @@ const Footer = () => {
                   {text: 'CateiruSSOについて', links: '/about'},
                   {text: 'よくある質問', links: '/question'},
                   {text: '変更履歴', links: '/changelog'},
-                  {text: '使い方', links: '/usage'},
+                  {
+                    text: 'お問い合わせ',
+                    links:
+                      'https://cateiru.com/contact?url=https://sso.cateiru.com',
+                  },
                 ]}
               />
             </Box>
