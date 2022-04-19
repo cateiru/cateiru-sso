@@ -82,7 +82,9 @@ const Footer = () => {
           </Stack>
         </Stack>
         <Center>
-          <Text fontSize="sm">&copy; {new Date().getFullYear()} cateiru</Text>
+          <NextLink href="https://cateiru.com" passHref>
+            <Link>&copy; {new Date().getFullYear()} cateiru</Link>
+          </NextLink>
         </Center>
       </Stack>
     </Box>
