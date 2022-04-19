@@ -2,16 +2,19 @@ import {
   Box,
   Stack,
   Center,
-  Text,
   Heading,
   StackDivider,
   Link,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import React from 'react';
+import {useRecoilValue} from 'recoil';
+import {UserState} from '../../utils/state/atom';
 import Logo from './Logo';
 
 const Footer = () => {
+  const user = useRecoilValue(UserState);
+
   return (
     <Box
       as="footer"
@@ -52,8 +55,9 @@ const Footer = () => {
                   {text: '変更履歴', links: '/changelog'},
                   {
                     text: 'お問い合わせ',
-                    links:
-                      'https://cateiru.com/contact?url=https://sso.cateiru.com',
+                    links: user
+                      ? `https://cateiru.com/contact?url=https://sso.cateiru.com&name=${user?.last_name}%20${user?.first_name}&mail=${user?.mail}`
+                      : 'https://cateiru.com/contact?url=https://sso.cateiru.com',
                   },
                 ]}
               />
