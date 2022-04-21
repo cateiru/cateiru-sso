@@ -48,6 +48,8 @@ const useVerifySurveillance = (): [
   React.useEffect(() => {
     if (receive && ref.current) {
       ref.current.end(() => {});
+      // FirefoxでreadyState = 2のときにエラーでコネクションが閉じてしまう
+      ref.current.error(() => {});
       ref.current.close();
     }
   }, [receive]);

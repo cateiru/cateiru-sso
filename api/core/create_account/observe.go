@@ -104,13 +104,16 @@ func send(ctx context.Context, db *database.Database, ws *websocket.Conn, quit c
 			}
 
 			// 認証された場合、`true`を送信
-			// wsのcloseは原則としてclient側から行い、こちら側で閉じるのはエラーのときのみにする
 			if entry.Verify {
 				*isVerified = true
 				if err := websocket.Message.Send(ws, "true"); err != nil {
 					logging.Sugar.Error(err)
 					ws.Close()
 				}
+
+				// 閉じるまで猶予を持たす
+				time.Sleep(1 * time.Second)
+				ws.Close()
 
 				return
 			}
