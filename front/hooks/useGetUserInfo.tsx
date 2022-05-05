@@ -7,9 +7,22 @@ export const useGetUserInfo = (): (() => void) => {
   const toast = useToast();
   const setUser = useSetRecoilState(UserState);
 
+  const beforeUnload = (event: Event) => {
+    event.preventDefault();
+
+    // 必須: https://developer.mozilla.org/ja/docs/Web/API/Window/beforeunload_event
+    // > しかし、すべてのブラウザーがこのメソッドに対応しているわけではなく、
+    // > 一部はイベントハンドラーに古い方法二つのうちの一つを実装するよう求めていることに注意してください。
+    // >
+    // > - イベントの returnValue プロパティに文字列を代入する
+    // > - イベントハンドラーから文字列を返す
+    event.returnValue = true;
+  };
+
   const get = () => {
     const f = async () => {
       try {
+        window.addEventListener('beforeunload', beforeUnload);
         const user = await getUserInfo();
         setUser(user);
 
@@ -37,6 +50,7 @@ export const useGetUserInfo = (): (() => void) => {
           });
         }
       }
+      window.removeEventListener('beforeunload', beforeUnload);
     };
 
     f();
