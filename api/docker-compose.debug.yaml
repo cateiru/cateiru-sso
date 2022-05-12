@@ -12,10 +12,10 @@ services:
       - PORT=3001
       - ADMIN_MAIL=test@cateiru.com
       - ADMIN_PASSWORD=password
-      - COOKIE_DOMAIN=192.168.3.253
-      - SITE_DOMAIN=192.168.3.253:3000
-      - API_DOMAIN=192.168.3.253:3001
-      - CORS=http://192.168.3.253:3000
+      - COOKIE_DOMAIN=100.125.206.35
+      - SITE_DOMAIN=100.125.206.35:3000
+      - API_DOMAIN=100.125.206.35:3001
+      - CORS=http://100.125.206.35:3000
       - ISSUER=test_user
       - RECAPTCHA_SECRET=
       - MAILGUN_API_KEY=
@@ -25,5 +25,5 @@ services:
       - DATASTORE_PROJECT_ID=project-test
       - DATASTORE_EMULATOR_HOST=datastore:18001
       - STORAGE_EMULATOR_HOST=gcs:4443
-      - STORAGE_URL=http://192.168.3.253:4443
+      - STORAGE_URL=http://100.125.206.35:4443
       - WORKER_PASSWORD=password

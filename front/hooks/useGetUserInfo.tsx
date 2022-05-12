@@ -1,5 +1,6 @@
 import {useToast} from '@chakra-ui/react';
 import {useSetRecoilState} from 'recoil';
+import {ping} from '../utils/api/ping';
 import getUserInfo from '../utils/api/userInfo';
 import {UserState} from '../utils/state/atom';
 
@@ -23,6 +24,10 @@ export const useGetUserInfo = (): (() => void) => {
     const f = async () => {
       try {
         window.addEventListener('beforeunload', beforeUnload);
+
+        // cookieが消えないようにするため初回ping出す
+        await ping();
+
         const user = await getUserInfo();
         setUser(user);
 
