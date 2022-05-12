@@ -1,6 +1,6 @@
 import {useToast} from '@chakra-ui/react';
 import {useSetRecoilState} from 'recoil';
-import {ping} from '../utils/api/ping';
+import ping from '../utils/api/ping';
 import getUserInfo from '../utils/api/userInfo';
 import {UserState} from '../utils/state/atom';
 
