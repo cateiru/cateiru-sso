@@ -10,13 +10,19 @@ import {useGetUserInfo} from '../../hooks/useGetUserInfo';
 import {Login, OIDCRequestQuery} from '../../utils/sso/login';
 import {NoLoginState} from '../../utils/state/atom';
 
-const SSOLogin: NextPage<{
-  oidc: OIDCRequestQuery;
-  require: boolean;
-}> = ({oidc, require}) => {
+const SSOLogin = () => {
   const router = useRouter();
   const get = useGetUserInfo();
   const noLogin = useRecoilValue(NoLoginState);
+  const [oidc, setOIdc] = React.useState<OIDCRequestQuery>();
+  const [require, setRequire] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!router.isReady) return;
+    const o = new Login(router.query);
+    setOIdc(o.parse());
+    setRequire(o.require());
+  }, [router.isReady, router.query]);
 
   React.useEffect(() => {
     if (noLogin) {
@@ -34,20 +40,6 @@ const SSOLogin: NextPage<{
       <LoginPage oidc={oidc} require={require} />
     </Require>
   );
-};
-
-export const getServerSideProps: GetServerSideProps<{
-  oidc: OIDCRequestQuery;
-  require: boolean;
-}> = async context => {
-  const oidc = new Login(context.query);
-
-  return {
-    props: {
-      oidc: oidc.parse(),
-      require: oidc.require(),
-    },
-  };
 };
 
 export default SSOLogin;

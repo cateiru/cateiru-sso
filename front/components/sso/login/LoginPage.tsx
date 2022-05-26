@@ -17,7 +17,7 @@ import {login, preview, ServicePreview} from '../../../utils/api/loginSSO';
 import {OIDCRequestQuery} from '../../../utils/sso/login';
 import {UserState} from '../../../utils/state/atom';
 import Avatar from '../../common/Avatar';
-import Spinner from '../../common/Spinner';
+import LoginSkeleton from './LoginSkeleton';
 
 enum LoginState {
   Loading,
@@ -26,7 +26,7 @@ enum LoginState {
 }
 
 const LoginPage: React.FC<{
-  oidc: OIDCRequestQuery;
+  oidc?: OIDCRequestQuery;
   require: boolean;
 }> = ({oidc, require}) => {
   const [service, setService] = React.useState<ServicePreview>();
@@ -41,6 +41,11 @@ const LoginPage: React.FC<{
   const {hasCopied, onCopy} = useClipboard(token || '');
 
   React.useEffect(() => {
+    if (!oidc) {
+      setStatus(LoginState.Loading);
+      return;
+    }
+
     if (!require) {
       setStatus(LoginState.Failed);
       return;
@@ -68,6 +73,10 @@ const LoginPage: React.FC<{
 
   const submit = () => {
     const f = async () => {
+      if (!oidc) {
+        return;
+      }
+
       try {
         setLoad(true);
         let from = document.referrer;
@@ -76,10 +85,10 @@ const LoginPage: React.FC<{
         }
         const resp = await login(oidc, from);
 
-        if (oidc.redirectURL !== 'direct') {
-          let url = `${oidc.redirectURL}?code=${resp.access_token}`;
-          if (oidc.state !== '') {
-            url += `&state=${oidc.state}`;
+        if (oidc?.redirectURL !== 'direct') {
+          let url = `${oidc?.redirectURL}?code=${resp.access_token}`;
+          if (oidc?.state !== '') {
+            url += `&state=${oidc?.state}`;
           }
           router.push(url);
         } else {
@@ -99,8 +108,8 @@ const LoginPage: React.FC<{
   };
 
   const errorResp = (code: string) => {
-    if (oidc.redirectURL !== 'direct') {
-      router.push(`${oidc.redirectURL}?error=${code}`);
+    if (oidc?.redirectURL !== 'direct') {
+      router.push(`${oidc?.redirectURL}?error=${code}`);
     } else {
       router.push('/');
     }
@@ -108,21 +117,7 @@ const LoginPage: React.FC<{
 
   switch (status) {
     case LoginState.Loading:
-      return (
-        <Center>
-          <Box
-            width={{base: '95%', sm: '400px'}}
-            height="600px"
-            mt={{base: '0', sm: '3rem'}}
-            borderRadius="20px"
-            borderWidth={{base: '0', sm: '2px'}}
-          >
-            <Center height="100%">
-              <Spinner />
-            </Center>
-          </Box>
-        </Center>
-      );
+      return <LoginSkeleton />;
     case LoginState.Success:
       return (
         <Center>
@@ -176,14 +171,14 @@ const LoginPage: React.FC<{
                       </Button>
                     </Center>
                     <Center mt="1rem">
-                      {oidc.redirectURL === 'direct' ? (
+                      {oidc?.redirectURL === 'direct' ? (
                         <Text fontSize=".8rem">
                           リダイレクトせずトークンが表示されます
                         </Text>
                       ) : (
                         <Text fontSize=".8rem" textAlign="center">
-                          <Link href={oidc.redirectURL} isExternal>
-                            {oidc.redirectURL}
+                          <Link href={oidc?.redirectURL} isExternal>
+                            {oidc?.redirectURL}
                           </Link>
                           <Text as="span" whiteSpace="nowrap">
                             へリダイレクトします
