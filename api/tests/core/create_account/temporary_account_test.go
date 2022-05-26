@@ -11,6 +11,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils"
+	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,8 +38,14 @@ func TestSuccess(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	element, err := models.GetMailCertificationByClientToken(ctx, db, clientToken)
-	require.NoError(t, err)
+	element := new(models.MailCertification)
+
+	goretry.Retry(t, func() bool {
+		element, err = models.GetMailCertificationByClientToken(ctx, db, clientToken)
+		require.NoError(t, err)
+
+		return element != nil
+	}, "")
 
 	require.NotEqual(t, len(element.MailToken), 0, "mail tokenが存在する")
 	require.NotEqual(t, element.Verify, "まだメールアドレスは認証されていない")
