@@ -9,7 +9,7 @@ const CreateAccountPage: React.FC = () => {
       alignItems="center"
       flexDirection="column"
       width="100%"
-      minHeight={{base: '50vh', md: '80vh'}}
+      minHeight="80vh"
       px={{base: '1rem', md: '5rem'}}
     >
       <SelectCreate />

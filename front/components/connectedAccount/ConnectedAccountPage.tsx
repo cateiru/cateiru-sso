@@ -27,6 +27,7 @@ import {getUserSSO, ServiceLogInfo, deleteSSO} from '../../utils/api/userSSO';
 import {hawManyDaysAgo, formatDate} from '../../utils/date';
 import {LoadState} from '../../utils/state/atom';
 import Avatar from '../common/Avatar';
+import EmptyAA from '../common/EmptyAA';
 
 const ConnectedAccountPage = () => {
   const {colorMode} = useColorMode();
@@ -147,6 +148,17 @@ const ConnectedAccountPage = () => {
     f();
   };
 
+  const EmptyConnecteddServices = () => {
+    return (
+      <Box>
+        <Text height="100%" mb="1.5rem">
+          現在接続しているサービスはありません。
+        </Text>
+        <EmptyAA />
+      </Box>
+    );
+  };
+
   return (
     <Box minHeight="80vh">
       <Center>
@@ -166,13 +178,17 @@ const ConnectedAccountPage = () => {
         接続しているSSOサービス
       </Heading>
       <Center>
-        <SimpleGrid
-          columns={{base: 1, sm: 1, md: 2, lg: 3}}
-          spacing="2.5rem"
-          mx="1rem"
-        >
-          {services.map(ServiceElement)}
-        </SimpleGrid>
+        {services.length === 0 ? (
+          <EmptyConnecteddServices />
+        ) : (
+          <SimpleGrid
+            columns={{base: 1, sm: 1, md: 2, lg: 3}}
+            spacing="2.5rem"
+            mx="1rem"
+          >
+            {services.map(ServiceElement)}
+          </SimpleGrid>
+        )}
       </Center>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

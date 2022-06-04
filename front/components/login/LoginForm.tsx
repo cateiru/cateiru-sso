@@ -29,7 +29,7 @@ import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
-import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
+import {TbEye, TbEyeOff} from 'react-icons/tb';
 import {TbExternalLink} from 'react-icons/tb';
 import {useSetRecoilState, useResetRecoilState} from 'recoil';
 import {login} from '../../utils/api/login';
@@ -178,13 +178,7 @@ const LoginForm = () => {
                 <IconButton
                   variant="ghost"
                   aria-label="show password"
-                  icon={
-                    show ? (
-                      <IoEyeOutline size="25px" />
-                    ) : (
-                      <IoEyeOffOutline size="25px" />
-                    )
-                  }
+                  icon={show ? <TbEye size="25px" /> : <TbEyeOff size="25px" />}
                   size="sm"
                   onClick={() => setShow(!show)}
                 />

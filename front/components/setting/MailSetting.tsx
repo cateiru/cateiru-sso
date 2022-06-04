@@ -7,13 +7,12 @@ import {
   Center,
   Heading,
   useToast,
-  Text,
 } from '@chakra-ui/react';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
-import {useRecoilValue, useRecoilState} from 'recoil';
+import {useRecoilState} from 'recoil';
 import {changeMail, changeMailVerify} from '../../utils/api/change';
 import {UserState} from '../../utils/state/atom';
 
@@ -80,21 +79,23 @@ const MailSetting = () => {
           <Heading fontSize="1.5rem" mb="1.5rem" textAlign="center">
             メールアドレスを変更する
           </Heading>
-          <Text>{user?.mail}</Text>
-          <MailInput />
+          <MailInput mail={user?.mail} />
         </Box>
       </Center>
     </>
   );
 };
 
-const MailInput = () => {
+const MailInput: React.FC<{mail?: string}> = ({mail}) => {
   const {
     handleSubmit,
     register,
     formState: {errors, isSubmitting},
-  } = useForm();
-  const user = useRecoilValue(UserState);
+  } = useForm({
+    defaultValues: {
+      email: mail,
+    },
+  });
   const toast = useToast();
   const [isSubmit, setSubmit] = React.useState(false);
 
@@ -121,7 +122,7 @@ const MailInput = () => {
       }
     };
 
-    if (user?.mail !== values.email) {
+    if (mail !== values.email) {
       f();
     }
 
@@ -130,7 +131,7 @@ const MailInput = () => {
 
   return (
     <form onSubmit={handleSubmit(submitHandler)}>
-      <FormControl isInvalid={errors.email}>
+      <FormControl isInvalid={Boolean(errors.email)}>
         <Input
           id="email"
           type="email"

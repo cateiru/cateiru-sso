@@ -54,7 +54,9 @@ const AcceptPage: React.FC<{token: string}> = ({token}) => {
       height="80vh"
       px={{base: '1rem', md: '5rem'}}
     >
-      <Heading>パスワードを再設定します</Heading>
+      <Heading fontSize={{base: '1.5rem', md: '2rem'}}>
+        パスワードを再設定します
+      </Heading>
       <Box width={{base: '100%', lg: '800px'}} mt="2rem">
         <form onSubmit={handleSubmit(submit)}>
           <Password

@@ -11,8 +11,8 @@ import {
 import NextLink from 'next/link';
 import Link from 'next/link';
 import React from 'react';
-import {IoSettingsOutline, IoGridOutline} from 'react-icons/io5';
-import {MdOutlineDarkMode, MdOutlineLightMode} from 'react-icons/md';
+import {TbMoon, TbSun} from 'react-icons/tb';
+import {TbSettings, TbLayoutDashboard} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import Avatar from './Avatar';
@@ -24,13 +24,13 @@ const Header = React.memo(() => {
 
   const Setting = () => {
     return (
-      <Center mx=".5rem">
+      <Center>
         <Tooltip label="設定" hasArrow borderRadius="4px">
           <Box>
             <Link href="/setting" passHref>
               <IconButton
                 aria-label="change color mode"
-                icon={<IoSettingsOutline size="30px" />}
+                icon={<TbSettings size="25px" />}
                 variant="ghost"
               ></IconButton>
             </Link>
@@ -44,7 +44,7 @@ const Header = React.memo(() => {
     return (
       <NextLink href="/hello">
         <Center cursor="pointer">
-          <Avatar size="md" src={user?.avatar_url} />
+          <Avatar size="sm" src={user?.avatar_url} ml=".5rem" />
         </Center>
       </NextLink>
     );
@@ -52,13 +52,13 @@ const Header = React.memo(() => {
 
   const Dashboard = () => {
     return (
-      <Center ml=".5rem">
+      <Center>
         <Tooltip label="ダッシュボード" hasArrow borderRadius="4px">
           <Box>
             <Link href="/dashboard" passHref>
               <IconButton
                 aria-label="change color mode"
-                icon={<IoGridOutline size="30px" />}
+                icon={<TbLayoutDashboard size="25px" />}
                 variant="ghost"
               ></IconButton>
             </Link>
@@ -70,7 +70,7 @@ const Header = React.memo(() => {
 
   return (
     <Box width="100%">
-      <Flex paddingX="1rem" marginY=".5rem" height="50px">
+      <Flex paddingX="1rem" marginY=".3rem" height="50px">
         <NextLink href="/">
           <Box width="160px" cursor="pointer">
             <Logo />
@@ -87,9 +87,9 @@ const Header = React.memo(() => {
               aria-label="change color mode"
               icon={
                 colorMode === 'light' ? (
-                  <MdOutlineDarkMode size="30px" />
+                  <TbMoon size="25px" />
                 ) : (
-                  <MdOutlineLightMode size="30px" />
+                  <TbSun size="25px" />
                 )
               }
               variant="ghost"

@@ -1,15 +1,13 @@
-import {useToast} from '@chakra-ui/react';
 import React from 'react';
 import {useSetRecoilState} from 'recoil';
 import {createVerify} from '../utils/api/create';
 import {CTState} from '../utils/state/atom';
 
-const useVerify = (): [(t: string) => void, boolean, boolean, boolean] => {
+const useVerify = (): [(t: string) => void, boolean, boolean, string] => {
   const [isKeep, setIsKeep] = React.useState(false);
   const [load, setLoad] = React.useState(true);
-  const [err, setError] = React.useState(false);
+  const [err, setError] = React.useState('');
   const setCT = useSetRecoilState(CTState);
-  const toast = useToast();
 
   const verify = (t: string) => {
     const f = async () => {
@@ -19,14 +17,10 @@ const useVerify = (): [(t: string) => void, boolean, boolean, boolean] => {
         setIsKeep(resp.keep_this_page);
         setLoad(false);
       } catch (error) {
-        setError(true);
         if (error instanceof Error) {
-          toast({
-            title: error.message,
-            status: 'error',
-            isClosable: true,
-            duration: 9000,
-          });
+          setError(error.message);
+        } else {
+          setError('エラー');
         }
       }
     };

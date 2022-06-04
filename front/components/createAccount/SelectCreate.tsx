@@ -106,7 +106,11 @@ const SelectCreate: React.FC = () => {
         case CreateType.Initialize:
           return (
             <>
-              <Heading fontSize="1.6rem" marginBottom="1.5rem">
+              <Heading
+                fontSize={{base: '1.2rem', md: '1.6rem'}}
+                marginBottom="1.5rem"
+                display={{base: 'none', sm: 'inline'}}
+              >
                 メールアドレスを認証してアカウントを作成します
               </Heading>
               <UserPassword submit={submit} />
