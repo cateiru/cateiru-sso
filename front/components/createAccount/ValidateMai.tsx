@@ -1,4 +1,4 @@
-import {Heading, Button} from '@chakra-ui/react';
+import {Heading, Button, Text} from '@chakra-ui/react';
 import React from 'react';
 import {useSetRecoilState} from 'recoil';
 import {CreateNextState} from '../../utils/state/atom';
@@ -7,14 +7,17 @@ import Spinner from '../common/Spinner';
 const ValidateMail: React.FC<{
   isKeep: boolean;
   loadVerify: boolean;
-  verifyError: boolean;
+  verifyError: string;
 }> = ({isKeep, loadVerify, verifyError}) => {
   const setNext = useSetRecoilState(CreateNextState);
 
   return (
     <>
       {verifyError ? (
-        <Heading>Oops!</Heading>
+        <>
+          <Heading>不正なURLです</Heading>
+          <Text>{verifyError}</Text>
+        </>
       ) : (
         <>
           {loadVerify ? (

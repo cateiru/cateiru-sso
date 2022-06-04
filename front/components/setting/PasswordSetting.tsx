@@ -15,7 +15,7 @@ import {useRouter} from 'next/router';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
-import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
+import {TbEye, TbEyeOff} from 'react-icons/tb';
 import {changePassword} from '../../utils/api/change';
 import Password from '../common/form/Password';
 
@@ -95,13 +95,7 @@ const ChangePassword = () => {
             <IconButton
               variant="ghost"
               aria-label="show password"
-              icon={
-                showOld ? (
-                  <IoEyeOutline size="25px" />
-                ) : (
-                  <IoEyeOffOutline size="25px" />
-                )
-              }
+              icon={showOld ? <TbEye size="25px" /> : <TbEyeOff size="25px" />}
               size="sm"
               onClick={() => setShowOld(!showOld)}
             />

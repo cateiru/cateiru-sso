@@ -11,7 +11,7 @@ import {
 import dynamic from 'next/dynamic';
 import React from 'react';
 import type {FieldValues, UseFormRegister, FieldErrors} from 'react-hook-form';
-import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
+import {TbEye, TbEyeOff} from 'react-icons/tb';
 import PasswordStrengthBar from 'react-password-strength-bar';
 
 const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
@@ -52,13 +52,7 @@ const Password: React.FC<{
             <IconButton
               variant="ghost"
               aria-label="show password"
-              icon={
-                show ? (
-                  <IoEyeOutline size="25px" />
-                ) : (
-                  <IoEyeOffOutline size="25px" />
-                )
-              }
+              icon={show ? <TbEye size="25px" /> : <TbEyeOff size="25px" />}
               size="sm"
               onClick={() => setShow(!show)}
             />

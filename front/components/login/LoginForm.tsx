@@ -29,7 +29,8 @@ import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
-import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
+import {TbEye, TbEyeOff} from 'react-icons/tb';
+import {TbExternalLink} from 'react-icons/tb';
 import {useSetRecoilState, useResetRecoilState} from 'recoil';
 import {login} from '../../utils/api/login';
 import cookieValue from '../../utils/cookie';
@@ -177,13 +178,7 @@ const LoginForm = () => {
                 <IconButton
                   variant="ghost"
                   aria-label="show password"
-                  icon={
-                    show ? (
-                      <IoEyeOutline size="25px" />
-                    ) : (
-                      <IoEyeOffOutline size="25px" />
-                    )
-                  }
+                  icon={show ? <TbEye size="25px" /> : <TbEyeOff size="25px" />}
                   size="sm"
                   onClick={() => setShow(!show)}
                 />
@@ -242,10 +237,22 @@ const LoginForm = () => {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="blue" mr=".5rem" onClick={loginHandler}>
-              ログインしました
-            </Button>
-            <Button onClick={onClose}>閉じる</Button>
+            <Center width="100%">
+              <Button
+                colorScheme="blue"
+                mr=".5rem"
+                as={Link}
+                href="/create"
+                isExternal
+                variant="solid"
+                rightIcon={<TbExternalLink size="20px" />}
+              >
+                アカウントを作成
+              </Button>
+              <Button colorScheme="green" mr=".5rem" onClick={loginHandler}>
+                ログインしました
+              </Button>
+            </Center>
           </ModalFooter>
         </ModalContent>
       </Modal>
