@@ -30,6 +30,7 @@ import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
 import {IoEyeOutline, IoEyeOffOutline} from 'react-icons/io5';
+import {TbExternalLink} from 'react-icons/tb';
 import {useSetRecoilState, useResetRecoilState} from 'recoil';
 import {login} from '../../utils/api/login';
 import cookieValue from '../../utils/cookie';
@@ -242,10 +243,22 @@ const LoginForm = () => {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="blue" mr=".5rem" onClick={loginHandler}>
-              ログインしました
-            </Button>
-            <Button onClick={onClose}>閉じる</Button>
+            <Center width="100%">
+              <Button
+                colorScheme="blue"
+                mr=".5rem"
+                as={Link}
+                href="/create"
+                isExternal
+                variant="solid"
+                rightIcon={<TbExternalLink size="20px" />}
+              >
+                アカウントを作成
+              </Button>
+              <Button colorScheme="green" mr=".5rem" onClick={loginHandler}>
+                ログインしました
+              </Button>
+            </Center>
           </ModalFooter>
         </ModalContent>
       </Modal>
