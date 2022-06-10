@@ -16,6 +16,7 @@
         "@chakra-ui/react": "^1.8.6",
         "@emotion/react": "^11.8.2",
         "@emotion/styled": "^11.8.1",
+        "@fontsource/noto-sans-jp": "^4.5.10",
         "@types/nprogress": "^0.2.0",
         "@types/qrcode.react": "^1.0.2",
         "@types/react-avatar-editor": "^12.0.0",
