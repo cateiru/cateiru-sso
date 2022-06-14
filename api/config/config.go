@@ -34,6 +34,8 @@ type Config struct {
 	StorageBucket string
 
 	WorkerPassword string
+
+	ApiVersion string
 }
 
 var Defs Config
@@ -68,6 +70,8 @@ func Init() {
 		StorageBucket: "cateiru-sso",
 
 		WorkerPassword: os.Getenv("WORKER_PASSWORD"),
+
+		ApiVersion: "/v1",
 	}
 }
 

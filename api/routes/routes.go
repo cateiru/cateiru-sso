@@ -3,51 +3,58 @@ package routes
 import (
 	"net/http"
 
+	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/handler"
 )
+
+func handleFunc(mux *http.ServeMux, path string, hand func(w http.ResponseWriter, r *http.Request)) {
+	formattedPath := config.Defs.ApiVersion + path
+
+	mux.HandleFunc(formattedPath, hand)
+}
 
 func Routes(mux *http.ServeMux) {
 
 	mux.HandleFunc("/", handler.RootHandler)
 
-	mux.HandleFunc("/create", handler.CreateHandler)
-	mux.HandleFunc("/create/verify", handler.CreateVerifyHandler)
-	mux.HandleFunc("/create/info", handler.CreateInfoHandler)
+	handleFunc(mux, "/create", handler.CreateHandler)
+	handleFunc(mux, "/create/verify", handler.CreateVerifyHandler)
+	handleFunc(mux, "/create/info", handler.CreateInfoHandler)
 
-	mux.HandleFunc("/check/username", handler.CheckHandler)
+	handleFunc(mux, "/check/username", handler.CheckHandler)
 
-	mux.HandleFunc("/login", handler.LoginHandler)
-	mux.HandleFunc("/login/onetime", handler.LoginOnetimeHandler)
+	handleFunc(mux, "/login", handler.LoginHandler)
+	handleFunc(mux, "/login/onetime", handler.LoginOnetimeHandler)
 
-	mux.HandleFunc("/me", handler.MeHandler)
+	handleFunc(mux, "/me", handler.MeHandler)
 
-	mux.HandleFunc("/admin/role", handler.AdminRoleHandler)
-	mux.HandleFunc("/admin/user", handler.AdminUserHandler)
-	mux.HandleFunc("/admin/ban", handler.AdminBanHandler)
-	mux.HandleFunc("/admin/certlog", handler.AdminMailCertLog)
-	mux.HandleFunc("/admin/worker", handler.AdminWorker)
+	handleFunc(mux, "/admin/role", handler.AdminRoleHandler)
+	handleFunc(mux, "/admin/user", handler.AdminUserHandler)
+	handleFunc(mux, "/admin/ban", handler.AdminBanHandler)
+	handleFunc(mux, "/admin/certlog", handler.AdminMailCertLog)
+	handleFunc(mux, "/admin/worker", handler.AdminWorker)
 
-	mux.HandleFunc("/pro/sso", handler.ProSSOHandler)
-	mux.HandleFunc("/pro/sso/image", handler.ProSSOImage)
+	handleFunc(mux, "/pro/sso", handler.ProSSOHandler)
+	handleFunc(mux, "/pro/sso/image", handler.ProSSOImage)
 
-	mux.HandleFunc("/password/forget", handler.PasswordForgetHandler)
-	mux.HandleFunc("/password/forget/accept", handler.PasswordForgetAcceptHandler)
+	handleFunc(mux, "/password/forget", handler.PasswordForgetHandler)
+	handleFunc(mux, "/password/forget/accept", handler.PasswordForgetAcceptHandler)
 
-	mux.HandleFunc("/user/mail", handler.UserMailHandler)
-	mux.HandleFunc("/user/password", handler.UserPasswordHandler)
-	mux.HandleFunc("/user/otp", handler.UserOnetimePWHandler)
-	mux.HandleFunc("/user/otp/backup", handler.UserOnetimePWBackupHandler)
-	mux.HandleFunc("/user/otp/me", handler.UserOTPMeHandler)
-	mux.HandleFunc("/user/info", handler.UserInfoChangeHandler)
-	mux.HandleFunc("/user/history/access", handler.UserAccessHandler)
-	mux.HandleFunc("/user/history/login", handler.UserHistoryHandler)
-	mux.HandleFunc("/user/avatar", handler.UserAvatarHandler)
-	mux.HandleFunc("/user/oauth", handler.UserOAuthHandler)
+	handleFunc(mux, "/user/mail", handler.UserMailHandler)
+	handleFunc(mux, "/user/password", handler.UserPasswordHandler)
+	handleFunc(mux, "/user/otp", handler.UserOnetimePWHandler)
+	handleFunc(mux, "/user/otp/backup", handler.UserOnetimePWBackupHandler)
+	handleFunc(mux, "/user/otp/me", handler.UserOTPMeHandler)
+	handleFunc(mux, "/user/info", handler.UserInfoChangeHandler)
+	handleFunc(mux, "/user/history/access", handler.UserAccessHandler)
+	handleFunc(mux, "/user/history/login", handler.UserHistoryHandler)
+	handleFunc(mux, "/user/avatar", handler.UserAvatarHandler)
+	handleFunc(mux, "/user/oauth", handler.UserOAuthHandler)
 
-	mux.HandleFunc("/logout", handler.LogoutHandler)
+	handleFunc(mux, "/logout", handler.LogoutHandler)
 
-	mux.HandleFunc("/oauth/preview", handler.OAuthPreview)
-	mux.HandleFunc("/oauth/login", handler.OAuthLogin)
-	mux.HandleFunc("/oauth/token", handler.OAuthToken)
-	mux.HandleFunc("/oauth/jwt/key", handler.OAuthJWTKey)
+	handleFunc(mux, "/oauth/preview", handler.OAuthPreview)
+	handleFunc(mux, "/oauth/login", handler.OAuthLogin)
+	handleFunc(mux, "/oauth/token", handler.OAuthToken)
+	handleFunc(mux, "/oauth/jwt/key", handler.OAuthJWTKey)
 }
