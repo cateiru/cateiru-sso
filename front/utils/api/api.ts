@@ -4,6 +4,8 @@ export class API {
   private apiUrl = process.env.NEXT_PUBLIC_API_URL;
   private config: RequestInit = {};
 
+  private apiVersion = '/v1';
+
   /**
    * Connect to API
    *
@@ -25,7 +27,10 @@ export class API {
   }
 
   async connectNoErr(apiPath: string): Promise<Response> {
-    const response = await fetch(`${this.apiUrl}${apiPath}`, this.config);
+    const response = await fetch(
+      `${this.apiUrl}${this.apiVersion}${apiPath}`,
+      this.config
+    );
     return response;
   }
 
