@@ -75,5 +75,19 @@ func ChangePWAccept(ctx context.Context, db *database.Database, form *AccpetFort
 		return status.NewInternalServerErrorError(err).Caller()
 	}
 
+	Logout(ctx, db, cert.UserId.UserId)
+
+	return nil
+}
+
+// すべてのログインしている端末からログアウトする
+func Logout(ctx context.Context, db *database.Database, userId string) error {
+	if err := models.DeleteSessionByUserId(ctx, db, userId); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+	if err := models.DeleteRefreshByUserId(ctx, db, userId); err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+
 	return nil
 }
