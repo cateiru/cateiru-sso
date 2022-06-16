@@ -3,6 +3,7 @@ package password_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/api/config"
 	"github.com/cateiru/cateiru-sso/api/core/password"
@@ -27,6 +28,9 @@ func TestFrogetPW(t *testing.T) {
 
 	dummy := tools.NewDummyUser()
 	_, err = dummy.AddUserCert(ctx, db)
+	require.NoError(t, err)
+
+	_, _, err = dummy.AddLoginToken(ctx, db, time.Now())
 	require.NoError(t, err)
 
 	goretry.Retry(t, func() bool {
@@ -75,4 +79,18 @@ func TestFrogetPW(t *testing.T) {
 
 		return forget == nil
 	}, "forgetが削除されている")
+
+	goretry.Retry(t, func() bool {
+		getRefresh, err := models.GetRefreshTokenByUserId(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return len(getRefresh) == 0
+	}, "リフレッシュトークンが削除されている")
+
+	goretry.Retry(t, func() bool {
+		getSession, err := models.GetSessionTokenByUserId(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return len(getSession) == 0
+	}, "セッショントークンが削除されている")
 }
