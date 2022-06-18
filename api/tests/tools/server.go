@@ -117,6 +117,15 @@ func (c *TestServer) Post(t *testing.T, path string, form interface{}) *http.Res
 	return resp
 }
 
+func (c *TestServer) PostForm(t *testing.T, path string, form url.Values) *http.Response {
+	resp, err := c.Client.PostForm(c.Server.URL+path, form)
+
+	require.NoError(t, err)
+	require.Equal(t, resp.StatusCode, 200)
+
+	return resp
+}
+
 func (c *TestServer) Head(t *testing.T, path string) *http.Response {
 	resp, err := c.Client.Head(c.Server.URL + path)
 	require.NoError(t, err)

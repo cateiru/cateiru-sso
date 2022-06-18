@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
@@ -75,7 +76,9 @@ func TestOTP(t *testing.T) {
 
 	// ----
 
-	resp = s.Get(t, "/otp/bup")
+	resp = s.PostForm(t, "/otp/bup", url.Values{
+		"password": {"password"},
+	})
 
 	var getBackups otp.ResponseBackups
 	err = json.Unmarshal(tools.ConvertByteResp(resp), &getBackups)
