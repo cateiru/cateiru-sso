@@ -9,6 +9,7 @@ import (
 	"github.com/cateiru/cateiru-sso/api/database"
 	"github.com/cateiru/cateiru-sso/api/models"
 	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/api/utils/secure"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 
@@ -19,7 +20,13 @@ type ResponseBackups struct {
 // OTPのバックアップコードを返す
 // ログインしているときのみ
 func BackupHandler(w http.ResponseWriter, r *http.Request) error {
+	if err := r.ParseForm(); err != nil {
+		return status.NewBadRequestError(err).Caller()
+	}
+
 	ctx := r.Context()
+
+	password := r.Form.Get("password")
 
 	db, err := database.NewDatabase(ctx)
 	if err != nil {
@@ -32,6 +39,16 @@ func BackupHandler(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	userId := c.UserId
+
+	cert, err := models.GetCertificationByUserID(ctx, db, userId)
+	if err != nil {
+		return status.NewInternalServerErrorError(err).Caller()
+	}
+
+	// パスワードを検証する
+	if !secure.ValidatePW(password, cert.Password, cert.Salt) {
+		return status.NewBadRequestError(errors.New("no validate password")).Caller().AddCode(net.FailedLogin)
+	}
 
 	codes, err := GetBackupcodes(ctx, db, userId)
 	if err != nil {

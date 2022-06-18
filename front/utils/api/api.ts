@@ -60,6 +60,18 @@ export class API {
     };
   }
 
+  postFormURL(data: string) {
+    this.config = {
+      method: 'POST',
+      credentials: 'include',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: data,
+    };
+  }
+
   get() {
     this.config = {
       method: 'GET',

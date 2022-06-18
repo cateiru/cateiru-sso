@@ -19,7 +19,6 @@ import {
   useClipboard,
   Divider,
   Text,
-  SimpleGrid,
   Skeleton,
 } from '@chakra-ui/react';
 import {useColorMode} from '@chakra-ui/react';
@@ -32,16 +31,18 @@ import {
   OTPGetResponse,
   getToken,
   setToken,
-  getBackups,
   deleteotp,
 } from '../../utils/api/otp';
 import {LoadState, OTPEnableState} from '../../utils/state/atom';
 import {OTPState} from '../../utils/state/types';
+import Backups from './Backups';
+import ShowBackup from './ShowBackup';
 
 const OTP = () => {
   const {isOpen, onOpen, onClose} = useDisclosure();
-  const backSaveModal = useDisclosure();
   const deleteOtpModal = useDisclosure();
+  const requestPasswordModal = useDisclosure();
+  const showBackupModal = useDisclosure();
 
   const [otpGenerate, setOTPGenerate] = React.useState(false);
   const [otpEnable, setOTPEnable] = useRecoilState(OTPEnableState);
@@ -51,7 +52,6 @@ const OTP = () => {
   const toast = useToast();
   const {colorMode} = useColorMode();
   const {hasCopied, onCopy} = useClipboard(otpToken?.otp_token || '');
-  const backupCopy = useClipboard(backups.join(', '));
   const [isError, setIsError] = React.useState(false);
 
   const setLoad = useSetRecoilState(LoadState);
@@ -141,7 +141,7 @@ const OTP = () => {
         setPasscode('');
         onClose();
         setOTPEnable(OTPState.Enable);
-        backSaveModal.onOpen();
+        showBackupModal.onOpen();
       } catch (error) {
         if (error instanceof Error) {
           toast({
@@ -197,30 +197,6 @@ const OTP = () => {
           });
         }
         deleteOtpModal.onClose();
-      }
-      setLoad(false);
-    };
-
-    f();
-  };
-
-  // バックアップコードモーダルを開く
-  const openBackups = () => {
-    const f = async () => {
-      setLoad(true);
-      try {
-        const backups = await getBackups();
-        setBackups(backups);
-        backSaveModal.onOpen();
-      } catch (error) {
-        if (error instanceof Error) {
-          toast({
-            title: error.message,
-            status: 'error',
-            isClosable: true,
-            duration: 9000,
-          });
-        }
       }
       setLoad(false);
     };
@@ -324,53 +300,22 @@ const OTP = () => {
       return (
         <>
           <Stack direction={['column', 'row']} spacing="1rem">
-            <Button onClick={openBackups}>バックアップコードを表示する</Button>
+            <Button onClick={requestPasswordModal.onOpen}>
+              バックアップコードを表示する
+            </Button>
             <Button onClick={deleteOtpModal.onOpen} colorScheme="red">
               二段階認証を削除する
             </Button>
           </Stack>
-          <Modal
-            isOpen={backSaveModal.isOpen}
-            onClose={backSaveModal.onClose}
-            isCentered
-          >
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader>バックアップコード</ModalHeader>
-              <ModalCloseButton size="lg" />
-              <ModalBody>
-                <Text color="red.500" fontWeight="bold">
-                  *必ず大切に保管してください
-                </Text>
-                <Text mt=".5rem">
-                  バックアップコードはワンタイムパスワードを忘れてしまった、削除されてしまった場合に入力できるコードです。
-                </Text>
-                <Text mt=".5rem">コードは1つにつき1回入力できます。</Text>
-                <Divider my="1rem" />
-                <SimpleGrid columns={2} spacing="10px" my="1rem">
-                  {backups.map(v => (
-                    <Text key={v} textAlign="center">
-                      {v}
-                    </Text>
-                  ))}
-                </SimpleGrid>
-                <Center mb="1rem">
-                  <Button
-                    onClick={backupCopy.onCopy}
-                    leftIcon={
-                      backupCopy.hasCopied ? (
-                        <IoCheckmarkSharp size="20px" color="#38A169" />
-                      ) : (
-                        <IoCopyOutline size="20px" />
-                      )
-                    }
-                  >
-                    コピーする
-                  </Button>
-                </Center>
-              </ModalBody>
-            </ModalContent>
-          </Modal>
+          <Backups
+            onClose={requestPasswordModal.onClose}
+            isOpen={requestPasswordModal.isOpen}
+          />
+          <ShowBackup
+            backups={backups}
+            onClose={showBackupModal.onClose}
+            isOpen={showBackupModal.isOpen}
+          />
           <Modal
             isOpen={deleteOtpModal.isOpen}
             onClose={deleteOtpModal.onClose}
