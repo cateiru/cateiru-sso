@@ -37,7 +37,7 @@ export const setToken = async (
 export const getBackups = async (password: string): Promise<string[]> => {
   const api = new API();
 
-  api.postFormURL(`password=${password}`);
+  api.postFormURL(`password=${encodeURI(password)}`);
 
   const response = await api.connect('/user/otp/backup');
 
