@@ -70,7 +70,7 @@ func ChangeInfo(ctx context.Context, db *database.Database, userId string, req *
 	if err := ChangeLastName(user, req.LastName, &isChange); err != nil {
 		return nil, err
 	}
-	if err := ChangeUserName(user, req.UserName, &isChange); err != nil {
+	if err := ChangeUserName(ctx, db, user, req.UserName, &isChange); err != nil {
 		return nil, err
 	}
 	if err := ChangeTheme(user, req.Theme, &isChange); err != nil {
@@ -120,7 +120,7 @@ func ChangeLastName(user *models.User, newLastName string, isChange *bool) error
 	return nil
 }
 
-func ChangeUserName(user *models.User, newUserName string, isChange *bool) error {
+func ChangeUserName(ctx context.Context, db *database.Database, user *models.User, newUserName string, isChange *bool) error {
 	// 要素がからの場合はなにもしない
 	if len(newUserName) == 0 {
 		return nil
@@ -134,6 +134,14 @@ func ChangeUserName(user *models.User, newUserName string, isChange *bool) error
 	// ユーザ名がただしいか検証する
 	if !utils.CheckUserName(newUserName) {
 		return status.NewBadRequestError(errors.New("incorrect username")).Caller().AddCode(net.IncorrectUserName)
+	}
+
+	exist, err := common.CheckUsername(ctx, db, newUserName)
+	if err != nil {
+		return status.NewInternalServerErrorError(errors.New("")).Caller()
+	}
+	if exist {
+		return status.NewBadRequestError(errors.New("already exist user")).Caller()
 	}
 
 	user.UserName = newUserName

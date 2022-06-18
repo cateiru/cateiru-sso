@@ -92,3 +92,34 @@ func TestFailedUserName(t *testing.T) {
 		return entity != nil && entity.FirstName == old.FirstName
 	}, "変わっていない")
 }
+
+func TestAlreadyExistUser(t *testing.T) {
+	config.TestInit(t)
+
+	ctx := context.Background()
+
+	db, err := database.NewDatabase(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+
+	dummy := tools.NewDummyUser()
+
+	u, err := dummy.AddUserInfo(ctx, db)
+	require.NoError(t, err)
+
+	// ちゃんとDBに入っているか確認する
+	goretry.Retry(t, func() bool {
+		_u, err := models.GetUserDataByUserID(ctx, db, dummy.UserID)
+		require.NoError(t, err)
+
+		return _u != nil
+	}, "")
+
+	chaned := info.Request{
+		UserName: u.UserName,
+	}
+
+	// ユーザはすでに存在しているのでエラーになる
+	_, err = info.ChangeInfo(ctx, db, dummy.UserID, &chaned)
+	require.Error(t, err)
+}
