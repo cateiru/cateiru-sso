@@ -34,10 +34,10 @@ export const setToken = async (
   return ((await response.json()) as OTPSetResponse).backups;
 };
 
-export const getBackups = async (): Promise<string[]> => {
+export const getBackups = async (password: string): Promise<string[]> => {
   const api = new API();
 
-  api.get();
+  api.postFormURL(`password=${password}`);
 
   const response = await api.connect('/user/otp/backup');
 
