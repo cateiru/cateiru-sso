@@ -15,6 +15,9 @@ func TestCheckURL(t *testing.T) {
 		"https://cateiru.com/login": true,
 		"https://cateiru.com/":      true,
 		"http://localhost":          true,
+		"http://192.168.3.10":       true, // IPで検証したい話題がある
+		"http://0.0.0.0":            true,
+		"https://8.8.8.8":           true,
 		"http://example.com":        false,
 		"https://":                  false,
 		"ftp:":                      false,
@@ -32,5 +35,28 @@ func TestCheckURL(t *testing.T) {
 }
 
 func TestCheckURLAllowDirect(t *testing.T) {
-	require.NoError(t, pro.CheckURL([]string{"direct"}, true))
+	urls := map[string]bool{
+		"https://cateiru.com":       true,
+		"https://uie.jp":            true,
+		"https://www.example.com":   true,
+		"https://cateiru.com/login": true,
+		"https://cateiru.com/":      true,
+		"http://localhost":          true,
+		"http://192.168.3.10":       true, // IPで検証したい話題がある
+		"http://0.0.0.0":            true,
+		"https://8.8.8.8":           true,
+		"http://example.com":        false,
+		"https://":                  false,
+		"ftp:":                      false,
+		"aaaaaa":                    false,
+		"direct":                    true,
+	}
+
+	for url, result := range urls {
+		if result {
+			require.NoError(t, pro.CheckURL([]string{url}, true), url)
+		} else {
+			require.Error(t, pro.CheckURL([]string{url}, true), url)
+		}
+	}
 }

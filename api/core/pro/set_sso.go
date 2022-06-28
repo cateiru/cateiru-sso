@@ -220,14 +220,14 @@ func SetImage(w http.ResponseWriter, r *http.Request) error {
 // URLが正しいかチェックする
 func CheckURL(urls []string, allowDirect bool) error {
 
-	pattan := `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://localhost)`
+	pattern := `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://(localhost|([0-9]{0,3}\.){3}[0-9]{0,3}))/?`
 
 	if allowDirect {
-		pattan = `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://localhost|direct)`
+		pattern = `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://(localhost|([0-9]{0,3}\.){3}[0-9]{0,3})|direct)/?`
 	}
 
 	for _, url := range urls {
-		match, err := regexp.MatchString(pattan, url)
+		match, err := regexp.MatchString(pattern, url)
 		if err != nil {
 			return status.NewInternalServerErrorError(err).Caller()
 		}
