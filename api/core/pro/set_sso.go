@@ -220,10 +220,10 @@ func SetImage(w http.ResponseWriter, r *http.Request) error {
 // URLが正しいかチェックする
 func CheckURL(urls []string, allowDirect bool) error {
 
-	pattern := `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://(localhost|([0-9]{0,3}\.){3}[0-9]{0,3}))/?`
+	pattern := `^(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://(localhost|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(/.+)*)/?$`
 
 	if allowDirect {
-		pattern = `(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://(localhost|([0-9]{0,3}\.){3}[0-9]{0,3})|direct)/?`
+		pattern = `^(https://[\w/:%#\$&\?\(\)~\.=\+\-]+|http://(localhost|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]+)?(/.+)*|direct)/?$`
 	}
 
 	for _, url := range urls {
