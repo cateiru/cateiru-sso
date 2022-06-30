@@ -14,7 +14,7 @@ const useVerifySurveillance = (): [
   const ref = React.useRef<Socket>();
 
   const surveillance = (token: string) => {
-    const socket = new Socket(`/create/verify?cct=${token}`);
+    const socket = new Socket(`/v1/create/verify?cct=${token}`);
 
     socket.error(() => {
       setClose(true);
