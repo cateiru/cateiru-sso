@@ -12,8 +12,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import React from 'react';
-import {useForm} from 'react-hook-form';
-import type {FieldValues} from 'react-hook-form';
+import {SubmitHandler, useForm} from 'react-hook-form';
 import {useRecoilState} from 'recoil';
 import {changeUser} from '../../utils/api/change';
 import {checkUserName} from '../../utils/api/check';
@@ -21,12 +20,21 @@ import {UserState} from '../../utils/state/atom';
 import {UserInfo} from '../../utils/state/types';
 import AvatarSetting from './AvatarSetting';
 
+interface Form {
+  lastName: string;
+  firstName: string;
+  userName: string;
+  theme: string;
+}
+
 const UserSetting = React.memo(() => {
   const {
     handleSubmit,
     register,
+    setError,
+    clearErrors,
     formState: {errors, isSubmitting},
-  } = useForm();
+  } = useForm<Form>();
   const [existUser, setExistUser] = React.useState(false);
   const [userName, setUserName] = React.useState('');
   const [user, setUser] = useRecoilState(UserState);
@@ -42,13 +50,31 @@ const UserSetting = React.memo(() => {
       const f = async () => {
         const exist = await checkUserName(userName);
         setExistUser(exist);
+        if (exist) {
+          setError('userName', {
+            type: 'custom',
+            message: 'このユーザ名はすでに使用されています',
+          });
+        } else {
+          clearErrors('userName');
+        }
       };
 
       f();
     }
   }, [userName]);
 
-  const submit = (values: FieldValues) => {
+  const submit: SubmitHandler<Form> = values => {
+    if (existUser) {
+      setError('userName', {
+        type: 'custom',
+        message: 'このユーザ名はすでに使用されています',
+      });
+      return;
+    } else {
+      clearErrors('userName');
+    }
+
     const f = async () => {
       let changeFirstName: string | undefined = undefined;
       let changeLastName: string | undefined = undefined;
@@ -111,8 +137,6 @@ const UserSetting = React.memo(() => {
     return () => {};
   };
 
-  console.log('setting');
-
   return (
     <Stack
       direction={{base: 'column', md: 'row'}}
@@ -126,7 +150,7 @@ const UserSetting = React.memo(() => {
         <Center mx=".5rem" height="100%">
           <form onSubmit={handleSubmit(submit)}>
             <Flex>
-              <FormControl isInvalid={errors.lastName} mr=".5rem">
+              <FormControl isInvalid={Boolean(errors.lastName)} mr=".5rem">
                 <FormLabel htmlFor="lastName">姓</FormLabel>
                 <Input
                   id="lastName"
@@ -141,7 +165,7 @@ const UserSetting = React.memo(() => {
                   {errors.lastName && errors.lastName.message}
                 </FormErrorMessage>
               </FormControl>
-              <FormControl isInvalid={errors.firstName}>
+              <FormControl isInvalid={Boolean(errors.firstName)}>
                 <FormLabel htmlFor="firstName">名</FormLabel>
                 <Input
                   id="firstName"
@@ -157,7 +181,10 @@ const UserSetting = React.memo(() => {
                 </FormErrorMessage>
               </FormControl>
             </Flex>
-            <FormControl isInvalid={errors.userName || existUser} mt="1rem">
+            <FormControl
+              isInvalid={Boolean(errors.userName || existUser)}
+              mt="1rem"
+            >
               <FormLabel htmlFor="userName">ユーザ名</FormLabel>
               <Input
                 id="userName"
@@ -176,10 +203,9 @@ const UserSetting = React.memo(() => {
               />
               <FormErrorMessage>
                 {errors.userName && errors.userName.message}
-                {existUser && 'このユーザ名はすでに使用されています'}
               </FormErrorMessage>
             </FormControl>
-            <FormControl isInvalid={errors.theme} mt="1rem">
+            <FormControl isInvalid={Boolean(errors.theme)} mt="1rem">
               <FormLabel htmlFor="theme">テーマ</FormLabel>
               <Select
                 id="theme"
@@ -201,7 +227,6 @@ const UserSetting = React.memo(() => {
               colorScheme="blue"
               isLoading={isSubmitting}
               type="submit"
-              disabled={existUser}
               width={{base: '100%', md: 'auto'}}
             >
               変える

@@ -161,10 +161,10 @@ const LoginLogPage = () => {
     );
   };
 
-  const Header: React.FC<{align?: ResponsiveValue<Property.TextAlign>}> = ({
-    children,
-    align = 'center',
-  }) => {
+  const Header: React.FC<{
+    align?: ResponsiveValue<Property.TextAlign>;
+    children: React.ReactNode;
+  }> = ({children, align = 'center'}) => {
     return (
       <Th
         textAlign={align}
