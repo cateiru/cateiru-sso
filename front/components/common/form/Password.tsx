@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import React from 'react';
-import type {FieldValues, UseFormRegister, FieldErrors} from 'react-hook-form';
+import {useFormContext} from 'react-hook-form';
 import {TbEye, TbEyeOff} from 'react-icons/tb';
 import PasswordStrengthBar from 'react-password-strength-bar';
 
@@ -18,32 +18,50 @@ const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
   ssr: false,
 });
 
+export interface PasswordForm {
+  password: string;
+}
+
 const Password: React.FC<{
-  errors: FieldErrors<FieldValues>;
-  register: UseFormRegister<FieldValues>;
-  onChange: (status: boolean) => void;
-  label?: string;
-}> = ({errors, register, onChange, label = 'password', children}) => {
+  children: React.ReactNode;
+  setOk: (ok: boolean) => void;
+}> = ({children, setOk}) => {
+  const {
+    register,
+    clearErrors,
+    setError,
+    formState: {errors},
+  } = useFormContext<PasswordForm>();
+
   const [show, setShow] = React.useState(false);
   const [pwOk, setPWOK] = React.useState(false);
   const [pass, setPass] = React.useState('');
 
   React.useEffect(() => {
-    onChange(pwOk);
-  }, [pwOk]);
+    if (pass.length !== 0) {
+      if (!pwOk) {
+        setError('password', {
+          type: 'custom',
+          message: 'custom message',
+        });
+      } else {
+        clearErrors('password');
+      }
+    }
+  }, [pwOk, pass]);
 
   return (
     <>
-      <FormControl isInvalid={errors[label]} mt="1rem">
-        <FormLabel htmlFor={label} marginTop="1rem">
+      <FormControl isInvalid={Boolean(errors.password)} mt="1rem">
+        <FormLabel htmlFor="password" marginTop="1rem">
           {children}
         </FormLabel>
         <InputGroup>
           <Input
-            id={label}
+            id="password"
             type={show ? 'text' : 'password'}
             placeholder="パスワード"
-            {...register(label, {
+            {...register('password', {
               required: true,
               onChange: e => setPass(e.target.value || ''),
             })}
@@ -70,7 +88,6 @@ const Password: React.FC<{
           shortScoreWord="8文字以上にしてほしいな"
           minLength={8}
         />
-        <FormErrorMessage>{errors.password}</FormErrorMessage>
       </FormControl>
       <Box marginTop=".5rem">
         <PasswordChecklist
@@ -85,8 +102,9 @@ const Password: React.FC<{
           }}
           onChange={isValid => {
             let unmounted = false;
-            if (pwOk !== isValid && !unmounted) {
+            if (isValid !== pwOk && !unmounted) {
               setPWOK(isValid);
+              setOk(isValid);
             }
 
             return () => {

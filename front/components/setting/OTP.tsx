@@ -258,7 +258,7 @@ const OTP = () => {
                         placeholder="確認のため、生成されたコードを入力"
                         type="number"
                         onChange={e => setPasscode(e.target.value)}
-                        isInvalid={isError}
+                        isInvalid={Boolean(isError)}
                       />
                     </Box>
                   </Center>
@@ -337,7 +337,7 @@ const OTP = () => {
                   placeholder="ワンタイムパスワードを入力"
                   type="text"
                   onChange={e => setPasscode(e.target.value)}
-                  isInvalid={isError}
+                  isInvalid={Boolean(isError)}
                 />
               </ModalBody>
               <ModalFooter>

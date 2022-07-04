@@ -27,8 +27,7 @@ import NextLink from 'next/link';
 import {useRouter} from 'next/router';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
-import {useForm} from 'react-hook-form';
-import type {FieldValues} from 'react-hook-form';
+import {SubmitHandler, useForm} from 'react-hook-form';
 import {TbEye, TbEyeOff} from 'react-icons/tb';
 import {TbExternalLink} from 'react-icons/tb';
 import {useSetRecoilState, useResetRecoilState} from 'recoil';
@@ -36,12 +35,17 @@ import {login} from '../../utils/api/login';
 import cookieValue from '../../utils/cookie';
 import {UserState, NoLoginState} from '../../utils/state/atom';
 
+interface Form {
+  email: string;
+  password: string;
+}
+
 const LoginForm = () => {
   const {
     handleSubmit,
     register,
     formState: {errors, isSubmitting},
-  } = useForm();
+  } = useForm<Form>();
   const [show, setShow] = React.useState(false);
   const [load, setLoad] = React.useState(false);
   const [redirect, setRedirect] = React.useState('');
@@ -62,7 +66,7 @@ const LoginForm = () => {
     }
   }, [router.isReady, router.query]);
 
-  const submit = (values: FieldValues) => {
+  const submit: SubmitHandler<Form> = values => {
     if (!executeRecaptcha) {
       return;
     }
@@ -144,7 +148,7 @@ const LoginForm = () => {
           <Heading>ログイン</Heading>
         </Center>
         <form onSubmit={handleSubmit(submit)}>
-          <FormControl isInvalid={errors.email}>
+          <FormControl isInvalid={Boolean(errors.email)}>
             <FormLabel htmlFor="email">メールアドレス</FormLabel>
             <Input
               id="email"
@@ -163,7 +167,7 @@ const LoginForm = () => {
               {errors.email && errors.email.message}
             </FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={errors.password} mt="1rem">
+          <FormControl isInvalid={Boolean(errors.password)} mt="1rem">
             <FormLabel htmlFor="password">パスワード</FormLabel>
             <InputGroup>
               <Input

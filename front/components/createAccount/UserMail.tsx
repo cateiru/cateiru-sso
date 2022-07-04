@@ -7,8 +7,12 @@ import {
   Box,
 } from '@chakra-ui/react';
 import React from 'react';
-import {useForm} from 'react-hook-form';
+import {SubmitHandler, useForm} from 'react-hook-form';
 import type {FieldValues} from 'react-hook-form';
+
+interface Form {
+  email: string;
+}
 
 const UserPassword: React.FC<{
   submit: (values: FieldValues) => void;
@@ -17,9 +21,9 @@ const UserPassword: React.FC<{
     handleSubmit,
     register,
     formState: {errors, isSubmitting},
-  } = useForm();
+  } = useForm<Form>();
 
-  const submitHandler = (values: FieldValues) => {
+  const submitHandler: SubmitHandler<Form> = values => {
     submit(values);
 
     return () => {};
@@ -28,7 +32,7 @@ const UserPassword: React.FC<{
   return (
     <Box width={{base: '100%', sm: '90%', md: '600px'}}>
       <form onSubmit={handleSubmit(submitHandler)}>
-        <FormControl isInvalid={errors.email}>
+        <FormControl isInvalid={Boolean(errors.email)}>
           <FormLabel htmlFor="email">メールアドレス</FormLabel>
           <Input
             id="email"

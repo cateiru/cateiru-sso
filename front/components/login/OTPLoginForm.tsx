@@ -10,11 +10,14 @@ import {
 } from '@chakra-ui/react';
 import {useRouter} from 'next/router';
 import React from 'react';
-import {useForm} from 'react-hook-form';
-import type {FieldValues} from 'react-hook-form';
+import {SubmitHandler, useForm} from 'react-hook-form';
 import {useSetRecoilState, useResetRecoilState} from 'recoil';
 import {loginOTP} from '../../utils/api/login';
 import {UserState, NoLoginState} from '../../utils/state/atom';
+
+interface Form {
+  otp: string;
+}
 
 const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
   token,
@@ -24,7 +27,7 @@ const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
     handleSubmit,
     register,
     formState: {errors, isSubmitting},
-  } = useForm();
+  } = useForm<Form>();
   const [load, setLoad] = React.useState(false);
   const [failedCount, setFailedCount] = React.useState(0);
   const resetUser = useResetRecoilState(UserState);
@@ -39,7 +42,7 @@ const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
     }
   }, [failedCount]);
 
-  const submit = (values: FieldValues) => {
+  const submit: SubmitHandler<Form> = values => {
     validate(values.otp);
 
     return () => {};
@@ -92,7 +95,7 @@ const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
       <Center>
         <Box width={{base: '100%', sm: '400px', md: '460px'}}>
           <form onSubmit={handleSubmit(submit)}>
-            <FormControl isInvalid={errors.otp}>
+            <FormControl isInvalid={Boolean(errors.otp)}>
               <Input
                 id="otp"
                 type="text"
@@ -104,7 +107,7 @@ const OTPLoginForm: React.FC<{token: string; redirect: string}> = ({
                 })}
               />
               <FormErrorMessage>
-                {errors.otp && errors.otp.otp}
+                {errors.otp && errors.otp.message}
               </FormErrorMessage>
             </FormControl>
             <Button

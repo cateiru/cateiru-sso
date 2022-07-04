@@ -1,7 +1,10 @@
 import {Center, Box, Heading, Tabs, TabList, Tab} from '@chakra-ui/react';
 import {useRouter} from 'next/router';
 
-const SettingPage: React.FC<{index: number}> = ({index, children}) => {
+const SettingPage: React.FC<{index: number; children: React.ReactNode}> = ({
+  index,
+  children,
+}) => {
   const router = useRouter();
 
   const handleChange = (index: number) => {

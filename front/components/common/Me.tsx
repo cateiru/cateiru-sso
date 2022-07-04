@@ -4,7 +4,7 @@ import {useGetUserInfo} from '../../hooks/useGetUserInfo';
 import cookieValue from '../../utils/cookie';
 import {UserState} from '../../utils/state/atom';
 
-const Me: React.FC = props => {
+const Me: React.FC<{children: React.ReactNode}> = props => {
   const get = useGetUserInfo();
   const setUser = useSetRecoilState(UserState);
 

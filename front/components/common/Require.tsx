@@ -9,6 +9,7 @@ const Require: React.FC<{
   path: string;
   role?: string;
   loading?: JSX.Element;
+  children: React.ReactNode;
 }> = ({isLogin, path, role, loading, children}) => {
   const user = useRecoilValue(UserState);
   const router = useRouter();

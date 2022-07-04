@@ -9,24 +9,25 @@ import {
   useToast,
   Text,
 } from '@chakra-ui/react';
-import {useRouter} from 'next/router';
 import React from 'react';
-import {useForm} from 'react-hook-form';
-import type {FieldValues} from 'react-hook-form';
+import {SubmitHandler, useForm} from 'react-hook-form';
 import {TbMailForward} from 'react-icons/tb';
 import {sendForget} from '../../utils/api/forget';
+
+interface Form {
+  email: string;
+}
 
 const Forget = () => {
   const {
     handleSubmit,
     register,
     formState: {errors, isSubmitting},
-  } = useForm();
+  } = useForm<Form>();
   const toast = useToast();
-  const router = useRouter();
   const [mail, setMail] = React.useState('');
 
-  const submit = (values: FieldValues) => {
+  const submit: SubmitHandler<Form> = values => {
     const f = async () => {
       try {
         await sendForget(values.email);
@@ -58,7 +59,7 @@ const Forget = () => {
         </Heading>
         <Box width={{base: '100%', lg: '800px'}} mt="2rem">
           <form onSubmit={handleSubmit(submit)}>
-            <FormControl isInvalid={errors.email}>
+            <FormControl isInvalid={Boolean(errors.email)}>
               <Input
                 id="email"
                 type="email"

@@ -21,7 +21,6 @@ import {
   useDisclosure,
   FormControl,
   FormLabel,
-  ButtonGroup,
   FormErrorMessage,
   Switch,
   Slider,
@@ -33,14 +32,8 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import AvatarEditor from 'react-avatar-editor';
-import {useForm} from 'react-hook-form';
-import type {FieldValues} from 'react-hook-form';
-import {
-  IoCopyOutline,
-  IoCheckmarkSharp,
-  IoAddOutline,
-  IoRemoveOutline,
-} from 'react-icons/io5';
+import {SubmitHandler, useForm, FormProvider} from 'react-hook-form';
+import {IoCopyOutline, IoCheckmarkSharp} from 'react-icons/io5';
 import {
   deleteService,
   editImage,
@@ -48,6 +41,14 @@ import {
   Service,
 } from '../../utils/api/proSSO';
 import Avatar from '../common/Avatar';
+import FromURLs, {FromURLForm} from './Form/FromURLs';
+import ToURLs, {ToURLForm} from './Form/ToURLs';
+
+interface Form extends FromURLForm, ToURLForm {
+  name: string;
+  roles: string;
+  secret: boolean;
+}
 
 const ServiceDetails: React.FC<{
   service: Service | undefined;
@@ -68,14 +69,23 @@ const ServiceDetails: React.FC<{
   const tokenSecretCopy = useClipboard(service?.token_secret || '');
 
   // 変更
-  const [fromURLs, setFromURLs] = React.useState(1);
-  const [toURLs, setToURLs] = React.useState(1);
+  const methods = useForm<Form>();
   const {
     handleSubmit,
     register,
     formState: {errors},
+    setValue,
     reset,
-  } = useForm();
+  } = methods;
+
+  React.useEffect(() => {
+    if (typeof service !== 'undefined' && editModal.isOpen) {
+      setValue('name', service.name);
+      setValue('fromUrls', service.from_url.map(v => ({url: v})) || []);
+      setValue('toUrls', service.to_url.map(v => ({url: v})) || []);
+      setValue('roles', service.allow_roles?.join(',') || '');
+    }
+  }, [service, editModal.isOpen]);
 
   // 画像
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -83,23 +93,9 @@ const ServiceDetails: React.FC<{
   const [image, setImage] = React.useState<File>(new File([], ''));
   const [zoom, setZoom] = React.useState(1);
 
-  React.useEffect(() => {
-    setFromURLs(service?.from_url.length || 1);
-  }, [service?.from_url]);
-
-  React.useEffect(() => {
-    setToURLs(service?.to_url.length || 1);
-  }, [service?.to_url]);
-
-  const submit = (values: FieldValues) => {
-    const fromURL = new Array(fromURLs)
-      .fill('')
-      .map((_, index) => values[`fromurl${index}`])
-      .sort();
-    const toURL = new Array(toURLs)
-      .fill('')
-      .map((_, index) => values[`tourl${index}`])
-      .sort();
+  const submit: SubmitHandler<Form> = values => {
+    const fromURL = values.fromUrls.map(v => v.url);
+    const toURL = values.toUrls.map(v => v.url);
     const roles = values.roles.split(',');
 
     let changedName = '';
@@ -427,169 +423,64 @@ const ServiceDetails: React.FC<{
         <ModalContent>
           <ModalHeader pr="5rem">{service?.name}の編集</ModalHeader>
           <ModalCloseButton size="lg" />
-          <form onSubmit={handleSubmit(submit)}>
-            <ModalBody>
-              <FormControl isInvalid={errors.name}>
-                <FormLabel htmlFor="name">サービス名</FormLabel>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="サービス名"
-                  defaultValue={service?.name}
-                  {...register('name', {
-                    required: 'サービス名 の入力が必要です',
-                    maxLength: {
-                      value: 20,
-                      message: '20文字以内で入力してください',
-                    },
-                    minLength: {
-                      value: 1,
-                      message: '1文字以上で入力してください',
-                    },
-                  })}
-                />
-                <FormErrorMessage>
-                  {errors.name && errors.name.message}
-                </FormErrorMessage>
-              </FormControl>
-              <FormLabel mt="1rem">送信元URL</FormLabel>
-              {new Array(fromURLs).fill(0).map((_, index) => (
-                <FormControl
-                  isInvalid={errors[`fromurl${index}`]}
-                  key={index}
-                  my=".5rem"
-                >
+          <FormProvider {...methods}>
+            <form onSubmit={handleSubmit(submit)}>
+              <ModalBody>
+                <FormControl isInvalid={Boolean(errors.name)}>
+                  <FormLabel htmlFor="name">サービス名</FormLabel>
                   <Input
-                    id={`fromurl${index}`}
+                    id="name"
                     type="text"
-                    placeholder={`送信元URL ${index + 1}`}
-                    defaultValue={service?.from_url[index]}
-                    {...register(`fromurl${index}`, {
-                      required: '送信元URL の入力が必要です',
-                      pattern: {
-                        value:
-                          /(https:\/\/[\w/:%#$&?()~.=+-]+|http:\/\/.+|direct)/,
-                        message: 'URLの形式が違うようです',
+                    placeholder="サービス名"
+                    {...register('name', {
+                      required: 'サービス名 の入力が必要です',
+                      maxLength: {
+                        value: 20,
+                        message: '20文字以内で入力してください',
+                      },
+                      minLength: {
+                        value: 1,
+                        message: '1文字以上で入力してください',
                       },
                     })}
                   />
                   <FormErrorMessage>
-                    {errors[`fromurl${index}`] &&
-                      errors[`fromurl${index}`].message}
+                    {errors.name && errors.name.message}
                   </FormErrorMessage>
                 </FormControl>
-              ))}
-              <ButtonGroup isAttached>
-                <IconButton
-                  aria-label="add"
-                  icon={<IoAddOutline size="25px" />}
-                  onClick={() => {
-                    setFromURLs(v => {
-                      if (v >= 5) {
-                        return v;
-                      }
-                      return (v += 1);
-                    });
-                  }}
-                />
-                <IconButton
-                  aria-label="add"
-                  icon={<IoRemoveOutline size="25px" />}
-                  onClick={() => {
-                    setFromURLs(v => {
-                      if (v <= 1) {
-                        return v;
-                      }
-                      return (v -= 1);
-                    });
-                  }}
-                />
-              </ButtonGroup>
-              <FormLabel mt="1rem">
-                リダイレクトURL（しない場合はdirect）
-              </FormLabel>
-              {new Array(toURLs).fill(0).map((_, index) => (
-                <FormControl
-                  isInvalid={errors[`tourl${index}`]}
-                  key={index}
-                  my=".5rem"
-                >
+                <FromURLs />
+                <ToURLs />
+                <FormControl isInvalid={Boolean(errors.roles)}>
+                  <FormLabel htmlFor="roles" mt="1rem">
+                    ロール（オプション）
+                  </FormLabel>
                   <Input
-                    id={`tourl${index}`}
+                    id="roles"
                     type="text"
-                    placeholder={`リダイレクトURL ${index + 1}`}
-                    defaultValue={service?.to_url[index]}
-                    {...register(`tourl${index}`, {
-                      required: 'リダイレクトURL の入力が必要です',
+                    placeholder="ロール"
+                    {...register('roles', {
                       pattern: {
-                        value:
-                          /(https:\/\/[\w/:%#$&?()~.=+-]+|http:\/\/.+|direct)/,
-                        message: 'URLの形式が違うようです',
+                        value: /(,?[0-9a-z]+)*/,
+                        message: 'ロールはコンマ区切りで入力してください',
                       },
                     })}
                   />
                   <FormErrorMessage>
-                    {errors[`tourl${index}`] && errors[`tourl${index}`].message}
+                    {errors.roles && errors.roles.message}
                   </FormErrorMessage>
                 </FormControl>
-              ))}
-              <ButtonGroup isAttached>
-                <IconButton
-                  aria-label="add"
-                  icon={<IoAddOutline size="25px" />}
-                  onClick={() => {
-                    setToURLs(v => {
-                      if (v >= 5) {
-                        return v;
-                      }
-                      return (v += 1);
-                    });
-                  }}
-                />
-                <IconButton
-                  aria-label="add"
-                  icon={<IoRemoveOutline size="25px" />}
-                  onClick={() => {
-                    setToURLs(v => {
-                      if (v <= 1) {
-                        return v;
-                      }
-                      return (v -= 1);
-                    });
-                  }}
-                />
-              </ButtonGroup>
-              <FormControl isInvalid={errors.roles}>
-                <FormLabel htmlFor="roles" mt="1rem">
-                  ロール（オプション）
-                </FormLabel>
-                <Input
-                  id="roles"
-                  type="text"
-                  placeholder="ロール"
-                  defaultValue={service?.allow_roles?.join(',')}
-                  {...register('roles', {
-                    pattern: {
-                      value: /(,?[0-9a-z]+)*/,
-                      message: 'ロールはコンマ区切りで入力してください',
-                    },
-                  })}
-                />
-                <FormErrorMessage>
-                  {errors.roles && errors.roles.message}
-                </FormErrorMessage>
-              </FormControl>
-              <FormLabel mt="1rem">Token Secret</FormLabel>
-              <Switch size="md" {...register('secret')}>
-                Token Secretを更新する
-              </Switch>
-            </ModalBody>
-            <ModalFooter>
-              <Button colorScheme="blue" mr={3} type="submit">
-                これでOK
-              </Button>
-            </ModalFooter>
-          </form>
+                <FormLabel mt="1rem">Token Secret</FormLabel>
+                <Switch size="md" {...register('secret')}>
+                  Token Secretを更新する
+                </Switch>
+              </ModalBody>
+              <ModalFooter>
+                <Button colorScheme="blue" mr={3} type="submit">
+                  これでOK
+                </Button>
+              </ModalFooter>
+            </form>
+          </FormProvider>
         </ModalContent>
       </Modal>
 
