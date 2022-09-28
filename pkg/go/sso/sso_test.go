@@ -71,7 +71,7 @@ func TestGetPublicKey(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", "https://api.sso.cateiru.com/oauth/jwt/key",
+	httpmock.RegisterResponder("GET", "https://api.sso.cateiru.com/v1/oauth/jwt/key",
 		httpmock.NewStringResponder(200, `{"pkcs8": "hogehoge"}`),
 	)
 
@@ -99,7 +99,7 @@ func TestGetToken(t *testing.T) {
 	auth := "hogehoge"
 
 	httpmock.RegisterResponder("GET", fmt.Sprintf(
-		"https://api.sso.cateiru.com/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s",
+		"https://api.sso.cateiru.com/v1/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s",
 		url.QueryEscape(code), url.QueryEscape(redirect),
 	),
 		func(req *http.Request) (*http.Response, error) {
@@ -157,7 +157,7 @@ func TestValidateIDToken(t *testing.T) {
 	body, err := json.Marshal(key)
 	require.NoError(t, err)
 
-	httpmock.RegisterResponder("GET", "https://api.sso.cateiru.com/oauth/jwt/key",
+	httpmock.RegisterResponder("GET", "https://api.sso.cateiru.com/v1/oauth/jwt/key",
 		httpmock.NewStringResponder(200, string(body)),
 	)
 
@@ -184,7 +184,7 @@ func TestRefresh(t *testing.T) {
 		IDToken:      "id_token",
 	}
 
-	httpmock.RegisterResponder("GET", fmt.Sprintf("https://api.sso.cateiru.com/oauth/token?grant_ype=refresh_token&client_id=%s&client_secret=%s&refresh_token=%s&scope=%s",
+	httpmock.RegisterResponder("GET", fmt.Sprintf("https://api.sso.cateiru.com/v1/oauth/token?grant_ype=refresh_token&client_id=%s&client_secret=%s&refresh_token=%s&scope=%s",
 		url.PathEscape(clientId), url.PathEscape(clientSecret), url.PathEscape(refreshToken), url.PathEscape(strings.Join(scope, " "))),
 		func(req *http.Request) (*http.Response, error) {
 			resp, err := httpmock.NewJsonResponse(200, successResp)
