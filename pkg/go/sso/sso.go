@@ -12,8 +12,8 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-const TOKEN_ENDPOINT = "https://api.sso.cateiru.com/oauth/token"
-const PUBLIC_KEY_ENDPOINT = "https://api.sso.cateiru.com/oauth/jwt/key"
+const TOKEN_ENDPOINT = "https://api.sso.cateiru.com/v1/oauth/token"
+const PUBLIC_KEY_ENDPOINT = "https://api.sso.cateiru.com/v1/oauth/jwt/key"
 
 type PublicKey struct {
 	Pkcs8 string `json:"pkcs8"`
