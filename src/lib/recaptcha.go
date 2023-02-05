@@ -4,8 +4,9 @@
 package lib
 
 import (
+	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -42,10 +43,12 @@ func (c *ReCaptcha) ValidateOrder(token string, remoteIp string) (*RecaptchaResp
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+	buf := new(bytes.Buffer)
+	if _, err := io.Copy(buf, resp.Body); err != nil {
 		return nil, err
 	}
+	body := buf.Bytes()
+
 	r := RecaptchaResponse{}
 	if err := json.Unmarshal(body, &r); err != nil {
 		return nil, err
