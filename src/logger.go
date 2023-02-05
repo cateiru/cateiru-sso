@@ -45,7 +45,7 @@ func InitLogging(mode string) {
 	case "local":
 		logConfig = zap.NewDevelopmentConfig()
 		logConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	case "prod":
+	case "cloudrun":
 		logConfig = zap.NewProductionConfig()
 		// Cloud Loggerに対応するための設定
 		logConfig.EncoderConfig = newProductionEncoderConfig()
