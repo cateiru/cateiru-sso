@@ -3,10 +3,10 @@ package main
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/logging"
-	"github.com/cateiru/cateiru-sso/api/routes"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/logging"
+	"github.com/cateiru/cateiru-sso/src/routes"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )

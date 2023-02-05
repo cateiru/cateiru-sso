@@ -1,4 +1,4 @@
-module github.com/cateiru/cateiru-sso/api
+module github.com/cateiru/cateiru-sso
 
 go 1.18
 
