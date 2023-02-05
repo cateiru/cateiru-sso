@@ -2,7 +2,6 @@ package lib
 
 import (
 	"crypto/rand"
-	"errors"
 )
 
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -10,7 +9,7 @@ const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 func RandomStr(n int) (string, error) {
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {
-		return "", errors.New("unexpected error...")
+		return "", err
 	}
 
 	var result string
