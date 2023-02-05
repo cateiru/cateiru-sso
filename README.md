@@ -14,3 +14,11 @@ Cateiru's Single Sign On
 ## LICENSE
 
 [MIT](./LICENSE)
+
+## Environments
+
+```env
+NEXT_PUBLIC_API_URL=
+GOOGLE_ANALYTICS_ID=
+NEXT_PUBLIC_RE_CAPTCHA=
+```
