@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"cloud.google.com/go/datastore"
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/utils"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/database"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/cateiru-sso/src/utils"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 

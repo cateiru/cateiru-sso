@@ -1,7 +1,7 @@
 package net
 
 import (
-	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/src/config"
 	"github.com/rs/cors"
 )
 

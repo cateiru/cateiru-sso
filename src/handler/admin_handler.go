@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/admin"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/admin"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 // Proユーザの操作をする

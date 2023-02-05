@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/cateiru/cateiru-sso/api/logging"
+	"github.com/cateiru/cateiru-sso/src/logging"
 )
 
 // テンプレートファイルから文字列を作成します

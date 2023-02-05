@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/core/password"
-	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/tests/tools"
-	"github.com/cateiru/cateiru-sso/api/utils/secure"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/core/password"
+	"github.com/cateiru/cateiru-sso/src/database"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/cateiru-sso/src/tests/tools"
+	"github.com/cateiru/cateiru-sso/src/utils/secure"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )

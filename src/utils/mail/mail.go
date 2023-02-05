@@ -3,6 +3,7 @@
 // メール本文は、テンプレートファイルを指定することができます。
 //
 // Example:
+//
 //	sendUserName := "test"
 //	sendEmail := "example@example.com"
 //	subject := "test"
@@ -17,12 +18,11 @@
 //
 //	mail, err := NewMail(sendUserName, sendEmail, subject).AddContentsFromTemplate(templateFilePath, element)
 //	err := mail.Send()
-//
 package mail
 
 import (
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/logging"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/logging"
 	"github.com/mailgun/mailgun-go"
 )
 

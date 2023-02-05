@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/oauth"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/oauth"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 func OAuthPreview(w http.ResponseWriter, r *http.Request) {

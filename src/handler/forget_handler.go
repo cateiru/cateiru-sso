@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/password"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/password"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 // パスワード忘れの再登録用

@@ -11,8 +11,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/logging"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/logging"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 

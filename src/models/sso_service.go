@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"cloud.google.com/go/datastore"
-	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/src/database"
 )
 
 func GetSSOServiceByClientId(ctx context.Context, db *database.Database, clientId string) (*SSOService, error) {

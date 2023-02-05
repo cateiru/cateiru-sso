@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 	"github.com/stretchr/testify/require"
 )
 

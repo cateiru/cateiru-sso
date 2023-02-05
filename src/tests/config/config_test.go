@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/src/config"
 	"github.com/stretchr/testify/require"
 )
 

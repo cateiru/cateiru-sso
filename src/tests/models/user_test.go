@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	"cloud.google.com/go/datastore"
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/tests/tools"
-	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/database"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/cateiru-sso/src/tests/tools"
+	"github.com/cateiru/cateiru-sso/src/utils"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )

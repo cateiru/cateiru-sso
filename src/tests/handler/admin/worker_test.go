@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/handler"
-	"github.com/cateiru/cateiru-sso/api/tests/tools"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/database"
+	"github.com/cateiru/cateiru-sso/src/handler"
+	"github.com/cateiru/cateiru-sso/src/tests/tools"
 	"github.com/stretchr/testify/require"
 )
 

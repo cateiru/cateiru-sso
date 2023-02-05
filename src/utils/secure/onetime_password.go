@@ -1,6 +1,7 @@
 // ワンタイムパスワードを作成、検証します。
 //
 // Example:
+//
 //	accountName := "example@example.com"
 //	otp, _ := OnetimePasswordNew(accountName)
 //
@@ -21,9 +22,9 @@ package secure
 import (
 	"crypto/rand"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/logging"
-	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/logging"
+	"github.com/cateiru/cateiru-sso/src/utils"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
@@ -36,11 +37,11 @@ type OnetimePassword struct {
 // OTP認証を使用します
 //
 // OTP仕様
-//	- 有効時間: 30s
-//	- Secretバイト長: 20byte
-//	- TOTPハッシュ桁: 6桁
-//	- ハッシュアルゴリズム: SHA1
-//	- 乱数生成: rand.Reader
+//   - 有効時間: 30s
+//   - Secretバイト長: 20byte
+//   - TOTPハッシュ桁: 6桁
+//   - ハッシュアルゴリズム: SHA1
+//   - 乱数生成: rand.Reader
 func NewOnetimePassword(accountName string) (*OnetimePassword, error) {
 	uuid := utils.UUID()
 	hash := utils.NewHash(uuid)
@@ -81,6 +82,7 @@ func (o *OnetimePassword) GetPublic() string {
 // このSecretはサーバーサイドで検証するためユーザには提供しないようにしてください。
 //
 // Example:
+//
 //	secret = o.GetSecret()
 //	passcode = ""
 //	if totp.Validate(passcode, secret) {

@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/login"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/login"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 // ログインする

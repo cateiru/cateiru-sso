@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/pro"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/pro"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 // SSOの管理

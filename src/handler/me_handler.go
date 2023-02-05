@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/me"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/me"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 // ユーザ情報を取得する

@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 
-	"github.com/cateiru/cateiru-sso/api/database"
+	"github.com/cateiru/cateiru-sso/src/database"
 )
 
 func GetRoleByUserID(ctx context.Context, db *database.Database, userId string) (*Role, error) {

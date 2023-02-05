@@ -2,7 +2,7 @@ package database
 
 import (
 	"cloud.google.com/go/datastore"
-	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/src/config"
 )
 
 // datasotoreのkeyを作成します

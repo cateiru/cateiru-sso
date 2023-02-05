@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/storage"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/storage"
 	goretry "github.com/cateiru/go-retry"
 	"github.com/stretchr/testify/require"
 )

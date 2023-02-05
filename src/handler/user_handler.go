@@ -3,13 +3,13 @@ package handler
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/user"
-	"github.com/cateiru/cateiru-sso/api/core/user/history"
-	"github.com/cateiru/cateiru-sso/api/core/user/info"
-	"github.com/cateiru/cateiru-sso/api/core/user/mail"
-	"github.com/cateiru/cateiru-sso/api/core/user/otp"
-	"github.com/cateiru/cateiru-sso/api/core/user/password"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/user"
+	"github.com/cateiru/cateiru-sso/src/core/user/history"
+	"github.com/cateiru/cateiru-sso/src/core/user/info"
+	"github.com/cateiru/cateiru-sso/src/core/user/mail"
+	"github.com/cateiru/cateiru-sso/src/core/user/otp"
+	"github.com/cateiru/cateiru-sso/src/core/user/password"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 // 自分のメールアドレスの操作

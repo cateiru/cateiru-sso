@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/cateiru-sso/src/utils"
 	"github.com/golang-jwt/jwt"
 )
 

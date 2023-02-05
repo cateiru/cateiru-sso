@@ -8,15 +8,15 @@ import (
 	"time"
 
 	"github.com/badoux/checkmail"
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/core/common"
-	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/logging"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/utils"
-	"github.com/cateiru/cateiru-sso/api/utils/mail"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
-	"github.com/cateiru/cateiru-sso/api/utils/secure"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/core/common"
+	"github.com/cateiru/cateiru-sso/src/database"
+	"github.com/cateiru/cateiru-sso/src/logging"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/cateiru-sso/src/utils"
+	"github.com/cateiru/cateiru-sso/src/utils/mail"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
+	"github.com/cateiru/cateiru-sso/src/utils/secure"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 
@@ -44,6 +44,7 @@ type VerifyMailTemplate struct {
 // さらに、Websocketでメールアドレスが認証されたか確認するためのトークンを返します。
 //
 // Request Form (application/json):
+//
 //	{
 //		"mail": "example@example.com",
 //		"re_chaptcha": "********",

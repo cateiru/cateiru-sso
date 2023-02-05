@@ -1,20 +1,20 @@
 // 返すレスポンスを統一します。
 //
 // Example:
+//
 //	err := errors.New("dummy error")
 //	ResponseError(w, 500, err) // internal server error
 //
 //	WriteBody(w, response) // 200 OK
-//
 package net
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/logging"
-	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/logging"
+	"github.com/cateiru/cateiru-sso/src/utils"
 	"github.com/cateiru/go-http-error/httperror"
 )
 

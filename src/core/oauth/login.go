@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/api/core/common"
-	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/utils"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/common"
+	"github.com/cateiru/cateiru-sso/src/database"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/cateiru-sso/src/utils"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 

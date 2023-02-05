@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/api/database"
-	"github.com/cateiru/cateiru-sso/api/logging"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/database"
+	"github.com/cateiru/cateiru-sso/src/logging"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 	"golang.org/x/net/websocket"
 )

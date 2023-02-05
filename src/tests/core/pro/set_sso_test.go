@@ -3,7 +3,7 @@ package pro_test
 import (
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/core/pro"
+	"github.com/cateiru/cateiru-sso/src/core/pro"
 	"github.com/stretchr/testify/require"
 )
 

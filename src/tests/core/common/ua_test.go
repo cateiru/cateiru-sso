@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/core/common"
+	"github.com/cateiru/cateiru-sso/src/core/common"
 	ua "github.com/mileusna/useragent"
 	"github.com/stretchr/testify/require"
 )

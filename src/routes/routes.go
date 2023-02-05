@@ -3,8 +3,8 @@ package routes
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/handler"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/handler"
 )
 
 func handleFunc(mux *http.ServeMux, path string, hand func(w http.ResponseWriter, r *http.Request)) {

@@ -3,7 +3,7 @@ package secure_test
 import (
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/utils/secure"
+	"github.com/cateiru/cateiru-sso/src/utils/secure"
 	"github.com/stretchr/testify/require"
 )
 

@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/core/logout"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/core/logout"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {

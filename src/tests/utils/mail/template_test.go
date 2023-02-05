@@ -3,7 +3,7 @@ package mail_test
 import (
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/utils/mail"
+	"github.com/cateiru/cateiru-sso/src/utils/mail"
 	"github.com/stretchr/testify/require"
 )
 

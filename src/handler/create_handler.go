@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	createaccount "github.com/cateiru/cateiru-sso/api/core/create_account"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	createaccount "github.com/cateiru/cateiru-sso/src/core/create_account"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 )
 
 // アカウント作成: 初期

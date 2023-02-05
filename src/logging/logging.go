@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"github.com/cateiru/cateiru-sso/api/config"
+	"github.com/cateiru/cateiru-sso/src/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

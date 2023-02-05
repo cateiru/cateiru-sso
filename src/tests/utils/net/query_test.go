@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/tests/tools"
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/tests/tools"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 	"github.com/stretchr/testify/require"
 )
 

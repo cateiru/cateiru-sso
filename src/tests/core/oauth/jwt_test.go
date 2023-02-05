@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/api/config"
-	"github.com/cateiru/cateiru-sso/api/core/oauth"
-	"github.com/cateiru/cateiru-sso/api/models"
-	"github.com/cateiru/cateiru-sso/api/tests/tools"
-	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/cateiru-sso/src/config"
+	"github.com/cateiru/cateiru-sso/src/core/oauth"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/cateiru-sso/src/tests/tools"
+	"github.com/cateiru/cateiru-sso/src/utils"
 	"github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/require"
 )

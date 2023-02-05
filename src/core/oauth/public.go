@@ -3,7 +3,7 @@ package oauth
 import (
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/api/utils/net"
+	"github.com/cateiru/cateiru-sso/src/utils/net"
 	"github.com/cateiru/go-http-error/httperror/status"
 )
 

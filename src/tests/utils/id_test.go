@@ -3,7 +3,7 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/cateiru/cateiru-sso/api/utils"
+	"github.com/cateiru/cateiru-sso/src/utils"
 	"github.com/stretchr/testify/require"
 )
 
