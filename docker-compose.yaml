@@ -5,13 +5,22 @@
 version: "3"
 
 services:
-  datastore:
-    image: singularities/datastore-emulator
+  db:
+    image: mysql:8.0
+    container_name: db
     environment:
-      - DATASTORE_PROJECT_ID=project-test
-      - DATASTORE_LISTEN_ADDRESS=0.0.0.0:18001
+      MYSQL_USER: docker
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: docker
+      MYSQL_DATABASE: cateiru-sso
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./db/.data:/var/lib/mysql
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./db/sql:/docker-entrypoint-initdb.d
     ports:
-      - "18001:18001"
+      - "127.0.0.1:3306:3306"
   gcs:
     image: fsouza/fake-gcs-server
     tty: true

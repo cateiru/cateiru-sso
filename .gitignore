@@ -312,3 +312,6 @@ certificates/*
 !certificates/.gitkeep
 
 .data/*
+
+db/.data/**
+!db/.data/.gitkeep
