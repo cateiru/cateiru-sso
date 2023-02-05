@@ -1,6 +1,6 @@
 # Google Cloud Datastoreをローカルで実行します
 #
-# docker-compose up -d を使用してコンテナを実行してください
+# docker-compose up -f docker-compose.db.yaml -d を使用してコンテナを実行してください
 
 version: "3"
 
