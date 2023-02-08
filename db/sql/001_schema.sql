@@ -5,19 +5,19 @@
 -- ユーザテーブル
 CREATE TABLE `user` (
     -- ユーザIDはUUIDを使用して一意にする
-    -- AUTOINCREMENTは、ユーザIDを特定される恐れがあるので使用しない。
+    -- AUTO_INCREMENTは、ユーザIDを特定される恐れがあるので使用しない。
     -- UUID_TO_BIN()とBIN_TO_UUID()を使用して出し入れする。
-    -- UUIDはアプリケーション側で生成する（UUID()でも生成できるがv1なので…
+    -- v4のほうが良いが、v1でもAUTO_INCREMENTよりはましなのでUUID関数を使う
+    -- ULIDとか使うともっと良かったりするのかな？
     -- ref. https://dev.mysql.com/doc/refman/8.0/ja/miscellaneous-functions.html
-    `id` VARBINARY(16) NOT NULL,
+    `id` VARBINARY(16) NOT NULL DEFAULT UUID_TO_BIN(UUID()),
 
     -- ユーザ名はユーザごとに一意なIDとなる
     -- ログイン時にメールアドレスの代替としてログインできる
-    -- アカウント登録時に、デフォルトはランダムな文字列を入れる
-    `user_name` VARCHAR(15) NOT NULL DEFAULT SUBSTR(UUID(), 1, 8),
+    -- アカウント登録時に、デフォルトはUUIDからランダムな文字列を作って入れる
+    `user_name` VARCHAR(15) NOT NULL DEFAULT LEFT(UUID(), 8),
 
     -- Email
-    -- WHEREを使いたいのでVARCHAR使っている
     `email` VARCHAR(255) NOT NULL,
 
     -- 名前
@@ -27,7 +27,7 @@ CREATE TABLE `user` (
 
     -- 性別
     -- 0: 不明、1: 男性、2: 女性、9: 適用不能
-    `gender` CHAR(1) DEFAULT '0' NOT NULL,
+    `gender` CHAR(1) NOT NULL DEFAULT '0',
 
     `birthdate` DATE DEFAULT NULL,
     `avater` TEXT DEFAULT NULL,
