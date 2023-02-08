@@ -1,0 +1,620 @@
+-- TODO:
+-- - パスポートハッシュなどの型
+-- - セッションIDの型
+
+-- ユーザテーブル
+CREATE TABLE `user` (
+    -- ユーザIDはUUIDを使用して一意にする
+    -- AUTOINCREMENTは、ユーザIDを特定される恐れがあるので使用しない。
+    -- UUID_TO_BIN()とBIN_TO_UUID()を使用して出し入れする。
+    -- UUIDはアプリケーション側で生成する（UUID()でも生成できるがv1なので…
+    -- ref. https://dev.mysql.com/doc/refman/8.0/ja/miscellaneous-functions.html
+    `id` VARBINARY(16) NOT NULL,
+
+    -- ユーザ名はユーザごとに一意なIDとなる
+    -- ログイン時にメールアドレスの代替としてログインできる
+    -- アカウント登録時に、デフォルトはランダムな文字列を入れる
+    `user_name` VARCHAR(15) NOT NULL DEFAULT SUBSTR(UUID(), 1, 8),
+
+    -- Email
+    -- WHEREを使いたいのでVARCHAR使っている
+    `email` VARCHAR(255) NOT NULL,
+
+    -- 名前
+    `family_name` TEXT DEFAULT NULL,
+    `middle_name` TEXT DEFAULT NULL,
+    `given_name` TEXT DEFAULT NULL,
+
+    -- 性別
+    -- 0: 不明、1: 男性、2: 女性、9: 適用不能
+    `gender` CHAR(1) DEFAULT '0' NOT NULL,
+
+    `birthdate` DATE DEFAULT NULL,
+    `avater` TEXT DEFAULT NULL,
+
+    -- ロケールID
+    -- デフォルトは日本(ja_JP)
+    `locale_id` CHAR(5) DEFAULT 'ja_JP' NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `user_user_name` (`user_name`),
+    INDEX `user_email` (`email`)
+);
+
+-- ユーザ設定テーブル
+CREATE TABLE `setting` (
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 通知設定
+    `notice_email` BOOLEAN NOT NULL DEFAULT 0,
+    `notice_webpush` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`user_id`)
+);
+
+-- ブランドテーブル
+CREATE TABLE `brand` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- ブランド名
+    `brand` VARCHAR(31) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `brand_user_id` (`user_id`)
+);
+
+-- スタッフテーブル
+-- ここに存在するユーザはスタッフとなる
+CREATE TABLE `staff` (
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- メモ
+    -- なぜスタッフなのかみたいなのを書くスペース
+    `memo` TEXT DEFAULT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`user_id`)
+);
+
+-- ユーザの認証情報を保存しておくテーブル
+CREATE TABLE `certification` (
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- passkeyの保存テーブルのID
+    -- passkeyを使用しない場合はNULLとなる
+    `passkey_id` INT UNSIGNED DEFAULT NULL,
+
+    -- パスポートの保存テーブルID
+    -- パスポートを使用しない場合はNULLとなる
+    -- otp_idはpassword_idと一緒に使用する
+    `password_id` INT UNSIGNED DEFAULT NULL,
+    `otp_id` INT UNSIGNED DEFAULT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`user_id`)
+);
+
+-- passkeyを保存するテーブル
+CREATE TABLE `passkey` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- TODO: 文字サイズ分かれば別の型にしたい
+    `credential` TEXT NOT NULL,
+    `public_key` TEXT NOT NULL,
+
+    -- authenticatorData.flagsのBackupState値
+    -- これが1の場合はpasskeyが複数デバイス感で共有される可能性がある
+    -- ref. https://www.docswell.com/s/ydnjp/KWDLDZ-2022-10-14-141235#p20
+    `is_backup_state` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `passkey_user_id` (`user_id`)
+);
+
+-- iCloudのPasskeyなどは複数のApple端末で共有できるため、
+-- Passkeyでログインした端末を記録しておくためのテーブル
+CREATE TABLE `passkey_login_device` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `passkey_id` INT UNSIGNED NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+
+    -- passkeyを登録したデバイスかどうか
+    `is_register_device` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `passkey_login_device_passkey_id` (`passkey_id`),
+    INDEX `passkey_login_device_user_id` (`user_id`),
+    INDEX `passkey_login_device_passkey_id_user_id` (`passkey_id`, `user_id`)
+);
+
+-- パスポートを保存するテーブル
+CREATE TABLE `password` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- TODO: サイズの最適化をしたい
+    `salt` VARCHAR(31) NOT NULL,
+    `hash` VARCHAR(31) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `password_user_id` (`user_id`)
+);
+
+-- アプリを使用したOTPを保存するテーブル
+CREATE TABLE `otp` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- TODO: サイズの最適化をしたい
+    `secret` VARCHAR(31),
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `otp_user_id` (`user_id`)
+);
+
+-- OTPのバックアップコードを保存するテーブル
+CREATE TABLE `otp_backup` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `otp_id` INT UNSIGNED NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    `code` VARCHAR(15) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `otp_backup_otp` (`otp_id`),
+    INDEX `otp_backup_user_id` (`user_id`),
+    INDEX `otp_backup_otp_index_user_id` (`otp_id`, `user_id`)
+);
+
+-- アカウント登録時に使用するセッションを保存するテーブル
+CREATE TABLE `register_session` (
+    `id` VARBINARY(16) NOT NULL,
+
+    `email` VARCHAR(255) NOT NULL,
+    `email_verified` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 認証コード
+    `verify_code` CHAR(6) NOT NULL,
+
+    -- コードを入力した回数
+    `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `register_session_email` (`email`)
+);
+
+-- アプリを使用したOTPを新規に登録する際に使用するセッションテーブル
+CREATE TABLE `register_otp_session` (
+    `id` VARBINARY(16) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- TODO: 文字サイズを最適化したい
+    `public_key` TEXT NOT NULL,
+    `secret` TEXT NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- コードを入力した回数
+    `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `register_otp_session_user_id` (`user_id`)
+);
+
+-- Emailを更新したときに確認に使用するテーブル
+CREATE TABLE `email_verify` (
+    `id` VARBINARY(16) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 認証コード
+    `verify_code` CHAR(6) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- コードを入力した回数
+    `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `email_verify_user_id` (`user_id`)
+);
+
+-- セッション維持用のテーブル
+CREATE TABLE `session` (
+    -- ランダムにトークンを生成する
+    `id` VARBINARY(32) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `session_user_id` (`user_id`)
+);
+
+-- セッショントークンを更新するためのリフレッシュトークン用テーブル
+-- 同時ログインでは、このトークンのみcookieに入れっぱなしにしておく
+CREATE TABLE `refresh` (
+    -- ランダムにトークンを生成する
+    `id` VARBINARY(32) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- sessionのid
+    -- 複数ログインを可能にするためNULLABLE
+    `session_id` VARBINARY(32) DEFAULT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `refresh_user_id` (`user_id`),
+    INDEX `refresh_session_id` (`session_id`)
+);
+
+-- パスポートによる認証は成功して次にOTPを求める場合のセッションを保存するテーブル
+CREATE TABLE `otp_session` (
+    `id` VARBINARY(16) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- コードを入力した回数
+    `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+
+    PRIMARY KEY(`id`),
+    INDEX `otp_session_user_id` (`user_id`)
+);
+
+-- SSO serviceのセッショントークンテーブル
+CREATE TABLE `service_session` (
+    -- ランダムにトークンを生成する
+    `id` VARBINARY(32) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- サービスのID
+    `service_id` VARBINARY(16) NOT NULL,
+    `login_service_id` INT UNSIGNED NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    -- TODO: もっと突き詰める
+    INDEX `service_session_user_id` (`user_id`),
+    INDEX `service_session_service_id` (`service_id`),
+    INDEX `service_session_login_service_id` (`login_service_id`)
+);
+
+-- SSO serviceのリフレッシュトークンテーブル
+CREATE TABLE `service_refresh` (
+    -- ランダムにトークンを生成する
+    `id` VARBINARY(32) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- サービスのID
+    `service_id` VARBINARY(16) NOT NULL,
+    `login_service_id` INT UNSIGNED NOT NULL,
+
+    -- service_sessionのid
+    `session_id` VARBINARY(32) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    -- TODO: もっと突き詰める
+    INDEX `service_refresh_user_id` (`user_id`),
+    INDEX `service_refresh_session_id` (`session_id`),
+    INDEX `service_refresh_service_id` (`service_id`),
+    INDEX `service_refresh_login_service_id` (`login_service_id`)
+);
+
+CREATE TABLE `service` (
+    `id` VARBINARY(16) NOT NULL,
+
+    -- サービス名
+    `name` VARCHAR(31) NOT NULL,
+    -- 説明
+    `description` TEXT DEFAULT NULL,
+    -- サービスのイメージ
+    `image` TEXT DEFAULT NULL,
+
+    -- ホワイトリストを使用するかどうか
+    `is_allow` BOOLEAN NOT NULL DEFAULT 0,
+    -- 二段階認証をしたユーザのみに限定するかどうか
+    `indispensable_2fa` BOOLEAN NOT NULL DEFAULT 0,
+    -- パスポートを求めたりするかどうか
+    `require_secure` BOOLEAN NOT NULL DEFAULT 0,
+
+    `owner_user_id` VARBINARY(16) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `service_owner_user_id` (`owner_user_id`)
+);
+
+-- SSOサービスのスコープを保存するテーブル
+CREATE TABLE `service_scope` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `service_id` VARBINARY(16) NOT NULL,
+
+    -- スコープ名
+    -- ref. https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes
+    `scope` VARCHAR(15) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `service_scope_service_id` (`service_id`)
+);
+
+-- ログインしたSSOサービスのスコープを保存するテーブル
+-- サービスが途中でスコープを変更してもログイン履歴にはログイン時に求めたスコープとなる
+CREATE TABLE `login_service_scope` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `login_service_id` INT UNSIGNED NOT NULL,
+
+    -- スコープ名
+    -- ref. https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes
+    `scope` VARCHAR(15) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `login_service_scope_login_service_id` (`login_service_id`)
+);
+
+-- サービスのis_allowが1のときのホワイトリストルール
+CREATE TABLE `service_allow_rule` (
+    `service_id` VARBINARY(16) NOT NULL,
+
+    -- user_idが指定されている場合、そのユーザのみを通過させる
+    `user_id` VARBINARY(16) DEFAULT NULL,
+
+    -- email_domainが指定されている場合、そのドメインと一致するユーザのみを通過させる
+    `email_domain` VARCHAR(31) DEFAULT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`service_id`)
+);
+
+-- サービスのrequire_secureが1のときに、どの認証方法を用いるか
+CREATE TABLE `service_secure` (
+    `service_id` VARBINARY(16) NOT NULL,
+
+    -- require_passwordがtrueの場合、OTPを設定している場合はOTPも求められる
+    `require_password` BOOLEAN NOT NULL DEFAULT 0,
+    -- passkeyのみで認証している場合はpasskeyも求められる
+    -- どちらも登録している場合は、OTPが求められる
+    `require_otp` BOOLEAN NOT NULL DEFAULT 0,
+
+    `require_quiz` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`service_id`)
+);
+
+-- サービスの認証方法でrequire_quizが1の場合のクイズ
+-- reCAPTCHAのようなやつ
+-- 転売対策とかに有効
+CREATE TABLE `service_quiz` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `service_id` VARBINARY(16) NOT NULL,
+
+    `title` TEXT NOT NULL,
+    -- 複数の回答方法や選択肢がある場合があるので
+    -- 答えは正規表現で記述する
+    `answer_regexp` TEXT NOT NULL,
+
+    -- 選択肢
+    `choices` JSON DEFAULT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `service_quiz_service_id` (`service_id`)
+);
+
+-- 現在ログインしているSSOサービステーブル
+CREATE TABLE `login_service` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `service_id` VARBINARY(16) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+);
+
+-- 過去にログインしたSSOサービスのテーブル
+CREATE TABLE `login_service_history` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `service_id` VARBINARY(16) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    --INET6_ATON、INET6_NTOAを使用して格納する
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `login_history` (`service_id`),
+    INDEX `login_service_history_user_id` (`user_id`)
+);
+
+-- ログイン履歴
+CREATE TABLE `login_history` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- リフレッシュトークン
+    -- refreshテーブルに参照することでユーザがどの端末でログインしているかを調べることができる
+    `refresh_id` VARBINARY(32) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    --INET6_ATON、INET6_NTOAを使用して格納する
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `login_history_user_id` (`user_id`),
+    INDEX `login_history_refresh_id` (`refresh_id`)
+);
+
+-- ログインを試みた履歴
+CREATE TABLE `login_try_history` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    --INET6_ATON、INET6_NTOAを使用して格納する
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `login_try_history_user_id` (`user_id`)
+);
+
+-- 全ユーザー一斉通知用のエントリ
+CREATE TABLE `broadcast_entry` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `create_user_id` VARBINARY(16) NOT NULL,
+
+    `title` TEXT NOT NULL,
+    `body` TEXT DEFAULT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `broadcast_entry_create_user_id` (`create_user_id`)
+);
+
+-- 全ユーザー一斉通知のユーザごとの既読状況を保存するテーブル
+CREATE TABLE `broadcast_notice` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `entry_id` INT UNSIGNED NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- 既読状況
+    `is_read` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `broadcast_notice_entry_id` (`entry_id`),
+    INDEX `broadcast_notice_user_id` (`user_id`),
+    INDEX `broadcast_notice_user_id_is_read` (`user_id`, `is_read`)
+);
