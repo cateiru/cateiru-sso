@@ -1,7 +1,6 @@
 -- TODO:
 -- - パスポートハッシュなどの型
 -- - セッションIDの型
--- - service -> client
 
 -- ユーザテーブル
 CREATE TABLE `user` (
@@ -332,15 +331,15 @@ CREATE TABLE `otp_session` (
     INDEX `otp_session_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- SSO serviceのセッショントークンテーブル
-CREATE TABLE `service_session` (
+-- SSOクライアントのセッショントークンテーブル
+CREATE TABLE `client_session` (
     -- ランダムにトークンを生成する
     `id` VARBINARY(32) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
-    -- サービスのID
-    `service_id` VARBINARY(16) NOT NULL,
-    `login_service_id` INT UNSIGNED NOT NULL,
+    -- クライアントのID
+    `client_id` VARBINARY(16) NOT NULL,
+    `login_client_id` INT UNSIGNED NOT NULL,
 
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -350,22 +349,22 @@ CREATE TABLE `service_session` (
 
     PRIMARY KEY(`id`),
     -- TODO: もっと突き詰める
-    INDEX `service_session_user_id` (`user_id`),
-    INDEX `service_session_service_id` (`service_id`),
-    INDEX `service_session_login_service_id` (`login_service_id`)
+    INDEX `client_session_user_id` (`user_id`),
+    INDEX `client_session_client_id` (`client_id`),
+    INDEX `client_session_login_client_id` (`login_client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- SSO serviceのリフレッシュトークンテーブル
-CREATE TABLE `service_refresh` (
+-- SSOクライアントのリフレッシュトークンテーブル
+CREATE TABLE `client_refresh` (
     -- ランダムにトークンを生成する
     `id` VARBINARY(32) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
-    -- サービスのID
-    `service_id` VARBINARY(16) NOT NULL,
-    `login_service_id` INT UNSIGNED NOT NULL,
+    -- クライアントのID
+    `client_id` VARBINARY(16) NOT NULL,
+    `login_client_id` INT UNSIGNED NOT NULL,
 
-    -- service_sessionのid
+    -- client_sessionのid
     `session_id` VARBINARY(32) NOT NULL,
 
     -- 有効期限
@@ -377,23 +376,23 @@ CREATE TABLE `service_refresh` (
 
     PRIMARY KEY(`id`),
     -- TODO: もっと突き詰める
-    INDEX `service_refresh_user_id` (`user_id`),
-    INDEX `service_refresh_session_id` (`session_id`),
-    INDEX `service_refresh_service_id` (`service_id`),
-    INDEX `service_refresh_login_service_id` (`login_service_id`)
+    INDEX `client_refresh_user_id` (`user_id`),
+    INDEX `client_refresh_session_id` (`session_id`),
+    INDEX `client_refresh_client_id` (`client_id`),
+    INDEX `client_refresh_login_client_id` (`login_client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
-CREATE TABLE `service` (
+CREATE TABLE `client` (
     -- OAuth2.0のClient ID
     -- client_id はUUIDv1で自動生成する
     -- 公開されるIDであり、それ単体では使用できないのでv1で良い
     `client_id` VARBINARY(16) NOT NULL DEFAULT UUID_TO_BIN(UUID()),
 
-    -- サービス名
+    -- クライアント名
     `name` VARCHAR(31) NOT NULL,
     -- 説明
     `description` TEXT DEFAULT NULL,
-    -- サービスのイメージ
+    -- クライアントのイメージ
     `image` TEXT DEFAULT NULL,
 
     -- ホワイトリストを使用するかどうか
@@ -413,14 +412,14 @@ CREATE TABLE `service` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`client_id`),
-    INDEX `service_owner_user_id` (`owner_user_id`)
+    INDEX `client_owner_user_id` (`owner_user_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- SSOサービスのスコープを保存するテーブル
-CREATE TABLE `service_scope` (
+-- SSOクライアントのスコープを保存するテーブル
+CREATE TABLE `client_scope` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-    `service_id` VARBINARY(16) NOT NULL,
+    `client_id` VARBINARY(16) NOT NULL,
 
     -- スコープ名
     -- ref. https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes
@@ -430,15 +429,15 @@ CREATE TABLE `service_scope` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `service_scope_service_id` (`service_id`)
+    INDEX `client_scope_client_id` (`client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- ログインしたSSOサービスのスコープを保存するテーブル
--- サービスが途中でスコープを変更してもログイン履歴にはログイン時に求めたスコープとなる
-CREATE TABLE `login_service_scope` (
+-- ログインしたSSOクライアントのスコープを保存するテーブル
+-- クライアントが途中でスコープを変更してもログイン履歴にはログイン時に求めたスコープとなる
+CREATE TABLE `login_client_scope` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-    `login_service_id` INT UNSIGNED NOT NULL,
+    `login_client_id` INT UNSIGNED NOT NULL,
 
     -- スコープ名
     -- ref. https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes
@@ -448,12 +447,12 @@ CREATE TABLE `login_service_scope` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `login_service_scope_login_service_id` (`login_service_id`)
+    INDEX `login_client_scope_login_client_id` (`login_client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- サービスのis_allowが1のときのホワイトリストルール
-CREATE TABLE `service_allow_rule` (
-    `service_id` VARBINARY(16) NOT NULL,
+-- クライアントのis_allowが1のときのホワイトリストルール
+CREATE TABLE `client_allow_rule` (
+    `client_id` VARBINARY(16) NOT NULL,
 
     -- user_idが指定されている場合、そのユーザのみを通過させる
     `user_id` VARBINARY(16) DEFAULT NULL,
@@ -464,12 +463,12 @@ CREATE TABLE `service_allow_rule` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (`service_id`)
+    PRIMARY KEY (`client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- サービスのrequire_secureが1のときに、どの認証方法を用いるか
-CREATE TABLE `service_secure` (
-    `service_id` VARBINARY(16) NOT NULL,
+-- クライアントのrequire_secureが1のときに、どの認証方法を用いるか
+CREATE TABLE `client_secure` (
+    `client_id` VARBINARY(16) NOT NULL,
 
     -- require_passwordがtrueの場合、OTPを設定している場合はOTPも求められる
     `require_password` BOOLEAN NOT NULL DEFAULT 0,
@@ -483,15 +482,15 @@ CREATE TABLE `service_secure` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (`service_id`)
+    PRIMARY KEY (`client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- サービスの認証方法でrequire_quizが1の場合のクイズ
+-- クライアントの認証方法でrequire_quizが1の場合のクイズ
 -- reCAPTCHAのようなやつ
 -- 転売対策とかに有効
-CREATE TABLE `service_quiz` (
+CREATE TABLE `client_quiz` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `service_id` VARBINARY(16) NOT NULL,
+    `client_id` VARBINARY(16) NOT NULL,
 
     `title` TEXT NOT NULL,
     -- 複数の回答方法や選択肢がある場合があるので
@@ -506,13 +505,13 @@ CREATE TABLE `service_quiz` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `service_quiz_service_id` (`service_id`)
+    INDEX `client_quiz_client_id` (`client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- 現在ログインしているSSOサービステーブル
-CREATE TABLE `login_service` (
+-- 現在ログインしているSSOクライアントテーブル
+CREATE TABLE `login_client` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `service_id` VARBINARY(16) NOT NULL,
+    `client_id` VARBINARY(16) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- 管理用
@@ -521,10 +520,10 @@ CREATE TABLE `login_service` (
     PRIMARY KEY (`id`),
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
--- 過去にログインしたSSOサービスのテーブル
-CREATE TABLE `login_service_history` (
+-- 過去にログインしたSSOクライアントのテーブル
+CREATE TABLE `login_client_history` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `service_id` VARBINARY(16) NOT NULL,
+    `client_id` VARBINARY(16) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- 使用した端末のUA
@@ -540,8 +539,8 @@ CREATE TABLE `login_service_history` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `login_history` (`service_id`),
-    INDEX `login_service_history_user_id` (`user_id`)
+    INDEX `login_history` (`client_id`),
+    INDEX `login_client_history_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- ログイン履歴
