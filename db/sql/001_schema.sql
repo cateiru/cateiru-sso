@@ -389,6 +389,10 @@ CREATE TABLE `oauth_session` (
     -- クライアントのID
     `client_id` VARBINARY(16) NOT NULL,
 
+    -- CSRF, XSRFで使用される`state`を格納するやつ
+    `state` VARCHAR(31) DEFAULT NULL,
+    `nonce` VARCHAR(31) DEFAULT NULL,
+
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -418,8 +422,8 @@ CREATE TABLE `client` (
     `is_allow` BOOLEAN NOT NULL DEFAULT 0,
     -- 二段階認証をしたユーザのみに限定するかどうか
     `indispensable_2fa` BOOLEAN NOT NULL DEFAULT 0,
-    -- パスポートを求めたりするかどうか
-    `require_secure` BOOLEAN NOT NULL DEFAULT 0,
+    -- prompt_loginが1の場合、OAuthの認証リクエスト時にログイン、クイズを求めることを強制する
+    `prompt` ENUM('login', 'quiz') DEFAULT NULL,
 
     `owner_user_id` VARBINARY(16) NOT NULL,
 
@@ -481,25 +485,6 @@ CREATE TABLE `client_allow_rule` (
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (`client_id`)
-) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
-
--- クライアントのrequire_secureが1のときに、どの認証方法を用いるか
-CREATE TABLE `client_secure` (
-    `client_id` VARBINARY(16) NOT NULL,
-
-    -- require_passwordがtrueの場合、OTPを設定している場合はOTPも求められる
-    `require_password` BOOLEAN NOT NULL DEFAULT 0,
-    -- passkeyのみで認証している場合はpasskeyも求められる
-    -- どちらも登録している場合は、OTPが求められる
-    `require_otp` BOOLEAN NOT NULL DEFAULT 0,
-
-    `require_quiz` BOOLEAN NOT NULL DEFAULT 0,
-
-    -- 管理用
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
