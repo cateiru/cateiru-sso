@@ -1,6 +1,7 @@
 -- TODO:
 -- - パスポートハッシュなどの型
 -- - セッションIDの型
+-- - service -> client
 
 -- ユーザテーブル
 CREATE TABLE `user` (
@@ -41,9 +42,9 @@ CREATE TABLE `user` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `user_user_name` (`user_name`),
-    INDEX `user_email` (`email`)
-);
+    UNIQUE INDEX `user_user_name` (`user_name`),
+    UNIQUE INDEX `user_email` (`email`)
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- ユーザ設定テーブル
 CREATE TABLE `setting` (
@@ -58,7 +59,7 @@ CREATE TABLE `setting` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- ブランドテーブル
 CREATE TABLE `brand` (
@@ -73,7 +74,7 @@ CREATE TABLE `brand` (
 
     PRIMARY KEY (`id`),
     INDEX `brand_user_id` (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- スタッフテーブル
 -- ここに存在するユーザはスタッフとなる
@@ -89,7 +90,7 @@ CREATE TABLE `staff` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- ユーザの認証情報を保存しておくテーブル
 CREATE TABLE `certification` (
@@ -110,7 +111,7 @@ CREATE TABLE `certification` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- passkeyを保存するテーブル
 CREATE TABLE `passkey` (
@@ -131,8 +132,8 @@ CREATE TABLE `passkey` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `passkey_user_id` (`user_id`)
-);
+    UNIQUE INDEX `passkey_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- iCloudのPasskeyなどは複数のApple端末で共有できるため、
 -- Passkeyでログインした端末を記録しておくためのテーブル
@@ -156,7 +157,7 @@ CREATE TABLE `passkey_login_device` (
     INDEX `passkey_login_device_passkey_id` (`passkey_id`),
     INDEX `passkey_login_device_user_id` (`user_id`),
     INDEX `passkey_login_device_passkey_id_user_id` (`passkey_id`, `user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- パスポートを保存するテーブル
 CREATE TABLE `password` (
@@ -172,8 +173,8 @@ CREATE TABLE `password` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `password_user_id` (`user_id`)
-);
+    UNIQUE INDEX `password_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- アプリを使用したOTPを保存するテーブル
 CREATE TABLE `otp` (
@@ -188,8 +189,8 @@ CREATE TABLE `otp` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `otp_user_id` (`user_id`)
-);
+    UNIQUE INDEX `otp_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- OTPのバックアップコードを保存するテーブル
 CREATE TABLE `otp_backup` (
@@ -206,7 +207,7 @@ CREATE TABLE `otp_backup` (
     INDEX `otp_backup_otp` (`otp_id`),
     INDEX `otp_backup_user_id` (`user_id`),
     INDEX `otp_backup_otp_index_user_id` (`otp_id`, `user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- アカウント登録時に使用するセッションを保存するテーブル
 CREATE TABLE `register_session` (
@@ -230,7 +231,7 @@ CREATE TABLE `register_session` (
 
     PRIMARY KEY(`id`),
     INDEX `register_session_email` (`email`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- アプリを使用したOTPを新規に登録する際に使用するセッションテーブル
 CREATE TABLE `register_otp_session` (
@@ -253,7 +254,7 @@ CREATE TABLE `register_otp_session` (
 
     PRIMARY KEY(`id`),
     INDEX `register_otp_session_user_id` (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- Emailを更新したときに確認に使用するテーブル
 CREATE TABLE `email_verify` (
@@ -275,7 +276,7 @@ CREATE TABLE `email_verify` (
 
     PRIMARY KEY(`id`),
     INDEX `email_verify_user_id` (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- セッション維持用のテーブル
 CREATE TABLE `session` (
@@ -291,7 +292,7 @@ CREATE TABLE `session` (
 
     PRIMARY KEY(`id`),
     INDEX `session_user_id` (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- セッショントークンを更新するためのリフレッシュトークン用テーブル
 -- 同時ログインでは、このトークンのみcookieに入れっぱなしにしておく
@@ -313,8 +314,8 @@ CREATE TABLE `refresh` (
 
     PRIMARY KEY(`id`),
     INDEX `refresh_user_id` (`user_id`),
-    INDEX `refresh_session_id` (`session_id`)
-);
+    UNIQUE INDEX `refresh_session_id` (`session_id`)
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- パスポートによる認証は成功して次にOTPを求める場合のセッションを保存するテーブル
 CREATE TABLE `otp_session` (
@@ -329,7 +330,7 @@ CREATE TABLE `otp_session` (
 
     PRIMARY KEY(`id`),
     INDEX `otp_session_user_id` (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- SSO serviceのセッショントークンテーブル
 CREATE TABLE `service_session` (
@@ -352,7 +353,7 @@ CREATE TABLE `service_session` (
     INDEX `service_session_user_id` (`user_id`),
     INDEX `service_session_service_id` (`service_id`),
     INDEX `service_session_login_service_id` (`login_service_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- SSO serviceのリフレッシュトークンテーブル
 CREATE TABLE `service_refresh` (
@@ -380,10 +381,13 @@ CREATE TABLE `service_refresh` (
     INDEX `service_refresh_session_id` (`session_id`),
     INDEX `service_refresh_service_id` (`service_id`),
     INDEX `service_refresh_login_service_id` (`login_service_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 CREATE TABLE `service` (
-    `id` VARBINARY(16) NOT NULL,
+    -- OAuth2.0のClient ID
+    -- client_id はUUIDv1で自動生成する
+    -- 公開されるIDであり、それ単体では使用できないのでv1で良い
+    `client_id` VARBINARY(16) NOT NULL DEFAULT UUID_TO_BIN(UUID()),
 
     -- サービス名
     `name` VARCHAR(31) NOT NULL,
@@ -401,13 +405,16 @@ CREATE TABLE `service` (
 
     `owner_user_id` VARBINARY(16) NOT NULL,
 
+    -- OAuth2.0のClient Secret
+    `client_secret` VARBINARY(31) NOT NULL,
+
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (`id`),
+    PRIMARY KEY (`client_id`),
     INDEX `service_owner_user_id` (`owner_user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- SSOサービスのスコープを保存するテーブル
 CREATE TABLE `service_scope` (
@@ -424,7 +431,7 @@ CREATE TABLE `service_scope` (
 
     PRIMARY KEY (`id`),
     INDEX `service_scope_service_id` (`service_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- ログインしたSSOサービスのスコープを保存するテーブル
 -- サービスが途中でスコープを変更してもログイン履歴にはログイン時に求めたスコープとなる
@@ -442,7 +449,7 @@ CREATE TABLE `login_service_scope` (
 
     PRIMARY KEY (`id`),
     INDEX `login_service_scope_login_service_id` (`login_service_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- サービスのis_allowが1のときのホワイトリストルール
 CREATE TABLE `service_allow_rule` (
@@ -458,7 +465,7 @@ CREATE TABLE `service_allow_rule` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`service_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- サービスのrequire_secureが1のときに、どの認証方法を用いるか
 CREATE TABLE `service_secure` (
@@ -477,7 +484,7 @@ CREATE TABLE `service_secure` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`service_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- サービスの認証方法でrequire_quizが1の場合のクイズ
 -- reCAPTCHAのようなやつ
@@ -500,7 +507,7 @@ CREATE TABLE `service_quiz` (
 
     PRIMARY KEY (`id`),
     INDEX `service_quiz_service_id` (`service_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- 現在ログインしているSSOサービステーブル
 CREATE TABLE `login_service` (
@@ -512,7 +519,7 @@ CREATE TABLE `login_service` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- 過去にログインしたSSOサービスのテーブル
 CREATE TABLE `login_service_history` (
@@ -535,7 +542,7 @@ CREATE TABLE `login_service_history` (
     PRIMARY KEY (`id`),
     INDEX `login_history` (`service_id`),
     INDEX `login_service_history_user_id` (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- ログイン履歴
 CREATE TABLE `login_history` (
@@ -561,7 +568,7 @@ CREATE TABLE `login_history` (
     PRIMARY KEY (`id`),
     INDEX `login_history_user_id` (`user_id`),
     INDEX `login_history_refresh_id` (`refresh_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- ログインを試みた履歴
 CREATE TABLE `login_try_history` (
@@ -582,7 +589,7 @@ CREATE TABLE `login_try_history` (
 
     PRIMARY KEY (`id`),
     INDEX `login_try_history_user_id` (`user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- 全ユーザー一斉通知用のエントリ
 CREATE TABLE `broadcast_entry` (
@@ -598,7 +605,7 @@ CREATE TABLE `broadcast_entry` (
 
     PRIMARY KEY (`id`),
     INDEX `broadcast_entry_create_user_id` (`create_user_id`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
 -- 全ユーザー一斉通知のユーザごとの既読状況を保存するテーブル
 CREATE TABLE `broadcast_notice` (
@@ -617,4 +624,4 @@ CREATE TABLE `broadcast_notice` (
     INDEX `broadcast_notice_entry_id` (`entry_id`),
     INDEX `broadcast_notice_user_id` (`user_id`),
     INDEX `broadcast_notice_user_id_is_read` (`user_id`, `is_read`)
-);
+) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
