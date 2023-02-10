@@ -382,6 +382,25 @@ CREATE TABLE `client_refresh` (
     INDEX `client_refresh_login_client_id` (`login_client_id`)
 ) DEFAULT CHARSET=utf8mb4_general_ci ENGINE=InnoDB;
 
+CREATE TABLE `oauth_session` (
+    `code` VARBINARY(32) NOT NULL,
+    `user_id` VARBINARY(16) NOT NULL,
+
+    -- クライアントのID
+    `client_id` VARBINARY(16) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`code`),
+    INDEX `oauth_session_user_id` (`user_id`),
+    INDEX `oauth_session_client_id` (`client_id`)
+);
+
 CREATE TABLE `client` (
     -- OAuth2.0のClient ID
     -- client_id はUUIDv1で自動生成する
