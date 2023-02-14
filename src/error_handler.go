@@ -17,8 +17,6 @@ type HTTPError struct {
 	Code       int         `json:"-"`
 	Message    interface{} `json:"message"`
 	UniqueCode int         `json:"unique_code"`
-	Internal   error       `json:"-"` // Stores the error returned by an external dependency
-
 }
 
 func NewHTTPError(code int, message ...any) *HTTPError {
@@ -42,29 +40,8 @@ func (he *HTTPError) Error() string {
 	if he.UniqueCode != ErrUniqueDefault {
 		m = fmt.Sprintf("%s, unique=%d", m, he.UniqueCode)
 	}
-
-	if he.Internal == nil {
-		return m
-	}
-	return fmt.Sprintf("%s, internal=%v", m, he.Internal)
+	return m
 }
-
-// func (he *HTTPError) SetInternal(err error) *HTTPError {
-// 	he.Internal = err
-// 	return he
-// }
-
-// func (he *HTTPError) WithInternal(err error) *HTTPError {
-// 	return &HTTPError{
-// 		Code:     he.Code,
-// 		Message:  he.Message,
-// 		Internal: err,
-// 	}
-// }
-
-// func (he *HTTPError) Unwrap() error {
-// 	return he.Internal
-// }
 
 // カスタムエラーハンドラー
 // 基本エラー時には、{"message": "error message"}のjsonを返す
