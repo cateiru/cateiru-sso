@@ -33,3 +33,14 @@ func TestRandomStr(t *testing.T) {
 		}
 	})
 }
+
+func TestRandomNumber(t *testing.T) {
+	t.Run("指定した文字数のランダムな桁の数字が生成される", func(t *testing.T) {
+		for i := 3; 100 > i; i++ {
+			r, err := lib.RandomNumber(i)
+			require.NoError(t, err)
+
+			require.Len(t, r, i)
+		}
+	})
+}
