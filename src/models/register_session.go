@@ -23,7 +23,7 @@ import (
 
 // RegisterSession is an object representing the database table.
 type RegisterSession struct {
-	ID            []byte    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Email         string    `boil:"email" json:"email" toml:"email" yaml:"email"`
 	EmailVerified bool      `boil:"email_verified" json:"email_verified" toml:"email_verified" yaml:"email_verified"`
 	VerifyCode    string    `boil:"verify_code" json:"verify_code" toml:"verify_code" yaml:"verify_code"`
@@ -79,7 +79,7 @@ var RegisterSessionTableColumns = struct {
 // Generated where
 
 var RegisterSessionWhere = struct {
-	ID            whereHelper__byte
+	ID            whereHelperstring
 	Email         whereHelperstring
 	EmailVerified whereHelperbool
 	VerifyCode    whereHelperstring
@@ -88,7 +88,7 @@ var RegisterSessionWhere = struct {
 	Created       whereHelpertime_Time
 	Modified      whereHelpertime_Time
 }{
-	ID:            whereHelper__byte{field: "`register_session`.`id`"},
+	ID:            whereHelperstring{field: "`register_session`.`id`"},
 	Email:         whereHelperstring{field: "`register_session`.`email`"},
 	EmailVerified: whereHelperbool{field: "`register_session`.`email_verified`"},
 	VerifyCode:    whereHelperstring{field: "`register_session`.`verify_code`"},
@@ -413,7 +413,7 @@ func RegisterSessions(mods ...qm.QueryMod) registerSessionQuery {
 
 // FindRegisterSession retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindRegisterSession(ctx context.Context, exec boil.ContextExecutor, iD []byte, selectCols ...string) (*RegisterSession, error) {
+func FindRegisterSession(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*RegisterSession, error) {
 	registerSessionObj := &RegisterSession{}
 
 	sel := "*"
@@ -950,7 +950,7 @@ func (o *RegisterSessionSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 }
 
 // RegisterSessionExists checks if the RegisterSession row exists.
-func RegisterSessionExists(ctx context.Context, exec boil.ContextExecutor, iD []byte) (bool, error) {
+func RegisterSessionExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `register_session` where `id`=? limit 1)"
 

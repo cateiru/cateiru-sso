@@ -211,7 +211,7 @@ CREATE TABLE `otp_backup` (
 
 -- アカウント登録時に使用するセッションを保存するテーブル
 CREATE TABLE `register_session` (
-    `id` VARBINARY(16) NOT NULL,
+    `id` VARCHAR(31) NOT NULL,
 
     `email` VARCHAR(255) NOT NULL,
     `email_verified` BOOLEAN NOT NULL DEFAULT 0,
