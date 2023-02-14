@@ -2,6 +2,7 @@ package src
 
 import (
 	"net/url"
+	"os"
 
 	"github.com/go-sql-driver/mysql"
 )
@@ -24,6 +25,11 @@ type Config struct {
 	Host *url.URL
 	// サイトのホスト
 	SiteHost *url.URL
+
+	// 送信メール設定
+	FromDomain        string
+	MailgunSecret     string
+	SenderMailAddress string
 }
 
 var LocalConfig = &Config{
@@ -52,6 +58,10 @@ var LocalConfig = &Config{
 		Host:   "localhost:3000",
 		Scheme: "http",
 	},
+
+	FromDomain:        "",
+	MailgunSecret:     "",
+	SenderMailAddress: "",
 }
 
 var CloudRunConfig = &Config{
@@ -72,6 +82,10 @@ var CloudRunConfig = &Config{
 		Host:   "sso.cateiru.com",
 		Scheme: "https",
 	},
+
+	FromDomain:        "m.cateiru.com",
+	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
+	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 }
 
 var TestConfig = &Config{
@@ -99,6 +113,10 @@ var TestConfig = &Config{
 		Host:   "localhost:3000",
 		Scheme: "http",
 	},
+
+	FromDomain:        "m.cateiru.com",
+	MailgunSecret:     "",
+	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 }
 
 func InitConfig(mode string) *Config {

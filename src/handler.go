@@ -21,16 +21,23 @@ type Handler struct {
 	DB        *sql.DB
 	C         *Config
 	ReCaptcha *lib.ReCaptcha
+	Sender    *lib.Sender
 }
 
-func NewHandler(db *sql.DB, config *Config) *Handler {
+func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 	reCaptcha := lib.NewReCaptcha(config.ReCaptchaSecret)
+
+	sender, err := lib.NewSender("templates/*", config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Handler{
 		DB:        db,
 		C:         config,
 		ReCaptcha: reCaptcha,
-	}
+		Sender:    sender,
+	}, nil
 }
 
 func (h *Handler) Root(c echo.Context) error {

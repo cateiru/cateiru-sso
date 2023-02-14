@@ -9,7 +9,8 @@ import (
 )
 
 func TestNewHandler(t *testing.T) {
-	h := src.NewHandler(DB, C)
+	h, err := src.NewHandler(DB, C)
+	require.NoError(t, err)
 
 	require.NotNil(t, h.DB)
 	require.NotNil(t, h.C)

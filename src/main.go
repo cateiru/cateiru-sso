@@ -35,7 +35,10 @@ func Server(c *Config) error {
 		return err
 	}
 
-	handler := NewHandler(db, c)
+	handler, err := NewHandler(db, c)
+	if err != nil {
+		return err
+	}
 	// APIのルート設定
 	Routes(e, handler)
 
