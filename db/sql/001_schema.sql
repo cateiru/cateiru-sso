@@ -15,6 +15,7 @@ CREATE TABLE `user` (
     -- ユーザ名はユーザごとに一意なIDとなる
     -- ログイン時にメールアドレスの代替としてログインできる
     -- アカウント登録時に、デフォルトはUUIDからランダムな文字列を作って入れる
+    -- 検索する際にはutf8mb4_general_ciのコレクションを使用する
     `user_name` VARCHAR(15) NOT NULL DEFAULT (LEFT(UUID(), 8)),
 
     -- Email
@@ -521,7 +522,7 @@ CREATE TABLE `login_client` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (`id`),
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- 過去にログインしたSSOクライアントのテーブル
@@ -536,7 +537,7 @@ CREATE TABLE `login_client_history` (
     `browser` VARCHAR(31) DEFAULT NULL,
     `is_mobile` BOOLEAN DEFAULT NULL,
 
-    --INET6_ATON、INET6_NTOAを使用して格納する
+    -- INET6_ATON、INET6_NTOAを使用して格納する
     `ip` VARBINARY(16) NOT NULL,
 
     -- 管理用
@@ -562,7 +563,7 @@ CREATE TABLE `login_history` (
     `browser` VARCHAR(31) DEFAULT NULL,
     `is_mobile` BOOLEAN DEFAULT NULL,
 
-    --INET6_ATON、INET6_NTOAを使用して格納する
+    -- INET6_ATON、INET6_NTOAを使用して格納する
     `ip` VARBINARY(16) NOT NULL,
 
     -- 管理用
@@ -584,7 +585,7 @@ CREATE TABLE `login_try_history` (
     `browser` VARCHAR(31) DEFAULT NULL,
     `is_mobile` BOOLEAN DEFAULT NULL,
 
-    --INET6_ATON、INET6_NTOAを使用して格納する
+    -- INET6_ATON、INET6_NTOAを使用して格納する
     `ip` VARBINARY(16) NOT NULL,
 
     -- 管理用
