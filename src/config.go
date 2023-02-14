@@ -3,6 +3,7 @@ package src
 import (
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 )
@@ -30,6 +31,10 @@ type Config struct {
 	FromDomain        string
 	MailgunSecret     string
 	SenderMailAddress string
+
+	// セッションの有効期限
+	// アカウント登録時に使用するセッションの有効期限
+	RegisterSessionPeriod time.Duration
 }
 
 var LocalConfig = &Config{
@@ -62,6 +67,8 @@ var LocalConfig = &Config{
 	FromDomain:        "",
 	MailgunSecret:     "",
 	SenderMailAddress: "",
+
+	RegisterSessionPeriod: 10 * time.Minute,
 }
 
 var CloudRunConfig = &Config{
@@ -86,6 +93,8 @@ var CloudRunConfig = &Config{
 	FromDomain:        "m.cateiru.com",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+
+	RegisterSessionPeriod: 10 * time.Minute,
 }
 
 var TestConfig = &Config{
@@ -117,6 +126,8 @@ var TestConfig = &Config{
 	FromDomain:        "m.cateiru.com",
 	MailgunSecret:     "",
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+
+	RegisterSessionPeriod: 10 * time.Minute,
 }
 
 func InitConfig(mode string) *Config {

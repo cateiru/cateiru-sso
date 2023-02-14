@@ -10,7 +10,12 @@ import (
 // カスタムユニークコード
 const (
 	ErrUniqueDefault = 0
-	ErrReCaptcha     = 1
+	// reCAPTCHAに失敗した（BOT）場合
+	ErrReCaptcha = 1
+	// 該当Emailのアカウント登録のセッションが存在する
+	ErrSessionExists = 2
+	// 何らかの原因（メールアドレスがすでに登録されているなど）でアカウントが作成できない
+	ErrImpossibleRegisterAccount = 3
 )
 
 type HTTPError struct {
