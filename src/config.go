@@ -12,6 +12,11 @@ type Config struct {
 	// オレオレ証明書設定
 	SelfSignedCert bool
 
+	// reCAPTCHAを使用するかどうか
+	UseReCaptcha        bool
+	ReCaptchaSecret     string
+	ReCaptchaAllowScore float64
+
 	// MySQLの設定
 	DatabaseConfig *mysql.Config
 
@@ -25,6 +30,10 @@ var LocalConfig = &Config{
 	Mode: "local",
 
 	SelfSignedCert: true,
+	// ローカル環境はreCAPTCHA使わない
+	UseReCaptcha:        false,
+	ReCaptchaSecret:     "",
+	ReCaptchaAllowScore: 0,
 
 	DatabaseConfig: &mysql.Config{
 		DBName:               "cateiru-sso",
@@ -48,7 +57,10 @@ var LocalConfig = &Config{
 var CloudRunConfig = &Config{
 	Mode: "cloudrun",
 
-	SelfSignedCert: false,
+	SelfSignedCert:      false,
+	UseReCaptcha:        true,
+	ReCaptchaSecret:     "", // TODO
+	ReCaptchaAllowScore: 50,
 
 	DatabaseConfig: &mysql.Config{},
 
@@ -65,7 +77,10 @@ var CloudRunConfig = &Config{
 var TestConfig = &Config{
 	Mode: "test",
 
-	SelfSignedCert: false,
+	SelfSignedCert:      false,
+	UseReCaptcha:        false,
+	ReCaptchaSecret:     "",
+	ReCaptchaAllowScore: 0,
 
 	DatabaseConfig: &mysql.Config{
 		DBName:               "cateiru-sso-test",

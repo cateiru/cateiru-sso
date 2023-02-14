@@ -37,7 +37,11 @@ func NewReCaptcha(secret string) *ReCaptcha {
 
 // reCAPTCHAの検証を行う
 func (c *ReCaptcha) ValidateOrder(token string, remoteIp string) (*RecaptchaResponse, error) {
-	resp, err := http.PostForm(c.ServerName, url.Values{"secret": {c.Secret}, "remoteip": {remoteIp}, "response": {token}})
+	resp, err := http.PostForm(c.ServerName, url.Values{
+		"secret":   {c.Secret},
+		"remoteip": {remoteIp},
+		"response": {token},
+	})
 	if err != nil {
 		return nil, err
 	}
