@@ -47,6 +47,19 @@ var LocalConfig = &Config{
 
 var CloudRunConfig = &Config{
 	Mode: "cloudrun",
+
+	SelfSignedCert: false,
+
+	DatabaseConfig: &mysql.Config{},
+
+	Host: &url.URL{
+		Host:   "api.sso.cateiru.com",
+		Scheme: "https",
+	},
+	SiteHost: &url.URL{
+		Host:   "sso.cateiru.com",
+		Scheme: "https",
+	},
 }
 
 var TestConfig = &Config{
