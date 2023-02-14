@@ -65,8 +65,21 @@ func ServerMiddleWare(e *echo.Echo) {
 
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			if v.Error != nil {
+				// エラーコードが400番台の場合はInfo
+				if v.Status >= 400 && v.Status < 500 {
+					L.Info("request",
+						zap.String("URI", v.URI),
+						zap.String("method", v.Method),
+						zap.Int("status", v.Status),
+						zap.String("host", v.Host),
+						zap.String("response_time", time.Since(v.StartTime).String()),
+						zap.String("error_message", v.Error.Error()),
+					)
+					return nil
+				}
 				L.Error("request",
 					zap.String("URI", v.URI),
+					zap.String("method", v.Method),
 					zap.Int("status", v.Status),
 					zap.String("host", v.Host),
 					zap.String("response_time", time.Since(v.StartTime).String()),
@@ -81,7 +94,6 @@ func ServerMiddleWare(e *echo.Echo) {
 					zap.String("response_time", time.Since(v.StartTime).String()),
 				)
 			}
-
 			return nil
 		},
 	}))
