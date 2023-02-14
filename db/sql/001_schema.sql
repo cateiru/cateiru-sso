@@ -10,7 +10,7 @@ CREATE TABLE `user` (
     -- v4のほうが良いが、v1でもAUTO_INCREMENTよりはましなのでUUID関数を使う
     -- ULIDとか使うともっと良かったりするのかな？
     -- ref. https://dev.mysql.com/doc/refman/8.0/ja/miscellaneous-functions.html
-    `id` VARBINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+    `id` VARBINARY(16) NOT NULL,
 
     -- ユーザ名はユーザごとに一意なIDとなる
     -- ログイン時にメールアドレスの代替としてログインできる
@@ -408,9 +408,8 @@ CREATE TABLE `oauth_session` (
 
 CREATE TABLE `client` (
     -- OAuth2.0のClient ID
-    -- client_id はUUIDv1で自動生成する
     -- 公開されるIDであり、それ単体では使用できないのでv1で良い
-    `client_id` VARBINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+    `client_id` VARBINARY(16) NOT NULL,
 
     -- クライアント名
     `name` VARCHAR(31) NOT NULL,
