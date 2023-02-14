@@ -46,7 +46,7 @@ func ParseUA(r *http.Request) (*UserData, error) {
 	if goclienthints.IsSupportClientHints(&r.Header) {
 		ch, err := goclienthints.Parse(&r.Header)
 		if err != nil {
-			return nil, lib.NewHTTPError(http.StatusBadRequest, err)
+			return nil, NewHTTPError(http.StatusBadRequest, err)
 		}
 
 		return &UserData{

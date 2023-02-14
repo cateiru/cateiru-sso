@@ -17,7 +17,7 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 
 	// Emailの形式が正しいか検証する
 	if !lib.ValidateEmail(email) {
-		return lib.NewHTTPError(http.StatusBadRequest, "invalid email")
+		return NewHTTPError(http.StatusBadRequest, "invalid email")
 	}
 
 	// reCAPTCHA
@@ -28,7 +28,7 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 		}
 		// 検証に失敗した or スコアが閾値以下の場合はエラーにする
 		if !order.Success || order.Score < h.C.ReCaptchaAllowScore {
-			return lib.NewHTTPUniqueError(http.StatusBadRequest, lib.ErrReCaptcha, "reCAPTCHA validation failed")
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrReCaptcha, "reCAPTCHA validation failed")
 		}
 	}
 

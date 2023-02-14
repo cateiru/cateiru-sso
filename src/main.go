@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
@@ -27,7 +26,7 @@ func Main(mode string) {
 func Server(c *Config) error {
 	e := echo.New()
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
-	e.HTTPErrorHandler = lib.CustomHTTPErrorHandler
+	e.HTTPErrorHandler = CustomHTTPErrorHandler
 
 	ServerMiddleWare(e)
 
