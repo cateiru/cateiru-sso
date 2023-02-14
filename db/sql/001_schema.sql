@@ -230,7 +230,7 @@ CREATE TABLE `register_session` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY(`id`),
-    INDEX `register_session_email` (`email`)
+    UNIQUE INDEX `register_session_email` (`email`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- アプリを使用したOTPを新規に登録する際に使用するセッションテーブル
