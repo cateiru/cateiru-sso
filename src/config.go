@@ -9,6 +9,9 @@ import (
 type Config struct {
 	Mode string
 
+	// オレオレ証明書設定
+	SelfSignedCert bool
+
 	// MySQLの設定
 	DatabaseConfig *mysql.Config
 
@@ -20,6 +23,8 @@ type Config struct {
 
 var LocalConfig = &Config{
 	Mode: "local",
+
+	SelfSignedCert: true,
 
 	DatabaseConfig: &mysql.Config{
 		DBName:               "cateiru-sso",
@@ -46,6 +51,8 @@ var CloudRunConfig = &Config{
 
 var TestConfig = &Config{
 	Mode: "test",
+
+	SelfSignedCert: false,
 
 	DatabaseConfig: &mysql.Config{
 		DBName:               "cateiru-sso-test",
