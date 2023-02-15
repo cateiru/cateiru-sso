@@ -3,8 +3,10 @@ package src_test
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,4 +54,37 @@ func TestParseUA(t *testing.T) {
 		require.Equal(t, d.OS, "Windows")
 		require.False(t, d.IsMobile)
 	})
+}
+
+type ReCaptchaMock struct{}
+
+func (c *ReCaptchaMock) ValidateOrder(token string, remoteIp string) (*lib.RecaptchaResponse, error) {
+	return &lib.RecaptchaResponse{
+		Success:     true,
+		Score:       100,
+		Action:      "",
+		ChallengeTS: time.Now(),
+		Hostname:    "",
+		ErrorCodes:  []string{},
+	}, nil
+}
+
+type SenderMock struct{}
+
+func (c *SenderMock) Send(m *lib.MailBody) (string, string, error) {
+	return "ok", "200", nil
+}
+
+// テスト用のダーミハンドラーを作成する
+//
+// モックしているやつ
+// - ReCaptcha
+// - Sender
+func NewTestHandler(t *testing.T) *src.Handler {
+	return &src.Handler{
+		DB:        DB,
+		C:         C,
+		ReCaptcha: &ReCaptchaMock{},
+		Sender:    &SenderMock{},
+	}
 }

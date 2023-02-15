@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 )
 
 var DB *sql.DB
@@ -42,5 +44,23 @@ func TestMain(m *testing.M) {
 
 // テスト用にテーブルをクリアする
 func ResetDBTable(ctx context.Context, db *sql.DB) error {
+	rows, err := queries.Raw("show tables").QueryContext(ctx, db)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		table := ""
+		if err := rows.Scan(&table); err != nil {
+			return err
+		}
+
+		// SQLインジェクションの影響は無いためSprintfを使用している
+		if _, err := queries.Raw(fmt.Sprintf("TRUNCATE TABLE %s", table)).Exec(db); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

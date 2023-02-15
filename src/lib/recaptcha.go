@@ -14,6 +14,10 @@ import (
 
 const REACPTCHA_HOST = "https://www.google.com/recaptcha/api/siteverify"
 
+type ReCaptchaInterface interface {
+	ValidateOrder(token string, remoteIp string) (*RecaptchaResponse, error)
+}
+
 type ReCaptcha struct {
 	ServerName string
 	Secret     string

@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// テンプレートにわたすやつ
 type RegisterEmailVerify struct {
 	Code     string
 	Email    string
@@ -111,7 +112,15 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	}
 	msg, id, err := h.Sender.Send(m)
 	if err != nil {
-		// TODO: セッションテーブル削除するなど丁寧にやりたい
+		L.Error("mail",
+			zap.String("Email", email),
+			zap.Error(err),
+			zap.String("IP", ip),
+			zap.String("Device", userData.Device),
+			zap.String("Browser", userData.Browser),
+			zap.String("OS", userData.OS),
+			zap.Bool("IsMobile", userData.IsMobile),
+		)
 		return err
 	}
 

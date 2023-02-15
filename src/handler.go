@@ -20,14 +20,14 @@ type UserData struct {
 type Handler struct {
 	DB        *sql.DB
 	C         *Config
-	ReCaptcha *lib.ReCaptcha
-	Sender    *lib.Sender
+	ReCaptcha lib.ReCaptchaInterface
+	Sender    lib.SenderInterface
 }
 
 func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 	reCaptcha := lib.NewReCaptcha(config.ReCaptchaSecret)
 
-	sender, err := lib.NewSender("templates/*", config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
+	sender, err := lib.NewSender("../templates/*", config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
 	if err != nil {
 		return nil, err
 	}

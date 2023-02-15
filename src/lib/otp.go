@@ -8,6 +8,11 @@ import (
 	"github.com/pquerna/otp/totp"
 )
 
+type OTPInterface interface {
+	GetPublic() string
+	GetSecret() string
+}
+
 type OTP struct {
 	GenerateOpt *totp.GenerateOpts
 	Key         *otp.Key

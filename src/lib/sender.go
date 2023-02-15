@@ -7,6 +7,10 @@ import (
 	"github.com/mailgun/mailgun-go"
 )
 
+type SenderInterface interface {
+	Send(m *MailBody) (string, string, error)
+}
+
 type Sender struct {
 	// 使用するテンプレートのディレクトリ
 	Template *template.Template
