@@ -216,6 +216,9 @@ CREATE TABLE `register_session` (
     `email` VARCHAR(255) NOT NULL,
     `email_verified` BOOLEAN NOT NULL DEFAULT 0,
 
+    -- メール送信回数
+    `send_count` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+
     -- 認証コード
     `verify_code` CHAR(6) NOT NULL,
 

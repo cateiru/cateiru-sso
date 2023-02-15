@@ -26,6 +26,7 @@ type RegisterSession struct {
 	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Email         string    `boil:"email" json:"email" toml:"email" yaml:"email"`
 	EmailVerified bool      `boil:"email_verified" json:"email_verified" toml:"email_verified" yaml:"email_verified"`
+	SendCount     uint8     `boil:"send_count" json:"send_count" toml:"send_count" yaml:"send_count"`
 	VerifyCode    string    `boil:"verify_code" json:"verify_code" toml:"verify_code" yaml:"verify_code"`
 	RetryCount    uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
 	Period        time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
@@ -40,6 +41,7 @@ var RegisterSessionColumns = struct {
 	ID            string
 	Email         string
 	EmailVerified string
+	SendCount     string
 	VerifyCode    string
 	RetryCount    string
 	Period        string
@@ -49,6 +51,7 @@ var RegisterSessionColumns = struct {
 	ID:            "id",
 	Email:         "email",
 	EmailVerified: "email_verified",
+	SendCount:     "send_count",
 	VerifyCode:    "verify_code",
 	RetryCount:    "retry_count",
 	Period:        "period",
@@ -60,6 +63,7 @@ var RegisterSessionTableColumns = struct {
 	ID            string
 	Email         string
 	EmailVerified string
+	SendCount     string
 	VerifyCode    string
 	RetryCount    string
 	Period        string
@@ -69,6 +73,7 @@ var RegisterSessionTableColumns = struct {
 	ID:            "register_session.id",
 	Email:         "register_session.email",
 	EmailVerified: "register_session.email_verified",
+	SendCount:     "register_session.send_count",
 	VerifyCode:    "register_session.verify_code",
 	RetryCount:    "register_session.retry_count",
 	Period:        "register_session.period",
@@ -82,6 +87,7 @@ var RegisterSessionWhere = struct {
 	ID            whereHelperstring
 	Email         whereHelperstring
 	EmailVerified whereHelperbool
+	SendCount     whereHelperuint8
 	VerifyCode    whereHelperstring
 	RetryCount    whereHelperuint8
 	Period        whereHelpertime_Time
@@ -91,6 +97,7 @@ var RegisterSessionWhere = struct {
 	ID:            whereHelperstring{field: "`register_session`.`id`"},
 	Email:         whereHelperstring{field: "`register_session`.`email`"},
 	EmailVerified: whereHelperbool{field: "`register_session`.`email_verified`"},
+	SendCount:     whereHelperuint8{field: "`register_session`.`send_count`"},
 	VerifyCode:    whereHelperstring{field: "`register_session`.`verify_code`"},
 	RetryCount:    whereHelperuint8{field: "`register_session`.`retry_count`"},
 	Period:        whereHelpertime_Time{field: "`register_session`.`period`"},
@@ -115,9 +122,9 @@ func (*registerSessionR) NewStruct() *registerSessionR {
 type registerSessionL struct{}
 
 var (
-	registerSessionAllColumns            = []string{"id", "email", "email_verified", "verify_code", "retry_count", "period", "created", "modified"}
+	registerSessionAllColumns            = []string{"id", "email", "email_verified", "send_count", "verify_code", "retry_count", "period", "created", "modified"}
 	registerSessionColumnsWithoutDefault = []string{"id", "email", "verify_code"}
-	registerSessionColumnsWithDefault    = []string{"email_verified", "retry_count", "period", "created", "modified"}
+	registerSessionColumnsWithDefault    = []string{"email_verified", "send_count", "retry_count", "period", "created", "modified"}
 	registerSessionPrimaryKeyColumns     = []string{"id"}
 	registerSessionGeneratedColumns      = []string{}
 )
