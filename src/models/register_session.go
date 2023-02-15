@@ -666,6 +666,7 @@ func (o RegisterSessionSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 
 var mySQLRegisterSessionUniqueColumns = []string{
 	"id",
+	"email",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
