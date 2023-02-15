@@ -101,9 +101,9 @@ var TestConfig = &Config{
 	Mode: "test",
 
 	SelfSignedCert:      false,
-	UseReCaptcha:        false,
+	UseReCaptcha:        true, // mockするので問題なし
 	ReCaptchaSecret:     "",
-	ReCaptchaAllowScore: 0,
+	ReCaptchaAllowScore: 50,
 
 	DatabaseConfig: &mysql.Config{
 		DBName:               "cateiru-sso-test",

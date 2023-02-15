@@ -1,6 +1,7 @@
 package src_test
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 	"time"
@@ -59,6 +60,22 @@ func TestParseUA(t *testing.T) {
 type ReCaptchaMock struct{}
 
 func (c *ReCaptchaMock) ValidateOrder(token string, remoteIp string) (*lib.RecaptchaResponse, error) {
+	if token == "" {
+		return nil, errors.New("token is empty")
+	}
+
+	// failedにするとreCAPTCHAを失敗させる
+	if token == "fail" {
+		return &lib.RecaptchaResponse{
+			Success:     true,
+			Score:       0,
+			Action:      "",
+			ChallengeTS: time.Now(),
+			Hostname:    "",
+			ErrorCodes:  []string{},
+		}, nil
+	}
+
 	return &lib.RecaptchaResponse{
 		Success:     true,
 		Score:       100,

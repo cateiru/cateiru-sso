@@ -19,6 +19,10 @@ type RegisterEmailVerify struct {
 	UserData *UserData
 }
 
+type RegisterEmailResponse struct {
+	Token string `json:"register_token"`
+}
+
 // 最初にメールアドレス宛に確認コードを送信する
 // アカウント作成フローの一番はじめ
 func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
@@ -31,6 +35,9 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	// Emailの形式が正しいか検証する
 	if !lib.ValidateEmail(email) {
 		return NewHTTPError(http.StatusBadRequest, "invalid email")
+	}
+	if recaptcha == "" {
+		return NewHTTPError(http.StatusBadRequest, "reCAPTCHA token is empty")
 	}
 
 	// reCAPTCHA
@@ -48,7 +55,7 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	// セッションテーブルにEmailが存在しているか
 	// 有効期限が切れるまで同じメールアドレスでセッションを作れないようにする
 	// スパム防止のため
-	existsEmailInRegisterSession, err := models.RegisterOtpSessions(
+	existsEmailInRegisterSession, err := models.RegisterSessions(
 		models.RegisterSessionWhere.Email.EQ(email),
 	).Exists(ctx, h.DB)
 	if err != nil {
@@ -136,5 +143,8 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 		zap.Bool("IsMobile", userData.IsMobile),
 	)
 
-	return nil
+	resp := &RegisterEmailResponse{
+		Token: session,
+	}
+	return c.JSON(http.StatusOK, resp)
 }

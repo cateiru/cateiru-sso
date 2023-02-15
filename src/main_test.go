@@ -9,6 +9,10 @@ import (
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/oklog/ulid/v2"
+	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 )
 
@@ -21,6 +25,8 @@ var _ = flag.Bool("test.sqldebug", false, "Turns on debug mode for SQL statement
 var _ = flag.String("test.config", "", "Overrides the default config")
 
 func TestMain(m *testing.M) {
+	src.InitLogging("test")
+
 	C = src.TestConfig
 
 	ctx := context.Background()
@@ -63,4 +69,26 @@ func ResetDBTable(ctx context.Context, db *sql.DB) error {
 	}
 
 	return nil
+}
+
+// ユーザを新規作成する
+func RegisterUser(t *testing.T, ctx context.Context, email string) models.User {
+	id := ulid.Make()
+	idBin, err := id.MarshalBinary()
+	require.NoError(t, err)
+
+	u := models.User{
+		ID:    idBin,
+		Email: email,
+	}
+
+	err = u.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+
+	dbU, err := models.Users(
+		models.UserWhere.ID.EQ(idBin),
+	).One(ctx, DB)
+	require.NoError(t, err)
+
+	return *dbU
 }
