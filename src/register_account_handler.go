@@ -156,6 +156,117 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
+// 確認コードを再送する
+func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	token := c.FormValue("token") // SendEmailVerifyHandlerのレスポンスToken
+	if token == "" {
+		return NewHTTPError(http.StatusBadRequest, "token is empty")
+	}
+
+	userData, err := ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+	ip := c.RealIP()
+
+	registerSession, err := models.RegisterSessions(
+		models.RegisterSessionWhere.ID.EQ(token),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "token is invalid")
+	}
+	if err != nil {
+		return err
+	}
+
+	// 有効期限が切れた場合
+	if time.Now().Before(registerSession.Period) {
+		// セッションは削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrExpired, "expired token")
+	}
+
+	// メール送信上限を超えた場合
+	// 認証はできるのでセッションのレコードは削除しない
+	if registerSession.SendCount >= h.C.RegisterEmailSendLimit {
+		return NewHTTPUniqueError(http.StatusTooManyRequests, ErrEmailSendingLimit, "email sending limit")
+	}
+
+	// リトライ回数が指定回数を超えた場合、失敗させる
+	// ブルートフォースアタック対策
+	// 普通は失敗しないよね
+	if registerSession.RetryCount >= h.C.RegisterSessionRetryLimit {
+		// セッションは削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+
+		// スパムだった場合を考えてログを出す
+		L.Info("exceeded retry",
+			zap.String("Email", registerSession.Email),
+			zap.String("IP", ip),
+			zap.String("Device", userData.Device),
+			zap.String("Browser", userData.Browser),
+			zap.String("OS", userData.OS),
+			zap.Bool("IsMobile", userData.IsMobile),
+		)
+
+		return NewHTTPUniqueError(http.StatusTooManyRequests, ErrExceededRetry, "exceeded retry")
+	}
+
+	registerSession.SendCount++
+
+	// 対象のメールアドレスにメールを送信する
+	r := RegisterEmailVerify{
+		Code:     registerSession.VerifyCode,
+		Email:    registerSession.Email,
+		Time:     time.Now(),
+		UserData: userData,
+	}
+	m := &lib.MailBody{
+		EmailAddress:      registerSession.Email,
+		Subject:           "メールアドレスの登録確認",
+		Data:              r,
+		PlainTextFileName: "register.gtpl",
+		HTMLTextFileName:  "register.html",
+	}
+	msg, id, err := h.Sender.Send(m)
+	if err != nil {
+		L.Error("mail",
+			zap.String("Email", registerSession.Email),
+			zap.Error(err),
+			zap.String("IP", ip),
+			zap.String("Device", userData.Device),
+			zap.String("Browser", userData.Browser),
+			zap.String("OS", userData.OS),
+			zap.Bool("IsMobile", userData.IsMobile),
+		)
+		return err
+	}
+
+	// メールを送信したのでログを出す
+	L.Info("mail",
+		zap.String("Email", registerSession.Email),
+		zap.String("MailGunMessage", msg),
+		zap.String("MailGunID", id),
+		zap.String("IP", ip),
+		zap.String("Device", userData.Device),
+		zap.String("Browser", userData.Browser),
+		zap.String("OS", userData.OS),
+		zap.Bool("IsMobile", userData.IsMobile),
+	)
+
+	if _, err := registerSession.Update(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // メールアドレスに送られた確認コードを入力してEmailを認証させるハンドラー
 func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -189,7 +300,7 @@ func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 	// リトライ回数が指定回数を超えた場合、失敗させる
 	// ブルートフォースアタック対策
 	// 普通は失敗しないよね
-	if registerSession.RetryCount >= h.C.RegisterSessionRetry {
+	if registerSession.RetryCount >= h.C.RegisterSessionRetryLimit {
 		// セッションは削除する
 		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
 			return err
@@ -227,7 +338,7 @@ func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 	}
 
 	resp := &RegisterVerifyEmailResponse{
-		RemainingCount: h.C.RegisterSessionRetry - registerSession.RetryCount,
+		RemainingCount: h.C.RegisterSessionRetryLimit - registerSession.RetryCount,
 		Verified:       verify,
 	}
 

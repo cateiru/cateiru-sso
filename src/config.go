@@ -34,8 +34,9 @@ type Config struct {
 
 	// セッションの有効期限
 	// アカウント登録時に使用するセッションの有効期限
-	RegisterSessionPeriod time.Duration
-	RegisterSessionRetry  uint8
+	RegisterSessionPeriod     time.Duration
+	RegisterSessionRetryLimit uint8
+	RegisterEmailSendLimit    uint8
 }
 
 var LocalConfig = &Config{
@@ -69,8 +70,9 @@ var LocalConfig = &Config{
 	MailgunSecret:     "",
 	SenderMailAddress: "",
 
-	RegisterSessionPeriod: 10 * time.Minute,
-	RegisterSessionRetry:  5,
+	RegisterSessionPeriod:     10 * time.Minute,
+	RegisterSessionRetryLimit: 5,
+	RegisterEmailSendLimit:    3,
 }
 
 var CloudRunConfig = &Config{
@@ -96,8 +98,9 @@ var CloudRunConfig = &Config{
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 
-	RegisterSessionPeriod: 10 * time.Minute,
-	RegisterSessionRetry:  5,
+	RegisterSessionPeriod:     10 * time.Minute,
+	RegisterSessionRetryLimit: 5,
+	RegisterEmailSendLimit:    3,
 }
 
 var TestConfig = &Config{
@@ -130,8 +133,9 @@ var TestConfig = &Config{
 	MailgunSecret:     "",
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 
-	RegisterSessionPeriod: 10 * time.Minute,
-	RegisterSessionRetry:  5,
+	RegisterSessionPeriod:     10 * time.Minute,
+	RegisterSessionRetryLimit: 5,
+	RegisterEmailSendLimit:    3,
 }
 
 func InitConfig(mode string) *Config {

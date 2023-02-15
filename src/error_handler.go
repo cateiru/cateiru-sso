@@ -20,6 +20,8 @@ const (
 	ErrExceededRetry = 4
 	// 有効期限切れ
 	ErrExpired = 5
+	// メール送信上限
+	ErrEmailSendingLimit = 6
 )
 
 type HTTPError struct {
