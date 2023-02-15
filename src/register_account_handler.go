@@ -1,6 +1,8 @@
 package src
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -21,6 +23,11 @@ type RegisterEmailVerify struct {
 
 type RegisterEmailResponse struct {
 	Token string `json:"register_token"`
+}
+
+type RegisterVerifyEmailResponse struct {
+	RemainingCount uint8 `json:"remaining_count"`
+	Verified       bool  `json:"verified"`
 }
 
 // 最初にメールアドレス宛に確認コードを送信する
@@ -146,5 +153,83 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	resp := &RegisterEmailResponse{
 		Token: session,
 	}
+	return c.JSON(http.StatusOK, resp)
+}
+
+// メールアドレスに送られた確認コードを入力してEmailを認証させるハンドラー
+func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	code := c.FormValue("code")
+	token := c.FormValue("token") // SendEmailVerifyHandlerのレスポンスToken
+
+	if token == "" {
+		return NewHTTPError(http.StatusBadRequest, "token is empty")
+	}
+
+	registerSession, err := models.RegisterSessions(
+		models.RegisterSessionWhere.ID.EQ(token),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "token is invalid")
+	}
+	if err != nil {
+		return err
+	}
+
+	// 有効期限が切れた場合
+	if time.Now().Before(registerSession.Period) {
+		// セッションは削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrExpired, "expired token")
+	}
+
+	// リトライ回数が指定回数を超えた場合、失敗させる
+	// ブルートフォースアタック対策
+	// 普通は失敗しないよね
+	if registerSession.RetryCount >= h.C.RegisterSessionRetry {
+		// セッションは削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+
+		ua, err := ParseUA(c.Request())
+		if err != nil {
+			return err
+		}
+		ip := c.RealIP()
+
+		// スパムだった場合を考えてログを出す
+		L.Info("exceeded retry",
+			zap.String("Email", registerSession.Email),
+			zap.String("IP", ip),
+			zap.String("Device", ua.Device),
+			zap.String("Browser", ua.Browser),
+			zap.String("OS", ua.OS),
+			zap.Bool("IsMobile", ua.IsMobile),
+		)
+
+		return NewHTTPUniqueError(http.StatusTooManyRequests, ErrExceededRetry, "exceeded retry")
+	}
+
+	registerSession.RetryCount++
+	verify := registerSession.VerifyCode == code
+
+	// 確認コードが正しい場合はOK
+	if verify {
+		registerSession.EmailVerified = true
+	}
+
+	if _, err := registerSession.Update(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	resp := &RegisterVerifyEmailResponse{
+		RemainingCount: h.C.RegisterSessionRetry - registerSession.RetryCount,
+		Verified:       verify,
+	}
+
 	return c.JSON(http.StatusOK, resp)
 }

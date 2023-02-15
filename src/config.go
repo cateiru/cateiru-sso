@@ -35,6 +35,7 @@ type Config struct {
 	// セッションの有効期限
 	// アカウント登録時に使用するセッションの有効期限
 	RegisterSessionPeriod time.Duration
+	RegisterSessionRetry  uint8
 }
 
 var LocalConfig = &Config{
@@ -69,6 +70,7 @@ var LocalConfig = &Config{
 	SenderMailAddress: "",
 
 	RegisterSessionPeriod: 10 * time.Minute,
+	RegisterSessionRetry:  5,
 }
 
 var CloudRunConfig = &Config{
@@ -95,6 +97,7 @@ var CloudRunConfig = &Config{
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 
 	RegisterSessionPeriod: 10 * time.Minute,
+	RegisterSessionRetry:  5,
 }
 
 var TestConfig = &Config{
@@ -128,6 +131,7 @@ var TestConfig = &Config{
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 
 	RegisterSessionPeriod: 10 * time.Minute,
+	RegisterSessionRetry:  5,
 }
 
 func InitConfig(mode string) *Config {

@@ -16,6 +16,10 @@ const (
 	ErrSessionExists = 2
 	// 何らかの原因（メールアドレスがすでに登録されているなど）でアカウントが作成できない
 	ErrImpossibleRegisterAccount = 3
+	// リトライ回数を超えた
+	ErrExceededRetry = 4
+	// 有効期限切れ
+	ErrExpired = 5
 )
 
 type HTTPError struct {
