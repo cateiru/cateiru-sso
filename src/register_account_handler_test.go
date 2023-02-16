@@ -149,3 +149,61 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 		require.EqualError(t, err, "code=400, message=impossible register, unique=3")
 	})
 }
+
+func TestReSendVerifyEmailHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	// セッションを作成する
+	createSession := func(email string, sendCount uint8) *models.RegisterSession {
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		sessionDB := models.RegisterSession{
+			ID:         session,
+			Email:      email,
+			VerifyCode: "123456",
+			SendCount:  sendCount,
+
+			Period: time.Now().Add(h.C.RegisterSessionPeriod),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		return s
+	}
+
+	t.Run("成功する", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 1)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		form.Insert("recaptcha", "123abc")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.ReSendVerifyEmailHandler(c)
+		require.NoError(t, err)
+
+		m.Ok(t)
+
+		resendSession, err := models.RegisterSessions(
+			models.RegisterSessionWhere.ID.EQ(s.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.NotEqual(t, s.VerifyCode, resendSession.VerifyCode, "Codeが変わっている")
+		require.Equal(t, resendSession.SendCount, uint8(2))
+
+		require.False(t, resendSession.EmailVerified, "まだ認証は完了されてない")
+	})
+}
