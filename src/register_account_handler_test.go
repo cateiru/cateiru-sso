@@ -206,4 +206,131 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 
 		require.False(t, resendSession.EmailVerified, "まだ認証は完了されてない")
 	})
+
+	t.Run("tokenが空だとエラー", func(t *testing.T) {
+		form := contents.NewMultipart()
+		form.Insert("recaptcha", "123abc")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.ReSendVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=token is empty")
+	})
+
+	t.Run("recaptchaが空だとエラー", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 1)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.ReSendVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=reCAPTCHA token is empty")
+	})
+
+	t.Run("recaptchaのチャレンジが失敗", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 1)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		form.Insert("recaptcha", "fail")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.ReSendVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=reCAPTCHA validation failed, unique=1")
+	})
+
+	t.Run("tokenが不正", func(t *testing.T) {
+		form := contents.NewMultipart()
+		form.Insert("token", "123")
+		form.Insert("recaptcha", "123abc")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.ReSendVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=token is invalid")
+	})
+
+	t.Run("tokenの有効期限切れ", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 1)
+
+		// 有効期限 - 10日
+		s.Period = s.Period.Add(-24 * 10 * time.Hour)
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		form.Insert("recaptcha", "123abc")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.ReSendVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("メールの送信上限を超えた", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 1)
+
+		// すでに3回送信した
+		s.SendCount = 3
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		form.Insert("recaptcha", "123abc")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.ReSendVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=429, message=email sending limit, unique=6")
+	})
+
+	t.Run("リトライ回数が上限を超えていた", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 1)
+
+		// すでに5回ミスった
+		s.RetryCount = 5
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		form.Insert("recaptcha", "123abc")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.ReSendVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=429, message=exceeded retry, unique=4")
+	})
 }

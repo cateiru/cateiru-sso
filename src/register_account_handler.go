@@ -206,7 +206,7 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
 			return err
 		}
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrExpired, "expired token")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
 	// メール送信上限を超えた場合
