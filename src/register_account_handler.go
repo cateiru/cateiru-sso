@@ -255,7 +255,7 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 	}
 	m := &lib.MailBody{
 		EmailAddress:      registerSession.Email,
-		Subject:           "メールアドレスの登録確認",
+		Subject:           "【再送】メールアドレスの登録確認",
 		Data:              r,
 		PlainTextFileName: "register.gtpl",
 		HTMLTextFileName:  "register.html",
