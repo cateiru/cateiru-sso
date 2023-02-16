@@ -315,7 +315,7 @@ func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 	}
 
 	// 有効期限が切れた場合
-	if time.Now().Before(registerSession.Period) {
+	if time.Now().After(registerSession.Period) {
 		// セッションは削除する
 		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
 			return err
