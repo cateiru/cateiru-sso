@@ -293,12 +293,7 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		require.NoError(t, err)
 		email := fmt.Sprintf("%s@exmaple.com", r)
 
-		s := createSession(email, 1)
-
-		// すでに3回送信した
-		s.SendCount = 3
-		_, err = s.Update(ctx, DB, boil.Infer())
-		require.NoError(t, err)
+		s := createSession(email, 3)
 
 		form := contents.NewMultipart()
 		form.Insert("token", s.ID)
@@ -331,6 +326,146 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ReSendVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=429, message=exceeded retry, unique=4")
+	})
+}
+
+func TestRegisterVerifyEmailHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	// セッションを作成する
+	createSession := func(email string, retryCount uint8) *models.RegisterSession {
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		sessionDB := models.RegisterSession{
+			ID:         session,
+			Email:      email,
+			VerifyCode: "123456",
+			RetryCount: retryCount,
+
+			Period: time.Now().Add(h.C.RegisterSessionPeriod),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		return s
+	}
+
+	t.Run("成功", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 0)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		form.Insert("code", s.VerifyCode)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterVerifyEmailHandler(c)
+		require.NoError(t, err)
+
+		m.Ok(t)
+
+		resp := &src.RegisterVerifyEmailResponse{}
+		err = m.Json(resp)
+		require.NoError(t, err)
+
+		require.Equal(t, resp.Verified, true)
+		require.Equal(t, resp.RemainingCount, uint8(4))
+
+		resendSession, err := models.RegisterSessions(
+			models.RegisterSessionWhere.ID.EQ(s.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.True(t, resendSession.EmailVerified)
+		require.Equal(t, resendSession.RetryCount, uint8(1))
+	})
+
+	t.Run("tokenがない場合エラー", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 0)
+
+		form := contents.NewMultipart()
+		form.Insert("code", s.VerifyCode)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=token is empty")
+	})
+
+	t.Run("tokenが不正", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 0)
+
+		form := contents.NewMultipart()
+		form.Insert("token", "123")
+		form.Insert("code", s.VerifyCode)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=token is invalid")
+	})
+
+	t.Run("tokenの有効期限切れ", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, 0)
+
+		// 有効期限 - 10日
+		s.Period = s.Period.Add(-24 * 10 * time.Hour)
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		form.Insert("code", s.VerifyCode)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterVerifyEmailHandler(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("リトライ回数上限", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		// すでに5回リトライ済み
+		s := createSession(email, 5)
+
+		form := contents.NewMultipart()
+		form.Insert("token", s.ID)
+		form.Insert("code", s.VerifyCode)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterVerifyEmailHandler(c)
 		require.EqualError(t, err, "code=429, message=exceeded retry, unique=4")
 	})
 }

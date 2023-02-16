@@ -320,7 +320,7 @@ func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
 			return err
 		}
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrExpired, "expired token")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
 	// リトライ回数が指定回数を超えた場合、失敗させる
