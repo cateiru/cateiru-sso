@@ -32,6 +32,7 @@ type RegisterVerifyEmailResponse struct {
 
 // 最初にメールアドレス宛に確認コードを送信する
 // アカウント作成フローの一番はじめ
+// Emailを送信するのでreCAPTCHA使う
 func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -157,12 +158,18 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 }
 
 // 確認コードを再送する
+// 再送すると、確認コードは別のものに変更される
+// Emailを送信するのでreCAPTCHA使う
 func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	token := c.FormValue("token") // SendEmailVerifyHandlerのレスポンスToken
+	recaptcha := c.FormValue("recaptcha")
 	if token == "" {
 		return NewHTTPError(http.StatusBadRequest, "token is empty")
+	}
+	if recaptcha == "" {
+		return NewHTTPError(http.StatusBadRequest, "reCAPTCHA token is empty")
 	}
 
 	userData, err := ParseUA(c.Request())
@@ -170,6 +177,18 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 		return err
 	}
 	ip := c.RealIP()
+
+	// reCAPTCHA
+	if h.C.UseReCaptcha {
+		order, err := h.ReCaptcha.ValidateOrder(recaptcha, ip)
+		if err != nil {
+			return err
+		}
+		// 検証に失敗した or スコアが閾値以下の場合はエラーにする
+		if !order.Success || order.Score < h.C.ReCaptchaAllowScore {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrReCaptcha, "reCAPTCHA validation failed")
+		}
+	}
 
 	registerSession, err := models.RegisterSessions(
 		models.RegisterSessionWhere.ID.EQ(token),
@@ -218,11 +237,18 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusTooManyRequests, ErrExceededRetry, "exceeded retry")
 	}
 
+	// codeを更新させる
+	code, err := lib.RandomNumber(6)
+	if err != nil {
+		return err
+	}
+	registerSession.VerifyCode = code
+
 	registerSession.SendCount++
 
 	// 対象のメールアドレスにメールを送信する
 	r := RegisterEmailVerify{
-		Code:     registerSession.VerifyCode,
+		Code:     code,
 		Email:    registerSession.Email,
 		Time:     time.Now(),
 		UserData: userData,
