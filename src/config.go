@@ -1,6 +1,7 @@
 package src
 
 import (
+	"net/http"
 	"net/url"
 	"os"
 	"time"
@@ -41,8 +42,28 @@ type Config struct {
 
 	// webAuthn(passkeyの共通設定)
 	// ref. https://github.com/go-webauthn/webauthn
-	WebAuthnConfig       *webauthn.Config
-	WebAuthSessionPeriod time.Duration
+	WebAuthnConfig        *webauthn.Config
+	WebAuthnSessionPeriod time.Duration
+	WebAuthnSessionCookie CookieConfig
+}
+
+// Cookieの設定
+// http.Cookieの一部
+// Domainなどは別途設定するため存在しない
+type CookieConfig struct {
+	Name     string
+	Secure   bool
+	HttpOnly bool
+	Path     string
+
+	Expires    time.Time // optional
+	RawExpires string    // for reading cookies only
+
+	// MaxAge=0 means no 'Max-Age' attribute specified.
+	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'
+	// MaxAge>0 means Max-Age attribute present and given in seconds
+	MaxAge   int
+	SameSite http.SameSite
 }
 
 var LocalConfig = &Config{
@@ -85,7 +106,15 @@ var LocalConfig = &Config{
 		RPID:          "localhost:3000",
 		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
 	},
-	WebAuthSessionPeriod: 5 * time.Minute,
+	WebAuthnSessionPeriod: 5 * time.Minute,
+	WebAuthnSessionCookie: CookieConfig{
+		Name:     "cateiru-sso-webauthn-session",
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   0,
+		SameSite: http.SameSiteDefaultMode,
+	},
 }
 
 var CloudRunConfig = &Config{
@@ -120,7 +149,15 @@ var CloudRunConfig = &Config{
 		RPID:          "sso.cateiru.com",
 		RPOrigins:     []string{"sso.cateiru.com", "api.sso.cateiru.com"},
 	},
-	WebAuthSessionPeriod: 5 * time.Minute,
+	WebAuthnSessionPeriod: 5 * time.Minute,
+	WebAuthnSessionCookie: CookieConfig{
+		Name:     "cateiru-sso-webauthn-session",
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   0,
+		SameSite: http.SameSiteDefaultMode,
+	},
 }
 
 var TestConfig = &Config{
@@ -162,7 +199,15 @@ var TestConfig = &Config{
 		RPID:          "localhost:3000",
 		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
 	},
-	WebAuthSessionPeriod: 5 * time.Minute,
+	WebAuthnSessionPeriod: 5 * time.Minute,
+	WebAuthnSessionCookie: CookieConfig{
+		Name:     "cateiru-sso-webauthn-session",
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   0,
+		SameSite: http.SameSiteDefaultMode,
+	},
 }
 
 func InitConfig(mode string) *Config {
