@@ -23,72 +23,79 @@ import (
 
 // Passkey is an object representing the database table.
 type Passkey struct {
-	ID            uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID        []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Credential    string    `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
-	PublicKey     string    `boil:"public_key" json:"public_key" toml:"public_key" yaml:"public_key"`
-	IsBackupState bool      `boil:"is_backup_state" json:"is_backup_state" toml:"is_backup_state" yaml:"is_backup_state"`
-	Created       time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified      time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	ID             uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	WebauthnUserID string    `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
+	UserID         []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Credential     string    `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
+	PublicKey      string    `boil:"public_key" json:"public_key" toml:"public_key" yaml:"public_key"`
+	IsBackupState  bool      `boil:"is_backup_state" json:"is_backup_state" toml:"is_backup_state" yaml:"is_backup_state"`
+	Created        time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	Modified       time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
 	R *passkeyR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L passkeyL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PasskeyColumns = struct {
-	ID            string
-	UserID        string
-	Credential    string
-	PublicKey     string
-	IsBackupState string
-	Created       string
-	Modified      string
+	ID             string
+	WebauthnUserID string
+	UserID         string
+	Credential     string
+	PublicKey      string
+	IsBackupState  string
+	Created        string
+	Modified       string
 }{
-	ID:            "id",
-	UserID:        "user_id",
-	Credential:    "credential",
-	PublicKey:     "public_key",
-	IsBackupState: "is_backup_state",
-	Created:       "created",
-	Modified:      "modified",
+	ID:             "id",
+	WebauthnUserID: "webauthn_user_id",
+	UserID:         "user_id",
+	Credential:     "credential",
+	PublicKey:      "public_key",
+	IsBackupState:  "is_backup_state",
+	Created:        "created",
+	Modified:       "modified",
 }
 
 var PasskeyTableColumns = struct {
-	ID            string
-	UserID        string
-	Credential    string
-	PublicKey     string
-	IsBackupState string
-	Created       string
-	Modified      string
+	ID             string
+	WebauthnUserID string
+	UserID         string
+	Credential     string
+	PublicKey      string
+	IsBackupState  string
+	Created        string
+	Modified       string
 }{
-	ID:            "passkey.id",
-	UserID:        "passkey.user_id",
-	Credential:    "passkey.credential",
-	PublicKey:     "passkey.public_key",
-	IsBackupState: "passkey.is_backup_state",
-	Created:       "passkey.created",
-	Modified:      "passkey.modified",
+	ID:             "passkey.id",
+	WebauthnUserID: "passkey.webauthn_user_id",
+	UserID:         "passkey.user_id",
+	Credential:     "passkey.credential",
+	PublicKey:      "passkey.public_key",
+	IsBackupState:  "passkey.is_backup_state",
+	Created:        "passkey.created",
+	Modified:       "passkey.modified",
 }
 
 // Generated where
 
 var PasskeyWhere = struct {
-	ID            whereHelperuint
-	UserID        whereHelper__byte
-	Credential    whereHelperstring
-	PublicKey     whereHelperstring
-	IsBackupState whereHelperbool
-	Created       whereHelpertime_Time
-	Modified      whereHelpertime_Time
+	ID             whereHelperuint
+	WebauthnUserID whereHelperstring
+	UserID         whereHelper__byte
+	Credential     whereHelperstring
+	PublicKey      whereHelperstring
+	IsBackupState  whereHelperbool
+	Created        whereHelpertime_Time
+	Modified       whereHelpertime_Time
 }{
-	ID:            whereHelperuint{field: "`passkey`.`id`"},
-	UserID:        whereHelper__byte{field: "`passkey`.`user_id`"},
-	Credential:    whereHelperstring{field: "`passkey`.`credential`"},
-	PublicKey:     whereHelperstring{field: "`passkey`.`public_key`"},
-	IsBackupState: whereHelperbool{field: "`passkey`.`is_backup_state`"},
-	Created:       whereHelpertime_Time{field: "`passkey`.`created`"},
-	Modified:      whereHelpertime_Time{field: "`passkey`.`modified`"},
+	ID:             whereHelperuint{field: "`passkey`.`id`"},
+	WebauthnUserID: whereHelperstring{field: "`passkey`.`webauthn_user_id`"},
+	UserID:         whereHelper__byte{field: "`passkey`.`user_id`"},
+	Credential:     whereHelperstring{field: "`passkey`.`credential`"},
+	PublicKey:      whereHelperstring{field: "`passkey`.`public_key`"},
+	IsBackupState:  whereHelperbool{field: "`passkey`.`is_backup_state`"},
+	Created:        whereHelpertime_Time{field: "`passkey`.`created`"},
+	Modified:       whereHelpertime_Time{field: "`passkey`.`modified`"},
 }
 
 // PasskeyRels is where relationship names are stored.
@@ -108,8 +115,8 @@ func (*passkeyR) NewStruct() *passkeyR {
 type passkeyL struct{}
 
 var (
-	passkeyAllColumns            = []string{"id", "user_id", "credential", "public_key", "is_backup_state", "created", "modified"}
-	passkeyColumnsWithoutDefault = []string{"user_id", "credential", "public_key"}
+	passkeyAllColumns            = []string{"id", "webauthn_user_id", "user_id", "credential", "public_key", "is_backup_state", "created", "modified"}
+	passkeyColumnsWithoutDefault = []string{"webauthn_user_id", "user_id", "credential", "public_key"}
 	passkeyColumnsWithDefault    = []string{"id", "is_backup_state", "created", "modified"}
 	passkeyPrimaryKeyColumns     = []string{"id"}
 	passkeyGeneratedColumns      = []string{}

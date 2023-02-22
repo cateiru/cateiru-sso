@@ -568,7 +568,7 @@ func testPasskeysSelect(t *testing.T) {
 }
 
 var (
-	passkeyDBTypes = map[string]string{`ID`: `int`, `UserID`: `varbinary`, `Credential`: `text`, `PublicKey`: `text`, `IsBackupState`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
+	passkeyDBTypes = map[string]string{`ID`: `int`, `WebauthnUserID`: `varchar`, `UserID`: `varbinary`, `Credential`: `text`, `PublicKey`: `text`, `IsBackupState`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
 	_              = bytes.MinRead
 )
 

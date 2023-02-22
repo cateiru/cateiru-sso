@@ -65,4 +65,6 @@ func TestUpsert(t *testing.T) {
 	t.Run("Staffs", testStaffsUpsert)
 
 	t.Run("Users", testUsersUpsert)
+
+	t.Run("WebauthnSessions", testWebauthnSessionsUpsert)
 }

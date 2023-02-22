@@ -116,6 +116,11 @@ CREATE TABLE `certification` (
 -- passkeyを保存するテーブル
 CREATE TABLE `passkey` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    -- WebauthnID
+    -- このIDを使用してpasskeyを認証する
+    -- 64byteのランダムな文字列
+    `webauthn_user_id` VARCHAR(64) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- TODO: 文字サイズ分かれば別の型にしたい
@@ -386,6 +391,40 @@ CREATE TABLE `client_refresh` (
     INDEX `client_refresh_login_client_id` (`login_client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
+-- WebAuthnを登録・ログインするときに保持する情報
+-- webauthn.SessionData を元にしています
+CREATE TABLE `webauthn_session` (
+    -- ランダムにトークンを生成する
+    `id` VARBINARY(64) NOT NULL,
+
+    -- WebAuthnID
+    -- いわゆるユーザID
+    `webauthn_user_id` VARCHAR(64) NOT NULL,
+
+    `user_display_name` TEXT NOT NULL,
+
+    -- チャレンジ
+    -- チャレンジは（16 バイト以上の）ランダムな情報のバッファーであること
+    `challenge` TEXT NOT NULL,
+
+    `user_verification` VARCHAR(15) NOT NULL DEFAULT 'preferred',
+
+    -- webauthn.SessionData のjsonデータ
+    `row` JSON NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `webauthn_register_session_webauthn_user_id` (`webauthn_user_id`)
+);
+
+-- OAuthで接続したときのセッション
+-- nonceとかを保存しておく
 CREATE TABLE `oauth_session` (
     `code` VARBINARY(32) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
@@ -409,6 +448,7 @@ CREATE TABLE `oauth_session` (
     INDEX `oauth_session_client_id` (`client_id`)
 );
 
+-- ODICのクライアント
 CREATE TABLE `client` (
     -- OAuth2.0のClient ID
     -- 公開されるIDであり、それ単体では使用できないのでv1で良い

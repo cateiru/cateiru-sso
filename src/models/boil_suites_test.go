@@ -42,6 +42,7 @@ func TestParent(t *testing.T) {
 	t.Run("Settings", testSettings)
 	t.Run("Staffs", testStaffs)
 	t.Run("Users", testUsers)
+	t.Run("WebauthnSessions", testWebauthnSessions)
 }
 
 func TestDelete(t *testing.T) {
@@ -75,6 +76,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Settings", testSettingsDelete)
 	t.Run("Staffs", testStaffsDelete)
 	t.Run("Users", testUsersDelete)
+	t.Run("WebauthnSessions", testWebauthnSessionsDelete)
 }
 
 func TestQueryDeleteAll(t *testing.T) {
@@ -108,6 +110,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Settings", testSettingsQueryDeleteAll)
 	t.Run("Staffs", testStaffsQueryDeleteAll)
 	t.Run("Users", testUsersQueryDeleteAll)
+	t.Run("WebauthnSessions", testWebauthnSessionsQueryDeleteAll)
 }
 
 func TestSliceDeleteAll(t *testing.T) {
@@ -141,6 +144,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Settings", testSettingsSliceDeleteAll)
 	t.Run("Staffs", testStaffsSliceDeleteAll)
 	t.Run("Users", testUsersSliceDeleteAll)
+	t.Run("WebauthnSessions", testWebauthnSessionsSliceDeleteAll)
 }
 
 func TestExists(t *testing.T) {
@@ -174,6 +178,7 @@ func TestExists(t *testing.T) {
 	t.Run("Settings", testSettingsExists)
 	t.Run("Staffs", testStaffsExists)
 	t.Run("Users", testUsersExists)
+	t.Run("WebauthnSessions", testWebauthnSessionsExists)
 }
 
 func TestFind(t *testing.T) {
@@ -207,6 +212,7 @@ func TestFind(t *testing.T) {
 	t.Run("Settings", testSettingsFind)
 	t.Run("Staffs", testStaffsFind)
 	t.Run("Users", testUsersFind)
+	t.Run("WebauthnSessions", testWebauthnSessionsFind)
 }
 
 func TestBind(t *testing.T) {
@@ -240,6 +246,7 @@ func TestBind(t *testing.T) {
 	t.Run("Settings", testSettingsBind)
 	t.Run("Staffs", testStaffsBind)
 	t.Run("Users", testUsersBind)
+	t.Run("WebauthnSessions", testWebauthnSessionsBind)
 }
 
 func TestOne(t *testing.T) {
@@ -273,6 +280,7 @@ func TestOne(t *testing.T) {
 	t.Run("Settings", testSettingsOne)
 	t.Run("Staffs", testStaffsOne)
 	t.Run("Users", testUsersOne)
+	t.Run("WebauthnSessions", testWebauthnSessionsOne)
 }
 
 func TestAll(t *testing.T) {
@@ -306,6 +314,7 @@ func TestAll(t *testing.T) {
 	t.Run("Settings", testSettingsAll)
 	t.Run("Staffs", testStaffsAll)
 	t.Run("Users", testUsersAll)
+	t.Run("WebauthnSessions", testWebauthnSessionsAll)
 }
 
 func TestCount(t *testing.T) {
@@ -339,6 +348,7 @@ func TestCount(t *testing.T) {
 	t.Run("Settings", testSettingsCount)
 	t.Run("Staffs", testStaffsCount)
 	t.Run("Users", testUsersCount)
+	t.Run("WebauthnSessions", testWebauthnSessionsCount)
 }
 
 func TestHooks(t *testing.T) {
@@ -372,6 +382,7 @@ func TestHooks(t *testing.T) {
 	t.Run("Settings", testSettingsHooks)
 	t.Run("Staffs", testStaffsHooks)
 	t.Run("Users", testUsersHooks)
+	t.Run("WebauthnSessions", testWebauthnSessionsHooks)
 }
 
 func TestInsert(t *testing.T) {
@@ -435,6 +446,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Staffs", testStaffsInsertWhitelist)
 	t.Run("Users", testUsersInsert)
 	t.Run("Users", testUsersInsertWhitelist)
+	t.Run("WebauthnSessions", testWebauthnSessionsInsert)
+	t.Run("WebauthnSessions", testWebauthnSessionsInsertWhitelist)
 }
 
 // TestToOne tests cannot be run in parallel
@@ -508,6 +521,7 @@ func TestReload(t *testing.T) {
 	t.Run("Settings", testSettingsReload)
 	t.Run("Staffs", testStaffsReload)
 	t.Run("Users", testUsersReload)
+	t.Run("WebauthnSessions", testWebauthnSessionsReload)
 }
 
 func TestReloadAll(t *testing.T) {
@@ -541,6 +555,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Settings", testSettingsReloadAll)
 	t.Run("Staffs", testStaffsReloadAll)
 	t.Run("Users", testUsersReloadAll)
+	t.Run("WebauthnSessions", testWebauthnSessionsReloadAll)
 }
 
 func TestSelect(t *testing.T) {
@@ -574,6 +589,7 @@ func TestSelect(t *testing.T) {
 	t.Run("Settings", testSettingsSelect)
 	t.Run("Staffs", testStaffsSelect)
 	t.Run("Users", testUsersSelect)
+	t.Run("WebauthnSessions", testWebauthnSessionsSelect)
 }
 
 func TestUpdate(t *testing.T) {
@@ -607,6 +623,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Settings", testSettingsUpdate)
 	t.Run("Staffs", testStaffsUpdate)
 	t.Run("Users", testUsersUpdate)
+	t.Run("WebauthnSessions", testWebauthnSessionsUpdate)
 }
 
 func TestSliceUpdateAll(t *testing.T) {
@@ -640,4 +657,5 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Settings", testSettingsSliceUpdateAll)
 	t.Run("Staffs", testStaffsSliceUpdateAll)
 	t.Run("Users", testUsersSliceUpdateAll)
+	t.Run("WebauthnSessions", testWebauthnSessionsSliceUpdateAll)
 }
