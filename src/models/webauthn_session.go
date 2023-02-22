@@ -25,7 +25,7 @@ import (
 // WebauthnSession is an object representing the database table.
 type WebauthnSession struct {
 	ID               []byte     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	WebauthnUserID   string     `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
+	WebauthnUserID   []byte     `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
 	UserDisplayName  string     `boil:"user_display_name" json:"user_display_name" toml:"user_display_name" yaml:"user_display_name"`
 	Challenge        string     `boil:"challenge" json:"challenge" toml:"challenge" yaml:"challenge"`
 	UserVerification string     `boil:"user_verification" json:"user_verification" toml:"user_verification" yaml:"user_verification"`
@@ -107,7 +107,7 @@ func (w whereHelpertypes_JSON) GTE(x types.JSON) qm.QueryMod {
 
 var WebauthnSessionWhere = struct {
 	ID               whereHelper__byte
-	WebauthnUserID   whereHelperstring
+	WebauthnUserID   whereHelper__byte
 	UserDisplayName  whereHelperstring
 	Challenge        whereHelperstring
 	UserVerification whereHelperstring
@@ -117,7 +117,7 @@ var WebauthnSessionWhere = struct {
 	Modified         whereHelpertime_Time
 }{
 	ID:               whereHelper__byte{field: "`webauthn_session`.`id`"},
-	WebauthnUserID:   whereHelperstring{field: "`webauthn_session`.`webauthn_user_id`"},
+	WebauthnUserID:   whereHelper__byte{field: "`webauthn_session`.`webauthn_user_id`"},
 	UserDisplayName:  whereHelperstring{field: "`webauthn_session`.`user_display_name`"},
 	Challenge:        whereHelperstring{field: "`webauthn_session`.`challenge`"},
 	UserVerification: whereHelperstring{field: "`webauthn_session`.`user_verification`"},

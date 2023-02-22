@@ -24,7 +24,7 @@ import (
 // Passkey is an object representing the database table.
 type Passkey struct {
 	UserID         []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	WebauthnUserID string    `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
+	WebauthnUserID []byte    `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
 	Credential     string    `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
 	PublicKey      string    `boil:"public_key" json:"public_key" toml:"public_key" yaml:"public_key"`
 	IsBackupState  bool      `boil:"is_backup_state" json:"is_backup_state" toml:"is_backup_state" yaml:"is_backup_state"`
@@ -75,7 +75,7 @@ var PasskeyTableColumns = struct {
 
 var PasskeyWhere = struct {
 	UserID         whereHelper__byte
-	WebauthnUserID whereHelperstring
+	WebauthnUserID whereHelper__byte
 	Credential     whereHelperstring
 	PublicKey      whereHelperstring
 	IsBackupState  whereHelperbool
@@ -83,7 +83,7 @@ var PasskeyWhere = struct {
 	Modified       whereHelpertime_Time
 }{
 	UserID:         whereHelper__byte{field: "`passkey`.`user_id`"},
-	WebauthnUserID: whereHelperstring{field: "`passkey`.`webauthn_user_id`"},
+	WebauthnUserID: whereHelper__byte{field: "`passkey`.`webauthn_user_id`"},
 	Credential:     whereHelperstring{field: "`passkey`.`credential`"},
 	PublicKey:      whereHelperstring{field: "`passkey`.`public_key`"},
 	IsBackupState:  whereHelperbool{field: "`passkey`.`is_backup_state`"},

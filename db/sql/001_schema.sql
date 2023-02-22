@@ -120,7 +120,7 @@ CREATE TABLE `passkey` (
     -- WebauthnID
     -- このIDを使用してpasskeyを認証する
     -- 64byteのランダムな文字列
-    `webauthn_user_id` VARCHAR(64) NOT NULL,
+    `webauthn_user_id` VARBINARY(64) NOT NULL,
 
     -- TODO: 文字サイズ分かれば別の型にしたい
     `credential` TEXT NOT NULL,
@@ -393,7 +393,7 @@ CREATE TABLE `webauthn_session` (
 
     -- WebAuthnID
     -- いわゆるユーザID
-    `webauthn_user_id` VARCHAR(64) NOT NULL,
+    `webauthn_user_id` VARBINARY(64) NOT NULL,
 
     `user_display_name` TEXT NOT NULL,
 
