@@ -149,7 +149,7 @@ func testPasswordsExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := PasswordExists(ctx, tx, o.ID)
+	e, err := PasswordExists(ctx, tx, o.UserID)
 	if err != nil {
 		t.Errorf("Unable to check if Password exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testPasswordsFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	passwordFound, err := FindPassword(ctx, tx, o.ID)
+	passwordFound, err := FindPassword(ctx, tx, o.UserID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,7 +568,7 @@ func testPasswordsSelect(t *testing.T) {
 }
 
 var (
-	passwordDBTypes = map[string]string{`ID`: `int`, `UserID`: `varbinary`, `Salt`: `varchar`, `Hash`: `varchar`, `Created`: `datetime`, `Modified`: `datetime`}
+	passwordDBTypes = map[string]string{`UserID`: `varbinary`, `Salt`: `varchar`, `Hash`: `varchar`, `Created`: `datetime`, `Modified`: `datetime`}
 	_               = bytes.MinRead
 )
 

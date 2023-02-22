@@ -24,7 +24,6 @@ import (
 
 // Otp is an object representing the database table.
 type Otp struct {
-	ID       uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID   []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Secret   null.String `boil:"secret" json:"secret,omitempty" toml:"secret" yaml:"secret,omitempty"`
 	Created  time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -35,13 +34,11 @@ type Otp struct {
 }
 
 var OtpColumns = struct {
-	ID       string
 	UserID   string
 	Secret   string
 	Created  string
 	Modified string
 }{
-	ID:       "id",
 	UserID:   "user_id",
 	Secret:   "secret",
 	Created:  "created",
@@ -49,13 +46,11 @@ var OtpColumns = struct {
 }
 
 var OtpTableColumns = struct {
-	ID       string
 	UserID   string
 	Secret   string
 	Created  string
 	Modified string
 }{
-	ID:       "otp.id",
 	UserID:   "otp.user_id",
 	Secret:   "otp.secret",
 	Created:  "otp.created",
@@ -65,13 +60,11 @@ var OtpTableColumns = struct {
 // Generated where
 
 var OtpWhere = struct {
-	ID       whereHelperuint
 	UserID   whereHelper__byte
 	Secret   whereHelpernull_String
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
-	ID:       whereHelperuint{field: "`otp`.`id`"},
 	UserID:   whereHelper__byte{field: "`otp`.`user_id`"},
 	Secret:   whereHelpernull_String{field: "`otp`.`secret`"},
 	Created:  whereHelpertime_Time{field: "`otp`.`created`"},
@@ -95,10 +88,10 @@ func (*otpR) NewStruct() *otpR {
 type otpL struct{}
 
 var (
-	otpAllColumns            = []string{"id", "user_id", "secret", "created", "modified"}
+	otpAllColumns            = []string{"user_id", "secret", "created", "modified"}
 	otpColumnsWithoutDefault = []string{"user_id", "secret"}
-	otpColumnsWithDefault    = []string{"id", "created", "modified"}
-	otpPrimaryKeyColumns     = []string{"id"}
+	otpColumnsWithDefault    = []string{"created", "modified"}
+	otpPrimaryKeyColumns     = []string{"user_id"}
 	otpGeneratedColumns      = []string{}
 )
 
@@ -393,7 +386,7 @@ func Otps(mods ...qm.QueryMod) otpQuery {
 
 // FindOtp retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindOtp(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols ...string) (*Otp, error) {
+func FindOtp(ctx context.Context, exec boil.ContextExecutor, userID []byte, selectCols ...string) (*Otp, error) {
 	otpObj := &Otp{}
 
 	sel := "*"
@@ -401,10 +394,10 @@ func FindOtp(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `otp` where `id`=?", sel,
+		"select %s from `otp` where `user_id`=?", sel,
 	)
 
-	q := queries.Raw(query, iD)
+	q := queries.Raw(query, userID)
 
 	err := q.Bind(ctx, exec, otpObj)
 	if err != nil {
@@ -480,31 +473,20 @@ func (o *Otp) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into otp")
 	}
 
-	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
 		goto CacheNoHooks
 	}
 
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == otpMapping["id"] {
-		goto CacheNoHooks
-	}
-
 	identifierCols = []interface{}{
-		o.ID,
+		o.UserID,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -656,7 +638,6 @@ func (o OtpSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, cols
 }
 
 var mySQLOtpUniqueColumns = []string{
-	"id",
 	"user_id",
 }
 
@@ -755,27 +736,16 @@ func (o *Otp) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColum
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for otp")
 	}
 
-	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == otpMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -817,7 +787,7 @@ func (o *Otp) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, err
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), otpPrimaryKeyMapping)
-	sql := "DELETE FROM `otp` WHERE `id`=?"
+	sql := "DELETE FROM `otp` WHERE `user_id`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -914,7 +884,7 @@ func (o OtpSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Otp) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindOtp(ctx, exec, o.ID)
+	ret, err := FindOtp(ctx, exec, o.UserID)
 	if err != nil {
 		return err
 	}
@@ -953,16 +923,16 @@ func (o *OtpSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) err
 }
 
 // OtpExists checks if the Otp row exists.
-func OtpExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bool, error) {
+func OtpExists(ctx context.Context, exec boil.ContextExecutor, userID []byte) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `otp` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `otp` where `user_id`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+		fmt.Fprintln(writer, userID)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRowContext(ctx, sql, userID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -974,5 +944,5 @@ func OtpExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bool, e
 
 // Exists checks if the Otp row exists.
 func (o *Otp) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return OtpExists(ctx, exec, o.ID)
+	return OtpExists(ctx, exec, o.UserID)
 }

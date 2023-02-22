@@ -115,13 +115,12 @@ CREATE TABLE `certification` (
 
 -- passkeyを保存するテーブル
 CREATE TABLE `passkey` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARBINARY(16) NOT NULL,
 
     -- WebauthnID
     -- このIDを使用してpasskeyを認証する
     -- 64byteのランダムな文字列
     `webauthn_user_id` VARCHAR(64) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
 
     -- TODO: 文字サイズ分かれば別の型にしたい
     `credential` TEXT NOT NULL,
@@ -136,8 +135,7 @@ CREATE TABLE `passkey` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `passkey_user_id` (`user_id`)
+    PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- iCloudのPasskeyなどは複数のApple端末で共有できるため、
@@ -166,7 +164,6 @@ CREATE TABLE `passkey_login_device` (
 
 -- パスポートを保存するテーブル
 CREATE TABLE `password` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- TODO: サイズの最適化をしたい
@@ -177,13 +174,11 @@ CREATE TABLE `password` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `password_user_id` (`user_id`)
+    PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- アプリを使用したOTPを保存するテーブル
 CREATE TABLE `otp` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- TODO: サイズの最適化をしたい
@@ -193,8 +188,7 @@ CREATE TABLE `otp` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `otp_user_id` (`user_id`)
+    PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- OTPのバックアップコードを保存するテーブル

@@ -149,7 +149,7 @@ func testOtpsExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := OtpExists(ctx, tx, o.ID)
+	e, err := OtpExists(ctx, tx, o.UserID)
 	if err != nil {
 		t.Errorf("Unable to check if Otp exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testOtpsFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	otpFound, err := FindOtp(ctx, tx, o.ID)
+	otpFound, err := FindOtp(ctx, tx, o.UserID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,7 +568,7 @@ func testOtpsSelect(t *testing.T) {
 }
 
 var (
-	otpDBTypes = map[string]string{`ID`: `int`, `UserID`: `varbinary`, `Secret`: `varchar`, `Created`: `datetime`, `Modified`: `datetime`}
+	otpDBTypes = map[string]string{`UserID`: `varbinary`, `Secret`: `varchar`, `Created`: `datetime`, `Modified`: `datetime`}
 	_          = bytes.MinRead
 )
 

@@ -23,9 +23,8 @@ import (
 
 // Passkey is an object representing the database table.
 type Passkey struct {
-	ID             uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	WebauthnUserID string    `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
 	UserID         []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	WebauthnUserID string    `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
 	Credential     string    `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
 	PublicKey      string    `boil:"public_key" json:"public_key" toml:"public_key" yaml:"public_key"`
 	IsBackupState  bool      `boil:"is_backup_state" json:"is_backup_state" toml:"is_backup_state" yaml:"is_backup_state"`
@@ -37,18 +36,16 @@ type Passkey struct {
 }
 
 var PasskeyColumns = struct {
-	ID             string
-	WebauthnUserID string
 	UserID         string
+	WebauthnUserID string
 	Credential     string
 	PublicKey      string
 	IsBackupState  string
 	Created        string
 	Modified       string
 }{
-	ID:             "id",
-	WebauthnUserID: "webauthn_user_id",
 	UserID:         "user_id",
+	WebauthnUserID: "webauthn_user_id",
 	Credential:     "credential",
 	PublicKey:      "public_key",
 	IsBackupState:  "is_backup_state",
@@ -57,18 +54,16 @@ var PasskeyColumns = struct {
 }
 
 var PasskeyTableColumns = struct {
-	ID             string
-	WebauthnUserID string
 	UserID         string
+	WebauthnUserID string
 	Credential     string
 	PublicKey      string
 	IsBackupState  string
 	Created        string
 	Modified       string
 }{
-	ID:             "passkey.id",
-	WebauthnUserID: "passkey.webauthn_user_id",
 	UserID:         "passkey.user_id",
+	WebauthnUserID: "passkey.webauthn_user_id",
 	Credential:     "passkey.credential",
 	PublicKey:      "passkey.public_key",
 	IsBackupState:  "passkey.is_backup_state",
@@ -79,18 +74,16 @@ var PasskeyTableColumns = struct {
 // Generated where
 
 var PasskeyWhere = struct {
-	ID             whereHelperuint
-	WebauthnUserID whereHelperstring
 	UserID         whereHelper__byte
+	WebauthnUserID whereHelperstring
 	Credential     whereHelperstring
 	PublicKey      whereHelperstring
 	IsBackupState  whereHelperbool
 	Created        whereHelpertime_Time
 	Modified       whereHelpertime_Time
 }{
-	ID:             whereHelperuint{field: "`passkey`.`id`"},
-	WebauthnUserID: whereHelperstring{field: "`passkey`.`webauthn_user_id`"},
 	UserID:         whereHelper__byte{field: "`passkey`.`user_id`"},
+	WebauthnUserID: whereHelperstring{field: "`passkey`.`webauthn_user_id`"},
 	Credential:     whereHelperstring{field: "`passkey`.`credential`"},
 	PublicKey:      whereHelperstring{field: "`passkey`.`public_key`"},
 	IsBackupState:  whereHelperbool{field: "`passkey`.`is_backup_state`"},
@@ -115,10 +108,10 @@ func (*passkeyR) NewStruct() *passkeyR {
 type passkeyL struct{}
 
 var (
-	passkeyAllColumns            = []string{"id", "webauthn_user_id", "user_id", "credential", "public_key", "is_backup_state", "created", "modified"}
-	passkeyColumnsWithoutDefault = []string{"webauthn_user_id", "user_id", "credential", "public_key"}
-	passkeyColumnsWithDefault    = []string{"id", "is_backup_state", "created", "modified"}
-	passkeyPrimaryKeyColumns     = []string{"id"}
+	passkeyAllColumns            = []string{"user_id", "webauthn_user_id", "credential", "public_key", "is_backup_state", "created", "modified"}
+	passkeyColumnsWithoutDefault = []string{"user_id", "webauthn_user_id", "credential", "public_key"}
+	passkeyColumnsWithDefault    = []string{"is_backup_state", "created", "modified"}
+	passkeyPrimaryKeyColumns     = []string{"user_id"}
 	passkeyGeneratedColumns      = []string{}
 )
 
@@ -413,7 +406,7 @@ func Passkeys(mods ...qm.QueryMod) passkeyQuery {
 
 // FindPasskey retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindPasskey(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols ...string) (*Passkey, error) {
+func FindPasskey(ctx context.Context, exec boil.ContextExecutor, userID []byte, selectCols ...string) (*Passkey, error) {
 	passkeyObj := &Passkey{}
 
 	sel := "*"
@@ -421,10 +414,10 @@ func FindPasskey(ctx context.Context, exec boil.ContextExecutor, iD uint, select
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `passkey` where `id`=?", sel,
+		"select %s from `passkey` where `user_id`=?", sel,
 	)
 
-	q := queries.Raw(query, iD)
+	q := queries.Raw(query, userID)
 
 	err := q.Bind(ctx, exec, passkeyObj)
 	if err != nil {
@@ -500,31 +493,20 @@ func (o *Passkey) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into passkey")
 	}
 
-	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
 		goto CacheNoHooks
 	}
 
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == passkeyMapping["id"] {
-		goto CacheNoHooks
-	}
-
 	identifierCols = []interface{}{
-		o.ID,
+		o.UserID,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -676,7 +658,6 @@ func (o PasskeySlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 }
 
 var mySQLPasskeyUniqueColumns = []string{
-	"id",
 	"user_id",
 }
 
@@ -775,27 +756,16 @@ func (o *Passkey) Upsert(ctx context.Context, exec boil.ContextExecutor, updateC
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for passkey")
 	}
 
-	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == passkeyMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -837,7 +807,7 @@ func (o *Passkey) Delete(ctx context.Context, exec boil.ContextExecutor) (int64,
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), passkeyPrimaryKeyMapping)
-	sql := "DELETE FROM `passkey` WHERE `id`=?"
+	sql := "DELETE FROM `passkey` WHERE `user_id`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -934,7 +904,7 @@ func (o PasskeySlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Passkey) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindPasskey(ctx, exec, o.ID)
+	ret, err := FindPasskey(ctx, exec, o.UserID)
 	if err != nil {
 		return err
 	}
@@ -973,16 +943,16 @@ func (o *PasskeySlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // PasskeyExists checks if the Passkey row exists.
-func PasskeyExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bool, error) {
+func PasskeyExists(ctx context.Context, exec boil.ContextExecutor, userID []byte) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `passkey` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `passkey` where `user_id`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+		fmt.Fprintln(writer, userID)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRowContext(ctx, sql, userID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -994,5 +964,5 @@ func PasskeyExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (boo
 
 // Exists checks if the Passkey row exists.
 func (o *Passkey) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return PasskeyExists(ctx, exec, o.ID)
+	return PasskeyExists(ctx, exec, o.UserID)
 }

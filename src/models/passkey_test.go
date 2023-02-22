@@ -149,7 +149,7 @@ func testPasskeysExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := PasskeyExists(ctx, tx, o.ID)
+	e, err := PasskeyExists(ctx, tx, o.UserID)
 	if err != nil {
 		t.Errorf("Unable to check if Passkey exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testPasskeysFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	passkeyFound, err := FindPasskey(ctx, tx, o.ID)
+	passkeyFound, err := FindPasskey(ctx, tx, o.UserID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,7 +568,7 @@ func testPasskeysSelect(t *testing.T) {
 }
 
 var (
-	passkeyDBTypes = map[string]string{`ID`: `int`, `WebauthnUserID`: `varchar`, `UserID`: `varbinary`, `Credential`: `text`, `PublicKey`: `text`, `IsBackupState`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
+	passkeyDBTypes = map[string]string{`UserID`: `varbinary`, `WebauthnUserID`: `varchar`, `Credential`: `text`, `PublicKey`: `text`, `IsBackupState`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
 	_              = bytes.MinRead
 )
 

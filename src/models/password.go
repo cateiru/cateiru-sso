@@ -23,7 +23,6 @@ import (
 
 // Password is an object representing the database table.
 type Password struct {
-	ID       uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID   []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Salt     string    `boil:"salt" json:"salt" toml:"salt" yaml:"salt"`
 	Hash     string    `boil:"hash" json:"hash" toml:"hash" yaml:"hash"`
@@ -35,14 +34,12 @@ type Password struct {
 }
 
 var PasswordColumns = struct {
-	ID       string
 	UserID   string
 	Salt     string
 	Hash     string
 	Created  string
 	Modified string
 }{
-	ID:       "id",
 	UserID:   "user_id",
 	Salt:     "salt",
 	Hash:     "hash",
@@ -51,14 +48,12 @@ var PasswordColumns = struct {
 }
 
 var PasswordTableColumns = struct {
-	ID       string
 	UserID   string
 	Salt     string
 	Hash     string
 	Created  string
 	Modified string
 }{
-	ID:       "password.id",
 	UserID:   "password.user_id",
 	Salt:     "password.salt",
 	Hash:     "password.hash",
@@ -69,14 +64,12 @@ var PasswordTableColumns = struct {
 // Generated where
 
 var PasswordWhere = struct {
-	ID       whereHelperuint
 	UserID   whereHelper__byte
 	Salt     whereHelperstring
 	Hash     whereHelperstring
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
-	ID:       whereHelperuint{field: "`password`.`id`"},
 	UserID:   whereHelper__byte{field: "`password`.`user_id`"},
 	Salt:     whereHelperstring{field: "`password`.`salt`"},
 	Hash:     whereHelperstring{field: "`password`.`hash`"},
@@ -101,10 +94,10 @@ func (*passwordR) NewStruct() *passwordR {
 type passwordL struct{}
 
 var (
-	passwordAllColumns            = []string{"id", "user_id", "salt", "hash", "created", "modified"}
+	passwordAllColumns            = []string{"user_id", "salt", "hash", "created", "modified"}
 	passwordColumnsWithoutDefault = []string{"user_id", "salt", "hash"}
-	passwordColumnsWithDefault    = []string{"id", "created", "modified"}
-	passwordPrimaryKeyColumns     = []string{"id"}
+	passwordColumnsWithDefault    = []string{"created", "modified"}
+	passwordPrimaryKeyColumns     = []string{"user_id"}
 	passwordGeneratedColumns      = []string{}
 )
 
@@ -399,7 +392,7 @@ func Passwords(mods ...qm.QueryMod) passwordQuery {
 
 // FindPassword retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindPassword(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols ...string) (*Password, error) {
+func FindPassword(ctx context.Context, exec boil.ContextExecutor, userID []byte, selectCols ...string) (*Password, error) {
 	passwordObj := &Password{}
 
 	sel := "*"
@@ -407,10 +400,10 @@ func FindPassword(ctx context.Context, exec boil.ContextExecutor, iD uint, selec
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `password` where `id`=?", sel,
+		"select %s from `password` where `user_id`=?", sel,
 	)
 
-	q := queries.Raw(query, iD)
+	q := queries.Raw(query, userID)
 
 	err := q.Bind(ctx, exec, passwordObj)
 	if err != nil {
@@ -486,31 +479,20 @@ func (o *Password) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into password")
 	}
 
-	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
 		goto CacheNoHooks
 	}
 
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == passwordMapping["id"] {
-		goto CacheNoHooks
-	}
-
 	identifierCols = []interface{}{
-		o.ID,
+		o.UserID,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -662,7 +644,6 @@ func (o PasswordSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 }
 
 var mySQLPasswordUniqueColumns = []string{
-	"id",
 	"user_id",
 }
 
@@ -761,27 +742,16 @@ func (o *Password) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for password")
 	}
 
-	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == passwordMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -823,7 +793,7 @@ func (o *Password) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), passwordPrimaryKeyMapping)
-	sql := "DELETE FROM `password` WHERE `id`=?"
+	sql := "DELETE FROM `password` WHERE `user_id`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -920,7 +890,7 @@ func (o PasswordSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Password) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindPassword(ctx, exec, o.ID)
+	ret, err := FindPassword(ctx, exec, o.UserID)
 	if err != nil {
 		return err
 	}
@@ -959,16 +929,16 @@ func (o *PasswordSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // PasswordExists checks if the Password row exists.
-func PasswordExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bool, error) {
+func PasswordExists(ctx context.Context, exec boil.ContextExecutor, userID []byte) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `password` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `password` where `user_id`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+		fmt.Fprintln(writer, userID)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRowContext(ctx, sql, userID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -980,5 +950,5 @@ func PasswordExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bo
 
 // Exists checks if the Password row exists.
 func (o *Password) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return PasswordExists(ctx, exec, o.ID)
+	return PasswordExists(ctx, exec, o.UserID)
 }
