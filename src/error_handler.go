@@ -22,6 +22,8 @@ const (
 	ErrExpired = 5
 	// メール送信上限
 	ErrEmailSendingLimit = 6
+	// メール未認証
+	ErrEmailNotVerified = 7
 )
 
 type HTTPError struct {

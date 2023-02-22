@@ -98,19 +98,19 @@ type WebAuthnMock struct{}
 
 func (a *WebAuthnMock) BeginRegistration(user webauthn.User) (*protocol.CredentialCreation, *webauthn.SessionData, error) {
 	// TODO
-	return nil, nil, nil
+	return &protocol.CredentialCreation{}, &webauthn.SessionData{}, nil
 }
 func (a *WebAuthnMock) FinishRegistration(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialCreationData) (*webauthn.Credential, error) {
 	// TODO
-	return nil, nil
+	return &webauthn.Credential{}, nil
 }
 func (a *WebAuthnMock) BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
 	// TODO
-	return nil, nil, nil
+	return &protocol.CredentialAssertion{}, &webauthn.SessionData{}, nil
 }
 func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
 	// TODO
-	return nil, nil
+	return &webauthn.Credential{}, nil
 }
 
 // テスト用のダーミハンドラーを作成する
