@@ -8,8 +8,8 @@ import (
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 func RandomStr(n int) (string, error) {
-	b := make([]byte, n)
-	if _, err := rand.Read(b); err != nil {
+	b, err := RandomBytes(n)
+	if err != nil {
 		return "", err
 	}
 
@@ -18,6 +18,15 @@ func RandomStr(n int) (string, error) {
 		result += string(letters[int(v)%len(letters)])
 	}
 	return result, nil
+}
+
+func RandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return []byte{}, err
+	}
+
+	return b, nil
 }
 
 func RandomNumber(n int) (string, error) {
