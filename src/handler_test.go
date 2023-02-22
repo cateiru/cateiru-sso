@@ -8,6 +8,8 @@ import (
 
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/stretchr/testify/require"
 )
 
@@ -92,6 +94,25 @@ func (c *SenderMock) Send(m *lib.MailBody) (string, string, error) {
 	return "ok", "200", nil
 }
 
+type WebAuthnMock struct{}
+
+func (a *WebAuthnMock) BeginRegistration(user webauthn.User) (*protocol.CredentialCreation, *webauthn.SessionData, error) {
+	// TODO
+	return nil, nil, nil
+}
+func (a *WebAuthnMock) FinishRegistration(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialCreationData) (*webauthn.Credential, error) {
+	// TODO
+	return nil, nil
+}
+func (a *WebAuthnMock) BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
+	// TODO
+	return nil, nil, nil
+}
+func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
+	// TODO
+	return nil, nil
+}
+
 // テスト用のダーミハンドラーを作成する
 //
 // モックしているやつ
@@ -103,5 +124,6 @@ func NewTestHandler(t *testing.T) *src.Handler {
 		C:         C,
 		ReCaptcha: &ReCaptchaMock{},
 		Sender:    &SenderMock{},
+		WebAuthn:  &WebAuthnMock{},
 	}
 }

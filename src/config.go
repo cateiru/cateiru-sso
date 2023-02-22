@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 type Config struct {
@@ -37,6 +38,10 @@ type Config struct {
 	RegisterSessionPeriod     time.Duration
 	RegisterSessionRetryLimit uint8
 	RegisterEmailSendLimit    uint8
+
+	// webAuthn(passkeyの共通設定)
+	// ref. https://github.com/go-webauthn/webauthn
+	WebAuthnConfig *webauthn.Config
 }
 
 var LocalConfig = &Config{
@@ -73,6 +78,12 @@ var LocalConfig = &Config{
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
+
+	WebAuthnConfig: &webauthn.Config{
+		RPDisplayName: "Cateiru SSO Local",
+		RPID:          "localhost:3000",
+		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
+	},
 }
 
 var CloudRunConfig = &Config{
@@ -101,6 +112,12 @@ var CloudRunConfig = &Config{
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
+
+	WebAuthnConfig: &webauthn.Config{
+		RPDisplayName: "Cateiru SSO",
+		RPID:          "sso.cateiru.com",
+		RPOrigins:     []string{"sso.cateiru.com", "api.sso.cateiru.com"},
+	},
 }
 
 var TestConfig = &Config{
@@ -136,6 +153,12 @@ var TestConfig = &Config{
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
+
+	WebAuthnConfig: &webauthn.Config{
+		RPDisplayName: "Cateiru SSO",
+		RPID:          "localhost:3000",
+		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
+	},
 }
 
 func InitConfig(mode string) *Config {
