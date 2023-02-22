@@ -41,7 +41,8 @@ type Config struct {
 
 	// webAuthn(passkeyの共通設定)
 	// ref. https://github.com/go-webauthn/webauthn
-	WebAuthnConfig *webauthn.Config
+	WebAuthnConfig       *webauthn.Config
+	WebAuthSessionPeriod time.Duration
 }
 
 var LocalConfig = &Config{
@@ -84,6 +85,7 @@ var LocalConfig = &Config{
 		RPID:          "localhost:3000",
 		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
 	},
+	WebAuthSessionPeriod: 5 * time.Minute,
 }
 
 var CloudRunConfig = &Config{
@@ -118,6 +120,7 @@ var CloudRunConfig = &Config{
 		RPID:          "sso.cateiru.com",
 		RPOrigins:     []string{"sso.cateiru.com", "api.sso.cateiru.com"},
 	},
+	WebAuthSessionPeriod: 5 * time.Minute,
 }
 
 var TestConfig = &Config{
@@ -159,6 +162,7 @@ var TestConfig = &Config{
 		RPID:          "localhost:3000",
 		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
 	},
+	WebAuthSessionPeriod: 5 * time.Minute,
 }
 
 func InitConfig(mode string) *Config {
