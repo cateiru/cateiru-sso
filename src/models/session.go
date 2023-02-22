@@ -23,7 +23,7 @@ import (
 
 // Session is an object representing the database table.
 type Session struct {
-	ID      []byte    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID      string    `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID  []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Period  time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -59,12 +59,12 @@ var SessionTableColumns = struct {
 // Generated where
 
 var SessionWhere = struct {
-	ID      whereHelper__byte
+	ID      whereHelperstring
 	UserID  whereHelper__byte
 	Period  whereHelpertime_Time
 	Created whereHelpertime_Time
 }{
-	ID:      whereHelper__byte{field: "`session`.`id`"},
+	ID:      whereHelperstring{field: "`session`.`id`"},
 	UserID:  whereHelper__byte{field: "`session`.`user_id`"},
 	Period:  whereHelpertime_Time{field: "`session`.`period`"},
 	Created: whereHelpertime_Time{field: "`session`.`created`"},
@@ -385,7 +385,7 @@ func Sessions(mods ...qm.QueryMod) sessionQuery {
 
 // FindSession retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindSession(ctx context.Context, exec boil.ContextExecutor, iD []byte, selectCols ...string) (*Session, error) {
+func FindSession(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Session, error) {
 	sessionObj := &Session{}
 
 	sel := "*"
@@ -922,7 +922,7 @@ func (o *SessionSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // SessionExists checks if the Session row exists.
-func SessionExists(ctx context.Context, exec boil.ContextExecutor, iD []byte) (bool, error) {
+func SessionExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `session` where `id`=? limit 1)"
 

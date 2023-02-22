@@ -568,7 +568,7 @@ func testClientsSelect(t *testing.T) {
 }
 
 var (
-	clientDBTypes = map[string]string{`ClientID`: `varbinary`, `Name`: `varchar`, `Description`: `text`, `Image`: `text`, `IsAllow`: `tinyint`, `Indispensable2fa`: `tinyint`, `Prompt`: `enum('login','quiz')`, `OwnerUserID`: `varbinary`, `ClientSecret`: `varbinary`, `Created`: `datetime`, `Modified`: `datetime`}
+	clientDBTypes = map[string]string{`ClientID`: `varchar`, `Name`: `varchar`, `Description`: `text`, `Image`: `text`, `IsAllow`: `tinyint`, `Indispensable2fa`: `tinyint`, `Prompt`: `enum('login','quiz')`, `OwnerUserID`: `varbinary`, `ClientSecret`: `varbinary`, `Created`: `datetime`, `Modified`: `datetime`}
 	_             = bytes.MinRead
 )
 

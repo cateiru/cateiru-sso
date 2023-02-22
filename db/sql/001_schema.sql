@@ -1,6 +1,5 @@
 -- TODO:
 -- - パスポートハッシュなどの型
--- - セッションIDの型
 
 -- ユーザテーブル
 CREATE TABLE `user` (
@@ -236,7 +235,7 @@ CREATE TABLE `register_session` (
 
 -- アプリを使用したOTPを新規に登録する際に使用するセッションテーブル
 CREATE TABLE `register_otp_session` (
-    `id` VARBINARY(16) NOT NULL,
+    `id` VARCHAR(31) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- TODO: 文字サイズを最適化したい
@@ -259,7 +258,7 @@ CREATE TABLE `register_otp_session` (
 
 -- Emailを更新したときに確認に使用するテーブル
 CREATE TABLE `email_verify` (
-    `id` VARBINARY(16) NOT NULL,
+    `id` VARCHAR(31) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- 認証コード
@@ -282,7 +281,7 @@ CREATE TABLE `email_verify` (
 -- セッション維持用のテーブル
 CREATE TABLE `session` (
     -- ランダムにトークンを生成する
-    `id` VARBINARY(32) NOT NULL,
+    `id` VARCHAR(31) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- 有効期限
@@ -299,12 +298,12 @@ CREATE TABLE `session` (
 -- 同時ログインでは、このトークンのみcookieに入れっぱなしにしておく
 CREATE TABLE `refresh` (
     -- ランダムにトークンを生成する
-    `id` VARBINARY(32) NOT NULL,
+    `id` VARCHAR(63) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- sessionのid
     -- 複数ログインを可能にするためNULLABLE
-    `session_id` VARBINARY(32) DEFAULT NULL,
+    `session_id` VARCHAR(31) DEFAULT NULL,
 
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -318,9 +317,9 @@ CREATE TABLE `refresh` (
     UNIQUE INDEX `refresh_session_id` (`session_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
--- パスポートによる認証は成功して次にOTPを求める場合のセッションを保存するテーブル
+-- パスワードによる認証は成功して次にOTPを求める場合のセッションを保存するテーブル
 CREATE TABLE `otp_session` (
-    `id` VARBINARY(16) NOT NULL,
+    `id` VARCHAR(31) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- 有効期限
@@ -336,11 +335,11 @@ CREATE TABLE `otp_session` (
 -- SSOクライアントのセッショントークンテーブル
 CREATE TABLE `client_session` (
     -- ランダムにトークンを生成する
-    `id` VARBINARY(32) NOT NULL,
+    `id` VARCHAR(31) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- クライアントのID
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
     `login_client_id` INT UNSIGNED NOT NULL,
 
     -- 有効期限
@@ -359,11 +358,11 @@ CREATE TABLE `client_session` (
 -- SSOクライアントのリフレッシュトークンテーブル
 CREATE TABLE `client_refresh` (
     -- ランダムにトークンを生成する
-    `id` VARBINARY(32) NOT NULL,
+    `id` VARCHAR(63) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- クライアントのID
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
     `login_client_id` INT UNSIGNED NOT NULL,
 
     -- client_sessionのid
@@ -388,7 +387,7 @@ CREATE TABLE `client_refresh` (
 -- webauthn.SessionData を元にしています
 CREATE TABLE `webauthn_session` (
     -- ランダムにトークンを生成する
-    `id` VARBINARY(64) NOT NULL,
+    `id` VARCHAR(31) NOT NULL,
 
     -- WebAuthnID
     -- いわゆるユーザID
@@ -419,11 +418,11 @@ CREATE TABLE `webauthn_session` (
 -- OAuthで接続したときのセッション
 -- nonceとかを保存しておく
 CREATE TABLE `oauth_session` (
-    `code` VARBINARY(32) NOT NULL,
+    `code` VARCHAR(63) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- クライアントのID
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
 
     -- CSRF, XSRFで使用される`state`を格納するやつ
     `state` VARCHAR(31) DEFAULT NULL,
@@ -445,7 +444,7 @@ CREATE TABLE `oauth_session` (
 CREATE TABLE `client` (
     -- OAuth2.0のClient ID
     -- 公開されるIDであり、それ単体では使用できないのでv1で良い
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
 
     -- クライアント名
     `name` VARCHAR(31) NOT NULL,
@@ -478,7 +477,7 @@ CREATE TABLE `client` (
 CREATE TABLE `client_scope` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
 
     -- スコープ名
     -- ref. https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes
@@ -511,7 +510,7 @@ CREATE TABLE `login_client_scope` (
 
 -- クライアントのis_allowが1のときのホワイトリストルール
 CREATE TABLE `client_allow_rule` (
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
 
     -- user_idが指定されている場合、そのユーザのみを通過させる
     `user_id` VARBINARY(16) DEFAULT NULL,
@@ -530,7 +529,7 @@ CREATE TABLE `client_allow_rule` (
 -- 転売対策とかに有効
 CREATE TABLE `client_quiz` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
 
     `title` TEXT NOT NULL,
     -- 複数の回答方法や選択肢がある場合があるので
@@ -551,7 +550,7 @@ CREATE TABLE `client_quiz` (
 -- 現在ログインしているSSOクライアントテーブル
 CREATE TABLE `login_client` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- 管理用
@@ -563,7 +562,7 @@ CREATE TABLE `login_client` (
 -- 過去にログインしたSSOクライアントのテーブル
 CREATE TABLE `login_client_history` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `client_id` VARBINARY(16) NOT NULL,
+    `client_id` VARCHAR(31) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- 使用した端末のUA
@@ -590,7 +589,7 @@ CREATE TABLE `login_history` (
 
     -- リフレッシュトークン
     -- refreshテーブルに参照することでユーザがどの端末でログインしているかを調べることができる
-    `refresh_id` VARBINARY(32) NOT NULL,
+    `refresh_id` VARCHAR(63) NOT NULL,
 
     -- 使用した端末のUA
     `device` VARCHAR(31) DEFAULT NULL,

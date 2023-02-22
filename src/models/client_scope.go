@@ -24,7 +24,7 @@ import (
 // ClientScope is an object representing the database table.
 type ClientScope struct {
 	ID       uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ClientID []byte    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	ClientID string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	Scope    string    `boil:"scope" json:"scope" toml:"scope" yaml:"scope"`
 	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 
@@ -60,12 +60,12 @@ var ClientScopeTableColumns = struct {
 
 var ClientScopeWhere = struct {
 	ID       whereHelperuint
-	ClientID whereHelper__byte
+	ClientID whereHelperstring
 	Scope    whereHelperstring
 	Created  whereHelpertime_Time
 }{
 	ID:       whereHelperuint{field: "`client_scope`.`id`"},
-	ClientID: whereHelper__byte{field: "`client_scope`.`client_id`"},
+	ClientID: whereHelperstring{field: "`client_scope`.`client_id`"},
 	Scope:    whereHelperstring{field: "`client_scope`.`scope`"},
 	Created:  whereHelpertime_Time{field: "`client_scope`.`created`"},
 }

@@ -23,7 +23,7 @@ import (
 
 // OtpSession is an object representing the database table.
 type OtpSession struct {
-	ID         []byte    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID         string    `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID     []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
@@ -59,12 +59,12 @@ var OtpSessionTableColumns = struct {
 // Generated where
 
 var OtpSessionWhere = struct {
-	ID         whereHelper__byte
+	ID         whereHelperstring
 	UserID     whereHelper__byte
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
 }{
-	ID:         whereHelper__byte{field: "`otp_session`.`id`"},
+	ID:         whereHelperstring{field: "`otp_session`.`id`"},
 	UserID:     whereHelper__byte{field: "`otp_session`.`user_id`"},
 	Period:     whereHelpertime_Time{field: "`otp_session`.`period`"},
 	RetryCount: whereHelperuint8{field: "`otp_session`.`retry_count`"},
@@ -385,7 +385,7 @@ func OtpSessions(mods ...qm.QueryMod) otpSessionQuery {
 
 // FindOtpSession retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindOtpSession(ctx context.Context, exec boil.ContextExecutor, iD []byte, selectCols ...string) (*OtpSession, error) {
+func FindOtpSession(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*OtpSession, error) {
 	otpSessionObj := &OtpSession{}
 
 	sel := "*"
@@ -922,7 +922,7 @@ func (o *OtpSessionSlice) ReloadAll(ctx context.Context, exec boil.ContextExecut
 }
 
 // OtpSessionExists checks if the OtpSession row exists.
-func OtpSessionExists(ctx context.Context, exec boil.ContextExecutor, iD []byte) (bool, error) {
+func OtpSessionExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `otp_session` where `id`=? limit 1)"
 

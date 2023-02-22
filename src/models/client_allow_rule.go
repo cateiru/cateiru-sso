@@ -24,7 +24,7 @@ import (
 
 // ClientAllowRule is an object representing the database table.
 type ClientAllowRule struct {
-	ClientID    []byte      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	ClientID    string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	UserID      null.Bytes  `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	EmailDomain null.String `boil:"email_domain" json:"email_domain,omitempty" toml:"email_domain" yaml:"email_domain,omitempty"`
 	Created     time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -84,12 +84,12 @@ func (w whereHelpernull_Bytes) IsNull() qm.QueryMod    { return qmhelper.WhereIs
 func (w whereHelpernull_Bytes) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var ClientAllowRuleWhere = struct {
-	ClientID    whereHelper__byte
+	ClientID    whereHelperstring
 	UserID      whereHelpernull_Bytes
 	EmailDomain whereHelpernull_String
 	Created     whereHelpertime_Time
 }{
-	ClientID:    whereHelper__byte{field: "`client_allow_rule`.`client_id`"},
+	ClientID:    whereHelperstring{field: "`client_allow_rule`.`client_id`"},
 	UserID:      whereHelpernull_Bytes{field: "`client_allow_rule`.`user_id`"},
 	EmailDomain: whereHelpernull_String{field: "`client_allow_rule`.`email_domain`"},
 	Created:     whereHelpertime_Time{field: "`client_allow_rule`.`created`"},
@@ -410,7 +410,7 @@ func ClientAllowRules(mods ...qm.QueryMod) clientAllowRuleQuery {
 
 // FindClientAllowRule retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindClientAllowRule(ctx context.Context, exec boil.ContextExecutor, clientID []byte, selectCols ...string) (*ClientAllowRule, error) {
+func FindClientAllowRule(ctx context.Context, exec boil.ContextExecutor, clientID string, selectCols ...string) (*ClientAllowRule, error) {
 	clientAllowRuleObj := &ClientAllowRule{}
 
 	sel := "*"
@@ -947,7 +947,7 @@ func (o *ClientAllowRuleSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 }
 
 // ClientAllowRuleExists checks if the ClientAllowRule row exists.
-func ClientAllowRuleExists(ctx context.Context, exec boil.ContextExecutor, clientID []byte) (bool, error) {
+func ClientAllowRuleExists(ctx context.Context, exec boil.ContextExecutor, clientID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `client_allow_rule` where `client_id`=? limit 1)"
 

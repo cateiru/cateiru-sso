@@ -23,9 +23,9 @@ import (
 
 // ClientSession is an object representing the database table.
 type ClientSession struct {
-	ID            []byte    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID        []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	ClientID      []byte    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	ClientID      string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	LoginClientID uint      `boil:"login_client_id" json:"login_client_id" toml:"login_client_id" yaml:"login_client_id"`
 	Period        time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	Created       time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -69,16 +69,16 @@ var ClientSessionTableColumns = struct {
 // Generated where
 
 var ClientSessionWhere = struct {
-	ID            whereHelper__byte
+	ID            whereHelperstring
 	UserID        whereHelper__byte
-	ClientID      whereHelper__byte
+	ClientID      whereHelperstring
 	LoginClientID whereHelperuint
 	Period        whereHelpertime_Time
 	Created       whereHelpertime_Time
 }{
-	ID:            whereHelper__byte{field: "`client_session`.`id`"},
+	ID:            whereHelperstring{field: "`client_session`.`id`"},
 	UserID:        whereHelper__byte{field: "`client_session`.`user_id`"},
-	ClientID:      whereHelper__byte{field: "`client_session`.`client_id`"},
+	ClientID:      whereHelperstring{field: "`client_session`.`client_id`"},
 	LoginClientID: whereHelperuint{field: "`client_session`.`login_client_id`"},
 	Period:        whereHelpertime_Time{field: "`client_session`.`period`"},
 	Created:       whereHelpertime_Time{field: "`client_session`.`created`"},
@@ -399,7 +399,7 @@ func ClientSessions(mods ...qm.QueryMod) clientSessionQuery {
 
 // FindClientSession retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindClientSession(ctx context.Context, exec boil.ContextExecutor, iD []byte, selectCols ...string) (*ClientSession, error) {
+func FindClientSession(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*ClientSession, error) {
 	clientSessionObj := &ClientSession{}
 
 	sel := "*"
@@ -936,7 +936,7 @@ func (o *ClientSessionSlice) ReloadAll(ctx context.Context, exec boil.ContextExe
 }
 
 // ClientSessionExists checks if the ClientSession row exists.
-func ClientSessionExists(ctx context.Context, exec boil.ContextExecutor, iD []byte) (bool, error) {
+func ClientSessionExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `client_session` where `id`=? limit 1)"
 

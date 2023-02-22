@@ -568,7 +568,7 @@ func testOauthSessionsSelect(t *testing.T) {
 }
 
 var (
-	oauthSessionDBTypes = map[string]string{`Code`: `varbinary`, `UserID`: `varbinary`, `ClientID`: `varbinary`, `State`: `varchar`, `Nonce`: `varchar`, `Period`: `datetime`, `Created`: `datetime`, `Modified`: `datetime`}
+	oauthSessionDBTypes = map[string]string{`Code`: `varchar`, `UserID`: `varbinary`, `ClientID`: `varchar`, `State`: `varchar`, `Nonce`: `varchar`, `Period`: `datetime`, `Created`: `datetime`, `Modified`: `datetime`}
 	_                   = bytes.MinRead
 )
 

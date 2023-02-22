@@ -25,7 +25,7 @@ import (
 // ClientQuiz is an object representing the database table.
 type ClientQuiz struct {
 	ID           uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ClientID     []byte    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	ClientID     string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	Title        string    `boil:"title" json:"title" toml:"title" yaml:"title"`
 	AnswerRegexp string    `boil:"answer_regexp" json:"answer_regexp" toml:"answer_regexp" yaml:"answer_regexp"`
 	Choices      null.JSON `boil:"choices" json:"choices,omitempty" toml:"choices" yaml:"choices,omitempty"`
@@ -100,7 +100,7 @@ func (w whereHelpernull_JSON) IsNotNull() qm.QueryMod { return qmhelper.WhereIsN
 
 var ClientQuizWhere = struct {
 	ID           whereHelperuint
-	ClientID     whereHelper__byte
+	ClientID     whereHelperstring
 	Title        whereHelperstring
 	AnswerRegexp whereHelperstring
 	Choices      whereHelpernull_JSON
@@ -108,7 +108,7 @@ var ClientQuizWhere = struct {
 	Modified     whereHelpertime_Time
 }{
 	ID:           whereHelperuint{field: "`client_quiz`.`id`"},
-	ClientID:     whereHelper__byte{field: "`client_quiz`.`client_id`"},
+	ClientID:     whereHelperstring{field: "`client_quiz`.`client_id`"},
 	Title:        whereHelperstring{field: "`client_quiz`.`title`"},
 	AnswerRegexp: whereHelperstring{field: "`client_quiz`.`answer_regexp`"},
 	Choices:      whereHelpernull_JSON{field: "`client_quiz`.`choices`"},

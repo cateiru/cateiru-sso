@@ -24,7 +24,7 @@ import (
 
 // WebauthnSession is an object representing the database table.
 type WebauthnSession struct {
-	ID               []byte     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID               string     `boil:"id" json:"id" toml:"id" yaml:"id"`
 	WebauthnUserID   []byte     `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
 	UserDisplayName  string     `boil:"user_display_name" json:"user_display_name" toml:"user_display_name" yaml:"user_display_name"`
 	Challenge        string     `boil:"challenge" json:"challenge" toml:"challenge" yaml:"challenge"`
@@ -85,7 +85,7 @@ var WebauthnSessionTableColumns = struct {
 // Generated where
 
 var WebauthnSessionWhere = struct {
-	ID               whereHelper__byte
+	ID               whereHelperstring
 	WebauthnUserID   whereHelper__byte
 	UserDisplayName  whereHelperstring
 	Challenge        whereHelperstring
@@ -95,7 +95,7 @@ var WebauthnSessionWhere = struct {
 	Created          whereHelpertime_Time
 	Modified         whereHelpertime_Time
 }{
-	ID:               whereHelper__byte{field: "`webauthn_session`.`id`"},
+	ID:               whereHelperstring{field: "`webauthn_session`.`id`"},
 	WebauthnUserID:   whereHelper__byte{field: "`webauthn_session`.`webauthn_user_id`"},
 	UserDisplayName:  whereHelperstring{field: "`webauthn_session`.`user_display_name`"},
 	Challenge:        whereHelperstring{field: "`webauthn_session`.`challenge`"},
@@ -421,7 +421,7 @@ func WebauthnSessions(mods ...qm.QueryMod) webauthnSessionQuery {
 
 // FindWebauthnSession retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindWebauthnSession(ctx context.Context, exec boil.ContextExecutor, iD []byte, selectCols ...string) (*WebauthnSession, error) {
+func FindWebauthnSession(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*WebauthnSession, error) {
 	webauthnSessionObj := &WebauthnSession{}
 
 	sel := "*"
@@ -958,7 +958,7 @@ func (o *WebauthnSessionSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 }
 
 // WebauthnSessionExists checks if the WebauthnSession row exists.
-func WebauthnSessionExists(ctx context.Context, exec boil.ContextExecutor, iD []byte) (bool, error) {
+func WebauthnSessionExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `webauthn_session` where `id`=? limit 1)"
 

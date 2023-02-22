@@ -568,7 +568,7 @@ func testClientQuizzesSelect(t *testing.T) {
 }
 
 var (
-	clientQuizDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varbinary`, `Title`: `text`, `AnswerRegexp`: `text`, `Choices`: `json`, `Created`: `datetime`, `Modified`: `datetime`}
+	clientQuizDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `Title`: `text`, `AnswerRegexp`: `text`, `Choices`: `json`, `Created`: `datetime`, `Modified`: `datetime`}
 	_                 = bytes.MinRead
 )
 

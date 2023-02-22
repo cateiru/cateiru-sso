@@ -24,9 +24,9 @@ import (
 
 // OauthSession is an object representing the database table.
 type OauthSession struct {
-	Code     []byte      `boil:"code" json:"code" toml:"code" yaml:"code"`
+	Code     string      `boil:"code" json:"code" toml:"code" yaml:"code"`
 	UserID   []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	ClientID []byte      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	ClientID string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	State    null.String `boil:"state" json:"state,omitempty" toml:"state" yaml:"state,omitempty"`
 	Nonce    null.String `boil:"nonce" json:"nonce,omitempty" toml:"nonce" yaml:"nonce,omitempty"`
 	Period   time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
@@ -80,18 +80,18 @@ var OauthSessionTableColumns = struct {
 // Generated where
 
 var OauthSessionWhere = struct {
-	Code     whereHelper__byte
+	Code     whereHelperstring
 	UserID   whereHelper__byte
-	ClientID whereHelper__byte
+	ClientID whereHelperstring
 	State    whereHelpernull_String
 	Nonce    whereHelpernull_String
 	Period   whereHelpertime_Time
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
-	Code:     whereHelper__byte{field: "`oauth_session`.`code`"},
+	Code:     whereHelperstring{field: "`oauth_session`.`code`"},
 	UserID:   whereHelper__byte{field: "`oauth_session`.`user_id`"},
-	ClientID: whereHelper__byte{field: "`oauth_session`.`client_id`"},
+	ClientID: whereHelperstring{field: "`oauth_session`.`client_id`"},
 	State:    whereHelpernull_String{field: "`oauth_session`.`state`"},
 	Nonce:    whereHelpernull_String{field: "`oauth_session`.`nonce`"},
 	Period:   whereHelpertime_Time{field: "`oauth_session`.`period`"},
@@ -414,7 +414,7 @@ func OauthSessions(mods ...qm.QueryMod) oauthSessionQuery {
 
 // FindOauthSession retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindOauthSession(ctx context.Context, exec boil.ContextExecutor, code []byte, selectCols ...string) (*OauthSession, error) {
+func FindOauthSession(ctx context.Context, exec boil.ContextExecutor, code string, selectCols ...string) (*OauthSession, error) {
 	oauthSessionObj := &OauthSession{}
 
 	sel := "*"
@@ -951,7 +951,7 @@ func (o *OauthSessionSlice) ReloadAll(ctx context.Context, exec boil.ContextExec
 }
 
 // OauthSessionExists checks if the OauthSession row exists.
-func OauthSessionExists(ctx context.Context, exec boil.ContextExecutor, code []byte) (bool, error) {
+func OauthSessionExists(ctx context.Context, exec boil.ContextExecutor, code string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `oauth_session` where `code`=? limit 1)"
 

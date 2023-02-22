@@ -24,7 +24,7 @@ import (
 // LoginClient is an object representing the database table.
 type LoginClient struct {
 	ID       uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ClientID []byte    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	ClientID string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	UserID   []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 
@@ -60,12 +60,12 @@ var LoginClientTableColumns = struct {
 
 var LoginClientWhere = struct {
 	ID       whereHelperuint
-	ClientID whereHelper__byte
+	ClientID whereHelperstring
 	UserID   whereHelper__byte
 	Created  whereHelpertime_Time
 }{
 	ID:       whereHelperuint{field: "`login_client`.`id`"},
-	ClientID: whereHelper__byte{field: "`login_client`.`client_id`"},
+	ClientID: whereHelperstring{field: "`login_client`.`client_id`"},
 	UserID:   whereHelper__byte{field: "`login_client`.`user_id`"},
 	Created:  whereHelpertime_Time{field: "`login_client`.`created`"},
 }

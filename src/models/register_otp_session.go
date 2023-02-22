@@ -23,7 +23,7 @@ import (
 
 // RegisterOtpSession is an object representing the database table.
 type RegisterOtpSession struct {
-	ID         []byte    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID         string    `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID     []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	PublicKey  string    `boil:"public_key" json:"public_key" toml:"public_key" yaml:"public_key"`
 	Secret     string    `boil:"secret" json:"secret" toml:"secret" yaml:"secret"`
@@ -79,7 +79,7 @@ var RegisterOtpSessionTableColumns = struct {
 // Generated where
 
 var RegisterOtpSessionWhere = struct {
-	ID         whereHelper__byte
+	ID         whereHelperstring
 	UserID     whereHelper__byte
 	PublicKey  whereHelperstring
 	Secret     whereHelperstring
@@ -88,7 +88,7 @@ var RegisterOtpSessionWhere = struct {
 	Created    whereHelpertime_Time
 	Modified   whereHelpertime_Time
 }{
-	ID:         whereHelper__byte{field: "`register_otp_session`.`id`"},
+	ID:         whereHelperstring{field: "`register_otp_session`.`id`"},
 	UserID:     whereHelper__byte{field: "`register_otp_session`.`user_id`"},
 	PublicKey:  whereHelperstring{field: "`register_otp_session`.`public_key`"},
 	Secret:     whereHelperstring{field: "`register_otp_session`.`secret`"},
@@ -413,7 +413,7 @@ func RegisterOtpSessions(mods ...qm.QueryMod) registerOtpSessionQuery {
 
 // FindRegisterOtpSession retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindRegisterOtpSession(ctx context.Context, exec boil.ContextExecutor, iD []byte, selectCols ...string) (*RegisterOtpSession, error) {
+func FindRegisterOtpSession(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*RegisterOtpSession, error) {
 	registerOtpSessionObj := &RegisterOtpSession{}
 
 	sel := "*"
@@ -950,7 +950,7 @@ func (o *RegisterOtpSessionSlice) ReloadAll(ctx context.Context, exec boil.Conte
 }
 
 // RegisterOtpSessionExists checks if the RegisterOtpSession row exists.
-func RegisterOtpSessionExists(ctx context.Context, exec boil.ContextExecutor, iD []byte) (bool, error) {
+func RegisterOtpSessionExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `register_otp_session` where `id`=? limit 1)"
 

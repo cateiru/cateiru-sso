@@ -568,7 +568,7 @@ func testEmailVerifiesSelect(t *testing.T) {
 }
 
 var (
-	emailVerifyDBTypes = map[string]string{`ID`: `varbinary`, `UserID`: `varbinary`, `VerifyCode`: `char`, `Period`: `datetime`, `RetryCount`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
+	emailVerifyDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varbinary`, `VerifyCode`: `char`, `Period`: `datetime`, `RetryCount`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
 	_                  = bytes.MinRead
 )
 

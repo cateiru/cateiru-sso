@@ -24,7 +24,7 @@ import (
 
 // Client is an object representing the database table.
 type Client struct {
-	ClientID         []byte      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	ClientID         string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	Name             string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Description      null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	Image            null.String `boil:"image" json:"image,omitempty" toml:"image" yaml:"image,omitempty"`
@@ -95,7 +95,7 @@ var ClientTableColumns = struct {
 // Generated where
 
 var ClientWhere = struct {
-	ClientID         whereHelper__byte
+	ClientID         whereHelperstring
 	Name             whereHelperstring
 	Description      whereHelpernull_String
 	Image            whereHelpernull_String
@@ -107,7 +107,7 @@ var ClientWhere = struct {
 	Created          whereHelpertime_Time
 	Modified         whereHelpertime_Time
 }{
-	ClientID:         whereHelper__byte{field: "`client`.`client_id`"},
+	ClientID:         whereHelperstring{field: "`client`.`client_id`"},
 	Name:             whereHelperstring{field: "`client`.`name`"},
 	Description:      whereHelpernull_String{field: "`client`.`description`"},
 	Image:            whereHelpernull_String{field: "`client`.`image`"},
@@ -435,7 +435,7 @@ func Clients(mods ...qm.QueryMod) clientQuery {
 
 // FindClient retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindClient(ctx context.Context, exec boil.ContextExecutor, clientID []byte, selectCols ...string) (*Client, error) {
+func FindClient(ctx context.Context, exec boil.ContextExecutor, clientID string, selectCols ...string) (*Client, error) {
 	clientObj := &Client{}
 
 	sel := "*"
@@ -972,7 +972,7 @@ func (o *ClientSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // ClientExists checks if the Client row exists.
-func ClientExists(ctx context.Context, exec boil.ContextExecutor, clientID []byte) (bool, error) {
+func ClientExists(ctx context.Context, exec boil.ContextExecutor, clientID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `client` where `client_id`=? limit 1)"
 

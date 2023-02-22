@@ -24,12 +24,12 @@ import (
 
 // Refresh is an object representing the database table.
 type Refresh struct {
-	ID        []byte     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID    []byte     `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	SessionID null.Bytes `boil:"session_id" json:"session_id,omitempty" toml:"session_id" yaml:"session_id,omitempty"`
-	Period    time.Time  `boil:"period" json:"period" toml:"period" yaml:"period"`
-	Created   time.Time  `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified  time.Time  `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	SessionID null.String `boil:"session_id" json:"session_id,omitempty" toml:"session_id" yaml:"session_id,omitempty"`
+	Period    time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
+	Created   time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	Modified  time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
 	R *refreshR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L refreshL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -70,16 +70,16 @@ var RefreshTableColumns = struct {
 // Generated where
 
 var RefreshWhere = struct {
-	ID        whereHelper__byte
+	ID        whereHelperstring
 	UserID    whereHelper__byte
-	SessionID whereHelpernull_Bytes
+	SessionID whereHelpernull_String
 	Period    whereHelpertime_Time
 	Created   whereHelpertime_Time
 	Modified  whereHelpertime_Time
 }{
-	ID:        whereHelper__byte{field: "`refresh`.`id`"},
+	ID:        whereHelperstring{field: "`refresh`.`id`"},
 	UserID:    whereHelper__byte{field: "`refresh`.`user_id`"},
-	SessionID: whereHelpernull_Bytes{field: "`refresh`.`session_id`"},
+	SessionID: whereHelpernull_String{field: "`refresh`.`session_id`"},
 	Period:    whereHelpertime_Time{field: "`refresh`.`period`"},
 	Created:   whereHelpertime_Time{field: "`refresh`.`created`"},
 	Modified:  whereHelpertime_Time{field: "`refresh`.`modified`"},
@@ -400,7 +400,7 @@ func Refreshes(mods ...qm.QueryMod) refreshQuery {
 
 // FindRefresh retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindRefresh(ctx context.Context, exec boil.ContextExecutor, iD []byte, selectCols ...string) (*Refresh, error) {
+func FindRefresh(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Refresh, error) {
 	refreshObj := &Refresh{}
 
 	sel := "*"
@@ -938,7 +938,7 @@ func (o *RefreshSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // RefreshExists checks if the Refresh row exists.
-func RefreshExists(ctx context.Context, exec boil.ContextExecutor, iD []byte) (bool, error) {
+func RefreshExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `refresh` where `id`=? limit 1)"
 
