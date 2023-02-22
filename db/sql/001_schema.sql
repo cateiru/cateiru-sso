@@ -122,14 +122,13 @@ CREATE TABLE `passkey` (
     -- 64byteのランダムな文字列
     `webauthn_user_id` VARBINARY(64) NOT NULL,
 
-    -- TODO: 文字サイズ分かれば別の型にしたい
-    `credential` TEXT NOT NULL,
-    `public_key` TEXT NOT NULL,
+    -- webauthn.Credentialのオブジェクト
+    `credential` JSON NOT NULL,
 
     -- authenticatorData.flagsのBackupState値
     -- これが1の場合はpasskeyが複数デバイス感で共有される可能性がある
     -- ref. https://www.docswell.com/s/ydnjp/KWDLDZ-2022-10-14-141235#p20
-    `is_backup_state` BOOLEAN NOT NULL DEFAULT 0,
+    `flag_backup_state` BOOLEAN NOT NULL DEFAULT 0,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

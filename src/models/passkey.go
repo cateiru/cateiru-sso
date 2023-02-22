@@ -18,77 +18,92 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // Passkey is an object representing the database table.
 type Passkey struct {
-	UserID         []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	WebauthnUserID []byte    `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
-	Credential     string    `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
-	PublicKey      string    `boil:"public_key" json:"public_key" toml:"public_key" yaml:"public_key"`
-	IsBackupState  bool      `boil:"is_backup_state" json:"is_backup_state" toml:"is_backup_state" yaml:"is_backup_state"`
-	Created        time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified       time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	UserID          []byte     `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	WebauthnUserID  []byte     `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
+	Credential      types.JSON `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
+	FlagBackupState bool       `boil:"flag_backup_state" json:"flag_backup_state" toml:"flag_backup_state" yaml:"flag_backup_state"`
+	Created         time.Time  `boil:"created" json:"created" toml:"created" yaml:"created"`
+	Modified        time.Time  `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
 	R *passkeyR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L passkeyL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PasskeyColumns = struct {
-	UserID         string
-	WebauthnUserID string
-	Credential     string
-	PublicKey      string
-	IsBackupState  string
-	Created        string
-	Modified       string
+	UserID          string
+	WebauthnUserID  string
+	Credential      string
+	FlagBackupState string
+	Created         string
+	Modified        string
 }{
-	UserID:         "user_id",
-	WebauthnUserID: "webauthn_user_id",
-	Credential:     "credential",
-	PublicKey:      "public_key",
-	IsBackupState:  "is_backup_state",
-	Created:        "created",
-	Modified:       "modified",
+	UserID:          "user_id",
+	WebauthnUserID:  "webauthn_user_id",
+	Credential:      "credential",
+	FlagBackupState: "flag_backup_state",
+	Created:         "created",
+	Modified:        "modified",
 }
 
 var PasskeyTableColumns = struct {
-	UserID         string
-	WebauthnUserID string
-	Credential     string
-	PublicKey      string
-	IsBackupState  string
-	Created        string
-	Modified       string
+	UserID          string
+	WebauthnUserID  string
+	Credential      string
+	FlagBackupState string
+	Created         string
+	Modified        string
 }{
-	UserID:         "passkey.user_id",
-	WebauthnUserID: "passkey.webauthn_user_id",
-	Credential:     "passkey.credential",
-	PublicKey:      "passkey.public_key",
-	IsBackupState:  "passkey.is_backup_state",
-	Created:        "passkey.created",
-	Modified:       "passkey.modified",
+	UserID:          "passkey.user_id",
+	WebauthnUserID:  "passkey.webauthn_user_id",
+	Credential:      "passkey.credential",
+	FlagBackupState: "passkey.flag_backup_state",
+	Created:         "passkey.created",
+	Modified:        "passkey.modified",
 }
 
 // Generated where
 
+type whereHelpertypes_JSON struct{ field string }
+
+func (w whereHelpertypes_JSON) EQ(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.EQ, x)
+}
+func (w whereHelpertypes_JSON) NEQ(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.NEQ, x)
+}
+func (w whereHelpertypes_JSON) LT(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpertypes_JSON) LTE(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpertypes_JSON) GT(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpertypes_JSON) GTE(x types.JSON) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+
 var PasskeyWhere = struct {
-	UserID         whereHelper__byte
-	WebauthnUserID whereHelper__byte
-	Credential     whereHelperstring
-	PublicKey      whereHelperstring
-	IsBackupState  whereHelperbool
-	Created        whereHelpertime_Time
-	Modified       whereHelpertime_Time
+	UserID          whereHelper__byte
+	WebauthnUserID  whereHelper__byte
+	Credential      whereHelpertypes_JSON
+	FlagBackupState whereHelperbool
+	Created         whereHelpertime_Time
+	Modified        whereHelpertime_Time
 }{
-	UserID:         whereHelper__byte{field: "`passkey`.`user_id`"},
-	WebauthnUserID: whereHelper__byte{field: "`passkey`.`webauthn_user_id`"},
-	Credential:     whereHelperstring{field: "`passkey`.`credential`"},
-	PublicKey:      whereHelperstring{field: "`passkey`.`public_key`"},
-	IsBackupState:  whereHelperbool{field: "`passkey`.`is_backup_state`"},
-	Created:        whereHelpertime_Time{field: "`passkey`.`created`"},
-	Modified:       whereHelpertime_Time{field: "`passkey`.`modified`"},
+	UserID:          whereHelper__byte{field: "`passkey`.`user_id`"},
+	WebauthnUserID:  whereHelper__byte{field: "`passkey`.`webauthn_user_id`"},
+	Credential:      whereHelpertypes_JSON{field: "`passkey`.`credential`"},
+	FlagBackupState: whereHelperbool{field: "`passkey`.`flag_backup_state`"},
+	Created:         whereHelpertime_Time{field: "`passkey`.`created`"},
+	Modified:        whereHelpertime_Time{field: "`passkey`.`modified`"},
 }
 
 // PasskeyRels is where relationship names are stored.
@@ -108,9 +123,9 @@ func (*passkeyR) NewStruct() *passkeyR {
 type passkeyL struct{}
 
 var (
-	passkeyAllColumns            = []string{"user_id", "webauthn_user_id", "credential", "public_key", "is_backup_state", "created", "modified"}
-	passkeyColumnsWithoutDefault = []string{"user_id", "webauthn_user_id", "credential", "public_key"}
-	passkeyColumnsWithDefault    = []string{"is_backup_state", "created", "modified"}
+	passkeyAllColumns            = []string{"user_id", "webauthn_user_id", "credential", "flag_backup_state", "created", "modified"}
+	passkeyColumnsWithoutDefault = []string{"user_id", "webauthn_user_id", "credential"}
+	passkeyColumnsWithDefault    = []string{"flag_backup_state", "created", "modified"}
 	passkeyPrimaryKeyColumns     = []string{"user_id"}
 	passkeyGeneratedColumns      = []string{}
 )
