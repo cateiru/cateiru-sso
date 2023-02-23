@@ -12,6 +12,8 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/contents"
 	"github.com/cateiru/go-http-easy-test/handler/mock"
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -467,5 +469,142 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 
 		err = h.RegisterVerifyEmailHandler(c)
 		require.EqualError(t, err, "code=429, message=exceeded retry, unique=4")
+	})
+}
+
+func TestRegisterBeginWebAuthn(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	// セッションを作成する
+	createSession := func(email string, verified bool) *models.RegisterSession {
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		sessionDB := models.RegisterSession{
+			ID:            session,
+			Email:         email,
+			EmailVerified: verified,
+			VerifyCode:    "123456",
+			RetryCount:    1,
+
+			Period: time.Now().Add(h.C.RegisterSessionPeriod),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		return s
+	}
+
+	t.Run("成功する", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, true)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		m.R.Header.Add("X-Register-Token", s.ID)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterBeginWebAuthn(c)
+		require.NoError(t, err)
+
+		// response
+		resp := new(protocol.CredentialCreation)
+		err = m.Json(resp)
+		require.NoError(t, err)
+
+		require.Equal(t, resp.Response.User.Name, email)
+		require.Equal(t, resp.Response.User.DisplayName, email)
+
+		// cookie
+		cookies := m.Response().Cookies()
+		sessionCookie := new(http.Cookie)
+		for _, cookie := range cookies {
+			if cookie.Name == C.WebAuthnSessionCookie.Name {
+				sessionCookie = cookie
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		webauthnSession, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, webauthnSession.Challenge, resp.Response.Challenge.String())
+		require.Equal(t, protocol.URLEncodedBase64(webauthnSession.WebauthnUserID).String(), resp.Response.User.ID)
+		require.Equal(t, webauthnSession.UserDisplayName, "") // 定義はされているのに何故か代入していない
+
+		// rowにjsonが入っている
+		sessionFromRow := new(webauthn.SessionData)
+		err = webauthnSession.Row.Unmarshal(sessionFromRow)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionFromRow.Challenge, resp.Response.Challenge.String())
+	})
+
+	t.Run("tokenが無い", func(t *testing.T) {
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterBeginWebAuthn(c)
+		require.EqualError(t, err, "code=400, message=token is empty")
+	})
+
+	t.Run("tokenが不正", func(t *testing.T) {
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		m.R.Header.Add("X-Register-Token", "123")
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterBeginWebAuthn(c)
+		require.EqualError(t, err, "code=400, message=token is invalid")
+
+	})
+
+	t.Run("tokenが有効期限切れ", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, true)
+
+		// 有効期限 - 10日
+		s.Period = s.Period.Add(-24 * 10 * time.Hour)
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		m.R.Header.Add("X-Register-Token", s.ID)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterBeginWebAuthn(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+
+	})
+
+	t.Run("まだEmailの認証が終わっていない", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.com", r)
+
+		s := createSession(email, false)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		m.R.Header.Add("X-Register-Token", s.ID)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterBeginWebAuthn(c)
+		require.EqualError(t, err, "code=400, message=Email is not verified, unique=7")
 	})
 }

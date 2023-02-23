@@ -94,19 +94,19 @@ func (c *SenderMock) Send(m *lib.MailBody) (string, string, error) {
 	return "ok", "200", nil
 }
 
-type WebAuthnMock struct{}
+type WebAuthnMock struct {
+	M *lib.WebAuthn
+}
 
 func (a *WebAuthnMock) BeginRegistration(user webauthn.User) (*protocol.CredentialCreation, *webauthn.SessionData, error) {
-	// TODO
-	return &protocol.CredentialCreation{}, &webauthn.SessionData{}, nil
+	return a.M.BeginRegistration(user)
 }
 func (a *WebAuthnMock) FinishRegistration(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialCreationData) (*webauthn.Credential, error) {
 	// TODO
 	return &webauthn.Credential{}, nil
 }
 func (a *WebAuthnMock) BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
-	// TODO
-	return &protocol.CredentialAssertion{}, &webauthn.SessionData{}, nil
+	return a.M.BeginLogin(user)
 }
 func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
 	// TODO
@@ -119,11 +119,16 @@ func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionD
 // - ReCaptcha
 // - Sender
 func NewTestHandler(t *testing.T) *src.Handler {
+	webauthn, err := lib.NewWebAuthn(C.WebAuthnConfig)
+	require.NoError(t, err)
+
 	return &src.Handler{
 		DB:        DB,
 		C:         C,
 		ReCaptcha: &ReCaptchaMock{},
 		Sender:    &SenderMock{},
-		WebAuthn:  &WebAuthnMock{},
+		WebAuthn: &WebAuthnMock{
+			M: webauthn,
+		},
 	}
 }

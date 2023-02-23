@@ -424,7 +424,7 @@ func (h *Handler) RegisterBeginWebAuthn(c echo.Context) error {
 	}
 
 	row := types.JSON{}
-	if err = row.Unmarshal(s); err != nil {
+	if err = row.Marshal(s); err != nil {
 		return err
 	}
 
