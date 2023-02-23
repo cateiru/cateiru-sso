@@ -26,7 +26,7 @@ import (
 type LoginHistory struct {
 	ID        uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID    []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	RefreshID string      `boil:"refresh_id" json:"refresh_id" toml:"refresh_id" yaml:"refresh_id"`
+	RefreshID []byte      `boil:"refresh_id" json:"refresh_id" toml:"refresh_id" yaml:"refresh_id"`
 	Device    null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
 	Os        null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
 	Browser   null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
@@ -87,7 +87,7 @@ var LoginHistoryTableColumns = struct {
 var LoginHistoryWhere = struct {
 	ID        whereHelperuint
 	UserID    whereHelper__byte
-	RefreshID whereHelperstring
+	RefreshID whereHelper__byte
 	Device    whereHelpernull_String
 	Os        whereHelpernull_String
 	Browser   whereHelpernull_String
@@ -97,7 +97,7 @@ var LoginHistoryWhere = struct {
 }{
 	ID:        whereHelperuint{field: "`login_history`.`id`"},
 	UserID:    whereHelper__byte{field: "`login_history`.`user_id`"},
-	RefreshID: whereHelperstring{field: "`login_history`.`refresh_id`"},
+	RefreshID: whereHelper__byte{field: "`login_history`.`refresh_id`"},
 	Device:    whereHelpernull_String{field: "`login_history`.`device`"},
 	Os:        whereHelpernull_String{field: "`login_history`.`os`"},
 	Browser:   whereHelpernull_String{field: "`login_history`.`browser`"},

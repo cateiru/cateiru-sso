@@ -26,6 +26,7 @@ import (
 type Refresh struct {
 	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID    []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	HistoryID []byte      `boil:"history_id" json:"history_id" toml:"history_id" yaml:"history_id"`
 	SessionID null.String `boil:"session_id" json:"session_id,omitempty" toml:"session_id" yaml:"session_id,omitempty"`
 	Period    time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
 	Created   time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -38,6 +39,7 @@ type Refresh struct {
 var RefreshColumns = struct {
 	ID        string
 	UserID    string
+	HistoryID string
 	SessionID string
 	Period    string
 	Created   string
@@ -45,6 +47,7 @@ var RefreshColumns = struct {
 }{
 	ID:        "id",
 	UserID:    "user_id",
+	HistoryID: "history_id",
 	SessionID: "session_id",
 	Period:    "period",
 	Created:   "created",
@@ -54,6 +57,7 @@ var RefreshColumns = struct {
 var RefreshTableColumns = struct {
 	ID        string
 	UserID    string
+	HistoryID string
 	SessionID string
 	Period    string
 	Created   string
@@ -61,6 +65,7 @@ var RefreshTableColumns = struct {
 }{
 	ID:        "refresh.id",
 	UserID:    "refresh.user_id",
+	HistoryID: "refresh.history_id",
 	SessionID: "refresh.session_id",
 	Period:    "refresh.period",
 	Created:   "refresh.created",
@@ -72,6 +77,7 @@ var RefreshTableColumns = struct {
 var RefreshWhere = struct {
 	ID        whereHelperstring
 	UserID    whereHelper__byte
+	HistoryID whereHelper__byte
 	SessionID whereHelpernull_String
 	Period    whereHelpertime_Time
 	Created   whereHelpertime_Time
@@ -79,6 +85,7 @@ var RefreshWhere = struct {
 }{
 	ID:        whereHelperstring{field: "`refresh`.`id`"},
 	UserID:    whereHelper__byte{field: "`refresh`.`user_id`"},
+	HistoryID: whereHelper__byte{field: "`refresh`.`history_id`"},
 	SessionID: whereHelpernull_String{field: "`refresh`.`session_id`"},
 	Period:    whereHelpertime_Time{field: "`refresh`.`period`"},
 	Created:   whereHelpertime_Time{field: "`refresh`.`created`"},
@@ -102,9 +109,9 @@ func (*refreshR) NewStruct() *refreshR {
 type refreshL struct{}
 
 var (
-	refreshAllColumns            = []string{"id", "user_id", "session_id", "period", "created", "modified"}
+	refreshAllColumns            = []string{"id", "user_id", "history_id", "session_id", "period", "created", "modified"}
 	refreshColumnsWithoutDefault = []string{"id", "user_id", "session_id"}
-	refreshColumnsWithDefault    = []string{"period", "created", "modified"}
+	refreshColumnsWithDefault    = []string{"history_id", "period", "created", "modified"}
 	refreshPrimaryKeyColumns     = []string{"id"}
 	refreshGeneratedColumns      = []string{}
 )

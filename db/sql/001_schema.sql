@@ -301,6 +301,9 @@ CREATE TABLE `refresh` (
     `id` VARCHAR(63) NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
+    -- ログイン履歴と紐づけるためのID
+    `history_id` VARBINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+
     -- sessionのid
     -- 複数ログインを可能にするためNULLABLE
     `session_id` VARCHAR(31) DEFAULT NULL,
@@ -587,9 +590,9 @@ CREATE TABLE `login_history` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id` VARBINARY(16) NOT NULL,
 
-    -- リフレッシュトークン
+    -- リフレッシュトークンと紐づけたID
     -- refreshテーブルに参照することでユーザがどの端末でログインしているかを調べることができる
-    `refresh_id` VARCHAR(63) NOT NULL,
+    `refresh_id` VARBINARY(16) NOT NULL,
 
     -- 使用した端末のUA
     `device` VARCHAR(31) DEFAULT NULL,
