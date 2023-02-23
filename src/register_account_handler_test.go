@@ -185,9 +185,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		s := createSession(email, 1)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		form.Insert("recaptcha", "123abc")
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -226,8 +226,8 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		s := createSession(email, 1)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -243,9 +243,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		s := createSession(email, 1)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		form.Insert("recaptcha", "fail")
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -255,9 +255,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 
 	t.Run("tokenが不正", func(t *testing.T) {
 		form := contents.NewMultipart()
-		form.Insert("token", "123")
 		form.Insert("recaptcha", "123abc")
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", "123")
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -278,9 +278,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		form.Insert("recaptcha", "123abc")
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -296,9 +296,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		s := createSession(email, 3)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		form.Insert("recaptcha", "123abc")
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -319,9 +319,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		form.Insert("recaptcha", "123abc")
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -365,9 +365,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 		s := createSession(email, 0)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		form.Insert("code", s.VerifyCode)
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -417,9 +417,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 		s := createSession(email, 0)
 
 		form := contents.NewMultipart()
-		form.Insert("token", "123")
 		form.Insert("code", s.VerifyCode)
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", "123")
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -440,9 +440,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		form.Insert("code", s.VerifyCode)
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -459,9 +459,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 		s := createSession(email, 5)
 
 		form := contents.NewMultipart()
-		form.Insert("token", s.ID)
 		form.Insert("code", s.VerifyCode)
 		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
 

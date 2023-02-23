@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"go.uber.org/zap"
 )
 
@@ -163,7 +164,8 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	token := c.FormValue("token") // SendEmailVerifyHandlerのレスポンスToken
+	token := c.Request().Header.Get("X-Register-Token") // SendEmailVerifyHandlerのレスポンスToken
+
 	recaptcha := c.FormValue("recaptcha")
 	if token == "" {
 		return NewHTTPError(http.StatusBadRequest, "token is empty")
@@ -297,8 +299,8 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
+	token := c.Request().Header.Get("X-Register-Token") // SendEmailVerifyHandlerのレスポンスToken
 	code := c.FormValue("code")
-	token := c.FormValue("token") // SendEmailVerifyHandlerのレスポンスToken
 
 	if token == "" {
 		return NewHTTPError(http.StatusBadRequest, "token is empty")
@@ -369,4 +371,119 @@ func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, resp)
+}
+
+// Passkeyを登録するために、Challengeなどを返す
+func (h *Handler) RegisterBeginWebAuthn(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	token := c.Request().Header.Get("X-Register-Token") // SendEmailVerifyHandlerのレスポンスToken
+
+	if token == "" {
+		return NewHTTPError(http.StatusBadRequest, "token is empty")
+	}
+
+	registerSession, err := models.RegisterSessions(
+		models.RegisterSessionWhere.ID.EQ(token),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "token is invalid")
+	}
+	if err != nil {
+		return err
+	}
+
+	// まだ認証されていない場合
+	if !registerSession.EmailVerified {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrEmailNotVerified, "Email is not verified")
+	}
+
+	// 有効期限が切れた場合
+	if time.Now().After(registerSession.Period) {
+		// セッションは削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
+	}
+
+	// リトライ回数や送信回数は認証されていたら用済みなので見ない
+
+	user, err := NewWebAuthnUserRegister(registerSession.Email)
+	if err != nil {
+		return err
+	}
+	webauthnSessionId, err := lib.RandomStr(31)
+	if err != nil {
+		return err
+	}
+
+	creation, s, err := h.WebAuthn.BeginRegistration(user)
+	if err != nil {
+		return err
+	}
+
+	row := types.JSON{}
+	if err = row.Unmarshal(s); err != nil {
+		return err
+	}
+
+	webauthnSession := models.WebauthnSession{
+		ID:               webauthnSessionId,
+		WebauthnUserID:   s.UserID,
+		UserDisplayName:  s.UserDisplayName,
+		Challenge:        s.Challenge,
+		UserVerification: string(s.UserVerification),
+		Row:              row,
+
+		Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+	}
+	if err := webauthnSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	cookie := &http.Cookie{
+		Name:       h.C.WebAuthnSessionCookie.Name,
+		Value:      webauthnSessionId,
+		Path:       h.C.WebAuthnSessionCookie.Path,
+		Domain:     h.C.Host.Host,
+		Secure:     h.C.WebAuthnSessionCookie.Secure,
+		HttpOnly:   h.C.WebAuthnSessionCookie.HttpOnly,
+		Expires:    h.C.WebAuthnSessionCookie.Expires,
+		RawExpires: h.C.WebAuthnSessionCookie.RawExpires,
+		MaxAge:     h.C.WebAuthnSessionCookie.MaxAge,
+		SameSite:   h.C.WebAuthnSessionCookie.SameSite,
+	}
+	c.SetCookie(cookie)
+
+	return c.JSON(http.StatusOK, creation)
+}
+
+// 認証を追加
+func (h *Handler) RegisterSetAuthentication(c echo.Context) error {
+	certType := c.FormValue("type")
+	recaptcha := c.FormValue("recaptcha")
+
+	ip := c.RealIP()
+
+	// reCAPTCHA
+	if h.C.UseReCaptcha {
+		order, err := h.ReCaptcha.ValidateOrder(recaptcha, ip)
+		if err != nil {
+			return err
+		}
+		// 検証に失敗した or スコアが閾値以下の場合はエラーにする
+		if !order.Success || order.Score < h.C.ReCaptchaAllowScore {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrReCaptcha, "reCAPTCHA validation failed")
+		}
+	}
+
+	switch certType {
+	case "password":
+	case "passkey":
+	default:
+		return NewHTTPError(http.StatusBadRequest, "authentication type no selected")
+	}
+
+	return nil
 }
