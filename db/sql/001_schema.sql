@@ -413,7 +413,7 @@ CREATE TABLE `webauthn_session` (
 
     PRIMARY KEY(`id`),
     INDEX `webauthn_register_session_webauthn_user_id` (`webauthn_user_id`)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- OAuthで接続したときのセッション
 -- nonceとかを保存しておく
@@ -438,7 +438,7 @@ CREATE TABLE `oauth_session` (
     PRIMARY KEY(`code`),
     INDEX `oauth_session_user_id` (`user_id`),
     INDEX `oauth_session_client_id` (`client_id`)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- ODICのクライアント
 CREATE TABLE `client` (
