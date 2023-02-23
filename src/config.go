@@ -34,7 +34,6 @@ type Config struct {
 	MailgunSecret     string
 	SenderMailAddress string
 
-	// セッションの有効期限
 	// アカウント登録時に使用するセッションの有効期限
 	RegisterSessionPeriod     time.Duration
 	RegisterSessionRetryLimit uint8
@@ -45,6 +44,16 @@ type Config struct {
 	WebAuthnConfig        *webauthn.Config
 	WebAuthnSessionPeriod time.Duration
 	WebAuthnSessionCookie CookieConfig
+
+	// ログインセッション
+	SessionDBPeriod time.Duration
+	SessionCookie   CookieConfig
+	RefreshDBPeriod time.Duration
+	RefreshCookie   CookieConfig
+	// 現在ログインしているセッション
+	LoginUserCookie CookieConfig
+	// ログイン状態をJSで見れるようにするCookie
+	LoginStateCookie CookieConfig
 }
 
 // Cookieの設定
@@ -55,9 +64,6 @@ type CookieConfig struct {
 	Secure   bool
 	HttpOnly bool
 	Path     string
-
-	Expires    time.Time // optional
-	RawExpires string    // for reading cookies only
 
 	// MaxAge=0 means no 'Max-Age' attribute specified.
 	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'
@@ -115,6 +121,43 @@ var LocalConfig = &Config{
 		MaxAge:   0,
 		SameSite: http.SameSiteDefaultMode,
 	},
+
+	SessionDBPeriod: 168 * time.Hour, // 7days
+	SessionCookie: CookieConfig{
+		Name:     "cateiru-sso-session",
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   604800, // 7days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	RefreshDBPeriod: 720 * time.Hour, // 30days
+	RefreshCookie: CookieConfig{
+		Name:     "cateiru-sso-refresh",
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	// 現在ログインしているセッション
+	LoginUserCookie: CookieConfig{
+		Name:     "cateiru-sso-users",
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	// ログイン状態をJSで見れるようにするCookie
+	LoginStateCookie: CookieConfig{
+		Name:     "cateiru-sso-login-state",
+		Secure:   false,
+		HttpOnly: false,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
 }
 
 var CloudRunConfig = &Config{
@@ -156,6 +199,43 @@ var CloudRunConfig = &Config{
 		HttpOnly: true,
 		Path:     "/",
 		MaxAge:   0,
+		SameSite: http.SameSiteDefaultMode,
+	},
+
+	SessionDBPeriod: 168 * time.Hour, // 7days
+	SessionCookie: CookieConfig{
+		Name:     "cateiru-sso-session",
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   604800, // 7days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	RefreshDBPeriod: 720 * time.Hour, // 30days
+	RefreshCookie: CookieConfig{
+		Name:     "cateiru-sso-refresh",
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	// 現在ログインしているセッション
+	LoginUserCookie: CookieConfig{
+		Name:     "cateiru-sso-users",
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	// ログイン状態をJSで見れるようにするCookie
+	LoginStateCookie: CookieConfig{
+		Name:     "cateiru-sso-login-state",
+		Secure:   true,
+		HttpOnly: false,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
 		SameSite: http.SameSiteDefaultMode,
 	},
 }
@@ -206,6 +286,43 @@ var TestConfig = &Config{
 		HttpOnly: true,
 		Path:     "/",
 		MaxAge:   0,
+		SameSite: http.SameSiteDefaultMode,
+	},
+
+	SessionDBPeriod: 168 * time.Hour, // 7days
+	SessionCookie: CookieConfig{
+		Name:     "cateiru-sso-session",
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   604800, // 7days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	RefreshDBPeriod: 720 * time.Hour, // 30days
+	RefreshCookie: CookieConfig{
+		Name:     "cateiru-sso-refresh",
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	// 現在ログインしているセッション
+	LoginUserCookie: CookieConfig{
+		Name:     "cateiru-sso-users",
+		Secure:   false,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	// ログイン状態をJSで見れるようにするCookie
+	LoginStateCookie: CookieConfig{
+		Name:     "cateiru-sso-login-state",
+		Secure:   false,
+		HttpOnly: false,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
 		SameSite: http.SameSiteDefaultMode,
 	},
 }
