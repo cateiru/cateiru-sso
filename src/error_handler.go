@@ -24,6 +24,10 @@ const (
 	ErrEmailSendingLimit = 6
 	// メール未認証
 	ErrEmailNotVerified = 7
+	// ログイン失敗
+	ErrLoginFailed = 8
+	// ログインに失敗したが別のアカウントでログインできる可能性がある場合
+	ErrBeAbleToLoginWithAnotherAccount = 9
 )
 
 type HTTPError struct {

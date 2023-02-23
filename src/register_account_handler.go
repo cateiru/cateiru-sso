@@ -443,47 +443,27 @@ func (h *Handler) RegisterBeginWebAuthn(c echo.Context) error {
 	}
 
 	cookie := &http.Cookie{
-		Name:       h.C.WebAuthnSessionCookie.Name,
-		Value:      webauthnSessionId,
-		Path:       h.C.WebAuthnSessionCookie.Path,
-		Domain:     h.C.Host.Host,
-		Secure:     h.C.WebAuthnSessionCookie.Secure,
-		HttpOnly:   h.C.WebAuthnSessionCookie.HttpOnly,
-		Expires:    h.C.WebAuthnSessionCookie.Expires,
-		RawExpires: h.C.WebAuthnSessionCookie.RawExpires,
-		MaxAge:     h.C.WebAuthnSessionCookie.MaxAge,
-		SameSite:   h.C.WebAuthnSessionCookie.SameSite,
+		Name:     h.C.WebAuthnSessionCookie.Name,
+		Value:    webauthnSessionId,
+		Path:     h.C.WebAuthnSessionCookie.Path,
+		Domain:   h.C.Host.Host,
+		Secure:   h.C.WebAuthnSessionCookie.Secure,
+		HttpOnly: h.C.WebAuthnSessionCookie.HttpOnly,
+		MaxAge:   h.C.WebAuthnSessionCookie.MaxAge,
+		SameSite: h.C.WebAuthnSessionCookie.SameSite,
 	}
 	c.SetCookie(cookie)
 
 	return c.JSON(http.StatusOK, creation)
 }
 
-// 認証を追加
-func (h *Handler) RegisterSetAuthentication(c echo.Context) error {
-	certType := c.FormValue("type")
-	recaptcha := c.FormValue("recaptcha")
+// Passkeyによる認証の登録
+// 事前にRegisterBeginWebAuthnを呼び出してtokenをcookieに付与させる必要がある
+func (h *Handler) RegisterWebathn(c echo.Context) error {
+	return nil
+}
 
-	ip := c.RealIP()
-
-	// reCAPTCHA
-	if h.C.UseReCaptcha {
-		order, err := h.ReCaptcha.ValidateOrder(recaptcha, ip)
-		if err != nil {
-			return err
-		}
-		// 検証に失敗した or スコアが閾値以下の場合はエラーにする
-		if !order.Success || order.Score < h.C.ReCaptchaAllowScore {
-			return NewHTTPUniqueError(http.StatusBadRequest, ErrReCaptcha, "reCAPTCHA validation failed")
-		}
-	}
-
-	switch certType {
-	case "password":
-	case "passkey":
-	default:
-		return NewHTTPError(http.StatusBadRequest, "authentication type no selected")
-	}
-
+// パスワードによる認証の登録
+func (h *Handler) RegisterPassword(c echo.Context) error {
 	return nil
 }
