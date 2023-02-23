@@ -23,9 +23,7 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	t.Run("成功する", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		form := contents.NewMultipart()
 		form.Insert("email", email)
@@ -55,9 +53,7 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	})
 
 	t.Run("Emailが不正な形式の場合エラー", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple", r)
+		email := RandomEmail(t)
 
 		form := contents.NewMultipart()
 		form.Insert("email", email)
@@ -71,9 +67,7 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	})
 
 	t.Run("reCAPTCHA tokenが無いとエラー", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		form := contents.NewMultipart()
 		form.Insert("email", email)
@@ -86,9 +80,7 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	})
 
 	t.Run("reCAPTCHAのチャレンジ失敗", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		form := contents.NewMultipart()
 		form.Insert("email", email)
@@ -102,9 +94,7 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	})
 
 	t.Run("すでにセッションテーブルにEmailが存在している場合はエラー", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		session, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -133,9 +123,7 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	})
 
 	t.Run("すでにメールアドレスが登録されている", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		RegisterUser(t, ctx, email)
 
@@ -180,9 +168,7 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 	}
 
 	t.Run("成功する", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 1)
 
@@ -221,9 +207,7 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("recaptchaが空だとエラー", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 1)
 
@@ -238,9 +222,7 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("recaptchaのチャレンジが失敗", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 1)
 
@@ -268,15 +250,13 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("tokenの有効期限切れ", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 1)
 
 		// 有効期限 - 10日
 		s.Period = s.Period.Add(-24 * 10 * time.Hour)
-		_, err = s.Update(ctx, DB, boil.Infer())
+		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
 		form := contents.NewMultipart()
@@ -291,9 +271,7 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("メールの送信上限を超えた", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 3)
 
@@ -309,15 +287,13 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("リトライ回数が上限を超えていた", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 1)
 
 		// すでに5回ミスった
 		s.RetryCount = 5
-		_, err = s.Update(ctx, DB, boil.Infer())
+		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
 		form := contents.NewMultipart()
@@ -360,9 +336,7 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 	}
 
 	t.Run("成功", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 0)
 
@@ -395,9 +369,7 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("tokenがない場合エラー", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 0)
 
@@ -412,9 +384,7 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("tokenが不正", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 0)
 
@@ -430,15 +400,13 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("tokenの有効期限切れ", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, 0)
 
 		// 有効期限 - 10日
 		s.Period = s.Period.Add(-24 * 10 * time.Hour)
-		_, err = s.Update(ctx, DB, boil.Infer())
+		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
 		form := contents.NewMultipart()
@@ -453,9 +421,7 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("リトライ回数上限", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		// すでに5回リトライ済み
 		s := createSession(email, 5)
@@ -501,9 +467,7 @@ func TestRegisterBeginWebAuthn(t *testing.T) {
 	}
 
 	t.Run("成功する", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, true)
 
@@ -571,15 +535,13 @@ func TestRegisterBeginWebAuthn(t *testing.T) {
 	})
 
 	t.Run("tokenが有効期限切れ", func(t *testing.T) {
-		r, err := lib.RandomStr(10)
-		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := RandomEmail(t)
 
 		s := createSession(email, true)
 
 		// 有効期限 - 10日
 		s.Period = s.Period.Add(-24 * 10 * time.Hour)
-		_, err = s.Update(ctx, DB, boil.Infer())
+		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
 		m, err := mock.NewMock("", http.MethodPost, "/")

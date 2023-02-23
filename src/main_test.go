@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
@@ -69,6 +70,13 @@ func ResetDBTable(ctx context.Context, db *sql.DB) error {
 	}
 
 	return nil
+}
+
+// ランダムなEmailを作成する
+func RandomEmail(t *testing.T) string {
+	r, err := lib.RandomStr(10)
+	require.NoError(t, err)
+	return fmt.Sprintf("%s@exmaple.com", r)
 }
 
 // ユーザを新規作成する
