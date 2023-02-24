@@ -40,7 +40,7 @@ func NewWebAuthnUserFromDB(ctx context.Context, db *sql.DB, user *models.User) (
 	if user.FamilyName.Valid && user.GivenName.Valid {
 		// 名前が設定されている場合はフォーマットする
 		// 順序は姓名と、日本式
-		if !user.MiddleName.Valid {
+		if user.MiddleName.Valid {
 			displayName = fmt.Sprintf("%s %s %s", user.FamilyName.String, user.MiddleName.String, user.GivenName.String)
 		} else {
 			displayName = fmt.Sprintf("%s %s", user.FamilyName.String, user.GivenName.String)
