@@ -15,12 +15,15 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type SessionInterface interface {
 	Login(ctx context.Context, cookies []*http.Cookie) (*models.User, []*http.Cookie, error)
 	Logout(ctx context.Context, cookies []*http.Cookie, user *models.User) ([]*http.Cookie, error)
 	NewRegisterSession(ctx context.Context, user *models.User, ua *UserData, ip string) (*RegisterSession, error)
+	SwitchAccount(ctx context.Context, cookies []*http.Cookie, userID string) ([]*http.Cookie, error)
+	LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) ([]*models.User, error)
 }
 
 type RegisterSession struct {
@@ -57,6 +60,52 @@ func NewSession(c *Config, db *sql.DB) *Session {
 // セッショントークンが存在しないor有効期限が切れている場合、リフレッシュトークンを使用してログインを試みます。
 // リフレッシュトークンを使用してログインした場合、リフレッシュトークンの値は更新されます。
 // エラー時にもcookieはが存在する可能性があるためset-cookiesする必要があります
+//
+// ```mermaid
+// graph TD
+// A([start]) --> B{セッショントークンがあるか}
+// B -->|Yes| C[DBからセッショントークンを取得する]
+// B -->|No| REFRESH([リフレッシュトークンからログイン])
+// REFRESH --> H{ログインユーザCookieが存在するか}
+// H -->|Yes| I[リフレッシュトークンを取得する]
+// I --> M{リフレッシュトークンが存在するか}
+// M --> |Yes| N[DBからリフレッシュを取得する]
+// N --> O{リフレッシュがDBから取得できた}
+// O -->|Yes| P{DBから取得したリフレッシュのユーザIDとリフレッシュCookieのユーザIDが同じ}
+// P -->|Yes| Q{リフレッシュの有効期限が切れていない}
+// Q -->|Yes| R[DBからユーザを取得する]
+// R --> S{ユーザがDBから取得できた}
+// S -->|Yes| T[前のリフレッシュトークンをDBから削除]
+// T --> U[リフレッシュに紐付けられているセッションを削除]
+// U --> V[リフレッシュトークンを新規作成]
+// V --> W[セッショントークンを新規作成]
+// W --> END
+// S -->|No| ERR([ログイン失敗処理])
+// Q -->|No| ERR
+// P -->|No| ERR
+// O -->|No| ERR
+// M --> |No| ERR
+// H -->|No| J{リフレッシュトークンが存在するか}
+// J -->|Yes| K[他のアカウントでログインできる可能性エラーで返す]
+// K --> END
+// J -->|No| ERR
+// C --> D{セッショントークンがDBから取得できた}
+// D -->|Yes| E{セッショントークンの有効期限が切れていない}
+// D -->|No| REFRESH
+// E -->|Yes| F[ユーザをDBから取得する]
+// E -->|No| REFRESH
+// F --> G{ユーザがDBから取得できた}
+// G -->|Yes| Z[ログイン完了]
+// G -->|No| ERR
+// ERR --> ERRA[セッショントークンがCookieにあればDBとCookieを削除]
+// ERRA --> ERRB[リフレッシュトークンがCookieにあればDBとCookieを削除]
+// ERRB --> ERRC[LoginUser cookieがあればcookieを削除]
+// ERRC --> ERRD[LoginState CookieがあればCookieを削除]
+// ERRD --> END
+// Z --> END([end])
+// ```
+//
+// https://mermaid.ink/img/pako:eNqdVm1P2lAU_ivkftIEDRBQ4MMSoSjqRAVfMgsfGqhKJtRASeaQZG0XFcXIlvmWkJgsDpzOl2XLls25_ZhLUf_Fbm9bWqDCXENIuZznec45Pc_tzYIoE6OBGyykqOVF0xQRTprQNdBFplkqxUa6TT09T0yeLOSvoSBA_jsUKlD4AoUNKPyC_KV0zxUgx0N-C3JbORnukVCrz-j0qslLEh70B-Tz7Sj4t-LOnvh7H3KHiCiiZwkwq6agbzDoC_m7SCicQmEXCp9Upg-NmWAd4RzyV5A_RiuRbplKIcDF-LP6CCiUMf6bl2Gex2lUjHh-IJZO5Ey0kvxaScOd0jCsZhiLj2U7lfCA_hiGywkEtJ62khmKBzB63EicK6hkKq4CuW3IHSnC41rhE9nmUPQ5MuK8qLd1mIDcSWuI2u3GwIJYRLN0oChPaMqThplf1Ep5cfNHrXR0f1iU0BvrkEcEZci9htwp-laYJjWmoK53irJxy4K4ZaGsFtapUyFNZYoU89u4ug6DUmfMb94fHivSU1h62mjMuLPbr8Xq9QHk3mBLqdWiUWmyFypKzzmNOWc6j25t7-quvFO9KdU2igp2BmNnyfYONgDOYqAvQOgbJBnaFwxKZtZsKB5_ru3ui-vl2-KaatpJfbh-JBqWxluXFK80rPnrYSP_a8ER7fmOktXrPen58u8hfwb5stIONBH6vUUeEH5L3Lm8E25qryqQR174KElxlbs_75CC0qnRxk6NtBblxRFEh524_YQSWgW-9kT_bC2ieZOWl32a0iCpd1pzgjrH-YypBnHhQ48w4pAmPtc4ZReF6s-1iD6qocfoRn4OweAA2b7R6gZ2ht99qDNXUk4nynKT-SQ-ldjT8SX2aG6Pyu0lnzIL8eR0mk6Zour7rE4SfQjvVfGEjA-xFEubvC0EDyZANE7vnPqzi6STsUg3MIMEnUpQ8Rg6aGSlmDBgF-kEHQZudBuj56nMEhsG4WQOhVIZlgmtJKPAzaYytBlklmMoHSJOoSNKArjnqaU0Wl2mksCdBS-A22619VocNnT12-1Wq8vhMIMV4O5z9tosLrvd7rA4XS6L3ZYzg5cMgxgsvU6H1erodzosfTanw4bi6VicZVJj8lEIn4iwwhyOx4q5vzI6g_c?type=png)](https://mermaid.live/edit#pako:eNqdVm1P2lAU_ivkftIEDRBQ4MMSoSjqRAVfMgsfGqhKJtRASeaQZG0XFcXIlvmWkJgsDpzOl2XLls25_ZhLUf_Fbm9bWqDCXENIuZznec45Pc_tzYIoE6OBGyykqOVF0xQRTprQNdBFplkqxUa6TT09T0yeLOSvoSBA_jsUKlD4AoUNKPyC_KV0zxUgx0N-C3JbORnukVCrz-j0qslLEh70B-Tz7Sj4t-LOnvh7H3KHiCiiZwkwq6agbzDoC_m7SCicQmEXCp9Upg-NmWAd4RzyV5A_RiuRbplKIcDF-LP6CCiUMf6bl2Gex2lUjHh-IJZO5Ey0kvxaScOd0jCsZhiLj2U7lfCA_hiGywkEtJ62khmKBzB63EicK6hkKq4CuW3IHSnC41rhE9nmUPQ5MuK8qLd1mIDcSWuI2u3GwIJYRLN0oChPaMqThplf1Ep5cfNHrXR0f1iU0BvrkEcEZci9htwp-laYJjWmoK53irJxy4K4ZaGsFtapUyFNZYoU89u4ug6DUmfMb94fHivSU1h62mjMuLPbr8Xq9QHk3mBLqdWiUWmyFypKzzmNOWc6j25t7-quvFO9KdU2igp2BmNnyfYONgDOYqAvQOgbJBnaFwxKZtZsKB5_ru3ui-vl2-KaatpJfbh-JBqWxluXFK80rPnrYSP_a8ER7fmOktXrPen58u8hfwb5stIONBH6vUUeEH5L3Lm8E25qryqQR174KElxlbs_75CC0qnRxk6NtBblxRFEh524_YQSWgW-9kT_bC2ieZOWl32a0iCpd1pzgjrH-YypBnHhQ48w4pAmPtc4ZReF6s-1iD6qocfoRn4OweAA2b7R6gZ2ht99qDNXUk4nynKT-SQ-ldjT8SX2aG6Pyu0lnzIL8eR0mk6Zour7rE4SfQjvVfGEjA-xFEubvC0EDyZANE7vnPqzi6STsUg3MIMEnUpQ8Rg6aGSlmDBgF-kEHQZudBuj56nMEhsG4WQOhVIZlgmtJKPAzaYytBlklmMoHSJOoSNKArjnqaU0Wl2mksCdBS-A22619VocNnT12-1Wq8vhMIMV4O5z9tosLrvd7rA4XS6L3ZYzg5cMgxgsvU6H1erodzosfTanw4bi6VicZVJj8lEIn4iwwhyOx4q5vzI6g_c
 func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.User, []*http.Cookie, error) {
 	var sessionCookie *http.Cookie = nil
 	for _, cookie := range cookies {
@@ -494,4 +543,141 @@ func (s *RegisterSession) InsertCookie(c *Config) []*http.Cookie {
 		loginUserCookie,
 		loginStateCookie,
 	}
+}
+
+// ログインするアカウントを変更する
+// すでにセッションがログイン存在している場合は、そのセッションは削除する
+// エラーでもcookieはセットする必要があります
+// このメソッドではLoginUser cookieを更新するだけです
+func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, userID string) ([]*http.Cookie, error) {
+	// ユーザIDのユーザが存在するかチェック
+	userExists, err := models.Users(
+		models.UserWhere.ID.EQ([]byte(userID)),
+	).Exists(ctx, s.DB)
+	if err != nil {
+		return []*http.Cookie{}, err
+	}
+	if !userExists {
+		return []*http.Cookie{}, NewHTTPError(http.StatusBadRequest, "user not found")
+	}
+
+	newUserRefreshTokenName := fmt.Sprintf("%s-%s", s.RefreshCookie.Name, userID)
+	newCookie := []*http.Cookie{}
+	var newRefreshCookie *http.Cookie = nil
+	var sessionCookie *http.Cookie = nil
+	for _, cookie := range cookies {
+		switch cookie.Name {
+		case newUserRefreshTokenName:
+			newRefreshCookie = cookie
+		case s.SessionCookie.Name:
+			sessionCookie = cookie
+		}
+	}
+	// 新規にログインするリフレッシュCookieが存在しないのでそもそもログインできない
+	if newRefreshCookie == nil {
+		return []*http.Cookie{}, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+	}
+
+	// リフレッシュトークンの値が不正な場合はログインしない
+	refresh, err := models.Refreshes(
+		models.RefreshWhere.ID.EQ(newRefreshCookie.Value),
+	).One(ctx, s.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		refreshCookie := &http.Cookie{
+			Name:     newUserRefreshTokenName,
+			Secure:   s.RefreshCookie.Secure,
+			HttpOnly: s.RefreshCookie.HttpOnly,
+			Path:     s.RefreshCookie.Path,
+			MaxAge:   -1,
+			Expires:  time.Now(),
+			SameSite: s.RefreshCookie.SameSite,
+
+			Value: "",
+		}
+		return []*http.Cookie{refreshCookie}, err
+	}
+	if err != nil {
+		return []*http.Cookie{}, err
+	}
+	// リフレッシュトークンのユーザが違う場合はエラー
+	if string(refresh.UserID) != userID {
+		refreshCookie := &http.Cookie{
+			Name:     newUserRefreshTokenName,
+			Secure:   s.RefreshCookie.Secure,
+			HttpOnly: s.RefreshCookie.HttpOnly,
+			Path:     s.RefreshCookie.Path,
+			MaxAge:   -1,
+			Expires:  time.Now(),
+			SameSite: s.RefreshCookie.SameSite,
+
+			Value: "",
+		}
+		return []*http.Cookie{refreshCookie}, err
+	}
+
+	newCookie = append(newCookie, &http.Cookie{
+		Name:     s.LoginUserCookie.Name,
+		Secure:   s.LoginUserCookie.Secure,
+		HttpOnly: s.LoginUserCookie.HttpOnly,
+		Path:     s.LoginUserCookie.Path,
+		MaxAge:   s.LoginUserCookie.MaxAge,
+		Expires:  time.Now().Add(time.Duration(s.LoginUserCookie.MaxAge) * time.Second),
+		SameSite: s.LoginUserCookie.SameSite,
+
+		Value: userID,
+	})
+
+	// すでに設定されているセッションは削除する
+	if sessionCookie != nil && sessionCookie.Value != "" {
+		if _, err := models.Sessions(
+			models.SessionWhere.ID.EQ(sessionCookie.Value),
+		).DeleteAll(ctx, s.DB); err != nil {
+			return []*http.Cookie{}, err
+		}
+
+		newCookie = append(newCookie, &http.Cookie{
+			Name:     s.SessionCookie.Name,
+			Secure:   s.SessionCookie.Secure,
+			HttpOnly: s.SessionCookie.HttpOnly,
+			Path:     s.SessionCookie.Path,
+			MaxAge:   -1,
+			Expires:  time.Now(),
+			SameSite: s.SessionCookie.SameSite,
+
+			Value: "",
+		})
+	}
+
+	return newCookie, nil
+}
+
+// ログイン可能なアカウントを返す
+// cookieのリフレッシュトークンからユーザを出しています
+// 有効期限が切れたリフレッシュトークンは省きます
+func (s *Session) LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) ([]*models.User, error) {
+	refreshTokens := []string{}
+	for _, cookie := range cookies {
+		if strings.HasPrefix(cookie.Name, s.RefreshCookie.Name) {
+			refreshTokens = append(refreshTokens, cookie.Value)
+		}
+	}
+	if len(refreshTokens) == 0 {
+		return []*models.User{}, nil
+	}
+
+	// SELECT * FROM user
+	// INNER JOIN refresh
+	//     ON user.id = refresh.user_id
+	// WHERE refresh.period < NOW()
+	// AND refresh.id IN ?;
+	users, err := models.Users(
+		qm.InnerJoin("refresh IN user.id = refresh.user_id"),
+		qm.Where("refresh.period < NOW()"),
+		qm.AndIn("refresh.id IN ?", refreshTokens),
+	).All(ctx, s.DB)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
