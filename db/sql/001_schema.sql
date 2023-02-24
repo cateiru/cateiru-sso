@@ -582,7 +582,7 @@ CREATE TABLE `login_client_history` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `login_history` (`client_id`),
+    INDEX `login_client_history_client_id` (`client_id`),
     INDEX `login_client_history_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
