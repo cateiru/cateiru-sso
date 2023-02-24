@@ -660,6 +660,7 @@ func (o RefreshSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 
 var mySQLRefreshUniqueColumns = []string{
 	"id",
+	"history_id",
 	"session_id",
 }
 

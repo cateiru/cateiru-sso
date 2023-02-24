@@ -317,6 +317,7 @@ CREATE TABLE `refresh` (
 
     PRIMARY KEY(`id`),
     INDEX `refresh_user_id` (`user_id`),
+    UNIQUE INDEX `refresh_history_id` (`history_id`),
     UNIQUE INDEX `refresh_session_id` (`session_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
