@@ -23,6 +23,7 @@ type Handler struct {
 	ReCaptcha lib.ReCaptchaInterface
 	Sender    lib.SenderInterface
 	WebAuthn  lib.WebAuthnInterface
+	Session   SessionInterface
 }
 
 func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
@@ -38,12 +39,15 @@ func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 		return nil, err
 	}
 
+	session := NewSession(config, db)
+
 	return &Handler{
 		DB:        db,
 		C:         config,
 		ReCaptcha: reCaptcha,
 		Sender:    sender,
 		WebAuthn:  webauthn,
+		Session:   session,
 	}, nil
 }
 

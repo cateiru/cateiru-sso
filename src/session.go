@@ -17,6 +17,12 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
+type SessionInterface interface {
+	Login(ctx context.Context, cookies []*http.Cookie) (*models.User, []*http.Cookie, error)
+	Logout(ctx context.Context, cookies []*http.Cookie, user *models.User) ([]*http.Cookie, error)
+	NewRegisterSession(ctx context.Context, user *models.User, ua *UserData, ip string) (*RegisterSession, error)
+}
+
 type RegisterSession struct {
 	SessionToken string
 	RefreshToken string
@@ -34,7 +40,7 @@ type Session struct {
 	DB *sql.DB
 }
 
-func NewSession(c Config, db *sql.DB) *Session {
+func NewSession(c *Config, db *sql.DB) *Session {
 	return &Session{
 		SessionCookie:    c.SessionCookie,
 		RefreshCookie:    c.RefreshCookie,
@@ -85,7 +91,7 @@ func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.Us
 		models.UserWhere.ID.EQ(session.UserID),
 	).One(ctx, s.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, []*http.Cookie{}, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+		return s.loginFailed(ctx, cookies, "")
 	}
 	if err != nil {
 		return nil, []*http.Cookie{}, err
