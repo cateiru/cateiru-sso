@@ -122,6 +122,8 @@ func NewTestHandler(t *testing.T) *src.Handler {
 	webauthn, err := lib.NewWebAuthn(C.WebAuthnConfig)
 	require.NoError(t, err)
 
+	s := src.NewSession(C, DB)
+
 	return &src.Handler{
 		DB:        DB,
 		C:         C,
@@ -130,5 +132,6 @@ func NewTestHandler(t *testing.T) *src.Handler {
 		WebAuthn: &WebAuthnMock{
 			M: webauthn,
 		},
+		Session: s,
 	}
 }
