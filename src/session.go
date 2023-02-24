@@ -58,7 +58,7 @@ func NewSession(c *Config, db *sql.DB) *Session {
 // リフレッシュトークンを使用してログインした場合、リフレッシュトークンの値は更新されます。
 // エラー時にもcookieはが存在する可能性があるためset-cookiesする必要があります
 func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.User, []*http.Cookie, error) {
-	sessionCookie := new(http.Cookie)
+	var sessionCookie *http.Cookie = nil
 	for _, cookie := range cookies {
 		if cookie.Name == s.SessionCookie.Name {
 			sessionCookie = cookie
@@ -81,7 +81,7 @@ func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.Us
 		return nil, []*http.Cookie{}, err
 	}
 	// 有効期限が切れている
-	if time.Now().Before(session.Period) {
+	if time.Now().After(session.Period) {
 		// リフレッシュトークンでログインを試みる
 		return s.loginWithRefresh(ctx, cookies)
 	}
@@ -102,7 +102,7 @@ func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.Us
 
 // リフレッシュトークンを使用してログインを試みる
 func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie) (*models.User, []*http.Cookie, error) {
-	loginUserId := new(http.Cookie)
+	var loginUserId *http.Cookie = nil
 	refreshTokensCount := 0
 	for _, cookie := range cookies {
 		if cookie.Name == s.LoginUserCookie.Name {
@@ -126,7 +126,7 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie) 
 	}
 	// リフレッシュトークンを取得する
 	refreshTokenName := fmt.Sprintf("%s-%s", s.RefreshCookie.Name, loginUserId.Value)
-	refreshCookie := new(http.Cookie)
+	var refreshCookie *http.Cookie = nil
 	for _, cookie := range cookies {
 		if cookie.Name == refreshTokenName {
 			refreshCookie = cookie
@@ -152,7 +152,7 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie) 
 		return s.loginFailed(ctx, cookies, refreshTokenName)
 	}
 	// 有効期限が切れている
-	if time.Now().Before(refresh.Period) {
+	if time.Now().After(refresh.Period) {
 		return s.loginFailed(ctx, cookies, refreshTokenName)
 	}
 
@@ -200,6 +200,14 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie) 
 	if _, err := refresh.Delete(ctx, s.DB); err != nil {
 		return nil, []*http.Cookie{}, err
 	}
+	// リフレッシュトークンにセッショントークンが紐付けられている場合は、セッショントークンを削除する
+	if refresh.SessionID.Valid {
+		if _, err := models.Sessions(
+			models.SessionWhere.ID.EQ(refresh.SessionID.String),
+		).DeleteAll(ctx, s.DB); err != nil {
+			return nil, []*http.Cookie{}, err
+		}
+	}
 
 	// 新しいCookie設定
 	newSessionCookie := &http.Cookie{
@@ -236,13 +244,13 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie) 
 		Value: string(u.ID),
 	}
 	newLoginStateCookie := &http.Cookie{
-		Name:     s.LoginUserCookie.Name,
-		Secure:   s.LoginUserCookie.Secure,
-		HttpOnly: s.LoginUserCookie.HttpOnly,
-		Path:     s.LoginUserCookie.Path,
-		MaxAge:   s.LoginUserCookie.MaxAge,
-		Expires:  time.Now().Add(time.Duration(s.LoginUserCookie.MaxAge) * time.Second),
-		SameSite: s.LoginUserCookie.SameSite,
+		Name:     s.LoginStateCookie.Name,
+		Secure:   s.LoginStateCookie.Secure,
+		HttpOnly: s.LoginStateCookie.HttpOnly,
+		Path:     s.LoginStateCookie.Path,
+		MaxAge:   s.LoginStateCookie.MaxAge,
+		Expires:  time.Now().Add(time.Duration(s.LoginStateCookie.MaxAge) * time.Second),
+		SameSite: s.LoginStateCookie.SameSite,
 
 		Value: "1", // 1 or null
 	}
@@ -274,16 +282,16 @@ func (s *Session) Logout(ctx context.Context, cookies []*http.Cookie, user *mode
 }
 
 func (s *Session) logoutC(ctx context.Context, cookies []*http.Cookie, refreshCookieName string) ([]*http.Cookie, error) {
-	sessionCookie := new(http.Cookie)
-	refreshCookie := new(http.Cookie)
-	loginUserCookie := new(http.Cookie)
-	loginStateCookie := new(http.Cookie)
+	var sessionCookie *http.Cookie = nil
+	var refreshCookie *http.Cookie = nil
+	var loginUserCookie *http.Cookie = nil
+	var loginStateCookie *http.Cookie = nil
 
 	for _, cookie := range cookies {
 		switch cookie.Name {
 		case s.SessionCookie.Name:
 			sessionCookie = cookie
-		case s.RefreshCookie.Name:
+		case refreshCookieName:
 			refreshCookie = cookie
 		case s.LoginUserCookie.Name:
 			loginUserCookie = cookie
@@ -349,13 +357,13 @@ func (s *Session) logoutC(ctx context.Context, cookies []*http.Cookie, refreshCo
 	}
 	if loginStateCookie != nil {
 		deleteSetCookie = append(deleteSetCookie, &http.Cookie{
-			Name:     s.LoginUserCookie.Name,
-			Secure:   s.LoginUserCookie.Secure,
-			HttpOnly: s.LoginUserCookie.HttpOnly,
-			Path:     s.LoginUserCookie.Path,
+			Name:     s.LoginStateCookie.Name,
+			Secure:   s.LoginStateCookie.Secure,
+			HttpOnly: s.LoginStateCookie.HttpOnly,
+			Path:     s.LoginStateCookie.Path,
 			MaxAge:   -1,
 			Expires:  time.Now(),
-			SameSite: s.LoginUserCookie.SameSite,
+			SameSite: s.LoginStateCookie.SameSite,
 
 			Value: "0", // 1 or null
 		})
@@ -468,13 +476,13 @@ func (s *RegisterSession) InsertCookie(c Config) ([]*http.Cookie, error) {
 	}
 	// ログイン状態（JSで見るよう）
 	loginStateCookie := &http.Cookie{
-		Name:     c.LoginUserCookie.Name,
-		Secure:   c.LoginUserCookie.Secure,
-		HttpOnly: c.LoginUserCookie.HttpOnly,
-		Path:     c.LoginUserCookie.Path,
-		MaxAge:   c.LoginUserCookie.MaxAge,
-		Expires:  time.Now().Add(time.Duration(c.LoginUserCookie.MaxAge) * time.Second),
-		SameSite: c.LoginUserCookie.SameSite,
+		Name:     c.LoginStateCookie.Name,
+		Secure:   c.LoginStateCookie.Secure,
+		HttpOnly: c.LoginStateCookie.HttpOnly,
+		Path:     c.LoginStateCookie.Path,
+		MaxAge:   c.LoginStateCookie.MaxAge,
+		Expires:  time.Now().Add(time.Duration(c.LoginStateCookie.MaxAge) * time.Second),
+		SameSite: c.LoginStateCookie.SameSite,
 
 		Value: "1", // 1 or null
 	}
