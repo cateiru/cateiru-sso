@@ -166,6 +166,19 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie) 
 		return nil, []*http.Cookie{}, err
 	}
 
+	// 前のリフレッシュトークンは削除してしまう
+	if _, err := refresh.Delete(ctx, s.DB); err != nil {
+		return nil, []*http.Cookie{}, err
+	}
+	// リフレッシュトークンにセッショントークンが紐付けられている場合は、セッショントークンを削除する
+	if refresh.SessionID.Valid {
+		if _, err := models.Sessions(
+			models.SessionWhere.ID.EQ(refresh.SessionID.String),
+		).DeleteAll(ctx, s.DB); err != nil {
+			return nil, []*http.Cookie{}, err
+		}
+	}
+
 	// リフレッシュトークンを更新し、セッショントークンを新規作成する
 	newSessionToken, err := lib.RandomStr(31)
 	if err != nil {
@@ -195,18 +208,6 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie) 
 	}
 	if err := newRefresh.Insert(ctx, s.DB, boil.Infer()); err != nil {
 		return nil, []*http.Cookie{}, err
-	}
-	// 前のリフレッシュトークンは削除してしまう
-	if _, err := refresh.Delete(ctx, s.DB); err != nil {
-		return nil, []*http.Cookie{}, err
-	}
-	// リフレッシュトークンにセッショントークンが紐付けられている場合は、セッショントークンを削除する
-	if refresh.SessionID.Valid {
-		if _, err := models.Sessions(
-			models.SessionWhere.ID.EQ(refresh.SessionID.String),
-		).DeleteAll(ctx, s.DB); err != nil {
-			return nil, []*http.Cookie{}, err
-		}
 	}
 
 	// 新しいCookie設定
@@ -435,7 +436,7 @@ func (s *Session) NewRegisterSession(ctx context.Context, user *models.User, ua 
 }
 
 // ログイン用のCookie作成
-func (s *RegisterSession) InsertCookie(c Config) ([]*http.Cookie, error) {
+func (s *RegisterSession) InsertCookie(c *Config) []*http.Cookie {
 	refreshCookieName := fmt.Sprintf("%s-%s", c.RefreshCookie.Name, s.UserID)
 
 	// セッショントークン
@@ -492,5 +493,5 @@ func (s *RegisterSession) InsertCookie(c Config) ([]*http.Cookie, error) {
 		refreshCookie,
 		loginUserCookie,
 		loginStateCookie,
-	}, nil
+	}
 }

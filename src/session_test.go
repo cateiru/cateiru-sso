@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func TestLogin(t *testing.T) {
@@ -364,5 +365,155 @@ func TestLogin(t *testing.T) {
 		require.EqualError(t, err, "code=403, message=login failed, unique=8")
 
 		require.Len(t, setCookies, 1)
+	})
+}
+
+func TestLogout(t *testing.T) {
+	createSession := func(ctx context.Context, user *models.User) string {
+		sessionToken, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		s := models.Session{
+			ID:     sessionToken,
+			UserID: user.ID,
+
+			Period: time.Now().Add(C.SessionDBPeriod),
+		}
+		err = s.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+		return sessionToken
+	}
+	createRefresh := func(ctx context.Context, user *models.User, sessionToken string) string {
+		refreshToken, err := lib.RandomStr(63)
+		require.NoError(t, err)
+		id := ulid.Make()
+		idBin, err := id.MarshalBinary()
+		require.NoError(t, err)
+		r := models.Refresh{
+			ID:        refreshToken,
+			UserID:    user.ID,
+			HistoryID: idBin,
+
+			Period: time.Now().Add(C.RefreshDBPeriod),
+		}
+		if sessionToken != "" {
+			r.SessionID = null.NewString(sessionToken, true)
+		}
+		err = r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+		return refreshToken
+	}
+
+	s := src.NewSession(C, DB)
+
+	t.Run("成功", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		sessionToken := createSession(ctx, &u)
+		refreshToken := createRefresh(ctx, &u, sessionToken)
+
+		sessionCookie := &http.Cookie{
+			Name:  C.SessionCookie.Name,
+			Value: sessionToken,
+		}
+		refreshCookie := &http.Cookie{
+			Name:  fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u.ID),
+			Value: refreshToken,
+		}
+		loginUserCookie := &http.Cookie{
+			Name:  C.LoginUserCookie.Name,
+			Value: string(u.ID),
+		}
+		loginStateCookie := &http.Cookie{
+			Name:  C.LoginStateCookie.Name,
+			Value: "1",
+		}
+		cookies, err := s.Logout(ctx, []*http.Cookie{
+			sessionCookie,
+			refreshCookie,
+			loginUserCookie,
+			loginStateCookie,
+		}, &u)
+		require.NoError(t, err)
+
+		// すべてのCookieが更新される
+		require.Len(t, cookies, 4)
+
+		// 消えている
+		for _, cookie := range cookies {
+			require.Equal(t, cookie.MaxAge, -1, cookie.Name)
+		}
+
+		// セッショントークンが削除されている
+		existsSession, err := models.Sessions(
+			models.SessionWhere.ID.EQ(sessionToken),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existsSession)
+
+		// リフレッシュトークンが削除されている
+		existsRefresh, err := models.Refreshes(
+			models.RefreshWhere.ID.EQ(refreshToken),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existsRefresh)
+	})
+}
+
+func TestNewRegisterSession(t *testing.T) {
+	s := src.NewSession(C, DB)
+
+	t.Run("セッションを登録できる", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ua := &src.UserData{
+			Browser:  "Chrome",
+			OS:       "Windows",
+			Device:   "",
+			IsMobile: false,
+		}
+		ip := "198.51.100.5"
+
+		registerSession, err := s.NewRegisterSession(ctx, &u, ua, ip)
+		require.NoError(t, err)
+
+		t.Run("ログが保存されている", func(t *testing.T) {
+			historyCount, err := models.LoginHistories(
+				models.LoginHistoryWhere.UserID.EQ(u.ID),
+			).Count(ctx, DB)
+			require.NoError(t, err)
+
+			require.Equal(t, historyCount, int64(1), "ログイン履歴が保存されている")
+		})
+		t.Run("セッションがDBにある", func(t *testing.T) {
+			existsSession, err := models.Sessions(
+				models.SessionWhere.ID.EQ(registerSession.SessionToken),
+			).Exists(ctx, DB)
+			require.NoError(t, err)
+			require.True(t, existsSession)
+		})
+		t.Run("リフレッシュがDBにある", func(t *testing.T) {
+			existsRefresh, err := models.Refreshes(
+				models.RefreshWhere.ID.EQ(registerSession.RefreshToken),
+			).Exists(ctx, DB)
+			require.NoError(t, err)
+			require.True(t, existsRefresh)
+		})
+		t.Run("ログのIDとリフレッシュのIDが同じ", func(t *testing.T) {
+			existsLogFromRefresh, err := models.LoginHistories(
+				qm.InnerJoin("refresh ON refresh.history_id = login_history.refresh_id"),
+			).Exists(ctx, DB)
+			require.NoError(t, err)
+			require.True(t, existsLogFromRefresh)
+		})
+		t.Run("cookieを作成できる", func(t *testing.T) {
+			cookies := registerSession.InsertCookie(C)
+
+			require.Len(t, cookies, 4)
+		})
 	})
 }
