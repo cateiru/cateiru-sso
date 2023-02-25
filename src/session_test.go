@@ -168,6 +168,40 @@ func TestLogin(t *testing.T) {
 		require.Equal(t, setCookies[0].MaxAge, -1)
 	})
 
+	t.Run("エラー: セッショントークンはあるが値が空", func(t *testing.T) {
+		ctx := context.Background()
+
+		cookie := &http.Cookie{
+			Name:  C.SessionCookie.Name,
+			Value: "",
+		}
+
+		_, setCookies, err := s.Login(ctx, []*http.Cookie{cookie})
+		require.EqualError(t, err, "code=403, message=login failed, unique=8")
+
+		// セッショントークンが削除される
+		require.Len(t, setCookies, 1)
+	})
+	t.Run("エラー: リフレッシュトークンはあるが値が空", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		refreshCookie := &http.Cookie{
+			Name:  fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u.ID),
+			Value: "",
+		}
+		loginUserCookie := &http.Cookie{
+			Name:  C.LoginUserCookie.Name,
+			Value: string(u.ID),
+		}
+
+		_, setCookies, err := s.Login(ctx, []*http.Cookie{refreshCookie, loginUserCookie})
+		require.EqualError(t, err, "code=403, message=login failed, unique=8")
+
+		// 失敗したリフレッシュトークンと、LoginUser cookieを削除
+		require.Len(t, setCookies, 2)
+	})
+
 	// セッショントークンが不正な値（=DBに存在しない値）の場合、
 	// セッショントークンのCookieを削除します。
 	t.Run("エラー: セッショントークンが不正", func(t *testing.T) {
