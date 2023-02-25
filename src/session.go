@@ -19,7 +19,7 @@ import (
 )
 
 type SessionInterface interface {
-	Login(ctx context.Context, cookies []*http.Cookie) (*models.User, []*http.Cookie, error)
+	Login(ctx context.Context, cookies []*http.Cookie, useSessionOnly ...bool) (*models.User, []*http.Cookie, error)
 	Logout(ctx context.Context, cookies []*http.Cookie, user *models.User) ([]*http.Cookie, error)
 	NewRegisterSession(ctx context.Context, user *models.User, ua *UserData, ip string) (*RegisterSession, error)
 	SwitchAccount(ctx context.Context, cookies []*http.Cookie, userID string) ([]*http.Cookie, error)
@@ -106,7 +106,12 @@ func NewSession(c *Config, db *sql.DB) *Session {
 // ```
 //
 // https://mermaid.ink/img/pako:eNqdVm1P2lAU_ivkftIEDRBQ4MMSoSjqRAVfMgsfGqhKJtRASeaQZG0XFcXIlvmWkJgsDpzOl2XLls25_ZhLUf_Fbm9bWqDCXENIuZznec45Pc_tzYIoE6OBGyykqOVF0xQRTprQNdBFplkqxUa6TT09T0yeLOSvoSBA_jsUKlD4AoUNKPyC_KV0zxUgx0N-C3JbORnukVCrz-j0qslLEh70B-Tz7Sj4t-LOnvh7H3KHiCiiZwkwq6agbzDoC_m7SCicQmEXCp9Upg-NmWAd4RzyV5A_RiuRbplKIcDF-LP6CCiUMf6bl2Gex2lUjHh-IJZO5Ey0kvxaScOd0jCsZhiLj2U7lfCA_hiGywkEtJ62khmKBzB63EicK6hkKq4CuW3IHSnC41rhE9nmUPQ5MuK8qLd1mIDcSWuI2u3GwIJYRLN0oChPaMqThplf1Ep5cfNHrXR0f1iU0BvrkEcEZci9htwp-laYJjWmoK53irJxy4K4ZaGsFtapUyFNZYoU89u4ug6DUmfMb94fHivSU1h62mjMuLPbr8Xq9QHk3mBLqdWiUWmyFypKzzmNOWc6j25t7-quvFO9KdU2igp2BmNnyfYONgDOYqAvQOgbJBnaFwxKZtZsKB5_ru3ui-vl2-KaatpJfbh-JBqWxluXFK80rPnrYSP_a8ER7fmOktXrPen58u8hfwb5stIONBH6vUUeEH5L3Lm8E25qryqQR174KElxlbs_75CC0qnRxk6NtBblxRFEh524_YQSWgW-9kT_bC2ieZOWl32a0iCpd1pzgjrH-YypBnHhQ48w4pAmPtc4ZReF6s-1iD6qocfoRn4OweAA2b7R6gZ2ht99qDNXUk4nynKT-SQ-ldjT8SX2aG6Pyu0lnzIL8eR0mk6Zour7rE4SfQjvVfGEjA-xFEubvC0EDyZANE7vnPqzi6STsUg3MIMEnUpQ8Rg6aGSlmDBgF-kEHQZudBuj56nMEhsG4WQOhVIZlgmtJKPAzaYytBlklmMoHSJOoSNKArjnqaU0Wl2mksCdBS-A22619VocNnT12-1Wq8vhMIMV4O5z9tosLrvd7rA4XS6L3ZYzg5cMgxgsvU6H1erodzosfTanw4bi6VicZVJj8lEIn4iwwhyOx4q5vzI6g_c?type=png)](https://mermaid.live/edit#pako:eNqdVm1P2lAU_ivkftIEDRBQ4MMSoSjqRAVfMgsfGqhKJtRASeaQZG0XFcXIlvmWkJgsDpzOl2XLls25_ZhLUf_Fbm9bWqDCXENIuZznec45Pc_tzYIoE6OBGyykqOVF0xQRTprQNdBFplkqxUa6TT09T0yeLOSvoSBA_jsUKlD4AoUNKPyC_KV0zxUgx0N-C3JbORnukVCrz-j0qslLEh70B-Tz7Sj4t-LOnvh7H3KHiCiiZwkwq6agbzDoC_m7SCicQmEXCp9Upg-NmWAd4RzyV5A_RiuRbplKIcDF-LP6CCiUMf6bl2Gex2lUjHh-IJZO5Ey0kvxaScOd0jCsZhiLj2U7lfCA_hiGywkEtJ62khmKBzB63EicK6hkKq4CuW3IHSnC41rhE9nmUPQ5MuK8qLd1mIDcSWuI2u3GwIJYRLN0oChPaMqThplf1Ep5cfNHrXR0f1iU0BvrkEcEZci9htwp-laYJjWmoK53irJxy4K4ZaGsFtapUyFNZYoU89u4ug6DUmfMb94fHivSU1h62mjMuLPbr8Xq9QHk3mBLqdWiUWmyFypKzzmNOWc6j25t7-quvFO9KdU2igp2BmNnyfYONgDOYqAvQOgbJBnaFwxKZtZsKB5_ru3ui-vl2-KaatpJfbh-JBqWxluXFK80rPnrYSP_a8ER7fmOktXrPen58u8hfwb5stIONBH6vUUeEH5L3Lm8E25qryqQR174KElxlbs_75CC0qnRxk6NtBblxRFEh524_YQSWgW-9kT_bC2ieZOWl32a0iCpd1pzgjrH-YypBnHhQ48w4pAmPtc4ZReF6s-1iD6qocfoRn4OweAA2b7R6gZ2ht99qDNXUk4nynKT-SQ-ldjT8SX2aG6Pyu0lnzIL8eR0mk6Zour7rE4SfQjvVfGEjA-xFEubvC0EDyZANE7vnPqzi6STsUg3MIMEnUpQ8Rg6aGSlmDBgF-kEHQZudBuj56nMEhsG4WQOhVIZlgmtJKPAzaYytBlklmMoHSJOoSNKArjnqaU0Wl2mksCdBS-A22619VocNnT12-1Wq8vhMIMV4O5z9tosLrvd7rA4XS6L3ZYzg5cMgxgsvU6H1erodzosfTanw4bi6VicZVJj8lEIn4iwwhyOx4q5vzI6g_c
-func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.User, []*http.Cookie, error) {
+func (s *Session) Login(ctx context.Context, cookies []*http.Cookie, useSessionOnly ...bool) (*models.User, []*http.Cookie, error) {
+	sessionOnlyFlag := false
+	if len(useSessionOnly) >= 1 {
+		sessionOnlyFlag = useSessionOnly[0]
+	}
+
 	var sessionCookie *http.Cookie = nil
 	for _, cookie := range cookies {
 		if cookie.Name == s.SessionCookie.Name {
@@ -116,15 +121,20 @@ func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.Us
 	}
 	if sessionCookie == nil {
 		// リフレッシュトークンでログインを試みる
-		return s.loginWithRefresh(ctx, cookies)
+		return s.loginWithRefresh(ctx, cookies, sessionOnlyFlag)
+
 	}
 
 	session, err := models.Sessions(
 		models.SessionWhere.ID.EQ(sessionCookie.Value),
 	).One(ctx, s.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		// リフレッシュトークンでログインを試みる
-		return s.loginWithRefresh(ctx, cookies)
+		if sessionOnlyFlag {
+			return nil, []*http.Cookie{}, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+		} else {
+			// リフレッシュトークンでログインを試みる
+			return s.loginWithRefresh(ctx, cookies, sessionOnlyFlag)
+		}
 	}
 	if err != nil {
 		return nil, []*http.Cookie{}, err
@@ -132,7 +142,7 @@ func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.Us
 	// 有効期限が切れている
 	if time.Now().After(session.Period) {
 		// リフレッシュトークンでログインを試みる
-		return s.loginWithRefresh(ctx, cookies)
+		return s.loginWithRefresh(ctx, cookies, sessionOnlyFlag)
 	}
 
 	// ユーザDB叩く
@@ -150,7 +160,13 @@ func (s *Session) Login(ctx context.Context, cookies []*http.Cookie) (*models.Us
 }
 
 // リフレッシュトークンを使用してログインを試みる
-func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie) (*models.User, []*http.Cookie, error) {
+func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, sessionOnly bool) (*models.User, []*http.Cookie, error) {
+	// sessionOnlyがtrueのときは、リフレッシュトークンを使用したログインは行わないでエラーにする
+	// これは、アカウント変更やログアウトなどでCookieが更新されると良くないことが起きるためである
+	if sessionOnly {
+		return s.loginFailed(ctx, cookies, "")
+	}
+
 	var loginUserId *http.Cookie = nil
 	refreshTokensCount := 0
 	for _, cookie := range cookies {
@@ -565,17 +581,28 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 	newCookie := []*http.Cookie{}
 	var newRefreshCookie *http.Cookie = nil
 	var sessionCookie *http.Cookie = nil
+	var loggedInUser *http.Cookie = nil
 	for _, cookie := range cookies {
 		switch cookie.Name {
 		case newUserRefreshTokenName:
 			newRefreshCookie = cookie
 		case s.SessionCookie.Name:
 			sessionCookie = cookie
+		case s.LoginUserCookie.Name:
+			loggedInUser = cookie
 		}
 	}
 	// 新規にログインするリフレッシュCookieが存在しないのでそもそもログインできない
 	if newRefreshCookie == nil {
 		return []*http.Cookie{}, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+	}
+	// セッショントークンが無い場合はログインできない
+	if sessionCookie == nil {
+		return []*http.Cookie{}, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+	}
+	// 変更先のユーザが現在ログインしているユーザと同じ場合は特に何もしない
+	if loggedInUser.Value == userID {
+		return []*http.Cookie{}, nil
 	}
 
 	// リフレッシュトークンの値が不正な場合はログインしない
@@ -594,7 +621,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 
 			Value: "",
 		}
-		return []*http.Cookie{refreshCookie}, err
+		return []*http.Cookie{refreshCookie}, NewHTTPError(http.StatusBadRequest, "refresh token is invalid")
 	}
 	if err != nil {
 		return []*http.Cookie{}, err
@@ -627,26 +654,23 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 		Value: userID,
 	})
 
-	// すでに設定されているセッションは削除する
-	if sessionCookie != nil && sessionCookie.Value != "" {
-		if _, err := models.Sessions(
-			models.SessionWhere.ID.EQ(sessionCookie.Value),
-		).DeleteAll(ctx, s.DB); err != nil {
-			return []*http.Cookie{}, err
-		}
-
-		newCookie = append(newCookie, &http.Cookie{
-			Name:     s.SessionCookie.Name,
-			Secure:   s.SessionCookie.Secure,
-			HttpOnly: s.SessionCookie.HttpOnly,
-			Path:     s.SessionCookie.Path,
-			MaxAge:   -1,
-			Expires:  time.Now(),
-			SameSite: s.SessionCookie.SameSite,
-
-			Value: "",
-		})
+	if _, err := models.Sessions(
+		models.SessionWhere.ID.EQ(sessionCookie.Value),
+	).DeleteAll(ctx, s.DB); err != nil {
+		return []*http.Cookie{}, err
 	}
+
+	newCookie = append(newCookie, &http.Cookie{
+		Name:     s.SessionCookie.Name,
+		Secure:   s.SessionCookie.Secure,
+		HttpOnly: s.SessionCookie.HttpOnly,
+		Path:     s.SessionCookie.Path,
+		MaxAge:   -1,
+		Expires:  time.Now(),
+		SameSite: s.SessionCookie.SameSite,
+
+		Value: "",
+	})
 
 	return newCookie, nil
 }

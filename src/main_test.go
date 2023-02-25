@@ -5,14 +5,18 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"net"
+	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 )
@@ -99,4 +103,76 @@ func RegisterUser(t *testing.T, ctx context.Context, email string) models.User {
 	require.NoError(t, err)
 
 	return *dbU
+}
+
+// テスト用
+// ユーザのセッションを作成する
+// セッションは1つ目のユーザのみで、2つ目以降のユーザはリフレッシュトークンのみ
+func RegisterSession(t *testing.T, ctx context.Context, users ...*models.User) []*http.Cookie {
+	if len(users) < 1 {
+		t.Fatal("At least one user must be specified")
+	}
+
+	ua := &src.UserData{
+		OS:       "Windows",
+		Browser:  "Google Chrome",
+		Device:   "",
+		IsMobile: false,
+	}
+	ip := "203.0.113.2"
+
+	session := src.NewSession(C, DB)
+	createSession, err := session.NewRegisterSession(ctx, users[0], ua, ip)
+	require.NoError(t, err)
+
+	cookies := createSession.InsertCookie(C)
+
+	// 他のユーザのリフレッシュトークンを設定する
+	for _, u := range users[1:] {
+		refreshToken, err := lib.RandomStr(63)
+		require.NoError(t, err)
+		id := ulid.Make()
+		idBin, err := id.MarshalBinary()
+		require.NoError(t, err)
+
+		r := models.Refresh{
+			ID:        refreshToken,
+			UserID:    u.ID,
+			HistoryID: idBin,
+
+			Period: time.Now().Add(C.RefreshDBPeriod),
+		}
+		err = r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		history := models.LoginHistory{
+			UserID: u.ID,
+
+			RefreshID: idBin,
+
+			Device:   null.NewString(ua.Device, true),
+			Os:       null.NewString(ua.OS, true),
+			Browser:  null.NewString(ua.Browser, true),
+			IsMobile: null.NewBool(ua.IsMobile, true),
+
+			IP: net.ParseIP(ip),
+		}
+		err = history.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		refreshCookieName := fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u.ID)
+		cookies = append(cookies, &http.Cookie{
+			Name:     refreshCookieName,
+			Secure:   C.RefreshCookie.Secure,
+			HttpOnly: C.RefreshCookie.HttpOnly,
+			Path:     C.RefreshCookie.Path,
+			MaxAge:   C.RefreshCookie.MaxAge,
+			Expires:  time.Now().Add(time.Duration(C.RefreshCookie.MaxAge) * time.Second),
+			SameSite: C.RefreshCookie.SameSite,
+
+			Value: refreshToken,
+		})
+	}
+
+	return cookies
 }

@@ -3,6 +3,7 @@ package src_test
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"testing"
 	"time"
@@ -139,6 +140,52 @@ func TestLogin(t *testing.T) {
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.True(t, newRefresh)
+	})
+
+	// useSessionOnlyフラグが立っている場合セッショントークンのみでログインできる
+	t.Run("成功: セッショントークンのみでログイン", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		sessionToken := createSession(ctx, &u)
+
+		cookie := &http.Cookie{
+			Name:  C.SessionCookie.Name,
+			Value: sessionToken,
+		}
+
+		loginUser, setCookies, err := s.Login(ctx, []*http.Cookie{cookie}, true)
+		require.NoError(t, err)
+
+		require.Len(t, setCookies, 0, "Cookieは更新しない")
+		require.Equal(t, loginUser.ID, u.ID)
+	})
+
+	t.Run("失敗: リフレッシュトークンは存在するがuseSessionOnlyフラグが立っているため失敗", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		sessionToken := createSession(ctx, &u)
+		refreshToken := createRefresh(ctx, &u, sessionToken)
+
+		refreshCookieName := fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u.ID)
+		refreshCookie := &http.Cookie{
+			Name:  refreshCookieName,
+			Value: refreshToken,
+		}
+		loginUserCookie := &http.Cookie{
+			Name:  C.LoginUserCookie.Name,
+			Value: string(u.ID),
+		}
+
+		_, setCookies, err := s.Login(ctx, []*http.Cookie{refreshCookie, loginUserCookie}, true)
+		require.EqualError(t, err, "code=403, message=login failed, unique=8")
+
+		// loginUserCookieのみ削除
+		// リフレッシュトークンは削除しない
+		// これは、通常useSessionOnlyフラグを立たせるのはログアウトのハンドラなどであり、リフレッシュトークンは有効なものである可能性があるため。
+		// 有効なリフレッシュトークンであれば、useSessionOnlyでないエンドポイントにアクセスすることで更新できる
+		require.Len(t, setCookies, 1)
 	})
 
 	// Cookieが何も存在しない場合、エラーのみを返します
@@ -516,12 +563,13 @@ func TestNewRegisterSession(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Run("ログが保存されている", func(t *testing.T) {
-			historyCount, err := models.LoginHistories(
+			historyCounts, err := models.LoginHistories(
 				models.LoginHistoryWhere.UserID.EQ(u.ID),
-			).Count(ctx, DB)
+			).All(ctx, DB)
 			require.NoError(t, err)
 
-			require.Equal(t, historyCount, int64(1), "ログイン履歴が保存されている")
+			require.Len(t, historyCounts, 1, "ログイン履歴が保存されている")
+			require.Equal(t, net.IP.To16(historyCounts[0].IP).String(), "198.51.100.5")
 		})
 		t.Run("セッションがDBにある", func(t *testing.T) {
 			existsSession, err := models.Sessions(
@@ -549,5 +597,188 @@ func TestNewRegisterSession(t *testing.T) {
 
 			require.Len(t, cookies, 4)
 		})
+	})
+
+	t.Run("ipv6", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ua := &src.UserData{
+			Browser:  "Chrome",
+			OS:       "Windows",
+			Device:   "",
+			IsMobile: false,
+		}
+		ip := "fe80::a00:20ff:feb9:17fa"
+
+		_, err := s.NewRegisterSession(ctx, &u, ua, ip)
+		require.NoError(t, err)
+
+		t.Run("ログが保存されている", func(t *testing.T) {
+			historyCounts, err := models.LoginHistories(
+				models.LoginHistoryWhere.UserID.EQ(u.ID),
+			).All(ctx, DB)
+			require.NoError(t, err)
+
+			require.Len(t, historyCounts, 1, "ログイン履歴が保存されている")
+			t.Log(string(historyCounts[0].IP))
+			require.NoError(t, err)
+			require.Equal(t, net.IP.To16(historyCounts[0].IP).String(), "fe80::a00:20ff:feb9:17fa")
+		})
+	})
+}
+
+func TestSwitchAccount(t *testing.T) {
+	s := src.NewSession(C, DB)
+
+	t.Run("成功する", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1, &u2)
+
+		// 現在はu1でログインしている
+		var loginUser *http.Cookie = nil
+		var sessionCookie *http.Cookie = nil
+		for _, c := range cookies {
+			switch c.Name {
+			case C.LoginUserCookie.Name:
+				loginUser = c
+			case C.SessionCookie.Name:
+				sessionCookie = c
+			}
+		}
+		require.NotNil(t, loginUser)
+		require.Equal(t, loginUser.Value, string(u1.ID))
+		require.NotNil(t, sessionCookie)
+
+		newCookies, err := s.SwitchAccount(ctx, cookies, string(u2.ID))
+		require.NoError(t, err)
+
+		var switchedLoginUser *http.Cookie = nil
+		var deletedSessionCookie *http.Cookie = nil
+		for _, c := range newCookies {
+			switch c.Name {
+			case C.LoginUserCookie.Name:
+				switchedLoginUser = c
+			case C.SessionCookie.Name:
+				deletedSessionCookie = c
+			}
+		}
+		require.NotNil(t, switchedLoginUser)
+		require.NotNil(t, switchedLoginUser.Value, u2.ID)
+		require.NotNil(t, deletedSessionCookie)
+		require.Equal(t, deletedSessionCookie.MaxAge, -1)
+
+		// 現在のセッションは削除
+		existsSession, err := models.Sessions(
+			models.SessionWhere.ID.EQ(sessionCookie.Value),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existsSession)
+	})
+
+	// 現在ログインしているユーザを指定した場合は、特任何もしない
+	t.Run("成功: 同じユーザ", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1, &u2)
+
+		// 現在はu1でログインしている
+		var loginUser *http.Cookie = nil
+		for _, c := range cookies {
+			if c.Name == C.LoginUserCookie.Name {
+				loginUser = c
+				break
+			}
+		}
+		require.NotNil(t, loginUser)
+		require.NotNil(t, loginUser.Value, u1.ID)
+
+		newCookies, err := s.SwitchAccount(ctx, cookies, string(u1.ID))
+		require.NoError(t, err)
+
+		require.Len(t, newCookies, 0)
+	})
+
+	// 不正なユーザIDである場合はエラー
+	t.Run("失敗: ユーザIDのユーザが存在しない", func(t *testing.T) {
+		ctx := context.Background()
+		newCookies, err := s.SwitchAccount(ctx, []*http.Cookie{}, "dummy_user_id")
+		require.EqualError(t, err, "code=400, message=user not found")
+		require.Len(t, newCookies, 0)
+	})
+
+	// アカウントを変更可能なのはリフレッシュトークンが存在している場合のみ。
+	// そのため、リフレッシュトークンが存在していないユーザを指定した場合はログインができないので
+	// エラーにする
+	t.Run("失敗: リフレッシュトークンが存在しないのでログイン不可", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1)
+
+		newCookies, err := s.SwitchAccount(ctx, cookies, string(u2.ID))
+		require.EqualError(t, err, "code=403, message=login failed, unique=8")
+
+		require.Len(t, newCookies, 0)
+	})
+
+	t.Run("失敗: セッショントークンは存在しない", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1, &u2)
+
+		noSessionCookies := []*http.Cookie{}
+		for _, c := range cookies {
+			if c.Name != C.SessionCookie.Name {
+				noSessionCookies = append(noSessionCookies, c)
+			}
+		}
+
+		newCookies, err := s.SwitchAccount(ctx, noSessionCookies, string(u2.ID))
+		require.EqualError(t, err, "code=403, message=login failed, unique=8")
+
+		require.Len(t, newCookies, 0)
+	})
+
+	// 変更先のリフレッシュトークンCookieの値が存在しない場合、
+	// そのリフレッシュトークンは不正なものであるため、リフレッシュトークンCookieは削除してエラー
+	t.Run("失敗: 変更先のリフレッシュトークンの値が不正", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1)
+		refreshTokenCookieName := fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u2.ID)
+		cookies = append(cookies, &http.Cookie{
+			Name:  refreshTokenCookieName,
+			Value: "valid", // 不正な値
+		})
+
+		newCookies, err := s.SwitchAccount(ctx, cookies, string(u2.ID))
+		require.EqualError(t, err, "code=400, message=refresh token is invalid")
+
+		// リフレッシュトークンは削除
+		require.Len(t, newCookies, 1)
+		require.Equal(t, newCookies[0].Name, refreshTokenCookieName)
+		require.Equal(t, newCookies[0].MaxAge, -1)
 	})
 }
