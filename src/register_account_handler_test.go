@@ -53,7 +53,7 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	})
 
 	t.Run("Emailが不正な形式の場合エラー", func(t *testing.T) {
-		email := RandomEmail(t)
+		email := "hogehoge124"
 
 		form := contents.NewMultipart()
 		form.Insert("email", email)
