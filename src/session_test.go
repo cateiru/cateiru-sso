@@ -782,3 +782,103 @@ func TestSwitchAccount(t *testing.T) {
 		require.Equal(t, newCookies[0].MaxAge, -1)
 	})
 }
+
+func TestLoggedInAccounts(t *testing.T) {
+	s := src.NewSession(C, DB)
+
+	t.Run("成功: 1アカウント", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u := RegisterUser(t, ctx, email1)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		users, err := s.LoggedInAccounts(ctx, cookies)
+		require.NoError(t, err)
+
+		require.Len(t, users, 1)
+		require.Equal(t, users[0].ID, u.ID)
+	})
+
+	t.Run("成功: 2つ以上のアカウント", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1, &u2)
+
+		users, err := s.LoggedInAccounts(ctx, cookies)
+		require.NoError(t, err)
+
+		require.Len(t, users, 2)
+		var u1a *models.User = nil
+		var u2a *models.User = nil
+		for _, user := range users {
+			switch string(user.ID) {
+			case string(u1.ID):
+				u1a = user
+			case string(u2.ID):
+				u2a = user
+			}
+		}
+		require.NotNil(t, u1a)
+		require.NotNil(t, u2a)
+	})
+
+	t.Run("有効期限が切れたリフレッシュトークンのユーザは取得しない", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1, &u2)
+
+		// u2のリフレッシュトークンの有効期限を切らす
+		u2refresh, err := models.Refreshes(
+			models.RefreshWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		u2refresh.Period = time.Now().Add(-10 * time.Hour)
+		_, err = u2refresh.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		users, err := s.LoggedInAccounts(ctx, cookies)
+		require.NoError(t, err)
+
+		// 有効期限が切れているものは返さない
+		require.Len(t, users, 1)
+		require.Equal(t, users[0].ID, u1.ID)
+	})
+
+	t.Run("不正なリフレッシュトークンがある", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		cookies = append(cookies, &http.Cookie{
+			Name:  fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u2.ID),
+			Value: "hogehoge",
+		})
+
+		users, err := s.LoggedInAccounts(ctx, cookies)
+		require.NoError(t, err)
+
+		require.Len(t, users, 1)
+		require.Equal(t, users[0].ID, u.ID)
+	})
+
+	t.Run("Cookieが空の場合は何も返さない", func(t *testing.T) {
+		ctx := context.Background()
+		users, err := s.LoggedInAccounts(ctx, []*http.Cookie{})
+		require.NoError(t, err)
+
+		require.Len(t, users, 0)
+	})
+}

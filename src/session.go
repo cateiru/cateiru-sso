@@ -679,9 +679,9 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 // cookieのリフレッシュトークンからユーザを出しています
 // 有効期限が切れたリフレッシュトークンは省きます
 func (s *Session) LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) ([]*models.User, error) {
-	refreshTokens := []string{}
+	var refreshTokens []interface{}
 	for _, cookie := range cookies {
-		if strings.HasPrefix(cookie.Name, s.RefreshCookie.Name) {
+		if strings.HasPrefix(cookie.Name, s.RefreshCookie.Name) && cookie.Value != "" {
 			refreshTokens = append(refreshTokens, cookie.Value)
 		}
 	}
@@ -689,15 +689,18 @@ func (s *Session) LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) 
 		return []*models.User{}, nil
 	}
 
-	// SELECT * FROM user
+	// SELECT user.* FROM user
 	// INNER JOIN refresh
 	//     ON user.id = refresh.user_id
-	// WHERE refresh.period < NOW()
-	// AND refresh.id IN ?;
+	// WHERE refresh.id IN ?
+	// AND refresh.period < NOW()
+	// ORDER BY user.id DESC;
 	users, err := models.Users(
-		qm.InnerJoin("refresh IN user.id = refresh.user_id"),
-		qm.Where("refresh.period < NOW()"),
-		qm.AndIn("refresh.id IN ?", refreshTokens),
+		qm.Select("user.*"),
+		qm.InnerJoin("refresh ON user.id = refresh.user_id"),
+		qm.WhereIn("refresh.id IN ?", refreshTokens...),
+		qm.And("refresh.period > NOW()"),
+		qm.OrderBy("user.id DESC"),
 	).All(ctx, s.DB)
 	if err != nil {
 		return nil, err
