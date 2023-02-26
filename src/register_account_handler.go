@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/types"
 	"go.uber.org/zap"
@@ -502,19 +503,64 @@ func (h *Handler) RegisterWebAuthn(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	user, session, err := NewWebAuthnUserSession(ctx, h.DB, webauthnToken.Value)
+	// DBからWebAuthn userとsessionを取得する
+	webauthnUser, session, err := NewWebAuthnUserSession(ctx, h.DB, webauthnToken.Value)
 	if err != nil {
 		return err
 	}
 
-	credential, err := h.WebAuthn.FinishRegistration(user, *session, response)
+	credential, err := h.WebAuthn.FinishRegistration(webauthnUser, *session, response)
 	if err != nil {
 		return NewHTTPError(http.StatusForbidden, err)
 	}
 
-	S.Info(credential)
+	// 登録フロー
+	user, err := RegisterUser(ctx, h.DB, registerSession.Email)
+	if err != nil {
+		return err
+	}
+	ua, err := ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+	ip := c.RealIP()
 
-	return nil
+	// 認証を追加
+	rowCredential := types.JSON{}
+	if err := rowCredential.Marshal(credential); err != nil {
+		return err
+	}
+	passkey := models.Passkey{
+		UserID:          user.ID,
+		WebauthnUserID:  credential.ID,
+		Credential:      rowCredential,
+		FlagBackupState: credential.Flags.BackupState,
+	}
+	if err := passkey.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	passkeyLoginDevice := models.PasskeyLoginDevice{
+		UserID:           user.ID,
+		Device:           null.NewString(ua.Device, true),
+		Os:               null.NewString(ua.OS, true),
+		Browser:          null.NewString(ua.Browser, true),
+		IsRegisterDevice: true, // 登録したデバイスなのでtrue
+	}
+	if err := passkeyLoginDevice.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	register, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
+	if err != nil {
+		return err
+	}
+	cookies := register.InsertCookie(h.C)
+	for _, cookie := range cookies {
+		c.SetCookie(cookie)
+	}
+
+	return c.JSON(http.StatusCreated, user)
 }
 
 // パスワードによる認証の登録
