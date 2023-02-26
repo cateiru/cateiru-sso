@@ -88,6 +88,7 @@ var LocalConfig = &Config{
 		Addr:                 "localhost:3306",
 		Net:                  "tcp",
 		ParseTime:            true,
+		Loc:                  time.FixedZone("Asia/Tokyo", 9*60*60),
 		AllowNativePasswords: true,
 	},
 	Host: &url.URL{
@@ -255,6 +256,7 @@ var TestConfig = &Config{
 		Addr:                 "localhost:3306",
 		Net:                  "tcp",
 		ParseTime:            true,
+		Loc:                  time.FixedZone("Asia/Tokyo", 9*60*60),
 		AllowNativePasswords: true,
 	},
 	Host: &url.URL{
