@@ -9,9 +9,11 @@ import (
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.uber.org/zap"
 )
 
@@ -88,6 +90,37 @@ func NewWebAuthnUserRegister(email string) (*WebAuthnUser, error) {
 		DisplayName: email,
 		Icon:        "",
 	}, nil
+}
+
+// webauthn用のuserとsessionをDBから取得して組み立てる
+func NewWebAuthnUserSession(ctx context.Context, db *sql.DB, webauthnSession string) (*WebAuthnUser, *webauthn.SessionData, error) {
+	auth, err := models.WebauthnSessions(
+		models.WebauthnSessionWhere.ID.EQ(webauthnSession),
+		qm.And("period > NOW()"),
+	).One(ctx, db)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+
+	session := &webauthn.SessionData{
+		Challenge:        auth.Challenge,
+		UserID:           auth.WebauthnUserID,
+		UserDisplayName:  auth.UserDisplayName,
+		UserVerification: protocol.UserVerificationRequirement(auth.UserVerification),
+		// FIXME: 他のプロパティはどうなんだろう？
+	}
+
+	return &WebAuthnUser{
+		ID:         auth.WebauthnUserID,
+		Credential: []webauthn.Credential{},
+
+		Name:        "",
+		DisplayName: auth.UserDisplayName,
+		Icon:        "",
+	}, session, nil
 }
 
 func (w *WebAuthnUser) WebAuthnID() []byte {

@@ -5,14 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
 func TestNewWebAuthUserRegister(t *testing.T) {
@@ -110,6 +113,75 @@ func TestNewWebAuthnUserFromDB(t *testing.T) {
 			require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{dummyCredential})
 			require.Equal(t, user.WebAuthnIcon(), "")
 		})
+	})
+}
+
+func TestNewWebAuthnUserSession(t *testing.T) {
+	createWebauthSession := func(ctx context.Context, userId []byte) string {
+		webauthnSessionId, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		challenge, err := lib.RandomStr(10)
+		require.NoError(t, err)
+
+		session := &webauthn.SessionData{
+			Challenge:        challenge,
+			UserID:           userId,
+			UserDisplayName:  "test taro",
+			UserVerification: protocol.VerificationRequired,
+		}
+		row := types.JSON{}
+		err = row.Marshal(session)
+		require.NoError(t, err)
+
+		webauthnSession := models.WebauthnSession{
+			ID:               webauthnSessionId,
+			WebauthnUserID:   session.UserID,
+			UserDisplayName:  session.UserDisplayName,
+			Challenge:        session.Challenge,
+			UserVerification: string(session.UserVerification),
+			Row:              row,
+
+			Period: time.Now().Add(C.WebAuthnSessionPeriod),
+		}
+		err = webauthnSession.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		return webauthnSessionId
+	}
+
+	t.Run("成功", func(t *testing.T) {
+		ctx := context.Background()
+		userId, err := lib.RandomBytes(10)
+		require.NoError(t, err)
+
+		webauthSession := createWebauthSession(ctx, userId)
+
+		webauthUser, session, err := src.NewWebAuthnUserSession(ctx, DB, webauthSession)
+		require.NoError(t, err)
+
+		require.Equal(t, webauthUser.ID, userId)
+		require.Equal(t, session.UserID, userId)
+	})
+
+	t.Run("有効期限切れ", func(t *testing.T) {
+		ctx := context.Background()
+		userId, err := lib.RandomBytes(10)
+		require.NoError(t, err)
+
+		webauthSession := createWebauthSession(ctx, userId)
+
+		// 有効期限を切らす
+		s, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(webauthSession),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		s.Period = time.Now().Add(-10 * time.Hour)
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		_, _, err = src.NewWebAuthnUserSession(ctx, DB, webauthSession)
+		require.EqualError(t, err, "code=403, message=invalid webauthn token")
 	})
 }
 
