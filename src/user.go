@@ -10,7 +10,6 @@ import (
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
-	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -113,12 +112,11 @@ func NewWebAuthnUserSession(ctx context.Context, db *sql.DB, webauthnSession str
 		return nil, nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
 	}
 
-	session := &webauthn.SessionData{
-		Challenge:        auth.Challenge,
-		UserID:           auth.WebauthnUserID,
-		UserDisplayName:  auth.UserDisplayName,
-		UserVerification: protocol.UserVerificationRequirement(auth.UserVerification),
-		// FIXME: 他のプロパティはどうなんだろう？
+	// Rowから取得する
+	session := new(webauthn.SessionData)
+	err = auth.Row.Unmarshal(session)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	return &WebAuthnUser{
