@@ -25,7 +25,6 @@ import (
 // PasskeyLoginDevice is an object representing the database table.
 type PasskeyLoginDevice struct {
 	ID               uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	PasskeyID        uint        `boil:"passkey_id" json:"passkey_id" toml:"passkey_id" yaml:"passkey_id"`
 	UserID           []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Device           null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
 	Os               null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
@@ -39,7 +38,6 @@ type PasskeyLoginDevice struct {
 
 var PasskeyLoginDeviceColumns = struct {
 	ID               string
-	PasskeyID        string
 	UserID           string
 	Device           string
 	Os               string
@@ -48,7 +46,6 @@ var PasskeyLoginDeviceColumns = struct {
 	Created          string
 }{
 	ID:               "id",
-	PasskeyID:        "passkey_id",
 	UserID:           "user_id",
 	Device:           "device",
 	Os:               "os",
@@ -59,7 +56,6 @@ var PasskeyLoginDeviceColumns = struct {
 
 var PasskeyLoginDeviceTableColumns = struct {
 	ID               string
-	PasskeyID        string
 	UserID           string
 	Device           string
 	Os               string
@@ -68,7 +64,6 @@ var PasskeyLoginDeviceTableColumns = struct {
 	Created          string
 }{
 	ID:               "passkey_login_device.id",
-	PasskeyID:        "passkey_login_device.passkey_id",
 	UserID:           "passkey_login_device.user_id",
 	Device:           "passkey_login_device.device",
 	Os:               "passkey_login_device.os",
@@ -81,7 +76,6 @@ var PasskeyLoginDeviceTableColumns = struct {
 
 var PasskeyLoginDeviceWhere = struct {
 	ID               whereHelperuint
-	PasskeyID        whereHelperuint
 	UserID           whereHelper__byte
 	Device           whereHelpernull_String
 	Os               whereHelpernull_String
@@ -90,7 +84,6 @@ var PasskeyLoginDeviceWhere = struct {
 	Created          whereHelpertime_Time
 }{
 	ID:               whereHelperuint{field: "`passkey_login_device`.`id`"},
-	PasskeyID:        whereHelperuint{field: "`passkey_login_device`.`passkey_id`"},
 	UserID:           whereHelper__byte{field: "`passkey_login_device`.`user_id`"},
 	Device:           whereHelpernull_String{field: "`passkey_login_device`.`device`"},
 	Os:               whereHelpernull_String{field: "`passkey_login_device`.`os`"},
@@ -116,8 +109,8 @@ func (*passkeyLoginDeviceR) NewStruct() *passkeyLoginDeviceR {
 type passkeyLoginDeviceL struct{}
 
 var (
-	passkeyLoginDeviceAllColumns            = []string{"id", "passkey_id", "user_id", "device", "os", "browser", "is_register_device", "created"}
-	passkeyLoginDeviceColumnsWithoutDefault = []string{"passkey_id", "user_id", "device", "os", "browser"}
+	passkeyLoginDeviceAllColumns            = []string{"id", "user_id", "device", "os", "browser", "is_register_device", "created"}
+	passkeyLoginDeviceColumnsWithoutDefault = []string{"user_id", "device", "os", "browser"}
 	passkeyLoginDeviceColumnsWithDefault    = []string{"id", "is_register_device", "created"}
 	passkeyLoginDevicePrimaryKeyColumns     = []string{"id"}
 	passkeyLoginDeviceGeneratedColumns      = []string{}

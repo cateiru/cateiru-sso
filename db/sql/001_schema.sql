@@ -91,27 +91,6 @@ CREATE TABLE `staff` (
     PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
--- ユーザの認証情報を保存しておくテーブル
-CREATE TABLE `certification` (
-    `user_id` VARBINARY(16) NOT NULL,
-
-    -- passkeyの保存テーブルのID
-    -- passkeyを使用しない場合はNULLとなる
-    `passkey_id` INT UNSIGNED DEFAULT NULL,
-
-    -- パスポートの保存テーブルID
-    -- パスポートを使用しない場合はNULLとなる
-    -- otp_idはpassword_idと一緒に使用する
-    `password_id` INT UNSIGNED DEFAULT NULL,
-    `otp_id` INT UNSIGNED DEFAULT NULL,
-
-    -- 管理用
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (`user_id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
 -- passkeyを保存するテーブル
 CREATE TABLE `passkey` (
     `user_id` VARBINARY(16) NOT NULL,
@@ -140,7 +119,6 @@ CREATE TABLE `passkey` (
 -- Passkeyでログインした端末を記録しておくためのテーブル
 CREATE TABLE `passkey_login_device` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `passkey_id` INT UNSIGNED NOT NULL,
     `user_id` VARBINARY(16) NOT NULL,
 
     -- 使用した端末のUA
@@ -155,9 +133,7 @@ CREATE TABLE `passkey_login_device` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `passkey_login_device_passkey_id` (`passkey_id`),
-    INDEX `passkey_login_device_user_id` (`user_id`),
-    INDEX `passkey_login_device_passkey_id_user_id` (`passkey_id`, `user_id`)
+    INDEX `passkey_login_device_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- パスポートを保存するテーブル
