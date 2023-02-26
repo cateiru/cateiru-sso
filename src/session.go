@@ -693,7 +693,7 @@ func (s *Session) LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) 
 	// INNER JOIN refresh
 	//     ON user.id = refresh.user_id
 	// WHERE refresh.id IN ?
-	// AND refresh.period < NOW()
+	// AND refresh.period > NOW()
 	// ORDER BY user.id DESC;
 	users, err := models.Users(
 		qm.Select("user.*"),

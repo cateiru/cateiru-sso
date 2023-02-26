@@ -182,6 +182,13 @@ func TestNewWebAuthnUserSession(t *testing.T) {
 
 		_, _, err = src.NewWebAuthnUserSession(ctx, DB, webauthSession)
 		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+
+		// セッションは削除されている
+		exists, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(webauthSession),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, exists)
 	})
 }
 

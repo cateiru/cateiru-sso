@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
@@ -13,7 +14,6 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.uber.org/zap"
 )
 
@@ -96,13 +96,21 @@ func NewWebAuthnUserRegister(email string) (*WebAuthnUser, error) {
 func NewWebAuthnUserSession(ctx context.Context, db *sql.DB, webauthnSession string) (*WebAuthnUser, *webauthn.SessionData, error) {
 	auth, err := models.WebauthnSessions(
 		models.WebauthnSessionWhere.ID.EQ(webauthnSession),
-		qm.And("period > NOW()"),
 	).One(ctx, db)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
 	}
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if time.Now().After(auth.Period) {
+		// webauthnセッションは削除
+		_, err := auth.Delete(ctx, db)
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
 	}
 
 	session := &webauthn.SessionData{

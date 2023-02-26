@@ -8,6 +8,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/types"
@@ -459,7 +460,60 @@ func (h *Handler) RegisterBeginWebAuthn(c echo.Context) error {
 
 // Passkeyによる認証の登録
 // 事前にRegisterBeginWebAuthnを呼び出してtokenをcookieに付与させる必要がある
-func (h *Handler) RegisterWebathn(c echo.Context) error {
+func (h *Handler) RegisterWebAuthn(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	webauthnToken, err := c.Cookie(h.C.WebAuthnSessionCookie.Name)
+	if err != nil {
+		return NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	token := c.Request().Header.Get("X-Register-Token") // SendEmailVerifyHandlerのレスポンスToken
+	if token == "" {
+		return NewHTTPError(http.StatusBadRequest, "token is empty")
+	}
+
+	registerSession, err := models.RegisterSessions(
+		models.RegisterSessionWhere.ID.EQ(token),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "token is invalid")
+	}
+	if err != nil {
+		return err
+	}
+
+	// まだ認証されていない場合
+	if !registerSession.EmailVerified {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrEmailNotVerified, "Email is not verified")
+	}
+
+	// 有効期限が切れた場合
+	if time.Now().After(registerSession.Period) {
+		// セッションは削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
+	}
+
+	response, err := protocol.ParseCredentialCreationResponseBody(c.Request().Body)
+	if err != nil {
+		return NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	user, session, err := NewWebAuthnUserSession(ctx, h.DB, webauthnToken.Value)
+	if err != nil {
+		return err
+	}
+
+	credential, err := h.WebAuthn.FinishRegistration(user, *session, response)
+	if err != nil {
+		return NewHTTPError(http.StatusForbidden, err)
+	}
+
+	S.Info(credential)
+
 	return nil
 }
 
