@@ -622,7 +622,6 @@ func TestNewRegisterSession(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Len(t, historyCounts, 1, "ログイン履歴が保存されている")
-			t.Log(string(historyCounts[0].IP))
 			require.NoError(t, err)
 			require.Equal(t, net.IP.To16(historyCounts[0].IP).String(), "fe80::a00:20ff:feb9:17fa")
 		})

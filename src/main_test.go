@@ -42,7 +42,7 @@ func TestMain(m *testing.M) {
 	DB = db
 	defer db.Close()
 
-	err = ResetDBTable(ctx, db)
+	err = resetDBTable(ctx, db)
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +54,7 @@ func TestMain(m *testing.M) {
 }
 
 // テスト用にテーブルをクリアする
-func ResetDBTable(ctx context.Context, db *sql.DB) error {
+func resetDBTable(ctx context.Context, db *sql.DB) error {
 	rows, err := queries.Raw("show tables").QueryContext(ctx, db)
 	if err != nil {
 		return err
@@ -86,19 +86,17 @@ func RandomEmail(t *testing.T) string {
 // ユーザを新規作成する
 func RegisterUser(t *testing.T, ctx context.Context, email string) models.User {
 	id := ulid.Make()
-	idBin, err := id.MarshalBinary()
-	require.NoError(t, err)
 
 	u := models.User{
-		ID:    idBin,
+		ID:    id.String(),
 		Email: email,
 	}
 
-	err = u.Insert(ctx, DB, boil.Infer())
+	err := u.Insert(ctx, DB, boil.Infer())
 	require.NoError(t, err)
 
 	dbU, err := models.Users(
-		models.UserWhere.ID.EQ(idBin),
+		models.UserWhere.ID.EQ(id.String()),
 	).One(ctx, DB)
 	require.NoError(t, err)
 
@@ -175,4 +173,27 @@ func RegisterSession(t *testing.T, ctx context.Context, users ...*models.User) [
 	}
 
 	return cookies
+}
+
+// テスト用のダーミハンドラーを作成する
+//
+// モックしているやつ
+// - ReCaptcha
+// - Sender
+func NewTestHandler(t *testing.T) *src.Handler {
+	webauthn, err := lib.NewWebAuthn(C.WebAuthnConfig)
+	require.NoError(t, err)
+
+	s := src.NewSession(C, DB)
+
+	return &src.Handler{
+		DB:        DB,
+		C:         C,
+		ReCaptcha: &ReCaptchaMock{},
+		Sender:    &SenderMock{},
+		WebAuthn: &WebAuthnMock{
+			M: webauthn,
+		},
+		Session: s,
+	}
 }

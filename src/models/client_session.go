@@ -24,7 +24,7 @@ import (
 // ClientSession is an object representing the database table.
 type ClientSession struct {
 	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID        []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID        string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	ClientID      string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	LoginClientID uint      `boil:"login_client_id" json:"login_client_id" toml:"login_client_id" yaml:"login_client_id"`
 	Period        time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
@@ -70,14 +70,14 @@ var ClientSessionTableColumns = struct {
 
 var ClientSessionWhere = struct {
 	ID            whereHelperstring
-	UserID        whereHelper__byte
+	UserID        whereHelperstring
 	ClientID      whereHelperstring
 	LoginClientID whereHelperuint
 	Period        whereHelpertime_Time
 	Created       whereHelpertime_Time
 }{
 	ID:            whereHelperstring{field: "`client_session`.`id`"},
-	UserID:        whereHelper__byte{field: "`client_session`.`user_id`"},
+	UserID:        whereHelperstring{field: "`client_session`.`user_id`"},
 	ClientID:      whereHelperstring{field: "`client_session`.`client_id`"},
 	LoginClientID: whereHelperuint{field: "`client_session`.`login_client_id`"},
 	Period:        whereHelpertime_Time{field: "`client_session`.`period`"},

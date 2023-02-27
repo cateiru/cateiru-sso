@@ -8,7 +8,6 @@ import (
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
-	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -498,7 +497,7 @@ func (h *Handler) RegisterWebAuthn(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
-	response, err := protocol.ParseCredentialCreationResponseBody(c.Request().Body)
+	response, err := h.WebAuthn.ParseCreate(c.Request().Body)
 	if err != nil {
 		return NewHTTPError(http.StatusBadRequest, err)
 	}

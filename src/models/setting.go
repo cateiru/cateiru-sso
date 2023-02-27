@@ -23,7 +23,7 @@ import (
 
 // Setting is an object representing the database table.
 type Setting struct {
-	UserID        []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID        string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	NoticeEmail   bool      `boil:"notice_email" json:"notice_email" toml:"notice_email" yaml:"notice_email"`
 	NoticeWebpush bool      `boil:"notice_webpush" json:"notice_webpush" toml:"notice_webpush" yaml:"notice_webpush"`
 	Created       time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -64,13 +64,13 @@ var SettingTableColumns = struct {
 // Generated where
 
 var SettingWhere = struct {
-	UserID        whereHelper__byte
+	UserID        whereHelperstring
 	NoticeEmail   whereHelperbool
 	NoticeWebpush whereHelperbool
 	Created       whereHelpertime_Time
 	Modified      whereHelpertime_Time
 }{
-	UserID:        whereHelper__byte{field: "`setting`.`user_id`"},
+	UserID:        whereHelperstring{field: "`setting`.`user_id`"},
 	NoticeEmail:   whereHelperbool{field: "`setting`.`notice_email`"},
 	NoticeWebpush: whereHelperbool{field: "`setting`.`notice_webpush`"},
 	Created:       whereHelpertime_Time{field: "`setting`.`created`"},
@@ -392,7 +392,7 @@ func Settings(mods ...qm.QueryMod) settingQuery {
 
 // FindSetting retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindSetting(ctx context.Context, exec boil.ContextExecutor, userID []byte, selectCols ...string) (*Setting, error) {
+func FindSetting(ctx context.Context, exec boil.ContextExecutor, userID string, selectCols ...string) (*Setting, error) {
 	settingObj := &Setting{}
 
 	sel := "*"
@@ -929,7 +929,7 @@ func (o *SettingSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // SettingExists checks if the Setting row exists.
-func SettingExists(ctx context.Context, exec boil.ContextExecutor, userID []byte) (bool, error) {
+func SettingExists(ctx context.Context, exec boil.ContextExecutor, userID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `setting` where `user_id`=? limit 1)"
 

@@ -3,13 +3,8 @@
 
 -- ユーザテーブル
 CREATE TABLE `user` (
-    -- ユーザIDはUUIDを使用して一意にする
-    -- AUTO_INCREMENTは、ユーザIDを特定される恐れがあるので使用しない。
-    -- UUID_TO_BIN()とBIN_TO_UUID()を使用して出し入れする。
-    -- v4のほうが良いが、v1でもAUTO_INCREMENTよりはましなのでUUID関数を使う
-    -- ULIDとか使うともっと良かったりするのかな？
-    -- ref. https://dev.mysql.com/doc/refman/8.0/ja/miscellaneous-functions.html
-    `id` VARBINARY(16) NOT NULL,
+    -- ユーザIDはULIDを使用して一意にする
+    `id` VARCHAR(32) NOT NULL,
 
     -- ユーザ名はユーザごとに一意なIDとなる
     -- ログイン時にメールアドレスの代替としてログインできる
@@ -47,7 +42,7 @@ CREATE TABLE `user` (
 
 -- ユーザ設定テーブル
 CREATE TABLE `setting` (
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 通知設定
     `notice_email` BOOLEAN NOT NULL DEFAULT 0,
@@ -63,7 +58,7 @@ CREATE TABLE `setting` (
 -- ブランドテーブル
 CREATE TABLE `brand` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- ブランド名
     `brand` VARCHAR(31) NOT NULL,
@@ -78,7 +73,7 @@ CREATE TABLE `brand` (
 -- スタッフテーブル
 -- ここに存在するユーザはスタッフとなる
 CREATE TABLE `staff` (
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- メモ
     -- なぜスタッフなのかみたいなのを書くスペース
@@ -93,7 +88,7 @@ CREATE TABLE `staff` (
 
 -- passkeyを保存するテーブル
 CREATE TABLE `passkey` (
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- WebauthnID
     -- このIDを使用してpasskeyを認証する
@@ -119,7 +114,7 @@ CREATE TABLE `passkey` (
 -- Passkeyでログインした端末を記録しておくためのテーブル
 CREATE TABLE `passkey_login_device` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 使用した端末のUA
     `device` VARCHAR(31) DEFAULT NULL,
@@ -138,7 +133,7 @@ CREATE TABLE `passkey_login_device` (
 
 -- パスポートを保存するテーブル
 CREATE TABLE `password` (
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     `salt` VARBINARY(32) NOT NULL,
     `hash` VARBINARY(32) NOT NULL,
@@ -152,7 +147,7 @@ CREATE TABLE `password` (
 
 -- アプリを使用したOTPを保存するテーブル
 CREATE TABLE `otp` (
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- TODO: サイズの最適化をしたい
     `secret` VARCHAR(31),
@@ -168,7 +163,7 @@ CREATE TABLE `otp` (
 CREATE TABLE `otp_backup` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `otp_id` INT UNSIGNED NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     `code` VARCHAR(15) NOT NULL,
 
@@ -211,7 +206,7 @@ CREATE TABLE `register_session` (
 -- アプリを使用したOTPを新規に登録する際に使用するセッションテーブル
 CREATE TABLE `register_otp_session` (
     `id` VARCHAR(31) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- TODO: 文字サイズを最適化したい
     `public_key` TEXT NOT NULL,
@@ -234,7 +229,7 @@ CREATE TABLE `register_otp_session` (
 -- Emailを更新したときに確認に使用するテーブル
 CREATE TABLE `email_verify` (
     `id` VARCHAR(31) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 認証コード
     `verify_code` CHAR(6) NOT NULL,
@@ -257,7 +252,7 @@ CREATE TABLE `email_verify` (
 CREATE TABLE `session` (
     -- ランダムにトークンを生成する
     `id` VARCHAR(31) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -274,7 +269,7 @@ CREATE TABLE `session` (
 CREATE TABLE `refresh` (
     -- ランダムにトークンを生成する
     `id` VARCHAR(63) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- ログイン履歴と紐づけるためのID
     `history_id` VARBINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
@@ -299,7 +294,7 @@ CREATE TABLE `refresh` (
 -- パスワードによる認証は成功して次にOTPを求める場合のセッションを保存するテーブル
 CREATE TABLE `otp_session` (
     `id` VARCHAR(31) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -315,7 +310,7 @@ CREATE TABLE `otp_session` (
 CREATE TABLE `client_session` (
     -- ランダムにトークンを生成する
     `id` VARCHAR(31) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- クライアントのID
     `client_id` VARCHAR(31) NOT NULL,
@@ -338,14 +333,14 @@ CREATE TABLE `client_session` (
 CREATE TABLE `client_refresh` (
     -- ランダムにトークンを生成する
     `id` VARCHAR(63) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- クライアントのID
     `client_id` VARCHAR(31) NOT NULL,
     `login_client_id` INT UNSIGNED NOT NULL,
 
     -- client_sessionのid
-    `session_id` VARBINARY(32) NOT NULL,
+    `session_id` VARCHAR(31) NOT NULL,
 
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -398,7 +393,7 @@ CREATE TABLE `webauthn_session` (
 -- nonceとかを保存しておく
 CREATE TABLE `oauth_session` (
     `code` VARCHAR(63) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- クライアントのID
     `client_id` VARCHAR(31) NOT NULL,
@@ -439,10 +434,10 @@ CREATE TABLE `client` (
     -- prompt_loginが1の場合、OAuthの認証リクエスト時にログイン、クイズを求めることを強制する
     `prompt` ENUM('login', 'quiz') DEFAULT NULL,
 
-    `owner_user_id` VARBINARY(16) NOT NULL,
+    `owner_user_id` VARCHAR(32) NOT NULL,
 
     -- OAuth2.0のClient Secret
-    `client_secret` VARBINARY(31) NOT NULL,
+    `client_secret` VARCHAR(63) NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -492,7 +487,7 @@ CREATE TABLE `client_allow_rule` (
     `client_id` VARCHAR(31) NOT NULL,
 
     -- user_idが指定されている場合、そのユーザのみを通過させる
-    `user_id` VARBINARY(16) DEFAULT NULL,
+    `user_id` VARCHAR(32) DEFAULT NULL,
 
     -- email_domainが指定されている場合、そのドメインと一致するユーザのみを通過させる
     `email_domain` VARCHAR(31) DEFAULT NULL,
@@ -530,7 +525,7 @@ CREATE TABLE `client_quiz` (
 CREATE TABLE `login_client` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `client_id` VARCHAR(31) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -542,7 +537,7 @@ CREATE TABLE `login_client` (
 CREATE TABLE `login_client_history` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `client_id` VARCHAR(31) NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 使用した端末のUA
     `device` VARCHAR(31) DEFAULT NULL,
@@ -564,7 +559,7 @@ CREATE TABLE `login_client_history` (
 -- ログイン履歴
 CREATE TABLE `login_history` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- リフレッシュトークンと紐づけたID
     -- refreshテーブルに参照することでユーザがどの端末でログインしているかを調べることができる
@@ -590,7 +585,7 @@ CREATE TABLE `login_history` (
 -- ログインを試みた履歴
 CREATE TABLE `login_try_history` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 使用した端末のUA
     `device` VARCHAR(31) DEFAULT NULL,
@@ -611,7 +606,7 @@ CREATE TABLE `login_try_history` (
 -- 全ユーザー一斉通知用のエントリ
 CREATE TABLE `broadcast_entry` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `create_user_id` VARBINARY(16) NOT NULL,
+    `create_user_id` VARCHAR(32) NOT NULL,
 
     `title` TEXT NOT NULL,
     `body` TEXT DEFAULT NULL,
@@ -628,7 +623,7 @@ CREATE TABLE `broadcast_entry` (
 CREATE TABLE `broadcast_notice` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `entry_id` INT UNSIGNED NOT NULL,
-    `user_id` VARBINARY(16) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- 既読状況
     `is_read` BOOLEAN NOT NULL DEFAULT 0,

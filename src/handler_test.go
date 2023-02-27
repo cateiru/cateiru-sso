@@ -1,15 +1,10 @@
 package src_test
 
 import (
-	"errors"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
-	"github.com/cateiru/cateiru-sso/src/lib"
-	"github.com/go-webauthn/webauthn/protocol"
-	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/stretchr/testify/require"
 )
 
@@ -57,81 +52,4 @@ func TestParseUA(t *testing.T) {
 		require.Equal(t, d.OS, "Windows")
 		require.False(t, d.IsMobile)
 	})
-}
-
-type ReCaptchaMock struct{}
-
-func (c *ReCaptchaMock) ValidateOrder(token string, remoteIp string) (*lib.RecaptchaResponse, error) {
-	if token == "" {
-		return nil, errors.New("token is empty")
-	}
-
-	// failedにするとreCAPTCHAを失敗させる
-	if token == "fail" {
-		return &lib.RecaptchaResponse{
-			Success:     true,
-			Score:       0,
-			Action:      "",
-			ChallengeTS: time.Now(),
-			Hostname:    "",
-			ErrorCodes:  []string{},
-		}, nil
-	}
-
-	return &lib.RecaptchaResponse{
-		Success:     true,
-		Score:       100,
-		Action:      "",
-		ChallengeTS: time.Now(),
-		Hostname:    "",
-		ErrorCodes:  []string{},
-	}, nil
-}
-
-type SenderMock struct{}
-
-func (c *SenderMock) Send(m *lib.MailBody) (string, string, error) {
-	return "ok", "200", nil
-}
-
-type WebAuthnMock struct {
-	M *lib.WebAuthn
-}
-
-func (a *WebAuthnMock) BeginRegistration(user webauthn.User) (*protocol.CredentialCreation, *webauthn.SessionData, error) {
-	return a.M.BeginRegistration(user)
-}
-func (a *WebAuthnMock) FinishRegistration(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialCreationData) (*webauthn.Credential, error) {
-	// TODO
-	return &webauthn.Credential{}, nil
-}
-func (a *WebAuthnMock) BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
-	return a.M.BeginLogin(user)
-}
-func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
-	// TODO
-	return &webauthn.Credential{}, nil
-}
-
-// テスト用のダーミハンドラーを作成する
-//
-// モックしているやつ
-// - ReCaptcha
-// - Sender
-func NewTestHandler(t *testing.T) *src.Handler {
-	webauthn, err := lib.NewWebAuthn(C.WebAuthnConfig)
-	require.NoError(t, err)
-
-	s := src.NewSession(C, DB)
-
-	return &src.Handler{
-		DB:        DB,
-		C:         C,
-		ReCaptcha: &ReCaptchaMock{},
-		Sender:    &SenderMock{},
-		WebAuthn: &WebAuthnMock{
-			M: webauthn,
-		},
-		Session: s,
-	}
 }

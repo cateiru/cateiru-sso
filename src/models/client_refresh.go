@@ -24,10 +24,10 @@ import (
 // ClientRefresh is an object representing the database table.
 type ClientRefresh struct {
 	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID        []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID        string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	ClientID      string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	LoginClientID uint      `boil:"login_client_id" json:"login_client_id" toml:"login_client_id" yaml:"login_client_id"`
-	SessionID     []byte    `boil:"session_id" json:"session_id" toml:"session_id" yaml:"session_id"`
+	SessionID     string    `boil:"session_id" json:"session_id" toml:"session_id" yaml:"session_id"`
 	Period        time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	Created       time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 	Modified      time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
@@ -80,19 +80,19 @@ var ClientRefreshTableColumns = struct {
 
 var ClientRefreshWhere = struct {
 	ID            whereHelperstring
-	UserID        whereHelper__byte
+	UserID        whereHelperstring
 	ClientID      whereHelperstring
 	LoginClientID whereHelperuint
-	SessionID     whereHelper__byte
+	SessionID     whereHelperstring
 	Period        whereHelpertime_Time
 	Created       whereHelpertime_Time
 	Modified      whereHelpertime_Time
 }{
 	ID:            whereHelperstring{field: "`client_refresh`.`id`"},
-	UserID:        whereHelper__byte{field: "`client_refresh`.`user_id`"},
+	UserID:        whereHelperstring{field: "`client_refresh`.`user_id`"},
 	ClientID:      whereHelperstring{field: "`client_refresh`.`client_id`"},
 	LoginClientID: whereHelperuint{field: "`client_refresh`.`login_client_id`"},
-	SessionID:     whereHelper__byte{field: "`client_refresh`.`session_id`"},
+	SessionID:     whereHelperstring{field: "`client_refresh`.`session_id`"},
 	Period:        whereHelpertime_Time{field: "`client_refresh`.`period`"},
 	Created:       whereHelpertime_Time{field: "`client_refresh`.`created`"},
 	Modified:      whereHelpertime_Time{field: "`client_refresh`.`modified`"},

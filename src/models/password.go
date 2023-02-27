@@ -23,7 +23,7 @@ import (
 
 // Password is an object representing the database table.
 type Password struct {
-	UserID   []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID   string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Salt     []byte    `boil:"salt" json:"salt" toml:"salt" yaml:"salt"`
 	Hash     []byte    `boil:"hash" json:"hash" toml:"hash" yaml:"hash"`
 	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -64,13 +64,13 @@ var PasswordTableColumns = struct {
 // Generated where
 
 var PasswordWhere = struct {
-	UserID   whereHelper__byte
+	UserID   whereHelperstring
 	Salt     whereHelper__byte
 	Hash     whereHelper__byte
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
-	UserID:   whereHelper__byte{field: "`password`.`user_id`"},
+	UserID:   whereHelperstring{field: "`password`.`user_id`"},
 	Salt:     whereHelper__byte{field: "`password`.`salt`"},
 	Hash:     whereHelper__byte{field: "`password`.`hash`"},
 	Created:  whereHelpertime_Time{field: "`password`.`created`"},
@@ -392,7 +392,7 @@ func Passwords(mods ...qm.QueryMod) passwordQuery {
 
 // FindPassword retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindPassword(ctx context.Context, exec boil.ContextExecutor, userID []byte, selectCols ...string) (*Password, error) {
+func FindPassword(ctx context.Context, exec boil.ContextExecutor, userID string, selectCols ...string) (*Password, error) {
 	passwordObj := &Password{}
 
 	sel := "*"
@@ -929,7 +929,7 @@ func (o *PasswordSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // PasswordExists checks if the Password row exists.
-func PasswordExists(ctx context.Context, exec boil.ContextExecutor, userID []byte) (bool, error) {
+func PasswordExists(ctx context.Context, exec boil.ContextExecutor, userID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `password` where `user_id`=? limit 1)"
 

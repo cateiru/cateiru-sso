@@ -568,7 +568,7 @@ func testSettingsSelect(t *testing.T) {
 }
 
 var (
-	settingDBTypes = map[string]string{`UserID`: `varbinary`, `NoticeEmail`: `tinyint`, `NoticeWebpush`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
+	settingDBTypes = map[string]string{`UserID`: `varchar`, `NoticeEmail`: `tinyint`, `NoticeWebpush`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
 	_              = bytes.MinRead
 )
 

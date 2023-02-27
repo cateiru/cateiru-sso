@@ -25,7 +25,7 @@ import (
 // Refresh is an object representing the database table.
 type Refresh struct {
 	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID    []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID    string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	HistoryID []byte      `boil:"history_id" json:"history_id" toml:"history_id" yaml:"history_id"`
 	SessionID null.String `boil:"session_id" json:"session_id,omitempty" toml:"session_id" yaml:"session_id,omitempty"`
 	Period    time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
@@ -76,7 +76,7 @@ var RefreshTableColumns = struct {
 
 var RefreshWhere = struct {
 	ID        whereHelperstring
-	UserID    whereHelper__byte
+	UserID    whereHelperstring
 	HistoryID whereHelper__byte
 	SessionID whereHelpernull_String
 	Period    whereHelpertime_Time
@@ -84,7 +84,7 @@ var RefreshWhere = struct {
 	Modified  whereHelpertime_Time
 }{
 	ID:        whereHelperstring{field: "`refresh`.`id`"},
-	UserID:    whereHelper__byte{field: "`refresh`.`user_id`"},
+	UserID:    whereHelperstring{field: "`refresh`.`user_id`"},
 	HistoryID: whereHelper__byte{field: "`refresh`.`history_id`"},
 	SessionID: whereHelpernull_String{field: "`refresh`.`session_id`"},
 	Period:    whereHelpertime_Time{field: "`refresh`.`period`"},

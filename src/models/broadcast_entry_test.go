@@ -568,7 +568,7 @@ func testBroadcastEntriesSelect(t *testing.T) {
 }
 
 var (
-	broadcastEntryDBTypes = map[string]string{`ID`: `int`, `CreateUserID`: `varbinary`, `Title`: `text`, `Body`: `text`, `Created`: `datetime`, `Modified`: `datetime`}
+	broadcastEntryDBTypes = map[string]string{`ID`: `int`, `CreateUserID`: `varchar`, `Title`: `text`, `Body`: `text`, `Created`: `datetime`, `Modified`: `datetime`}
 	_                     = bytes.MinRead
 )
 

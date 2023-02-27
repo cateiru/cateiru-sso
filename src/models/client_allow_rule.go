@@ -25,7 +25,7 @@ import (
 // ClientAllowRule is an object representing the database table.
 type ClientAllowRule struct {
 	ClientID    string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	UserID      null.Bytes  `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	UserID      null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	EmailDomain null.String `boil:"email_domain" json:"email_domain,omitempty" toml:"email_domain" yaml:"email_domain,omitempty"`
 	Created     time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
 
@@ -59,38 +59,14 @@ var ClientAllowRuleTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_Bytes struct{ field string }
-
-func (w whereHelpernull_Bytes) EQ(x null.Bytes) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Bytes) NEQ(x null.Bytes) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Bytes) LT(x null.Bytes) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Bytes) LTE(x null.Bytes) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Bytes) GT(x null.Bytes) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Bytes) GTE(x null.Bytes) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
-func (w whereHelpernull_Bytes) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Bytes) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 var ClientAllowRuleWhere = struct {
 	ClientID    whereHelperstring
-	UserID      whereHelpernull_Bytes
+	UserID      whereHelpernull_String
 	EmailDomain whereHelpernull_String
 	Created     whereHelpertime_Time
 }{
 	ClientID:    whereHelperstring{field: "`client_allow_rule`.`client_id`"},
-	UserID:      whereHelpernull_Bytes{field: "`client_allow_rule`.`user_id`"},
+	UserID:      whereHelpernull_String{field: "`client_allow_rule`.`user_id`"},
 	EmailDomain: whereHelpernull_String{field: "`client_allow_rule`.`email_domain`"},
 	Created:     whereHelpertime_Time{field: "`client_allow_rule`.`created`"},
 }

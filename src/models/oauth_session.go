@@ -25,7 +25,7 @@ import (
 // OauthSession is an object representing the database table.
 type OauthSession struct {
 	Code     string      `boil:"code" json:"code" toml:"code" yaml:"code"`
-	UserID   []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	ClientID string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	State    null.String `boil:"state" json:"state,omitempty" toml:"state" yaml:"state,omitempty"`
 	Nonce    null.String `boil:"nonce" json:"nonce,omitempty" toml:"nonce" yaml:"nonce,omitempty"`
@@ -81,7 +81,7 @@ var OauthSessionTableColumns = struct {
 
 var OauthSessionWhere = struct {
 	Code     whereHelperstring
-	UserID   whereHelper__byte
+	UserID   whereHelperstring
 	ClientID whereHelperstring
 	State    whereHelpernull_String
 	Nonce    whereHelpernull_String
@@ -90,7 +90,7 @@ var OauthSessionWhere = struct {
 	Modified whereHelpertime_Time
 }{
 	Code:     whereHelperstring{field: "`oauth_session`.`code`"},
-	UserID:   whereHelper__byte{field: "`oauth_session`.`user_id`"},
+	UserID:   whereHelperstring{field: "`oauth_session`.`user_id`"},
 	ClientID: whereHelperstring{field: "`oauth_session`.`client_id`"},
 	State:    whereHelpernull_String{field: "`oauth_session`.`state`"},
 	Nonce:    whereHelpernull_String{field: "`oauth_session`.`nonce`"},

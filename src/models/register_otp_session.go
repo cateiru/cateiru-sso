@@ -24,7 +24,7 @@ import (
 // RegisterOtpSession is an object representing the database table.
 type RegisterOtpSession struct {
 	ID         string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID     []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	PublicKey  string    `boil:"public_key" json:"public_key" toml:"public_key" yaml:"public_key"`
 	Secret     string    `boil:"secret" json:"secret" toml:"secret" yaml:"secret"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
@@ -80,7 +80,7 @@ var RegisterOtpSessionTableColumns = struct {
 
 var RegisterOtpSessionWhere = struct {
 	ID         whereHelperstring
-	UserID     whereHelper__byte
+	UserID     whereHelperstring
 	PublicKey  whereHelperstring
 	Secret     whereHelperstring
 	Period     whereHelpertime_Time
@@ -89,7 +89,7 @@ var RegisterOtpSessionWhere = struct {
 	Modified   whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`register_otp_session`.`id`"},
-	UserID:     whereHelper__byte{field: "`register_otp_session`.`user_id`"},
+	UserID:     whereHelperstring{field: "`register_otp_session`.`user_id`"},
 	PublicKey:  whereHelperstring{field: "`register_otp_session`.`public_key`"},
 	Secret:     whereHelperstring{field: "`register_otp_session`.`secret`"},
 	Period:     whereHelpertime_Time{field: "`register_otp_session`.`period`"},

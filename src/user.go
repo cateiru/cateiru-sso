@@ -162,13 +162,9 @@ func RegisterUser(ctx context.Context, db *sql.DB, email string) (*models.User, 
 	}
 
 	id := ulid.Make()
-	idBin, err := id.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
 
 	u := models.User{
-		ID:    idBin,
+		ID:    id.String(),
 		Email: email,
 	}
 	if err := u.Insert(ctx, db, boil.Infer()); err != nil {
@@ -180,6 +176,6 @@ func RegisterUser(ctx context.Context, db *sql.DB, email string) (*models.User, 
 	)
 
 	return models.Users(
-		models.UserWhere.ID.EQ(idBin),
+		models.UserWhere.ID.EQ(id.String()),
 	).One(ctx, db)
 }

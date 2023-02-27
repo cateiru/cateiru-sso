@@ -25,7 +25,7 @@ import (
 type LoginClient struct {
 	ID       uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	ClientID string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	UserID   []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID   string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 
 	R *loginClientR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,12 +61,12 @@ var LoginClientTableColumns = struct {
 var LoginClientWhere = struct {
 	ID       whereHelperuint
 	ClientID whereHelperstring
-	UserID   whereHelper__byte
+	UserID   whereHelperstring
 	Created  whereHelpertime_Time
 }{
 	ID:       whereHelperuint{field: "`login_client`.`id`"},
 	ClientID: whereHelperstring{field: "`login_client`.`client_id`"},
-	UserID:   whereHelper__byte{field: "`login_client`.`user_id`"},
+	UserID:   whereHelperstring{field: "`login_client`.`user_id`"},
 	Created:  whereHelpertime_Time{field: "`login_client`.`created`"},
 }
 

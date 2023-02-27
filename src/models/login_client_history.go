@@ -26,7 +26,7 @@ import (
 type LoginClientHistory struct {
 	ID       uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
 	ClientID string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	UserID   []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Device   null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
 	Os       null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
 	Browser  null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
@@ -108,10 +108,19 @@ func (w whereHelpernull_Bool) GTE(x null.Bool) qm.QueryMod {
 func (w whereHelpernull_Bool) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
 func (w whereHelpernull_Bool) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
+type whereHelper__byte struct{ field string }
+
+func (w whereHelper__byte) EQ(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelper__byte) NEQ(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelper__byte) LT(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelper__byte) LTE(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelper__byte) GT(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelper__byte) GTE(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+
 var LoginClientHistoryWhere = struct {
 	ID       whereHelperuint
 	ClientID whereHelperstring
-	UserID   whereHelper__byte
+	UserID   whereHelperstring
 	Device   whereHelpernull_String
 	Os       whereHelpernull_String
 	Browser  whereHelpernull_String
@@ -121,7 +130,7 @@ var LoginClientHistoryWhere = struct {
 }{
 	ID:       whereHelperuint{field: "`login_client_history`.`id`"},
 	ClientID: whereHelperstring{field: "`login_client_history`.`client_id`"},
-	UserID:   whereHelper__byte{field: "`login_client_history`.`user_id`"},
+	UserID:   whereHelperstring{field: "`login_client_history`.`user_id`"},
 	Device:   whereHelpernull_String{field: "`login_client_history`.`device`"},
 	Os:       whereHelpernull_String{field: "`login_client_history`.`os`"},
 	Browser:  whereHelpernull_String{field: "`login_client_history`.`browser`"},

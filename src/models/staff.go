@@ -24,7 +24,7 @@ import (
 
 // Staff is an object representing the database table.
 type Staff struct {
-	UserID   []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Memo     null.String `boil:"memo" json:"memo,omitempty" toml:"memo" yaml:"memo,omitempty"`
 	Created  time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
 	Modified time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
@@ -60,12 +60,12 @@ var StaffTableColumns = struct {
 // Generated where
 
 var StaffWhere = struct {
-	UserID   whereHelper__byte
+	UserID   whereHelperstring
 	Memo     whereHelpernull_String
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
-	UserID:   whereHelper__byte{field: "`staff`.`user_id`"},
+	UserID:   whereHelperstring{field: "`staff`.`user_id`"},
 	Memo:     whereHelpernull_String{field: "`staff`.`memo`"},
 	Created:  whereHelpertime_Time{field: "`staff`.`created`"},
 	Modified: whereHelpertime_Time{field: "`staff`.`modified`"},
@@ -386,7 +386,7 @@ func Staffs(mods ...qm.QueryMod) staffQuery {
 
 // FindStaff retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindStaff(ctx context.Context, exec boil.ContextExecutor, userID []byte, selectCols ...string) (*Staff, error) {
+func FindStaff(ctx context.Context, exec boil.ContextExecutor, userID string, selectCols ...string) (*Staff, error) {
 	staffObj := &Staff{}
 
 	sel := "*"
@@ -923,7 +923,7 @@ func (o *StaffSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) e
 }
 
 // StaffExists checks if the Staff row exists.
-func StaffExists(ctx context.Context, exec boil.ContextExecutor, userID []byte) (bool, error) {
+func StaffExists(ctx context.Context, exec boil.ContextExecutor, userID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `staff` where `user_id`=? limit 1)"
 

@@ -24,7 +24,7 @@ import (
 // OtpSession is an object representing the database table.
 type OtpSession struct {
 	ID         string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID     []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
 
@@ -60,12 +60,12 @@ var OtpSessionTableColumns = struct {
 
 var OtpSessionWhere = struct {
 	ID         whereHelperstring
-	UserID     whereHelper__byte
+	UserID     whereHelperstring
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
 }{
 	ID:         whereHelperstring{field: "`otp_session`.`id`"},
-	UserID:     whereHelper__byte{field: "`otp_session`.`user_id`"},
+	UserID:     whereHelperstring{field: "`otp_session`.`user_id`"},
 	Period:     whereHelpertime_Time{field: "`otp_session`.`period`"},
 	RetryCount: whereHelperuint8{field: "`otp_session`.`retry_count`"},
 }

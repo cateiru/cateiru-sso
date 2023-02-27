@@ -568,7 +568,7 @@ func testLoginClientHistoriesSelect(t *testing.T) {
 }
 
 var (
-	loginClientHistoryDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `UserID`: `varbinary`, `Device`: `varchar`, `Os`: `varchar`, `Browser`: `varchar`, `IsMobile`: `tinyint`, `IP`: `varbinary`, `Created`: `datetime`}
+	loginClientHistoryDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `UserID`: `varchar`, `Device`: `varchar`, `Os`: `varchar`, `Browser`: `varchar`, `IsMobile`: `tinyint`, `IP`: `varbinary`, `Created`: `datetime`}
 	_                         = bytes.MinRead
 )
 

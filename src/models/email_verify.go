@@ -24,7 +24,7 @@ import (
 // EmailVerify is an object representing the database table.
 type EmailVerify struct {
 	ID         string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID     []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	VerifyCode string    `boil:"verify_code" json:"verify_code" toml:"verify_code" yaml:"verify_code"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
@@ -98,7 +98,7 @@ func (w whereHelperuint8) NIN(slice []uint8) qm.QueryMod {
 
 var EmailVerifyWhere = struct {
 	ID         whereHelperstring
-	UserID     whereHelper__byte
+	UserID     whereHelperstring
 	VerifyCode whereHelperstring
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
@@ -106,7 +106,7 @@ var EmailVerifyWhere = struct {
 	Modified   whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`email_verify`.`id`"},
-	UserID:     whereHelper__byte{field: "`email_verify`.`user_id`"},
+	UserID:     whereHelperstring{field: "`email_verify`.`user_id`"},
 	VerifyCode: whereHelperstring{field: "`email_verify`.`verify_code`"},
 	Period:     whereHelpertime_Time{field: "`email_verify`.`period`"},
 	RetryCount: whereHelperuint8{field: "`email_verify`.`retry_count`"},

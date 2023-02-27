@@ -31,8 +31,8 @@ type Client struct {
 	IsAllow          bool        `boil:"is_allow" json:"is_allow" toml:"is_allow" yaml:"is_allow"`
 	Indispensable2fa bool        `boil:"indispensable_2fa" json:"indispensable_2fa" toml:"indispensable_2fa" yaml:"indispensable_2fa"`
 	Prompt           null.String `boil:"prompt" json:"prompt,omitempty" toml:"prompt" yaml:"prompt,omitempty"`
-	OwnerUserID      []byte      `boil:"owner_user_id" json:"owner_user_id" toml:"owner_user_id" yaml:"owner_user_id"`
-	ClientSecret     []byte      `boil:"client_secret" json:"client_secret" toml:"client_secret" yaml:"client_secret"`
+	OwnerUserID      string      `boil:"owner_user_id" json:"owner_user_id" toml:"owner_user_id" yaml:"owner_user_id"`
+	ClientSecret     string      `boil:"client_secret" json:"client_secret" toml:"client_secret" yaml:"client_secret"`
 	Created          time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
 	Modified         time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
@@ -102,8 +102,8 @@ var ClientWhere = struct {
 	IsAllow          whereHelperbool
 	Indispensable2fa whereHelperbool
 	Prompt           whereHelpernull_String
-	OwnerUserID      whereHelper__byte
-	ClientSecret     whereHelper__byte
+	OwnerUserID      whereHelperstring
+	ClientSecret     whereHelperstring
 	Created          whereHelpertime_Time
 	Modified         whereHelpertime_Time
 }{
@@ -114,8 +114,8 @@ var ClientWhere = struct {
 	IsAllow:          whereHelperbool{field: "`client`.`is_allow`"},
 	Indispensable2fa: whereHelperbool{field: "`client`.`indispensable_2fa`"},
 	Prompt:           whereHelpernull_String{field: "`client`.`prompt`"},
-	OwnerUserID:      whereHelper__byte{field: "`client`.`owner_user_id`"},
-	ClientSecret:     whereHelper__byte{field: "`client`.`client_secret`"},
+	OwnerUserID:      whereHelperstring{field: "`client`.`owner_user_id`"},
+	ClientSecret:     whereHelperstring{field: "`client`.`client_secret`"},
 	Created:          whereHelpertime_Time{field: "`client`.`created`"},
 	Modified:         whereHelpertime_Time{field: "`client`.`modified`"},
 }

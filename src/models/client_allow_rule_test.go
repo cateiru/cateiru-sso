@@ -568,7 +568,7 @@ func testClientAllowRulesSelect(t *testing.T) {
 }
 
 var (
-	clientAllowRuleDBTypes = map[string]string{`ClientID`: `varchar`, `UserID`: `varbinary`, `EmailDomain`: `varchar`, `Created`: `datetime`}
+	clientAllowRuleDBTypes = map[string]string{`ClientID`: `varchar`, `UserID`: `varchar`, `EmailDomain`: `varchar`, `Created`: `datetime`}
 	_                      = bytes.MinRead
 )
 

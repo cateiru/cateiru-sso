@@ -1,12 +1,15 @@
 package lib
 
 import (
+	"io"
+
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 type WebAuthnInterface interface {
 	BeginRegistration(user webauthn.User) (*protocol.CredentialCreation, *webauthn.SessionData, error)
+	ParseCreate(body io.Reader) (pcc *protocol.ParsedCredentialCreationData, err error)
 	FinishRegistration(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialCreationData) (*webauthn.Credential, error)
 	BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error)
 	FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error)
@@ -31,6 +34,10 @@ func NewWebAuthn(c *webauthn.Config) (*WebAuthn, error) {
 // 登録: WebAuthnのconfig作成
 func (a *WebAuthn) BeginRegistration(user webauthn.User) (*protocol.CredentialCreation, *webauthn.SessionData, error) {
 	return a.W.BeginRegistration(user)
+}
+
+func (a *WebAuthn) ParseCreate(body io.Reader) (pcc *protocol.ParsedCredentialCreationData, err error) {
+	return protocol.ParseCredentialCreationResponseBody(body)
 }
 
 // 登録: WebAuthnの検証

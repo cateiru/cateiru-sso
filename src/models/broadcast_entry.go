@@ -25,7 +25,7 @@ import (
 // BroadcastEntry is an object representing the database table.
 type BroadcastEntry struct {
 	ID           uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	CreateUserID []byte      `boil:"create_user_id" json:"create_user_id" toml:"create_user_id" yaml:"create_user_id"`
+	CreateUserID string      `boil:"create_user_id" json:"create_user_id" toml:"create_user_id" yaml:"create_user_id"`
 	Title        string      `boil:"title" json:"title" toml:"title" yaml:"title"`
 	Body         null.String `boil:"body" json:"body,omitempty" toml:"body" yaml:"body,omitempty"`
 	Created      time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -109,14 +109,14 @@ func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereI
 
 var BroadcastEntryWhere = struct {
 	ID           whereHelperuint
-	CreateUserID whereHelper__byte
+	CreateUserID whereHelperstring
 	Title        whereHelperstring
 	Body         whereHelpernull_String
 	Created      whereHelpertime_Time
 	Modified     whereHelpertime_Time
 }{
 	ID:           whereHelperuint{field: "`broadcast_entry`.`id`"},
-	CreateUserID: whereHelper__byte{field: "`broadcast_entry`.`create_user_id`"},
+	CreateUserID: whereHelperstring{field: "`broadcast_entry`.`create_user_id`"},
 	Title:        whereHelperstring{field: "`broadcast_entry`.`title`"},
 	Body:         whereHelpernull_String{field: "`broadcast_entry`.`body`"},
 	Created:      whereHelpertime_Time{field: "`broadcast_entry`.`created`"},

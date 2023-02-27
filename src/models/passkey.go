@@ -24,7 +24,7 @@ import (
 
 // Passkey is an object representing the database table.
 type Passkey struct {
-	UserID          []byte     `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID          string     `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	WebauthnUserID  []byte     `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
 	Credential      types.JSON `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
 	FlagBackupState bool       `boil:"flag_backup_state" json:"flag_backup_state" toml:"flag_backup_state" yaml:"flag_backup_state"`
@@ -91,14 +91,14 @@ func (w whereHelpertypes_JSON) GTE(x types.JSON) qm.QueryMod {
 }
 
 var PasskeyWhere = struct {
-	UserID          whereHelper__byte
+	UserID          whereHelperstring
 	WebauthnUserID  whereHelper__byte
 	Credential      whereHelpertypes_JSON
 	FlagBackupState whereHelperbool
 	Created         whereHelpertime_Time
 	Modified        whereHelpertime_Time
 }{
-	UserID:          whereHelper__byte{field: "`passkey`.`user_id`"},
+	UserID:          whereHelperstring{field: "`passkey`.`user_id`"},
 	WebauthnUserID:  whereHelper__byte{field: "`passkey`.`webauthn_user_id`"},
 	Credential:      whereHelpertypes_JSON{field: "`passkey`.`credential`"},
 	FlagBackupState: whereHelperbool{field: "`passkey`.`flag_backup_state`"},
@@ -421,7 +421,7 @@ func Passkeys(mods ...qm.QueryMod) passkeyQuery {
 
 // FindPasskey retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindPasskey(ctx context.Context, exec boil.ContextExecutor, userID []byte, selectCols ...string) (*Passkey, error) {
+func FindPasskey(ctx context.Context, exec boil.ContextExecutor, userID string, selectCols ...string) (*Passkey, error) {
 	passkeyObj := &Passkey{}
 
 	sel := "*"
@@ -958,7 +958,7 @@ func (o *PasskeySlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor)
 }
 
 // PasskeyExists checks if the Passkey row exists.
-func PasskeyExists(ctx context.Context, exec boil.ContextExecutor, userID []byte) (bool, error) {
+func PasskeyExists(ctx context.Context, exec boil.ContextExecutor, userID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `passkey` where `user_id`=? limit 1)"
 

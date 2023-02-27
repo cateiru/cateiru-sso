@@ -24,7 +24,7 @@ import (
 // Session is an object representing the database table.
 type Session struct {
 	ID      string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID  []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID  string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Period  time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 
@@ -60,12 +60,12 @@ var SessionTableColumns = struct {
 
 var SessionWhere = struct {
 	ID      whereHelperstring
-	UserID  whereHelper__byte
+	UserID  whereHelperstring
 	Period  whereHelpertime_Time
 	Created whereHelpertime_Time
 }{
 	ID:      whereHelperstring{field: "`session`.`id`"},
-	UserID:  whereHelper__byte{field: "`session`.`user_id`"},
+	UserID:  whereHelperstring{field: "`session`.`user_id`"},
 	Period:  whereHelpertime_Time{field: "`session`.`period`"},
 	Created: whereHelpertime_Time{field: "`session`.`created`"},
 }

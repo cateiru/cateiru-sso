@@ -568,7 +568,7 @@ func testClientSessionsSelect(t *testing.T) {
 }
 
 var (
-	clientSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varbinary`, `ClientID`: `varchar`, `LoginClientID`: `int`, `Period`: `datetime`, `Created`: `datetime`}
+	clientSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `ClientID`: `varchar`, `LoginClientID`: `int`, `Period`: `datetime`, `Created`: `datetime`}
 	_                    = bytes.MinRead
 )
 

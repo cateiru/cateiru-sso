@@ -16,6 +16,8 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
 func TestSendEmailVerifyHandler(t *testing.T) {
@@ -568,5 +570,125 @@ func TestRegisterBeginWebAuthn(t *testing.T) {
 
 		err = h.RegisterBeginWebAuthn(c)
 		require.EqualError(t, err, "code=400, message=Email is not verified, unique=7")
+	})
+}
+
+func TestRegisterWebAuthn(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	// セッションを作成する
+	createSession := func(email string, verified bool) *models.RegisterSession {
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		sessionDB := models.RegisterSession{
+			ID:            session,
+			Email:         email,
+			EmailVerified: verified,
+			VerifyCode:    "123456",
+			RetryCount:    1,
+
+			Period: time.Now().Add(h.C.RegisterSessionPeriod),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		return s
+	}
+
+	// Webauthnのセッションを作成する
+	registerWebauthnSession := func(email string) string {
+		user, err := src.NewWebAuthnUserRegister(email)
+		require.NoError(t, err)
+		webauthnSessionId, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		_, s, err := h.WebAuthn.BeginRegistration(user)
+		require.NoError(t, err)
+
+		row := types.JSON{}
+		err = row.Marshal(s)
+		require.NoError(t, err)
+
+		webauthnSession := models.WebauthnSession{
+			ID:               webauthnSessionId,
+			WebauthnUserID:   s.UserID,
+			UserDisplayName:  s.UserDisplayName,
+			Challenge:        s.Challenge,
+			UserVerification: string(s.UserVerification),
+			Row:              row,
+
+			Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+		}
+		err = webauthnSession.Insert(ctx, h.DB, boil.Infer())
+		require.NoError(t, err)
+
+		return webauthnSessionId
+	}
+
+	t.Run("成功する", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		s := createSession(email, true)
+		webauthnSession := registerWebauthnSession(email)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		var responseUser *models.User = nil
+		err = m.Json(responseUser)
+		require.NoError(t, err)
+
+		require.NotNil(t, responseUser)
+
+		// cookieは設定されているか（セッショントークンのみ見る）
+		var sessionCookie *http.Cookie = nil
+		for _, cookie := range m.R.Cookies() {
+			if cookie.Name == C.SessionCookie.Name {
+				sessionCookie = cookie
+				break
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		// セッションはBodyのユーザと同じか
+		sessionUser, err := models.Users(
+			qm.InnerJoin("session on session.user_id = user.id"),
+			qm.Where("session.id = ?", sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionUser.ID, responseUser.ID)
+
+		// passkeyが保存されているか
+		existsPasskey, err := models.Passkeys(
+			models.PasskeyWhere.UserID.EQ(responseUser.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existsPasskey)
+
+		passkeyLoginDeviceCount, err := models.PasskeyLoginDevices(
+			models.PasskeyLoginDeviceWhere.UserID.EQ(responseUser.ID),
+		).Count(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, passkeyLoginDeviceCount, int64(1))
 	})
 }

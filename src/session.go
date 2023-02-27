@@ -496,7 +496,7 @@ func (s *Session) NewRegisterSession(ctx context.Context, user *models.User, ua 
 	return &RegisterSession{
 		SessionToken: sessionToken,
 		RefreshToken: refreshToken,
-		UserID:       string(user.ID),
+		UserID:       user.ID,
 	}, nil
 }
 
@@ -568,7 +568,7 @@ func (s *RegisterSession) InsertCookie(c *Config) []*http.Cookie {
 func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, userID string) ([]*http.Cookie, error) {
 	// ユーザIDのユーザが存在するかチェック
 	userExists, err := models.Users(
-		models.UserWhere.ID.EQ([]byte(userID)),
+		models.UserWhere.ID.EQ(userID),
 	).Exists(ctx, s.DB)
 	if err != nil {
 		return []*http.Cookie{}, err

@@ -25,7 +25,7 @@ import (
 type OtpBackup struct {
 	ID      uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	OtpID   uint      `boil:"otp_id" json:"otp_id" toml:"otp_id" yaml:"otp_id"`
-	UserID  []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID  string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Code    string    `boil:"code" json:"code" toml:"code" yaml:"code"`
 	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 
@@ -66,13 +66,13 @@ var OtpBackupTableColumns = struct {
 var OtpBackupWhere = struct {
 	ID      whereHelperuint
 	OtpID   whereHelperuint
-	UserID  whereHelper__byte
+	UserID  whereHelperstring
 	Code    whereHelperstring
 	Created whereHelpertime_Time
 }{
 	ID:      whereHelperuint{field: "`otp_backup`.`id`"},
 	OtpID:   whereHelperuint{field: "`otp_backup`.`otp_id`"},
-	UserID:  whereHelper__byte{field: "`otp_backup`.`user_id`"},
+	UserID:  whereHelperstring{field: "`otp_backup`.`user_id`"},
 	Code:    whereHelperstring{field: "`otp_backup`.`code`"},
 	Created: whereHelpertime_Time{field: "`otp_backup`.`created`"},
 }

@@ -25,7 +25,7 @@ import (
 // LoginTryHistory is an object representing the database table.
 type LoginTryHistory struct {
 	ID       uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID   []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Device   null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
 	Os       null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
 	Browser  null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
@@ -81,7 +81,7 @@ var LoginTryHistoryTableColumns = struct {
 
 var LoginTryHistoryWhere = struct {
 	ID       whereHelperuint
-	UserID   whereHelper__byte
+	UserID   whereHelperstring
 	Device   whereHelpernull_String
 	Os       whereHelpernull_String
 	Browser  whereHelpernull_String
@@ -90,7 +90,7 @@ var LoginTryHistoryWhere = struct {
 	Created  whereHelpertime_Time
 }{
 	ID:       whereHelperuint{field: "`login_try_history`.`id`"},
-	UserID:   whereHelper__byte{field: "`login_try_history`.`user_id`"},
+	UserID:   whereHelperstring{field: "`login_try_history`.`user_id`"},
 	Device:   whereHelpernull_String{field: "`login_try_history`.`device`"},
 	Os:       whereHelpernull_String{field: "`login_try_history`.`os`"},
 	Browser:  whereHelpernull_String{field: "`login_try_history`.`browser`"},

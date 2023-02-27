@@ -24,7 +24,7 @@ import (
 
 // Otp is an object representing the database table.
 type Otp struct {
-	UserID   []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Secret   null.String `boil:"secret" json:"secret,omitempty" toml:"secret" yaml:"secret,omitempty"`
 	Created  time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
 	Modified time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
@@ -60,12 +60,12 @@ var OtpTableColumns = struct {
 // Generated where
 
 var OtpWhere = struct {
-	UserID   whereHelper__byte
+	UserID   whereHelperstring
 	Secret   whereHelpernull_String
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
-	UserID:   whereHelper__byte{field: "`otp`.`user_id`"},
+	UserID:   whereHelperstring{field: "`otp`.`user_id`"},
 	Secret:   whereHelpernull_String{field: "`otp`.`secret`"},
 	Created:  whereHelpertime_Time{field: "`otp`.`created`"},
 	Modified: whereHelpertime_Time{field: "`otp`.`modified`"},
@@ -386,7 +386,7 @@ func Otps(mods ...qm.QueryMod) otpQuery {
 
 // FindOtp retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindOtp(ctx context.Context, exec boil.ContextExecutor, userID []byte, selectCols ...string) (*Otp, error) {
+func FindOtp(ctx context.Context, exec boil.ContextExecutor, userID string, selectCols ...string) (*Otp, error) {
 	otpObj := &Otp{}
 
 	sel := "*"
@@ -923,7 +923,7 @@ func (o *OtpSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) err
 }
 
 // OtpExists checks if the Otp row exists.
-func OtpExists(ctx context.Context, exec boil.ContextExecutor, userID []byte) (bool, error) {
+func OtpExists(ctx context.Context, exec boil.ContextExecutor, userID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `otp` where `user_id`=? limit 1)"
 

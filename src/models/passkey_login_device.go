@@ -25,7 +25,7 @@ import (
 // PasskeyLoginDevice is an object representing the database table.
 type PasskeyLoginDevice struct {
 	ID               uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID           []byte      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID           string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Device           null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
 	Os               null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
 	Browser          null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
@@ -76,7 +76,7 @@ var PasskeyLoginDeviceTableColumns = struct {
 
 var PasskeyLoginDeviceWhere = struct {
 	ID               whereHelperuint
-	UserID           whereHelper__byte
+	UserID           whereHelperstring
 	Device           whereHelpernull_String
 	Os               whereHelpernull_String
 	Browser          whereHelpernull_String
@@ -84,7 +84,7 @@ var PasskeyLoginDeviceWhere = struct {
 	Created          whereHelpertime_Time
 }{
 	ID:               whereHelperuint{field: "`passkey_login_device`.`id`"},
-	UserID:           whereHelper__byte{field: "`passkey_login_device`.`user_id`"},
+	UserID:           whereHelperstring{field: "`passkey_login_device`.`user_id`"},
 	Device:           whereHelpernull_String{field: "`passkey_login_device`.`device`"},
 	Os:               whereHelpernull_String{field: "`passkey_login_device`.`os`"},
 	Browser:          whereHelpernull_String{field: "`passkey_login_device`.`browser`"},

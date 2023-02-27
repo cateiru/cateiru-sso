@@ -25,7 +25,7 @@ import (
 type BroadcastNotice struct {
 	ID       uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	EntryID  uint      `boil:"entry_id" json:"entry_id" toml:"entry_id" yaml:"entry_id"`
-	UserID   []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID   string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	IsRead   bool      `boil:"is_read" json:"is_read" toml:"is_read" yaml:"is_read"`
 	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 	Modified time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
@@ -80,14 +80,14 @@ func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field
 var BroadcastNoticeWhere = struct {
 	ID       whereHelperuint
 	EntryID  whereHelperuint
-	UserID   whereHelper__byte
+	UserID   whereHelperstring
 	IsRead   whereHelperbool
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
 	ID:       whereHelperuint{field: "`broadcast_notice`.`id`"},
 	EntryID:  whereHelperuint{field: "`broadcast_notice`.`entry_id`"},
-	UserID:   whereHelper__byte{field: "`broadcast_notice`.`user_id`"},
+	UserID:   whereHelperstring{field: "`broadcast_notice`.`user_id`"},
 	IsRead:   whereHelperbool{field: "`broadcast_notice`.`is_read`"},
 	Created:  whereHelpertime_Time{field: "`broadcast_notice`.`created`"},
 	Modified: whereHelpertime_Time{field: "`broadcast_notice`.`modified`"},

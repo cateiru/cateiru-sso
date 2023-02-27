@@ -24,7 +24,7 @@ import (
 // Brand is an object representing the database table.
 type Brand struct {
 	ID      uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID  []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID  string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Brand   string    `boil:"brand" json:"brand" toml:"brand" yaml:"brand"`
 	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 
@@ -81,15 +81,6 @@ func (w whereHelperuint) NIN(slice []uint) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-type whereHelper__byte struct{ field string }
-
-func (w whereHelper__byte) EQ(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelper__byte) NEQ(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelper__byte) LT(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelper__byte) LTE(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelper__byte) GT(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelper__byte) GTE(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-
 type whereHelperstring struct{ field string }
 
 func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
@@ -136,12 +127,12 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 
 var BrandWhere = struct {
 	ID      whereHelperuint
-	UserID  whereHelper__byte
+	UserID  whereHelperstring
 	Brand   whereHelperstring
 	Created whereHelpertime_Time
 }{
 	ID:      whereHelperuint{field: "`brand`.`id`"},
-	UserID:  whereHelper__byte{field: "`brand`.`user_id`"},
+	UserID:  whereHelperstring{field: "`brand`.`user_id`"},
 	Brand:   whereHelperstring{field: "`brand`.`brand`"},
 	Created: whereHelpertime_Time{field: "`brand`.`created`"},
 }
