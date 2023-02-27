@@ -24,6 +24,7 @@ type Handler struct {
 	Sender    lib.SenderInterface
 	WebAuthn  lib.WebAuthnInterface
 	Session   SessionInterface
+	Password  lib.PasswordInterface
 }
 
 func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
@@ -48,6 +49,7 @@ func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 		Sender:    sender,
 		WebAuthn:  webauthn,
 		Session:   session,
+		Password:  config.Password,
 	}, nil
 }
 

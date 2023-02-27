@@ -565,5 +565,74 @@ func (h *Handler) RegisterWebAuthn(c echo.Context) error {
 
 // パスワードによる認証の登録
 func (h *Handler) RegisterPassword(c echo.Context) error {
-	return nil
+	ctx := c.Request().Context()
+
+	password := c.FormValue("password")
+	if password == "" {
+		return NewHTTPError(http.StatusBadRequest, "password is empty")
+	}
+
+	token := c.Request().Header.Get("X-Register-Token") // SendEmailVerifyHandlerのレスポンスToken
+	if token == "" {
+		return NewHTTPError(http.StatusBadRequest, "token is empty")
+	}
+
+	registerSession, err := models.RegisterSessions(
+		models.RegisterSessionWhere.ID.EQ(token),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "token is invalid")
+	}
+	if err != nil {
+		return err
+	}
+
+	// まだ認証されていない場合
+	if !registerSession.EmailVerified {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrEmailNotVerified, "Email is not verified")
+	}
+
+	// 有効期限が切れた場合
+	if time.Now().After(registerSession.Period) {
+		// セッションは削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
+	}
+
+	hashedPassword, salt, err := h.Password.HashPassword(password)
+	if err != nil {
+		return err
+	}
+
+	user, err := RegisterUser(ctx, h.DB, registerSession.Email)
+	if err != nil {
+		return err
+	}
+
+	passwordModel := models.Password{
+		UserID: user.ID,
+		Salt:   salt,
+		Hash:   hashedPassword,
+	}
+	if err := passwordModel.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	ua, err := ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+	ip := c.RealIP()
+	register, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
+	if err != nil {
+		return err
+	}
+	cookies := register.InsertCookie(h.C)
+	for _, cookie := range cookies {
+		c.SetCookie(cookie)
+	}
+
+	return c.JSON(http.StatusCreated, user)
 }
