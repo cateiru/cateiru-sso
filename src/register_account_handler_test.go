@@ -639,7 +639,6 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		m, err := mock.NewMock("", http.MethodPost, "/")
 		require.NoError(t, err)
-
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -653,15 +652,13 @@ func TestRegisterWebAuthn(t *testing.T) {
 		require.NoError(t, err)
 
 		// userが返ってきているか
-		var responseUser *models.User = nil
-		err = m.Json(responseUser)
-		require.NoError(t, err)
-
+		responseUser := &models.User{}
+		require.NoError(t, m.Json(responseUser))
 		require.NotNil(t, responseUser)
 
 		// cookieは設定されているか（セッショントークンのみ見る）
 		var sessionCookie *http.Cookie = nil
-		for _, cookie := range m.R.Cookies() {
+		for _, cookie := range m.Response().Cookies() {
 			if cookie.Name == C.SessionCookie.Name {
 				sessionCookie = cookie
 				break
@@ -690,5 +687,156 @@ func TestRegisterWebAuthn(t *testing.T) {
 		).Count(ctx, DB)
 		require.NoError(t, err)
 		require.Equal(t, passkeyLoginDeviceCount, int64(1))
+	})
+
+	t.Run("失敗: X-Register-Tokenがない", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		webauthnSession := registerWebauthnSession(email)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.EqualError(t, err, "code=400, message=token is empty")
+	})
+
+	t.Run("失敗: webauthnTokenのCookieが無い", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		s := createSession(email, true)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.EqualError(t, err, "code=400, message=http: named cookie not present")
+	})
+
+	t.Run("失敗:  X-Register-Tokenが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		webauthnSession := registerWebauthnSession(email)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", "hogehoge")
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.EqualError(t, err, "code=400, message=token is invalid")
+	})
+
+	t.Run("失敗: X-Register-Tokenがまだ認証完了していない", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		s := createSession(email, false) // 認証終わってない
+		webauthnSession := registerWebauthnSession(email)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.EqualError(t, err, "code=403, message=Email is not verified, unique=7")
+	})
+
+	t.Run("失敗: X-Register-Tokenの有効期限切れ", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		s := createSession(email, true)
+		webauthnSession := registerWebauthnSession(email)
+
+		// 有効期限 - 10日
+		s.Period = s.Period.Add(-24 * 10 * time.Hour)
+		_, err := s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("失敗: webauthnTokenの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		s := createSession(email, true)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: "hogehoge",
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+	})
+
+	t.Run("失敗: webauthnTokenが有効期限切れ", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		s := createSession(email, true)
+		webauthnSession := registerWebauthnSession(email)
+
+		// 有効期限切れにする
+		session, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(webauthnSession),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		session.Period = time.Now().Add(-10 * time.Hour)
+		_, err = session.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 	})
 }

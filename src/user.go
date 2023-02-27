@@ -109,7 +109,7 @@ func NewWebAuthnUserSession(ctx context.Context, db *sql.DB, webauthnSession str
 		if err != nil {
 			return nil, nil, err
 		}
-		return nil, nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
+		return nil, nil, NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
 	// Rowから取得する

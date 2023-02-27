@@ -485,7 +485,7 @@ func (h *Handler) RegisterWebAuthn(c echo.Context) error {
 
 	// まだ認証されていない場合
 	if !registerSession.EmailVerified {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrEmailNotVerified, "Email is not verified")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrEmailNotVerified, "Email is not verified")
 	}
 
 	// 有効期限が切れた場合
