@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/go-sql-driver/mysql"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
@@ -54,6 +55,9 @@ type Config struct {
 	LoginUserCookie CookieConfig
 	// ログイン状態をJSで見れるようにするCookie
 	LoginStateCookie CookieConfig
+
+	// Passwordハッシュ設定
+	Password *lib.Password
 }
 
 // Cookieの設定
@@ -159,6 +163,13 @@ var LocalConfig = &Config{
 		MaxAge:   2592000, // 30days
 		SameSite: http.SameSiteDefaultMode,
 	},
+
+	Password: &lib.Password{
+		Time:    1,
+		Memory:  64 * 1024,
+		Threads: 4,
+		KeyLen:  32,
+	},
 }
 
 var CloudRunConfig = &Config{
@@ -238,6 +249,13 @@ var CloudRunConfig = &Config{
 		Path:     "/",
 		MaxAge:   2592000, // 30days
 		SameSite: http.SameSiteDefaultMode,
+	},
+
+	Password: &lib.Password{
+		Time:    1,
+		Memory:  64 * 1024,
+		Threads: 4,
+		KeyLen:  32,
 	},
 }
 
@@ -326,6 +344,13 @@ var TestConfig = &Config{
 		Path:     "/",
 		MaxAge:   2592000, // 30days
 		SameSite: http.SameSiteDefaultMode,
+	},
+
+	Password: &lib.Password{
+		Time:    1,
+		Memory:  64 * 1024,
+		Threads: 4,
+		KeyLen:  32,
 	},
 }
 
