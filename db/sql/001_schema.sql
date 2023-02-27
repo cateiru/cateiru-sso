@@ -140,9 +140,8 @@ CREATE TABLE `passkey_login_device` (
 CREATE TABLE `password` (
     `user_id` VARBINARY(16) NOT NULL,
 
-    -- TODO: サイズの最適化をしたい
-    `salt` VARCHAR(31) NOT NULL,
-    `hash` VARCHAR(31) NOT NULL,
+    `salt` VARCHAR(32) NOT NULL,
+    `hash` VARCHAR(32) NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
