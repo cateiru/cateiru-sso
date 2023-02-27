@@ -24,8 +24,8 @@ import (
 // Password is an object representing the database table.
 type Password struct {
 	UserID   []byte    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Salt     string    `boil:"salt" json:"salt" toml:"salt" yaml:"salt"`
-	Hash     string    `boil:"hash" json:"hash" toml:"hash" yaml:"hash"`
+	Salt     []byte    `boil:"salt" json:"salt" toml:"salt" yaml:"salt"`
+	Hash     []byte    `boil:"hash" json:"hash" toml:"hash" yaml:"hash"`
 	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 	Modified time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
@@ -65,14 +65,14 @@ var PasswordTableColumns = struct {
 
 var PasswordWhere = struct {
 	UserID   whereHelper__byte
-	Salt     whereHelperstring
-	Hash     whereHelperstring
+	Salt     whereHelper__byte
+	Hash     whereHelper__byte
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
 	UserID:   whereHelper__byte{field: "`password`.`user_id`"},
-	Salt:     whereHelperstring{field: "`password`.`salt`"},
-	Hash:     whereHelperstring{field: "`password`.`hash`"},
+	Salt:     whereHelper__byte{field: "`password`.`salt`"},
+	Hash:     whereHelper__byte{field: "`password`.`hash`"},
 	Created:  whereHelpertime_Time{field: "`password`.`created`"},
 	Modified: whereHelpertime_Time{field: "`password`.`modified`"},
 }
