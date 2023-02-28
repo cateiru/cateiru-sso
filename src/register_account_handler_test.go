@@ -637,7 +637,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 		s := createSession(email, true)
 		webauthnSession := registerWebauthnSession(email)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -694,7 +694,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		webauthnSession := registerWebauthnSession(email)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -713,7 +713,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		s := createSession(email, true)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 
@@ -728,7 +728,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		webauthnSession := registerWebauthnSession(email)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", "hogehoge")
 		cookie := &http.Cookie{
@@ -749,7 +749,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 		s := createSession(email, false) // 認証終わってない
 		webauthnSession := registerWebauthnSession(email)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -775,7 +775,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -795,7 +795,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		s := createSession(email, true)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -825,7 +825,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 		_, err = session.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -838,5 +838,208 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		err = h.RegisterWebAuthn(c)
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("application/json以外", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		s := createSession(email, true)
+		webauthnSession := registerWebauthnSession(email)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthn(c)
+		require.EqualError(t, err, "code=400, message=invalid content-type")
+	})
+}
+
+func TestRegisterPassword(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	// セッションを作成する
+	createSession := func(email string, verified bool) *models.RegisterSession {
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		sessionDB := models.RegisterSession{
+			ID:            session,
+			Email:         email,
+			EmailVerified: verified,
+			VerifyCode:    "123456",
+			RetryCount:    1,
+
+			Period: time.Now().Add(h.C.RegisterSessionPeriod),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		return s
+	}
+
+	t.Run("成功", func(t *testing.T) {
+		email := RandomEmail(t)
+		s := createSession(email, true)
+
+		password := "password123456789"
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+
+		c := m.Echo()
+
+		err = h.RegisterPassword(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		responseUser := &models.User{}
+		require.NoError(t, m.Json(responseUser))
+		require.NotNil(t, responseUser)
+
+		// cookieは設定されているか（セッショントークンのみ見る）
+		var sessionCookie *http.Cookie = nil
+		for _, cookie := range m.Response().Cookies() {
+			if cookie.Name == C.SessionCookie.Name {
+				sessionCookie = cookie
+				break
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		// セッションはBodyのユーザと同じか
+		sessionUser, err := models.Users(
+			qm.InnerJoin("session on session.user_id = user.id"),
+			qm.Where("session.id = ?", sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionUser.ID, responseUser.ID)
+
+		// パスワードは保存されている
+		passwordModel, err := models.Passwords(
+			models.PasswordWhere.UserID.EQ(responseUser.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		validated := C.Password.VerifyPassword(password, passwordModel.Hash, passwordModel.Salt)
+		require.True(t, validated)
+	})
+
+	t.Run("失敗: X-Register-Tokenが無い", func(t *testing.T) {
+		password := "password123456789"
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.RegisterPassword(c)
+		require.EqualError(t, err, "code=400, message=token is empty")
+	})
+	t.Run("失敗: X-Register-Tokenの値が不正", func(t *testing.T) {
+		password := "password123456789"
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", "hogehoge123")
+
+		c := m.Echo()
+
+		err = h.RegisterPassword(c)
+		require.EqualError(t, err, "code=400, message=token is invalid")
+	})
+	t.Run("失敗: X-Register-Tokenがまだ認証完了していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		s := createSession(email, false)
+
+		password := "password123456789"
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+
+		c := m.Echo()
+
+		err = h.RegisterPassword(c)
+		require.EqualError(t, err, "code=400, message=Email is not verified, unique=7")
+	})
+	t.Run("失敗: X-Register-Tokenの有効期限が切れている", func(t *testing.T) {
+		email := RandomEmail(t)
+		s := createSession(email, true)
+
+		// 有効期限 - 10日
+		s.Period = s.Period.Add(-24 * 10 * time.Hour)
+		_, err := s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		password := "password123456789"
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+
+		c := m.Echo()
+
+		err = h.RegisterPassword(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("失敗: パスワードが無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		s := createSession(email, true)
+
+		password := ""
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+
+		c := m.Echo()
+
+		err = h.RegisterPassword(c)
+		require.EqualError(t, err, "code=400, message=password is empty")
+	})
+	t.Run("失敗: パスワードが範囲外", func(t *testing.T) {
+		email := RandomEmail(t)
+		s := createSession(email, true)
+
+		password := "あああああああああああああああああああああああああああああああああああああああああああああああああああああ"
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+
+		c := m.Echo()
+
+		err = h.RegisterPassword(c)
+		require.EqualError(t, err, "code=400, message=bad password")
 	})
 }

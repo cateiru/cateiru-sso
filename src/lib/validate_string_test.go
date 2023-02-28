@@ -33,3 +33,36 @@ func TestValidateEmail(t *testing.T) {
 		}
 	})
 }
+
+func TestValidatePassword(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		passwords := []string{
+			`ePA<pi>glgQa?E_`,
+			`_8ph.ND12D(\lc2`,
+			`$]4.!<a;LPO'pQ3`,
+			`L)V$rQ-BxKo7i#x`,
+			`;%*aoK[{J$M0Xmv`,
+			"wFOHS5io2B3d3dw",
+			"TXP6qXb4ERWfKVL",
+			"lcc3ln5P0i3jyYI",
+			"kb6mQeJHIIndv40",
+			"raxTPN2fhTFhudc",
+		}
+
+		for _, p := range passwords {
+			require.True(t, lib.ValidatePassword(p))
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		passwords := map[string]string{
+			"aaaaaaaaaaaaaaa": "繰り返しの文字",
+			"abc123;":         "13文字以下",
+			"日本語ああああああああああああああああああああ": "ascii以外",
+		}
+
+		for p, message := range passwords {
+			require.False(t, lib.ValidatePassword(p), message)
+		}
+	})
+}

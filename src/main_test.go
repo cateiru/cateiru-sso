@@ -194,6 +194,7 @@ func NewTestHandler(t *testing.T) *src.Handler {
 		WebAuthn: &WebAuthnMock{
 			M: webauthn,
 		},
-		Session: s,
+		Session:  s,
+		Password: C.Password,
 	}
 }

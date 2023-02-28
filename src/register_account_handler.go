@@ -463,6 +463,10 @@ func (h *Handler) RegisterBeginWebAuthn(c echo.Context) error {
 func (h *Handler) RegisterWebAuthn(c echo.Context) error {
 	ctx := c.Request().Context()
 
+	if c.Request().Header.Get("Content-Type") != "application/json" {
+		return NewHTTPError(http.StatusBadRequest, "invalid content-type")
+	}
+
 	webauthnToken, err := c.Cookie(h.C.WebAuthnSessionCookie.Name)
 	if err != nil {
 		return NewHTTPError(http.StatusBadRequest, err)
@@ -569,6 +573,9 @@ func (h *Handler) RegisterPassword(c echo.Context) error {
 	password := c.FormValue("password")
 	if password == "" {
 		return NewHTTPError(http.StatusBadRequest, "password is empty")
+	}
+	if !lib.ValidatePassword(password) {
+		return NewHTTPError(http.StatusBadRequest, "bad password")
 	}
 
 	token := c.Request().Header.Get("X-Register-Token") // SendEmailVerifyHandlerのレスポンスToken
