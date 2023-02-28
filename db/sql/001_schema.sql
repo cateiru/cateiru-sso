@@ -227,12 +227,15 @@ CREATE TABLE `register_otp_session` (
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- Emailを更新したときに確認に使用するテーブル
-CREATE TABLE `email_verify` (
+CREATE TABLE `email_verify_session` (
     `id` VARCHAR(31) NOT NULL,
     `user_id` VARCHAR(32) NOT NULL,
 
     -- 認証コード
     `verify_code` CHAR(6) NOT NULL,
+
+    -- メール送信回数
+    `send_count` TINYINT UNSIGNED NOT NULL DEFAULT 1,
 
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -246,6 +249,22 @@ CREATE TABLE `email_verify` (
 
     PRIMARY KEY(`id`),
     INDEX `email_verify_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- パスワード再登録用
+CREATE TABLE `reregistration_password_session` (
+    `id` VARCHAR(31) NOT NULL,
+
+    `email` VARCHAR(255) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `reregistration_password_session_email` (`email`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- セッション維持用のテーブル

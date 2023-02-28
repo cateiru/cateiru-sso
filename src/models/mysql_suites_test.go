@@ -24,7 +24,7 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("ClientSessions", testClientSessionsUpsert)
 
-	t.Run("EmailVerifies", testEmailVerifiesUpsert)
+	t.Run("EmailVerifySessions", testEmailVerifySessionsUpsert)
 
 	t.Run("LoginClients", testLoginClientsUpsert)
 
@@ -55,6 +55,8 @@ func TestUpsert(t *testing.T) {
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsUpsert)
 
 	t.Run("RegisterSessions", testRegisterSessionsUpsert)
+
+	t.Run("ReregistrationPasswordSessions", testReregistrationPasswordSessionsUpsert)
 
 	t.Run("Sessions", testSessionsUpsert)
 
