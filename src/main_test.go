@@ -198,3 +198,21 @@ func NewTestHandler(t *testing.T) *src.Handler {
 		Password: C.Password,
 	}
 }
+
+// ユーザにパスワードを追加する
+func RegisterPassword(t *testing.T, ctx context.Context, u *models.User, password ...string) {
+	p := "password"
+	if len(password) >= 1 {
+		p = password[0]
+	}
+	hashed, salt, err := C.Password.HashPassword(p)
+	require.NoError(t, err)
+
+	passwordModel := models.Password{
+		UserID: u.ID,
+		Hash:   hashed,
+		Salt:   salt,
+	}
+	err = passwordModel.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+}

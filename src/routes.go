@@ -18,9 +18,8 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.POST("/v2/register/password", h.RegisterPassword)
 
 	// ログイン
-	e.POST("/v2/login/user", h.Root)              // emailでユーザのアバターとuser nameを返す
-	e.POST("/v2/login/available_passkey", h.Root) // その端末はPasskeyを使えるかどうか
-	e.POST("/v2/login/begin_webauthn", h.Root)    // Passkeyの前処理
+	e.POST("/v2/login/user", h.Root)           // emailでユーザのアバターとuser nameを返す
+	e.POST("/v2/login/begin_webauthn", h.Root) // Passkeyの前処理
 	e.POST("/v2/login/webathn", h.Root)
 	e.POST("/v2/login/password", h.Root)
 	e.POST("/v2/login/otp", h.Root)
@@ -33,6 +32,9 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.GET("/v2/account/otp", h.Root)         // OTPのpublic keyを返す
 	e.POST("/v2/account/otp", h.Root)        // OTP設定
 	e.GET("/v2/account/otp_backups", h.Root) // OTPのバックアップコード
+	e.POST("/v2/account/password", h.Root)   // パスワードの更新or新規作成
+	e.POST("/v2/account/begin_webauthn", h.Root)
+	e.POST("/v2/account/webauthn", h.Root) // passkey更新or新規作成
 
 	e.POST("/v2/account/forget/password", h.Root) // パスワード再登録リクエスト
 	e.POST("/v2/account/reregistration/password", h.Root)

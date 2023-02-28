@@ -52,8 +52,8 @@ func NewWebAuthnUserFromDB(ctx context.Context, db *sql.DB, user *models.User) (
 	}
 
 	icon := ""
-	if user.Avater.Valid {
-		icon = user.Avater.String
+	if user.Avatar.Valid {
+		icon = user.Avatar.String
 	}
 
 	credential := new(webauthn.Credential)

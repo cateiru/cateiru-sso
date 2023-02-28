@@ -28,6 +28,8 @@ const (
 	ErrLoginFailed = 8
 	// ログインに失敗したが別のアカウントでログインできる可能性がある場合
 	ErrBeAbleToLoginWithAnotherAccount = 9
+	// ユーザがいない
+	ErrNotFoundUser = 10
 )
 
 type HTTPError struct {
