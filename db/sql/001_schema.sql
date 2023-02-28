@@ -25,7 +25,7 @@ CREATE TABLE `user` (
     `gender` CHAR(1) NOT NULL DEFAULT '0',
 
     `birthdate` DATE DEFAULT NULL,
-    `avater` TEXT DEFAULT NULL,
+    `avatar` TEXT DEFAULT NULL,
 
     -- ロケールID
     -- デフォルトは日本(ja_JP)

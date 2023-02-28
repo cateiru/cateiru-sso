@@ -32,7 +32,7 @@ type User struct {
 	GivenName  null.String `boil:"given_name" json:"given_name,omitempty" toml:"given_name" yaml:"given_name,omitempty"`
 	Gender     string      `boil:"gender" json:"gender" toml:"gender" yaml:"gender"`
 	Birthdate  null.Time   `boil:"birthdate" json:"birthdate,omitempty" toml:"birthdate" yaml:"birthdate,omitempty"`
-	Avater     null.String `boil:"avater" json:"avater,omitempty" toml:"avater" yaml:"avater,omitempty"`
+	Avatar     null.String `boil:"avatar" json:"avatar,omitempty" toml:"avatar" yaml:"avatar,omitempty"`
 	LocaleID   string      `boil:"locale_id" json:"locale_id" toml:"locale_id" yaml:"locale_id"`
 	Created    time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
 	Modified   time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
@@ -50,7 +50,7 @@ var UserColumns = struct {
 	GivenName  string
 	Gender     string
 	Birthdate  string
-	Avater     string
+	Avatar     string
 	LocaleID   string
 	Created    string
 	Modified   string
@@ -63,7 +63,7 @@ var UserColumns = struct {
 	GivenName:  "given_name",
 	Gender:     "gender",
 	Birthdate:  "birthdate",
-	Avater:     "avater",
+	Avatar:     "avatar",
 	LocaleID:   "locale_id",
 	Created:    "created",
 	Modified:   "modified",
@@ -78,7 +78,7 @@ var UserTableColumns = struct {
 	GivenName  string
 	Gender     string
 	Birthdate  string
-	Avater     string
+	Avatar     string
 	LocaleID   string
 	Created    string
 	Modified   string
@@ -91,7 +91,7 @@ var UserTableColumns = struct {
 	GivenName:  "user.given_name",
 	Gender:     "user.gender",
 	Birthdate:  "user.birthdate",
-	Avater:     "user.avater",
+	Avatar:     "user.avatar",
 	LocaleID:   "user.locale_id",
 	Created:    "user.created",
 	Modified:   "user.modified",
@@ -132,7 +132,7 @@ var UserWhere = struct {
 	GivenName  whereHelpernull_String
 	Gender     whereHelperstring
 	Birthdate  whereHelpernull_Time
-	Avater     whereHelpernull_String
+	Avatar     whereHelpernull_String
 	LocaleID   whereHelperstring
 	Created    whereHelpertime_Time
 	Modified   whereHelpertime_Time
@@ -145,7 +145,7 @@ var UserWhere = struct {
 	GivenName:  whereHelpernull_String{field: "`user`.`given_name`"},
 	Gender:     whereHelperstring{field: "`user`.`gender`"},
 	Birthdate:  whereHelpernull_Time{field: "`user`.`birthdate`"},
-	Avater:     whereHelpernull_String{field: "`user`.`avater`"},
+	Avatar:     whereHelpernull_String{field: "`user`.`avatar`"},
 	LocaleID:   whereHelperstring{field: "`user`.`locale_id`"},
 	Created:    whereHelpertime_Time{field: "`user`.`created`"},
 	Modified:   whereHelpertime_Time{field: "`user`.`modified`"},
@@ -168,8 +168,8 @@ func (*userR) NewStruct() *userR {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "user_name", "email", "family_name", "middle_name", "given_name", "gender", "birthdate", "avater", "locale_id", "created", "modified"}
-	userColumnsWithoutDefault = []string{"id", "email", "family_name", "middle_name", "given_name", "birthdate", "avater"}
+	userAllColumns            = []string{"id", "user_name", "email", "family_name", "middle_name", "given_name", "gender", "birthdate", "avatar", "locale_id", "created", "modified"}
+	userColumnsWithoutDefault = []string{"id", "email", "family_name", "middle_name", "given_name", "birthdate", "avatar"}
 	userColumnsWithDefault    = []string{"user_name", "gender", "locale_id", "created", "modified"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
