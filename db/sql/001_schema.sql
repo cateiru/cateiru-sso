@@ -120,6 +120,7 @@ CREATE TABLE `passkey_login_device` (
     `device` VARCHAR(31) DEFAULT NULL,
     `os` VARCHAR(31) DEFAULT NULL,
     `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
 
     -- passkeyを登録したデバイスかどうか
     `is_register_device` BOOLEAN NOT NULL DEFAULT 0,

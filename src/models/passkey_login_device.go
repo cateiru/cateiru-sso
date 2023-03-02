@@ -29,6 +29,7 @@ type PasskeyLoginDevice struct {
 	Device           null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
 	Os               null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
 	Browser          null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
+	IsMobile         null.Bool   `boil:"is_mobile" json:"is_mobile,omitempty" toml:"is_mobile" yaml:"is_mobile,omitempty"`
 	IsRegisterDevice bool        `boil:"is_register_device" json:"is_register_device" toml:"is_register_device" yaml:"is_register_device"`
 	Created          time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
 
@@ -42,6 +43,7 @@ var PasskeyLoginDeviceColumns = struct {
 	Device           string
 	Os               string
 	Browser          string
+	IsMobile         string
 	IsRegisterDevice string
 	Created          string
 }{
@@ -50,6 +52,7 @@ var PasskeyLoginDeviceColumns = struct {
 	Device:           "device",
 	Os:               "os",
 	Browser:          "browser",
+	IsMobile:         "is_mobile",
 	IsRegisterDevice: "is_register_device",
 	Created:          "created",
 }
@@ -60,6 +63,7 @@ var PasskeyLoginDeviceTableColumns = struct {
 	Device           string
 	Os               string
 	Browser          string
+	IsMobile         string
 	IsRegisterDevice string
 	Created          string
 }{
@@ -68,6 +72,7 @@ var PasskeyLoginDeviceTableColumns = struct {
 	Device:           "passkey_login_device.device",
 	Os:               "passkey_login_device.os",
 	Browser:          "passkey_login_device.browser",
+	IsMobile:         "passkey_login_device.is_mobile",
 	IsRegisterDevice: "passkey_login_device.is_register_device",
 	Created:          "passkey_login_device.created",
 }
@@ -80,6 +85,7 @@ var PasskeyLoginDeviceWhere = struct {
 	Device           whereHelpernull_String
 	Os               whereHelpernull_String
 	Browser          whereHelpernull_String
+	IsMobile         whereHelpernull_Bool
 	IsRegisterDevice whereHelperbool
 	Created          whereHelpertime_Time
 }{
@@ -88,6 +94,7 @@ var PasskeyLoginDeviceWhere = struct {
 	Device:           whereHelpernull_String{field: "`passkey_login_device`.`device`"},
 	Os:               whereHelpernull_String{field: "`passkey_login_device`.`os`"},
 	Browser:          whereHelpernull_String{field: "`passkey_login_device`.`browser`"},
+	IsMobile:         whereHelpernull_Bool{field: "`passkey_login_device`.`is_mobile`"},
 	IsRegisterDevice: whereHelperbool{field: "`passkey_login_device`.`is_register_device`"},
 	Created:          whereHelpertime_Time{field: "`passkey_login_device`.`created`"},
 }
@@ -109,8 +116,8 @@ func (*passkeyLoginDeviceR) NewStruct() *passkeyLoginDeviceR {
 type passkeyLoginDeviceL struct{}
 
 var (
-	passkeyLoginDeviceAllColumns            = []string{"id", "user_id", "device", "os", "browser", "is_register_device", "created"}
-	passkeyLoginDeviceColumnsWithoutDefault = []string{"user_id", "device", "os", "browser"}
+	passkeyLoginDeviceAllColumns            = []string{"id", "user_id", "device", "os", "browser", "is_mobile", "is_register_device", "created"}
+	passkeyLoginDeviceColumnsWithoutDefault = []string{"user_id", "device", "os", "browser", "is_mobile"}
 	passkeyLoginDeviceColumnsWithDefault    = []string{"id", "is_register_device", "created"}
 	passkeyLoginDevicePrimaryKeyColumns     = []string{"id"}
 	passkeyLoginDeviceGeneratedColumns      = []string{}

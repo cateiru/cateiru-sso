@@ -568,7 +568,7 @@ func testPasskeyLoginDevicesSelect(t *testing.T) {
 }
 
 var (
-	passkeyLoginDeviceDBTypes = map[string]string{`ID`: `int`, `UserID`: `varchar`, `Device`: `varchar`, `Os`: `varchar`, `Browser`: `varchar`, `IsRegisterDevice`: `tinyint`, `Created`: `datetime`}
+	passkeyLoginDeviceDBTypes = map[string]string{`ID`: `int`, `UserID`: `varchar`, `Device`: `varchar`, `Os`: `varchar`, `Browser`: `varchar`, `IsMobile`: `tinyint`, `IsRegisterDevice`: `tinyint`, `Created`: `datetime`}
 	_                         = bytes.MinRead
 )
 
