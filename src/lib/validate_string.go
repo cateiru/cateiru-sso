@@ -6,6 +6,7 @@ import (
 )
 
 var emailReg = regexp.MustCompile(`^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9]+\.)+[a-zA-Z]{2,}$`)
+var userNameReg = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 
 // Emailの形式が正しいかを検証する
 // 1~255文字まで & 正規表現
@@ -43,4 +44,16 @@ func ValidatePassword(p string) bool {
 	}
 	// パスワード全体中から一番多い繰り返し文字を引いた値が5未満の場合エラー
 	return (pLen - maxCharLen) >= 5
+}
+
+// ユーザ名の検証
+// 3文字以上15文字以下
+// 使用できる文字は、アルファベット、数字、_のみ
+func ValidateUsername(n string) bool {
+	nameLength := len(n)
+	if nameLength < 3 || nameLength > 15 {
+		return false
+	}
+
+	return userNameReg.MatchString(n)
 }

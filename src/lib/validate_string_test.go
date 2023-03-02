@@ -66,3 +66,33 @@ func TestValidatePassword(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateUsername(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		names := []string{
+			"aaaaaa",
+			"aa123",
+			"qawsedrftgyhuji",
+			"cateiru",
+			"aaa_123",
+		}
+
+		for _, n := range names {
+			require.True(t, lib.ValidateUsername(n), n)
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		names := []string{
+			"as",
+			"",
+			"a",
+			"cateiru--",
+			"qawsedrftgyhujik",
+		}
+
+		for _, n := range names {
+			require.False(t, lib.ValidateUsername(n), n)
+		}
+	})
+}
