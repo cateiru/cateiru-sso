@@ -18,8 +18,8 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.POST("/v2/register/password", h.RegisterPassword)
 
 	// ログイン
-	e.POST("/v2/login/user", h.LoginUserHandler) // emailでユーザのアバターとuser nameを返す
-	e.POST("/v2/login/begin_webauthn", h.Root)   // Passkeyの前処理
+	e.POST("/v2/login/user", h.LoginUserHandler)                    // emailでユーザのアバターとuser nameを返す
+	e.POST("/v2/login/begin_webauthn", h.LoginBeginWebauthnHandler) // Passkeyの前処理
 	e.POST("/v2/login/webathn", h.Root)
 	e.POST("/v2/login/password", h.Root)
 	e.POST("/v2/login/otp", h.Root)

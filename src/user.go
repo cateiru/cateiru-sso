@@ -73,7 +73,7 @@ func NewWebAuthnUserFromDB(ctx context.Context, db *sql.DB, user *models.User) (
 	}, nil
 }
 
-// webauthnのユーザを作成する
+// 新規作成で使用するwebauthnのユーザを作成する
 // WebAuthnで使用するユーザIDを生成します
 func NewWebAuthnUserRegister(email string) (*WebAuthnUser, error) {
 	id, err := lib.RandomBytes(64)
@@ -91,7 +91,28 @@ func NewWebAuthnUserRegister(email string) (*WebAuthnUser, error) {
 	}, nil
 }
 
+func (w *WebAuthnUser) WebAuthnID() []byte {
+	return w.ID
+}
+
+func (w *WebAuthnUser) WebAuthnName() string {
+	return w.Name
+}
+
+func (w *WebAuthnUser) WebAuthnDisplayName() string {
+	return w.DisplayName
+}
+
+func (w *WebAuthnUser) WebAuthnCredentials() []webauthn.Credential {
+	return w.Credential
+}
+
+func (w *WebAuthnUser) WebAuthnIcon() string {
+	return w.Icon
+}
+
 // webauthn用のuserとsessionをDBから取得して組み立てる
+// Passkey登録時に
 func NewWebAuthnUserSession(ctx context.Context, db *sql.DB, webauthnSession string) (*WebAuthnUser, *webauthn.SessionData, error) {
 	auth, err := models.WebauthnSessions(
 		models.WebauthnSessionWhere.ID.EQ(webauthnSession),
@@ -127,26 +148,6 @@ func NewWebAuthnUserSession(ctx context.Context, db *sql.DB, webauthnSession str
 		DisplayName: auth.UserDisplayName,
 		Icon:        "",
 	}, session, nil
-}
-
-func (w *WebAuthnUser) WebAuthnID() []byte {
-	return w.ID
-}
-
-func (w *WebAuthnUser) WebAuthnName() string {
-	return w.Name
-}
-
-func (w *WebAuthnUser) WebAuthnDisplayName() string {
-	return w.DisplayName
-}
-
-func (w *WebAuthnUser) WebAuthnCredentials() []webauthn.Credential {
-	return w.Credential
-}
-
-func (w *WebAuthnUser) WebAuthnIcon() string {
-	return w.Icon
 }
 
 // ユーザを新規に作成する
