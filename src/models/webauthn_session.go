@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,15 +25,16 @@ import (
 
 // WebauthnSession is an object representing the database table.
 type WebauthnSession struct {
-	ID               string     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	WebauthnUserID   []byte     `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
-	UserDisplayName  string     `boil:"user_display_name" json:"user_display_name" toml:"user_display_name" yaml:"user_display_name"`
-	Challenge        string     `boil:"challenge" json:"challenge" toml:"challenge" yaml:"challenge"`
-	UserVerification string     `boil:"user_verification" json:"user_verification" toml:"user_verification" yaml:"user_verification"`
-	Row              types.JSON `boil:"row" json:"row" toml:"row" yaml:"row"`
-	Period           time.Time  `boil:"period" json:"period" toml:"period" yaml:"period"`
-	Created          time.Time  `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified         time.Time  `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	ID               string      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID           null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
+	WebauthnUserID   []byte      `boil:"webauthn_user_id" json:"webauthn_user_id" toml:"webauthn_user_id" yaml:"webauthn_user_id"`
+	UserDisplayName  string      `boil:"user_display_name" json:"user_display_name" toml:"user_display_name" yaml:"user_display_name"`
+	Challenge        string      `boil:"challenge" json:"challenge" toml:"challenge" yaml:"challenge"`
+	UserVerification string      `boil:"user_verification" json:"user_verification" toml:"user_verification" yaml:"user_verification"`
+	Row              types.JSON  `boil:"row" json:"row" toml:"row" yaml:"row"`
+	Period           time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
+	Created          time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	Modified         time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
 	R *webauthnSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L webauthnSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,6 +42,7 @@ type WebauthnSession struct {
 
 var WebauthnSessionColumns = struct {
 	ID               string
+	UserID           string
 	WebauthnUserID   string
 	UserDisplayName  string
 	Challenge        string
@@ -50,6 +53,7 @@ var WebauthnSessionColumns = struct {
 	Modified         string
 }{
 	ID:               "id",
+	UserID:           "user_id",
 	WebauthnUserID:   "webauthn_user_id",
 	UserDisplayName:  "user_display_name",
 	Challenge:        "challenge",
@@ -62,6 +66,7 @@ var WebauthnSessionColumns = struct {
 
 var WebauthnSessionTableColumns = struct {
 	ID               string
+	UserID           string
 	WebauthnUserID   string
 	UserDisplayName  string
 	Challenge        string
@@ -72,6 +77,7 @@ var WebauthnSessionTableColumns = struct {
 	Modified         string
 }{
 	ID:               "webauthn_session.id",
+	UserID:           "webauthn_session.user_id",
 	WebauthnUserID:   "webauthn_session.webauthn_user_id",
 	UserDisplayName:  "webauthn_session.user_display_name",
 	Challenge:        "webauthn_session.challenge",
@@ -86,6 +92,7 @@ var WebauthnSessionTableColumns = struct {
 
 var WebauthnSessionWhere = struct {
 	ID               whereHelperstring
+	UserID           whereHelpernull_String
 	WebauthnUserID   whereHelper__byte
 	UserDisplayName  whereHelperstring
 	Challenge        whereHelperstring
@@ -96,6 +103,7 @@ var WebauthnSessionWhere = struct {
 	Modified         whereHelpertime_Time
 }{
 	ID:               whereHelperstring{field: "`webauthn_session`.`id`"},
+	UserID:           whereHelpernull_String{field: "`webauthn_session`.`user_id`"},
 	WebauthnUserID:   whereHelper__byte{field: "`webauthn_session`.`webauthn_user_id`"},
 	UserDisplayName:  whereHelperstring{field: "`webauthn_session`.`user_display_name`"},
 	Challenge:        whereHelperstring{field: "`webauthn_session`.`challenge`"},
@@ -123,8 +131,8 @@ func (*webauthnSessionR) NewStruct() *webauthnSessionR {
 type webauthnSessionL struct{}
 
 var (
-	webauthnSessionAllColumns            = []string{"id", "webauthn_user_id", "user_display_name", "challenge", "user_verification", "row", "period", "created", "modified"}
-	webauthnSessionColumnsWithoutDefault = []string{"id", "webauthn_user_id", "user_display_name", "challenge", "row"}
+	webauthnSessionAllColumns            = []string{"id", "user_id", "webauthn_user_id", "user_display_name", "challenge", "user_verification", "row", "period", "created", "modified"}
+	webauthnSessionColumnsWithoutDefault = []string{"id", "user_id", "webauthn_user_id", "user_display_name", "challenge", "row"}
 	webauthnSessionColumnsWithDefault    = []string{"user_verification", "period", "created", "modified"}
 	webauthnSessionPrimaryKeyColumns     = []string{"id"}
 	webauthnSessionGeneratedColumns      = []string{}

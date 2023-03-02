@@ -383,10 +383,13 @@ CREATE TABLE `webauthn_session` (
     -- ランダムにトークンを生成する
     `id` VARCHAR(31) NOT NULL,
 
+    -- 紐付けられるユーザ
+    -- ログインの場合ではこれにユーザIDが入る
+    `user_id` VARCHAR(32) DEFAULT NULL,
+
     -- WebAuthnID
     -- いわゆるユーザID
     `webauthn_user_id` VARBINARY(64) NOT NULL,
-
     `user_display_name` TEXT NOT NULL,
 
     -- チャレンジ
