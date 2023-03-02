@@ -14,11 +14,14 @@ import (
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/go-http-easy-test/handler/mock"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
+	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
 var DB *sql.DB
@@ -101,6 +104,28 @@ func RegisterUser(t *testing.T, ctx context.Context, email string) models.User {
 	require.NoError(t, err)
 
 	return *dbU
+}
+
+func SetUserData(t *testing.T, m *mock.MockHandler, userData *src.UserData) {
+	// iPhone safari
+	if userData.Browser == "Safari" && userData.OS == "iOS" && userData.Device == "iPhone" && userData.IsMobile {
+		m.R.Header.Set("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36`)
+		return
+	}
+	// mac safari
+	if userData.Browser == "Safari" && userData.OS == "macOS" && userData.Device == "" && !userData.IsMobile {
+		m.R.Header.Set("User-Agent", `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.1.2 Safari/603.3.8`)
+		return
+	}
+
+	// UA-CH
+	m.R.Header.Set("Sec-Ch-Ua", fmt.Sprintf(`"%s";v="110"`, userData.Browser))
+	m.R.Header.Set("Sec-Ch-Ua-Platform", fmt.Sprintf(`"%s"`, userData.OS))
+	mobile := "?0"
+	if userData.IsMobile {
+		mobile = "?1"
+	}
+	m.R.Header.Set("Sec-Ch-Ua-Mobile", mobile)
 }
 
 // テスト用
@@ -214,5 +239,52 @@ func RegisterPassword(t *testing.T, ctx context.Context, u *models.User, passwor
 		Salt:   salt,
 	}
 	err = passwordModel.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+}
+
+func RegisterPasskey(t *testing.T, ctx context.Context, u *models.User, userData ...src.UserData) {
+	id, err := lib.RandomBytes(64)
+	require.NoError(t, err)
+
+	ua := &src.UserData{
+		Device:   "",
+		OS:       "Windows",
+		Browser:  "Google Chrome",
+		IsMobile: false,
+	}
+	if len(userData) > 0 {
+		ua = &userData[0]
+	}
+
+	credential := webauthn.Credential{
+		ID: id,
+		Flags: webauthn.CredentialFlags{
+			BackupState: true,
+		},
+	}
+
+	// 認証を追加
+	rowCredential := types.JSON{}
+	err = rowCredential.Marshal(credential)
+	require.NoError(t, err)
+
+	passkey := models.Passkey{
+		UserID:          u.ID,
+		WebauthnUserID:  credential.ID,
+		Credential:      rowCredential,
+		FlagBackupState: credential.Flags.BackupState,
+	}
+	err = passkey.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+
+	passkeyLoginDevice := models.PasskeyLoginDevice{
+		UserID:           u.ID,
+		Device:           null.NewString(ua.Device, true),
+		Os:               null.NewString(ua.OS, true),
+		Browser:          null.NewString(ua.Browser, true),
+		IsMobile:         null.NewBool(ua.IsMobile, true),
+		IsRegisterDevice: true, // 登録したデバイスなのでtrue
+	}
+	err = passkeyLoginDevice.Insert(ctx, DB, boil.Infer())
 	require.NoError(t, err)
 }
