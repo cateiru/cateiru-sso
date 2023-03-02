@@ -179,3 +179,15 @@ func RegisterUser(ctx context.Context, db *sql.DB, email string) (*models.User, 
 		models.UserWhere.ID.EQ(id.String()),
 	).One(ctx, db)
 }
+
+// ユーザ名かEmailを使用してユーザを引く
+func FindUserByUserNameOrEmail(ctx context.Context, db *sql.DB, userNameOrEmail string) (*models.User, error) {
+	if lib.ValidateEmail(userNameOrEmail) {
+		return models.Users(
+			models.UserWhere.Email.EQ(userNameOrEmail),
+		).One(ctx, db)
+	}
+	return models.Users(
+		models.UserWhere.UserName.EQ(userNameOrEmail),
+	).One(ctx, db)
+}

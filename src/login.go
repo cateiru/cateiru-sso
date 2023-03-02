@@ -1,12 +1,10 @@
 package src
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"net/http"
 
-	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
@@ -48,7 +46,7 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 		}
 	}
 
-	user, err := findUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
+	user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
 	if errors.Is(err, sql.ErrNoRows) {
 		return NewHTTPUniqueError(http.StatusBadRequest, ErrNotFoundUser, "user not found")
 	}
@@ -118,15 +116,4 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 		AvailablePassword: availablePassword,
 	}
 	return c.JSON(http.StatusOK, loginUser)
-}
-
-func findUserByUserNameOrEmail(ctx context.Context, db *sql.DB, userNameOrEmail string) (*models.User, error) {
-	if lib.ValidateEmail(userNameOrEmail) {
-		return models.Users(
-			models.UserWhere.Email.EQ(userNameOrEmail),
-		).One(ctx, db)
-	}
-	return models.Users(
-		models.UserWhere.UserName.EQ(userNameOrEmail),
-	).One(ctx, db)
 }
