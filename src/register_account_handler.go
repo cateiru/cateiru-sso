@@ -548,6 +548,7 @@ func (h *Handler) RegisterWebAuthn(c echo.Context) error {
 		Device:           null.NewString(ua.Device, true),
 		Os:               null.NewString(ua.OS, true),
 		Browser:          null.NewString(ua.Browser, true),
+		IsMobile:         null.NewBool(ua.IsMobile, true),
 		IsRegisterDevice: true, // 登録したデバイスなのでtrue
 	}
 	if err := passkeyLoginDevice.Insert(ctx, h.DB, boil.Infer()); err != nil {
