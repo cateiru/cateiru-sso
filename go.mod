@@ -35,7 +35,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
 	github.com/go-webauthn/revoke v0.1.9 // indirect
-	github.com/go-webauthn/webauthn v0.8.1 // indirect
+	github.com/go-webauthn/webauthn v0.8.2 // indirect
 	github.com/gobuffalo/envy v1.10.2 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect

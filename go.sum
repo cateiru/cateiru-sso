@@ -185,6 +185,8 @@ github.com/go-webauthn/revoke v0.1.9 h1:gSJ1ckA9VaKA2GN4Ukp+kiGTk1/EXtaDb1YE8Rkn
 github.com/go-webauthn/revoke v0.1.9/go.mod h1:j6WKPnv0HovtEs++paan9g3ar46gm1NarktkXBaPR+w=
 github.com/go-webauthn/webauthn v0.8.1 h1:Yv9yOxEhsJULGYLbDfEuQXtSu2RthLGzPPSN2DYdXG8=
 github.com/go-webauthn/webauthn v0.8.1/go.mod h1:22OJd+TV8oHrjjXmPHtcPR82lR/yR5m5ilGiF8yPFrE=
+github.com/go-webauthn/webauthn v0.8.2 h1:8KLIbpldjz9KVGHfqEgJNbkhd7bbRXhNw4QWFJE15oA=
+github.com/go-webauthn/webauthn v0.8.2/go.mod h1:d+ezx/jMCNDiqSMzOchuynKb9CVU1NM9BumOnokfcVQ=
 github.com/gobuffalo/envy v1.10.2 h1:EIi03p9c3yeuRCFPOKcSfajzkLb3hrRjEpHGI8I2Wo4=
 github.com/gobuffalo/envy v1.10.2/go.mod h1:qGAGwdvDsaEtPhfBzb3o0SfDea8ByGn9j8bKmVft9z8=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
