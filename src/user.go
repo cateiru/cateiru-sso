@@ -150,6 +150,55 @@ func NewWebAuthnUserSession(ctx context.Context, db *sql.DB, webauthnSession str
 	}, session, nil
 }
 
+// ログイン用の`NewWebAuthnUserSession`
+// ユーザも返します
+func NewWebAuthnUserSessionByLogin(ctx context.Context, db *sql.DB, webauthnSession string) (*WebAuthnUser, *webauthn.SessionData, *models.User, error) {
+	auth, err := models.WebauthnSessions(
+		models.WebauthnSessionWhere.ID.EQ(webauthnSession),
+	).One(ctx, db)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil, nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
+	}
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if !auth.UserID.Valid || auth.UserID.String == "" {
+		return nil, nil, nil, NewHTTPError(http.StatusInternalServerError, "user is empty")
+	}
+
+	if time.Now().After(auth.Period) {
+		// webauthnセッションは削除
+		_, err := auth.Delete(ctx, db)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		return nil, nil, nil, NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
+	}
+
+	// Rowから取得する
+	session := new(webauthn.SessionData)
+	err = auth.Row.Unmarshal(session)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	user, err := models.Users(
+		models.UserWhere.ID.EQ(auth.UserID.String),
+	).One(ctx, db)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return &WebAuthnUser{
+		ID:         auth.WebauthnUserID,
+		Credential: []webauthn.Credential{},
+
+		Name:        "",
+		DisplayName: auth.UserDisplayName,
+		Icon:        "",
+	}, session, user, nil
+}
+
 // ユーザを新規に作成する
 // 最初は、ユーザ名などの情報はデフォルト値に設定する（ユーザ登録フローの簡略化のため）
 func RegisterUser(ctx context.Context, db *sql.DB, email string) (*models.User, error) {

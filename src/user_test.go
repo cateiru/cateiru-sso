@@ -181,7 +181,90 @@ func TestNewWebAuthnUserSession(t *testing.T) {
 		require.NoError(t, err)
 
 		_, _, err = src.NewWebAuthnUserSession(ctx, DB, webauthSession)
-		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+
+		// セッションは削除されている
+		exists, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(webauthSession),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, exists)
+	})
+}
+
+func TestNewWebAuthnUserSessionByLogin(t *testing.T) {
+	createWebauthSession := func(ctx context.Context, userId []byte, u *models.User) string {
+		webauthnSessionId, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		challenge, err := lib.RandomStr(10)
+		require.NoError(t, err)
+
+		session := &webauthn.SessionData{
+			Challenge:        challenge,
+			UserID:           userId,
+			UserDisplayName:  "test taro",
+			UserVerification: protocol.VerificationRequired,
+		}
+		row := types.JSON{}
+		err = row.Marshal(session)
+		require.NoError(t, err)
+
+		webauthnSession := models.WebauthnSession{
+			ID:               webauthnSessionId,
+			UserID:           null.NewString(u.ID, true),
+			WebauthnUserID:   session.UserID,
+			UserDisplayName:  session.UserDisplayName,
+			Challenge:        session.Challenge,
+			UserVerification: string(session.UserVerification),
+			Row:              row,
+
+			Period: time.Now().Add(C.WebAuthnSessionPeriod),
+		}
+		err = webauthnSession.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		return webauthnSessionId
+	}
+
+	t.Run("成功", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+		userId, err := lib.RandomBytes(10)
+		require.NoError(t, err)
+
+		webauthSession := createWebauthSession(ctx, userId, &user)
+
+		webauthUser, session, u, err := src.NewWebAuthnUserSessionByLogin(ctx, DB, webauthSession)
+		require.NoError(t, err)
+
+		require.Equal(t, webauthUser.ID, userId)
+		require.Equal(t, session.UserID, userId)
+
+		require.Equal(t, u.ID, user.ID)
+	})
+
+	t.Run("有効期限切れ", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+		userId, err := lib.RandomBytes(10)
+		require.NoError(t, err)
+
+		webauthSession := createWebauthSession(ctx, userId, &user)
+
+		// 有効期限を切らす
+		s, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(webauthSession),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		s.Period = time.Now().Add(-10 * time.Hour)
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		_, _, _, err = src.NewWebAuthnUserSessionByLogin(ctx, DB, webauthSession)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 
 		// セッションは削除されている
 		exists, err := models.WebauthnSessions(
