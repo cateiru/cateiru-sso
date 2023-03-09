@@ -7,6 +7,7 @@ import (
 
 var emailReg = regexp.MustCompile(`^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9]+\.)+[a-zA-Z]{2,}$`)
 var userNameReg = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+var otpReg = regexp.MustCompile(`^[0-9]+$`)
 
 // Emailの形式が正しいかを検証する
 // 1~255文字まで & 正規表現
@@ -56,4 +57,13 @@ func ValidateUsername(n string) bool {
 	}
 
 	return userNameReg.MatchString(n)
+}
+
+// OTPの検証
+func ValidateOTPCode(o string) bool {
+	if len(o) != 6 {
+		return false
+	}
+
+	return otpReg.MatchString(o)
 }

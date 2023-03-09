@@ -96,3 +96,30 @@ func TestValidateUsername(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateOTPCode(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		otp := []string{
+			"123424",
+			"545456",
+			"013853",
+		}
+
+		for _, o := range otp {
+			require.True(t, lib.ValidateOTPCode(o))
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		values := map[string]string{
+			"12453":   "5文字",
+			"1234567": "6文字以上",
+			"":        "空",
+			"asdovk":  "アルファベット",
+		}
+
+		for _, v := range values {
+			require.False(t, lib.ValidateOTPCode(v))
+		}
+	})
+}

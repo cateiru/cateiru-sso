@@ -10,6 +10,7 @@ import (
 type WebAuthnInterface interface {
 	BeginRegistration(user webauthn.User) (*protocol.CredentialCreation, *webauthn.SessionData, error)
 	ParseCreate(body io.Reader) (pcc *protocol.ParsedCredentialCreationData, err error)
+	ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentialAssertionData, err error)
 	FinishRegistration(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialCreationData) (*webauthn.Credential, error)
 	BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error)
 	FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error)
@@ -51,6 +52,10 @@ func (a *WebAuthn) FinishRegistration(user webauthn.User, session webauthn.Sessi
 // ログイン: config作成
 func (a *WebAuthn) BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
 	return a.W.BeginLogin(user)
+}
+
+func (a *WebAuthn) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentialAssertionData, err error) {
+	return protocol.ParseCredentialRequestResponseBody(body)
 }
 
 // ログイン: 検証
