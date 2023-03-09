@@ -123,3 +123,29 @@ func TestValidateOTPCode(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateOS(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		values := map[string]string{
+			"Windows": "Windows",
+			"macOS":   "MacOS",
+			"iOS":     "macOS",
+			"iPadOS":  "macOS",
+		}
+
+		for os, currentOS := range values {
+			require.True(t, lib.ValidateOS(os, currentOS))
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		values := map[string]string{
+			"Windows": "",
+			"macOS":   "Windows",
+		}
+
+		for os, currentOS := range values {
+			require.False(t, lib.ValidateOS(os, currentOS))
+		}
+	})
+}
