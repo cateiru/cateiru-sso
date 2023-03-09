@@ -297,3 +297,32 @@ func TestRegisterUser(t *testing.T) {
 		require.EqualError(t, err, "code=400, message=impossible register account, unique=3")
 	})
 }
+
+func TestFindUserByUserNameOrEmail(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("成功: ユーザー名", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		user, err := src.FindUserByUserNameOrEmail(ctx, DB, u.UserName)
+		require.NoError(t, err)
+
+		require.Equal(t, user.ID, u.ID)
+	})
+
+	t.Run("成功: Email", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		user, err := src.FindUserByUserNameOrEmail(ctx, DB, u.Email)
+		require.NoError(t, err)
+
+		require.Equal(t, user.ID, u.ID)
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		_, err := src.FindUserByUserNameOrEmail(ctx, DB, "aaaaaa")
+		require.Error(t, err)
+	})
+}
