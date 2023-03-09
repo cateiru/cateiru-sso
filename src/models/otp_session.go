@@ -27,6 +27,8 @@ type OtpSession struct {
 	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
+	Created    time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	Modified   time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
 	R *otpSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L otpSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,11 +39,15 @@ var OtpSessionColumns = struct {
 	UserID     string
 	Period     string
 	RetryCount string
+	Created    string
+	Modified   string
 }{
 	ID:         "id",
 	UserID:     "user_id",
 	Period:     "period",
 	RetryCount: "retry_count",
+	Created:    "created",
+	Modified:   "modified",
 }
 
 var OtpSessionTableColumns = struct {
@@ -49,11 +55,15 @@ var OtpSessionTableColumns = struct {
 	UserID     string
 	Period     string
 	RetryCount string
+	Created    string
+	Modified   string
 }{
 	ID:         "otp_session.id",
 	UserID:     "otp_session.user_id",
 	Period:     "otp_session.period",
 	RetryCount: "otp_session.retry_count",
+	Created:    "otp_session.created",
+	Modified:   "otp_session.modified",
 }
 
 // Generated where
@@ -63,11 +73,15 @@ var OtpSessionWhere = struct {
 	UserID     whereHelperstring
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
+	Created    whereHelpertime_Time
+	Modified   whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`otp_session`.`id`"},
 	UserID:     whereHelperstring{field: "`otp_session`.`user_id`"},
 	Period:     whereHelpertime_Time{field: "`otp_session`.`period`"},
 	RetryCount: whereHelperuint8{field: "`otp_session`.`retry_count`"},
+	Created:    whereHelpertime_Time{field: "`otp_session`.`created`"},
+	Modified:   whereHelpertime_Time{field: "`otp_session`.`modified`"},
 }
 
 // OtpSessionRels is where relationship names are stored.
@@ -87,9 +101,9 @@ func (*otpSessionR) NewStruct() *otpSessionR {
 type otpSessionL struct{}
 
 var (
-	otpSessionAllColumns            = []string{"id", "user_id", "period", "retry_count"}
+	otpSessionAllColumns            = []string{"id", "user_id", "period", "retry_count", "created", "modified"}
 	otpSessionColumnsWithoutDefault = []string{"id", "user_id"}
-	otpSessionColumnsWithDefault    = []string{"period", "retry_count"}
+	otpSessionColumnsWithDefault    = []string{"period", "retry_count", "created", "modified"}
 	otpSessionPrimaryKeyColumns     = []string{"id"}
 	otpSessionGeneratedColumns      = []string{}
 )

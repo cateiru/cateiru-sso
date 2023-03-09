@@ -568,7 +568,7 @@ func testOtpSessionsSelect(t *testing.T) {
 }
 
 var (
-	otpSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `Period`: `datetime`, `RetryCount`: `tinyint`}
+	otpSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `Period`: `datetime`, `RetryCount`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
 	_                 = bytes.MinRead
 )
 

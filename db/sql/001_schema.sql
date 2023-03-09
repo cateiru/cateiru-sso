@@ -322,6 +322,10 @@ CREATE TABLE `otp_session` (
     -- コードを入力した回数
     `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
 
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
     PRIMARY KEY(`id`),
     INDEX `otp_session_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
