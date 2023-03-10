@@ -652,7 +652,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 		require.NoError(t, err)
 
 		// userが返ってきているか
-		responseUser := &models.User{}
+		responseUser := new(models.User)
 		require.NoError(t, m.Json(responseUser))
 		require.NotNil(t, responseUser)
 
