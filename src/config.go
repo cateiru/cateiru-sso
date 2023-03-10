@@ -58,6 +58,9 @@ type Config struct {
 
 	// Passwordハッシュ設定
 	Password *lib.Password
+
+	// OTPセッションの有効期限
+	OTPSessionPeriod time.Duration
 }
 
 // Cookieの設定
@@ -170,6 +173,8 @@ var LocalConfig = &Config{
 		Threads: 4,
 		KeyLen:  32,
 	},
+
+	OTPSessionPeriod: 5 * time.Minute,
 }
 
 var CloudRunConfig = &Config{
@@ -257,6 +262,8 @@ var CloudRunConfig = &Config{
 		Threads: 4,
 		KeyLen:  32,
 	},
+
+	OTPSessionPeriod: 5 * time.Minute,
 }
 
 var TestConfig = &Config{
@@ -352,6 +359,8 @@ var TestConfig = &Config{
 		Threads: 4,
 		KeyLen:  32,
 	},
+
+	OTPSessionPeriod: 5 * time.Minute,
 }
 
 func InitConfig(mode string) *Config {

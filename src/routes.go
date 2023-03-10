@@ -20,11 +20,11 @@ func Routes(e *echo.Echo, h *Handler) {
 	// ログイン
 	e.POST("/v2/login/user", h.LoginUserHandler)                    // emailでユーザのアバターとuser nameを返す
 	e.POST("/v2/login/begin_webauthn", h.LoginBeginWebauthnHandler) // Passkeyの前処理
-	e.POST("/v2/login/webathn", h.Root)
-	e.POST("/v2/login/password", h.Root)
-	e.POST("/v2/login/otp", h.Root)
+	e.POST("/v2/login/webathn", h.LoginWebauthnHandler)
+	e.POST("/v2/login/password", h.LoginPasswordHandler)
+	e.POST("/v2/login/otp", h.LoginOTPHandler)
 
-	// ログイン操作
+	// アカウント操作
 	e.GET("/v2/account/list", h.Root)
 	e.POST("/v2/account/switch", h.Root) // ログインアカウントの変更
 	e.POST("/v2/account/logout", h.Root)

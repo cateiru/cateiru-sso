@@ -71,6 +71,9 @@ func (a *WebAuthnMock) BeginLogin(user webauthn.User) (*protocol.CredentialAsser
 	// 影響は無いのでmockしない
 	return a.M.BeginLogin(user)
 }
+func (a *WebAuthnMock) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentialAssertionData, err error) {
+	return &protocol.ParsedCredentialAssertionData{}, nil
+}
 func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
 	// TODO
 	return &webauthn.Credential{}, nil
