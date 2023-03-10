@@ -171,9 +171,7 @@ CREATE TABLE `otp_backup` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `otp_backup_otp` (`otp_id`),
-    INDEX `otp_backup_user_id` (`user_id`),
-    INDEX `otp_backup_otp_index_user_id` (`otp_id`, `user_id`)
+    INDEX `otp_backup_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- アカウント登録時に使用するセッションを保存するテーブル

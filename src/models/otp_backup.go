@@ -24,7 +24,6 @@ import (
 // OtpBackup is an object representing the database table.
 type OtpBackup struct {
 	ID      uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	OtpID   uint      `boil:"otp_id" json:"otp_id" toml:"otp_id" yaml:"otp_id"`
 	UserID  string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Code    string    `boil:"code" json:"code" toml:"code" yaml:"code"`
 	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
@@ -35,13 +34,11 @@ type OtpBackup struct {
 
 var OtpBackupColumns = struct {
 	ID      string
-	OtpID   string
 	UserID  string
 	Code    string
 	Created string
 }{
 	ID:      "id",
-	OtpID:   "otp_id",
 	UserID:  "user_id",
 	Code:    "code",
 	Created: "created",
@@ -49,13 +46,11 @@ var OtpBackupColumns = struct {
 
 var OtpBackupTableColumns = struct {
 	ID      string
-	OtpID   string
 	UserID  string
 	Code    string
 	Created string
 }{
 	ID:      "otp_backup.id",
-	OtpID:   "otp_backup.otp_id",
 	UserID:  "otp_backup.user_id",
 	Code:    "otp_backup.code",
 	Created: "otp_backup.created",
@@ -65,13 +60,11 @@ var OtpBackupTableColumns = struct {
 
 var OtpBackupWhere = struct {
 	ID      whereHelperuint
-	OtpID   whereHelperuint
 	UserID  whereHelperstring
 	Code    whereHelperstring
 	Created whereHelpertime_Time
 }{
 	ID:      whereHelperuint{field: "`otp_backup`.`id`"},
-	OtpID:   whereHelperuint{field: "`otp_backup`.`otp_id`"},
 	UserID:  whereHelperstring{field: "`otp_backup`.`user_id`"},
 	Code:    whereHelperstring{field: "`otp_backup`.`code`"},
 	Created: whereHelpertime_Time{field: "`otp_backup`.`created`"},
@@ -94,8 +87,8 @@ func (*otpBackupR) NewStruct() *otpBackupR {
 type otpBackupL struct{}
 
 var (
-	otpBackupAllColumns            = []string{"id", "otp_id", "user_id", "code", "created"}
-	otpBackupColumnsWithoutDefault = []string{"otp_id", "user_id", "code"}
+	otpBackupAllColumns            = []string{"id", "user_id", "code", "created"}
+	otpBackupColumnsWithoutDefault = []string{"user_id", "code"}
 	otpBackupColumnsWithDefault    = []string{"id", "created"}
 	otpBackupPrimaryKeyColumns     = []string{"id"}
 	otpBackupGeneratedColumns      = []string{}
