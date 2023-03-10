@@ -163,7 +163,6 @@ CREATE TABLE `otp` (
 -- OTPのバックアップコードを保存するテーブル
 CREATE TABLE `otp_backup` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `otp_id` INT UNSIGNED NOT NULL,
     `user_id` VARCHAR(32) NOT NULL,
 
     `code` VARCHAR(15) NOT NULL,
