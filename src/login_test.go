@@ -466,3 +466,54 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 		require.EqualError(t, err, "code=403, message=passkey was not registered")
 	})
 }
+
+func TestLoginWebauthnHandler(t *testing.T) {
+	// ctx := context.Background()
+	// h := NewTestHandler(t)
+
+	// Webauthnのセッションを作成する
+	// registerWebauthnSession := func(email string) string {
+	// 	user, err := src.NewWebAuthnUserRegister(email)
+	// 	require.NoError(t, err)
+	// 	webauthnSessionId, err := lib.RandomStr(31)
+	// 	require.NoError(t, err)
+
+	// 	_, s, err := h.WebAuthn.BeginRegistration(user)
+	// 	require.NoError(t, err)
+
+	// 	row := types.JSON{}
+	// 	err = row.Marshal(s)
+	// 	require.NoError(t, err)
+
+	// 	webauthnSession := models.WebauthnSession{
+	// 		ID:               webauthnSessionId,
+	// 		WebauthnUserID:   s.UserID,
+	// 		UserDisplayName:  s.UserDisplayName,
+	// 		Challenge:        s.Challenge,
+	// 		UserVerification: string(s.UserVerification),
+	// 		Row:              row,
+
+	// 		Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+	// 	}
+	// 	err = webauthnSession.Insert(ctx, h.DB, boil.Infer())
+	// 	require.NoError(t, err)
+
+	// 	return webauthnSessionId
+	// }
+
+	t.Run("成功", func(t *testing.T) {})
+
+	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {})
+
+	t.Run("失敗: セッションが空", func(t *testing.T) {})
+
+	t.Run("失敗: セッショントークンが不正", func(t *testing.T) {})
+}
+
+func TestLoginPasswordHandler(t *testing.T) {
+
+}
+
+func TestLoginOTPHandler(t *testing.T) {
+
+}

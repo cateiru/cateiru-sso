@@ -503,7 +503,7 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 
 	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value)
 	if err != nil {
-		return NewHTTPError(http.StatusForbidden, err)
+		return err
 	}
 
 	// 登録フロー

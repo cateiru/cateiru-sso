@@ -226,6 +226,7 @@ func (h *Handler) LoginBeginWebauthnHandler(c echo.Context) error {
 }
 
 // Passkeyでログインする
+// WebauthnSessionCookieは有効期限が短いので削除しないが、DBのセッションは削除する
 func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -238,20 +239,9 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	response, err := h.WebAuthn.ParseLogin(c.Request().Body)
-	if err != nil {
-		return NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	// DBからWebAuthn userとsessionを取得する
-	webauthnUser, webauthnSession, user, err := NewWebAuthnUserSessionByLogin(ctx, h.DB, webauthnToken.Value)
+	user, err := h.LoginWebauthn(ctx, c.Request().Body, webauthnToken.Value)
 	if err != nil {
 		return err
-	}
-
-	_, err = h.WebAuthn.FinishLogin(webauthnUser, *webauthnSession, response)
-	if err != nil {
-		return NewHTTPError(http.StatusForbidden, err)
 	}
 
 	ip := c.RealIP()
@@ -338,6 +328,8 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		return err
 	}
 	// OTPが設定されている場合
+	// LoginOTPHandlerで再度OTPの認証を行うため、ここではログインさせないでOTPのセッションのみ作成して
+	// そのまま返す
 	if otpRegistered {
 		otpSessionToken, err := lib.RandomStr(31)
 		if err != nil {
@@ -379,6 +371,8 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 
 // OTPでログインする
 func (h *Handler) LoginOTPHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
 	OTPSession := c.FormValue("otp_session")
 	if OTPSession == "" {
 		return NewHTTPError(http.StatusBadRequest, "otp_session is empty")
@@ -388,5 +382,90 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "code is empty")
 	}
 
-	return nil
+	session, err := models.OtpSessions(
+		models.OtpSessionWhere.ID.EQ(OTPSession),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "invalid otp session")
+	}
+	if err != nil {
+		return err
+	}
+
+	if time.Now().After(session.Period) {
+		// セッションは削除
+		_, err := session.Delete(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
+	}
+
+	if session.RetryCount >= h.C.OTPRetryLimit {
+		// セッションは削除
+		_, err := session.Delete(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		return NewHTTPUniqueError(http.StatusForbidden, ErrExceededRetry, "exceeded retry")
+	}
+	session.RetryCount++
+
+	otp, err := models.Otps(
+		models.OtpWhere.UserID.EQ(session.UserID),
+	).One(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	result := false
+	if lib.ValidateOTPCode(code) {
+		result = lib.ValidateOTP(code, otp.Secret.String)
+	} else {
+		// Backupからログインを試みる
+		backups, err := models.OtpBackups(
+			models.OtpBackupWhere.UserID.EQ(otp.UserID),
+		).All(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		for _, backup := range backups {
+			if backup.Code == code {
+				// バックアップは1度使用したら削除する
+				if _, err := backup.Delete(ctx, h.DB); err != nil {
+					return err
+				}
+				result = true
+				break
+			}
+		}
+	}
+	if !result {
+		return NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+	}
+
+	user, err := models.Users(
+		models.UserWhere.ID.EQ(session.UserID),
+	).One(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	ip := c.RealIP()
+	ua, err := ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+
+	registerSession, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
+	if err != nil {
+		return err
+	}
+	for _, cookie := range registerSession.InsertCookie(h.C) {
+		c.SetCookie(cookie)
+	}
+
+	return c.JSON(http.StatusOK, LoginResponse{
+		User: user,
+	})
 }
