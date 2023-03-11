@@ -18,6 +18,7 @@ func TestNewHandler(t *testing.T) {
 }
 
 func TestParseUA(t *testing.T) {
+	h := NewTestHandler(t)
 	t.Run("UA-CH", func(t *testing.T) {
 		r := http.Request{
 			Header: http.Header{
@@ -28,7 +29,7 @@ func TestParseUA(t *testing.T) {
 			},
 		}
 
-		d, err := src.ParseUA(&r)
+		d, err := h.ParseUA(&r)
 		require.NoError(t, err)
 
 		require.Equal(t, d.Browser, "Google Chrome")
@@ -44,7 +45,7 @@ func TestParseUA(t *testing.T) {
 			},
 		}
 
-		d, err := src.ParseUA(&r)
+		d, err := h.ParseUA(&r)
 		require.NoError(t, err)
 
 		require.Equal(t, d.Browser, "Chrome")

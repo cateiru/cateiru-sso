@@ -68,7 +68,7 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 	availablePassword := false
 
 	// Passkeyの判定
-	ua, err := ParseUA(c.Request())
+	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
@@ -245,7 +245,7 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 	}
 
 	ip := c.RealIP()
-	ua, err := ParseUA(c.Request())
+	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
@@ -351,7 +351,7 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 
 	// OTPが設定されていない場合はそのままログイン
-	ua, err := ParseUA(c.Request())
+	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
@@ -444,6 +444,11 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
 	}
 
+	// セッションは削除する
+	if _, err := session.Delete(ctx, h.DB); err != nil {
+		return err
+	}
+
 	user, err := models.Users(
 		models.UserWhere.ID.EQ(session.UserID),
 	).One(ctx, h.DB)
@@ -452,7 +457,7 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 	}
 
 	ip := c.RealIP()
-	ua, err := ParseUA(c.Request())
+	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}

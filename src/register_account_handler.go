@@ -86,7 +86,7 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusBadRequest, ErrImpossibleRegisterAccount, "impossible register")
 	}
 
-	userData, err := ParseUA(c.Request())
+	userData, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "reCAPTCHA token is empty")
 	}
 
-	userData, err := ParseUA(c.Request())
+	userData, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
@@ -335,7 +335,7 @@ func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 			return err
 		}
 
-		ua, err := ParseUA(c.Request())
+		ua, err := h.ParseUA(c.Request())
 		if err != nil {
 			return err
 		}
@@ -511,7 +511,7 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	ua, err := ParseUA(c.Request())
+	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
@@ -626,7 +626,7 @@ func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	ua, err := ParseUA(c.Request())
+	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}

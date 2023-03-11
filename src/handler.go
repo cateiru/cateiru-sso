@@ -62,7 +62,7 @@ func (h *Handler) Root(c echo.Context) error {
 // User-Agent または UA-CH からユーザ情報を取得する
 // 最初、UA-CHの取得を試みる。もし、ブラウザが対応していない場合は
 // User-Agentからユーザ情報を取得する
-func ParseUA(r *http.Request) (*UserData, error) {
+func (h *Handler) ParseUA(r *http.Request) (*UserData, error) {
 	if goclienthints.IsSupportClientHints(&r.Header) {
 		ch, err := goclienthints.Parse(&r.Header)
 		if err != nil {
