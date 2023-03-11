@@ -544,6 +544,11 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 		return err
 	}
 
+	// registerSessionは削除する
+	if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+		return err
+	}
+
 	register, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
 	if err != nil {
 		return err
@@ -613,6 +618,11 @@ func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 		Hash:   hashedPassword,
 	}
 	if err := passwordModel.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	// registerSessionは削除する
+	if _, err := registerSession.Delete(ctx, h.DB); err != nil {
 		return err
 	}
 

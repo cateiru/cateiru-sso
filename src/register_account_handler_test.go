@@ -688,6 +688,15 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, passkeyLoginDeviceCount, int64(1))
 
+		// WebauthnSessionは削除されている
+		existsWebauthnSession, err := models.WebauthnSessionExists(ctx, DB, webauthnSession)
+		require.NoError(t, err)
+		require.False(t, existsWebauthnSession)
+
+		// registerSessionは削除されている
+		existsRegisterSession, err := models.RegisterSessionExists(ctx, DB, s.ID)
+		require.NoError(t, err)
+		require.False(t, existsRegisterSession)
 	})
 
 	t.Run("失敗: X-Register-Tokenがない", func(t *testing.T) {
@@ -940,6 +949,11 @@ func TestRegisterPasswordHandler(t *testing.T) {
 
 		validated := C.Password.VerifyPassword(password, passwordModel.Hash, passwordModel.Salt)
 		require.True(t, validated)
+
+		// registerSessionは削除されている
+		existsRegisterSession, err := models.RegisterSessionExists(ctx, DB, s.ID)
+		require.NoError(t, err)
+		require.False(t, existsRegisterSession)
 	})
 
 	t.Run("失敗: X-Register-Tokenが無い", func(t *testing.T) {
