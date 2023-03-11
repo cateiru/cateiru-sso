@@ -13,9 +13,9 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.POST("/v2/register/email/send", h.SendEmailVerifyHandler)
 	e.POST("/v2/register/email/resend", h.ReSendVerifyEmailHandler) // メールの再送信
 	e.POST("/v2/register/email/verify", h.RegisterVerifyEmailHandler)
-	e.POST("/v2/register/begin_webauthn", h.RegisterBeginWebAuthn) // Passkeyの前処理
-	e.POST("/v2/register/webauthn", h.RegisterBeginWebAuthn)
-	e.POST("/v2/register/password", h.RegisterPassword)
+	e.POST("/v2/register/begin_webauthn", h.RegisterBeginWebAuthnHandler) // Passkeyの前処理
+	e.POST("/v2/register/webauthn", h.RegisterWebAuthnHandler)
+	e.POST("/v2/register/password", h.RegisterPasswordHandler)
 
 	// ログイン
 	e.POST("/v2/login/user", h.LoginUserHandler)                    // emailでユーザのアバターとuser nameを返す

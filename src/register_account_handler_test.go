@@ -440,7 +440,7 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 	})
 }
 
-func TestRegisterBeginWebAuthn(t *testing.T) {
+func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
@@ -478,7 +478,7 @@ func TestRegisterBeginWebAuthn(t *testing.T) {
 		require.NoError(t, err)
 		c := m.Echo()
 
-		err = h.RegisterBeginWebAuthn(c)
+		err = h.RegisterBeginWebAuthnHandler(c)
 		require.NoError(t, err)
 
 		// response
@@ -521,7 +521,7 @@ func TestRegisterBeginWebAuthn(t *testing.T) {
 		require.NoError(t, err)
 		c := m.Echo()
 
-		err = h.RegisterBeginWebAuthn(c)
+		err = h.RegisterBeginWebAuthnHandler(c)
 		require.EqualError(t, err, "code=400, message=token is empty")
 	})
 
@@ -531,7 +531,7 @@ func TestRegisterBeginWebAuthn(t *testing.T) {
 		require.NoError(t, err)
 		c := m.Echo()
 
-		err = h.RegisterBeginWebAuthn(c)
+		err = h.RegisterBeginWebAuthnHandler(c)
 		require.EqualError(t, err, "code=400, message=token is invalid")
 
 	})
@@ -551,7 +551,7 @@ func TestRegisterBeginWebAuthn(t *testing.T) {
 		require.NoError(t, err)
 		c := m.Echo()
 
-		err = h.RegisterBeginWebAuthn(c)
+		err = h.RegisterBeginWebAuthnHandler(c)
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 
 	})
@@ -568,12 +568,12 @@ func TestRegisterBeginWebAuthn(t *testing.T) {
 		require.NoError(t, err)
 		c := m.Echo()
 
-		err = h.RegisterBeginWebAuthn(c)
+		err = h.RegisterBeginWebAuthnHandler(c)
 		require.EqualError(t, err, "code=400, message=Email is not verified, unique=7")
 	})
 }
 
-func TestRegisterWebAuthn(t *testing.T) {
+func TestRegisterWebAuthnHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
@@ -648,7 +648,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.NoError(t, err)
 
 		// userが返ってきているか
@@ -687,6 +687,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 		).Count(ctx, DB)
 		require.NoError(t, err)
 		require.Equal(t, passkeyLoginDeviceCount, int64(1))
+
 	})
 
 	t.Run("失敗: X-Register-Tokenがない", func(t *testing.T) {
@@ -704,7 +705,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.EqualError(t, err, "code=400, message=token is empty")
 	})
 
@@ -719,7 +720,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.EqualError(t, err, "code=400, message=http: named cookie not present")
 	})
 
@@ -739,7 +740,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.EqualError(t, err, "code=400, message=token is invalid")
 	})
 
@@ -760,7 +761,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.EqualError(t, err, "code=403, message=Email is not verified, unique=7")
 	})
 
@@ -786,7 +787,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 	})
 
@@ -806,7 +807,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.EqualError(t, err, "code=403, message=invalid webauthn token")
 	})
 
@@ -836,7 +837,7 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 	})
 
@@ -857,12 +858,12 @@ func TestRegisterWebAuthn(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterWebAuthn(c)
+		err = h.RegisterWebAuthnHandler(c)
 		require.EqualError(t, err, "code=400, message=invalid content-type")
 	})
 }
 
-func TestRegisterPassword(t *testing.T) {
+func TestRegisterPasswordHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
@@ -904,7 +905,7 @@ func TestRegisterPassword(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterPassword(c)
+		err = h.RegisterPasswordHandler(c)
 		require.NoError(t, err)
 
 		// userが返ってきているか
@@ -951,7 +952,7 @@ func TestRegisterPassword(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterPassword(c)
+		err = h.RegisterPasswordHandler(c)
 		require.EqualError(t, err, "code=400, message=token is empty")
 	})
 	t.Run("失敗: X-Register-Tokenの値が不正", func(t *testing.T) {
@@ -965,7 +966,7 @@ func TestRegisterPassword(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterPassword(c)
+		err = h.RegisterPasswordHandler(c)
 		require.EqualError(t, err, "code=400, message=token is invalid")
 	})
 	t.Run("失敗: X-Register-Tokenがまだ認証完了していない", func(t *testing.T) {
@@ -982,7 +983,7 @@ func TestRegisterPassword(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterPassword(c)
+		err = h.RegisterPasswordHandler(c)
 		require.EqualError(t, err, "code=400, message=Email is not verified, unique=7")
 	})
 	t.Run("失敗: X-Register-Tokenの有効期限が切れている", func(t *testing.T) {
@@ -1004,7 +1005,7 @@ func TestRegisterPassword(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterPassword(c)
+		err = h.RegisterPasswordHandler(c)
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 	})
 
@@ -1022,7 +1023,7 @@ func TestRegisterPassword(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterPassword(c)
+		err = h.RegisterPasswordHandler(c)
 		require.EqualError(t, err, "code=400, message=password is empty")
 	})
 	t.Run("失敗: パスワードが範囲外", func(t *testing.T) {
@@ -1039,7 +1040,7 @@ func TestRegisterPassword(t *testing.T) {
 
 		c := m.Echo()
 
-		err = h.RegisterPassword(c)
+		err = h.RegisterPasswordHandler(c)
 		require.EqualError(t, err, "code=400, message=bad password")
 	})
 }

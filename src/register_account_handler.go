@@ -375,7 +375,7 @@ func (h *Handler) RegisterVerifyEmailHandler(c echo.Context) error {
 }
 
 // Passkeyを登録するために、Challengeなどを返す
-func (h *Handler) RegisterBeginWebAuthn(c echo.Context) error {
+func (h *Handler) RegisterBeginWebAuthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	token := c.Request().Header.Get("X-Register-Token") // SendEmailVerifyHandlerのレスポンスToken
@@ -460,7 +460,7 @@ func (h *Handler) RegisterBeginWebAuthn(c echo.Context) error {
 
 // Passkeyによる認証の登録
 // 事前にRegisterBeginWebAuthnを呼び出してtokenをcookieに付与させる必要がある
-func (h *Handler) RegisterWebAuthn(c echo.Context) error {
+func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	if c.Request().Header.Get("Content-Type") != "application/json" {
@@ -501,18 +501,7 @@ func (h *Handler) RegisterWebAuthn(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
-	response, err := h.WebAuthn.ParseCreate(c.Request().Body)
-	if err != nil {
-		return NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	// DBからWebAuthn userとsessionを取得する
-	webauthnUser, session, err := NewWebAuthnUserSession(ctx, h.DB, webauthnToken.Value)
-	if err != nil {
-		return err
-	}
-
-	credential, err := h.WebAuthn.FinishRegistration(webauthnUser, *session, response)
+	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value)
 	if err != nil {
 		return NewHTTPError(http.StatusForbidden, err)
 	}
@@ -568,7 +557,7 @@ func (h *Handler) RegisterWebAuthn(c echo.Context) error {
 }
 
 // パスワードによる認証の登録
-func (h *Handler) RegisterPassword(c echo.Context) error {
+func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	password := c.FormValue("password")
