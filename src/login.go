@@ -3,6 +3,7 @@ package src
 import (
 	"database/sql"
 	"errors"
+	"net"
 	"net/http"
 	"time"
 
@@ -239,13 +240,25 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	user, err := h.LoginWebauthn(ctx, c.Request().Body, webauthnToken.Value)
+	ip := c.RealIP()
+	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
 
-	ip := c.RealIP()
-	ua, err := h.ParseUA(c.Request())
+	user, err := h.LoginWebauthn(ctx, c.Request().Body, webauthnToken.Value, func(u *models.User) error {
+		// ログイントライ履歴を追加する
+		loginTryHistory := models.LoginTryHistory{
+			UserID:   u.ID,
+			Device:   null.NewString(ua.Device, true),
+			Os:       null.NewString(ua.OS, true),
+			Browser:  null.NewString(ua.Browser, true),
+			IsMobile: null.NewBool(ua.IsMobile, true),
+			IP:       net.ParseIP(ip),
+		}
+		return loginTryHistory.Insert(ctx, h.DB, boil.Infer())
+	})
+
 	if err != nil {
 		return err
 	}
@@ -286,6 +299,10 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 
 	ip := c.RealIP()
+	ua, err := h.ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
 
 	// reCAPTCHA
 	if h.C.UseReCaptcha {
@@ -304,6 +321,19 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusBadRequest, ErrNotFoundUser, "user not found")
 	}
 	if err != nil {
+		return err
+	}
+
+	// ログイントライ履歴を保存する
+	loginTryHistory := models.LoginTryHistory{
+		UserID:   user.ID,
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+		IP:       net.ParseIP(ip),
+	}
+	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 
@@ -351,11 +381,6 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 
 	// OTPが設定されていない場合はそのままログイン
-	ua, err := h.ParseUA(c.Request())
-	if err != nil {
-		return err
-	}
-
 	session, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
 	if err != nil {
 		return err

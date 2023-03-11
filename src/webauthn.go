@@ -165,7 +165,7 @@ func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthn
 }
 
 // Webauthnでログインする
-func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string) (*models.User, error) {
+func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string, before func(u *models.User) error) (*models.User, error) {
 	response, err := h.WebAuthn.ParseLogin(body)
 	if err != nil {
 		return nil, NewHTTPError(http.StatusBadRequest, err)
@@ -209,6 +209,17 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 		Icon:        "",
 	}
 
+	user, err := models.Users(
+		models.UserWhere.ID.EQ(webauthnSession.UserID.String),
+	).One(ctx, h.DB)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := before(user); err != nil {
+		return nil, err
+	}
+
 	_, err = h.WebAuthn.FinishLogin(webauthnUser, *session, response)
 	if err != nil {
 		return nil, NewHTTPError(http.StatusForbidden, err)
@@ -219,7 +230,5 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 		return nil, err
 	}
 
-	return models.Users(
-		models.UserWhere.ID.EQ(webauthnSession.UserID.String),
-	).One(ctx, h.DB)
+	return user, nil
 }
