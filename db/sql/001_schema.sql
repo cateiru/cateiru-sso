@@ -1,5 +1,4 @@
--- TODO:
--- - パスポートハッシュなどの型
+-- CateiruSSOのDDL
 
 -- ユーザテーブル
 CREATE TABLE `user` (
