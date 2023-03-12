@@ -282,7 +282,7 @@ func TestLoginUserHandler(t *testing.T) {
 		userData := &src.UserData{
 			Device:   "",
 			OS:       "iOS",
-			Browser:  "Chrome",
+			Browser:  "Google Chrome",
 			IsMobile: true,
 		}
 		SetUserData(t, m, userData)
@@ -607,7 +607,176 @@ func TestLoginWebauthnHandler(t *testing.T) {
 }
 
 func TestLoginPasswordHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
+	t.Run("成功: パスワードのみ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u, "password123ABC123123")
+
+		form := contents.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		// cookieは設定されているか（セッショントークンのみ見る）
+		var sessionCookie *http.Cookie = nil
+		for _, cookie := range m.Response().Cookies() {
+			if cookie.Name == C.SessionCookie.Name {
+				sessionCookie = cookie
+				break
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		// セッションはBodyのユーザと同じか
+		sessionUser, err := models.Users(
+			qm.InnerJoin("session on session.user_id = user.id"),
+			qm.Where("session.id = ?", sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionUser.ID, response.User.ID)
+
+		// ログイントライ履歴が保存されている
+		existsLoginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existsLoginTryHistory)
+	})
+
+	t.Run("成功: OTPが設定されている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u, "password123ABC123123")
+		RegisterOTP(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.NoError(t, err)
+
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		require.Nil(t, response.User)
+
+		existOtpSession, err := models.OtpSessions(
+			models.OtpSessionWhere.ID.EQ(response.OTP),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existOtpSession)
+	})
+
+	t.Run("失敗: パスワードが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=password is empty")
+	})
+
+	t.Run("失敗: パスワードが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u, "password123ABC123123")
+
+		form := contents.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "aaaaa")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.EqualError(t, err, "code=403, message=invalid password")
+	})
+
+	t.Run("失敗: reCAPTCHA失敗", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u, "password123ABC123123")
+
+		form := contents.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "fail")
+		form.Insert("password", "password123ABC123123")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=reCAPTCHA validation failed, unique=1")
+	})
+
+	t.Run("失敗: パスワードを設定していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		form := contents.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=password not registered")
+	})
+
+	t.Run("失敗: ユーザーが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u, "password123ABC123123")
+
+		form := contents.NewMultipart()
+		form.Insert("username_or_email", "hogehoge")
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=user not found, unique=10")
+	})
 }
 
 func TestLoginOTPHandler(t *testing.T) {

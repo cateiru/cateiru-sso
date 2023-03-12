@@ -293,9 +293,6 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	if password == "" {
 		return NewHTTPError(http.StatusBadRequest, "password is empty")
 	}
-	if !lib.ValidatePassword(password) {
-		return NewHTTPError(http.StatusBadRequest, "bad password")
-	}
 
 	ip := c.RealIP()
 	ua, err := h.ParseUA(c.Request())
@@ -444,7 +441,7 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 
 	result := false
 	if lib.ValidateOTPCode(code) {
-		result = lib.ValidateOTP(code, otp.Secret.String)
+		result = lib.ValidateOTP(code, otp.Secret)
 	} else {
 		// Backupからログインを試みる
 		backups, err := models.OtpBackups(

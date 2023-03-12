@@ -552,7 +552,7 @@ func TestNewRegisterSession(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		ua := &src.UserData{
-			Browser:  "Chrome",
+			Browser:  "Google Chrome",
 			OS:       "Windows",
 			Device:   "",
 			IsMobile: false,
@@ -605,7 +605,7 @@ func TestNewRegisterSession(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		ua := &src.UserData{
-			Browser:  "Chrome",
+			Browser:  "Google Chrome",
 			OS:       "Windows",
 			Device:   "",
 			IsMobile: false,
