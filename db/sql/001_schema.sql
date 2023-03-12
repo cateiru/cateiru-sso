@@ -164,7 +164,7 @@ CREATE TABLE `otp_backup` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id` VARCHAR(32) NOT NULL,
 
-    `code` VARCHAR(15) NOT NULL,
+    `code` TEXT NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
