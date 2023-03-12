@@ -70,6 +70,12 @@ type Config struct {
 	// OTPのissuer
 	OTPIssuer      string
 	OTPBackupCount uint8
+
+	// パスワード再設定の有効期限
+	ReregistrationPasswordSessionPeriod time.Duration
+	// パスワード再設定のレコード削除有効期限
+	// この有効期限が切れるまで再度メールを送信することができない
+	ReregistrationPasswordSessionClearPeriod time.Duration
 }
 
 // Cookieの設定
@@ -189,6 +195,9 @@ var LocalConfig = &Config{
 	OTPRegisterLimit:         3,
 	OTPIssuer:                "CateiruSSO",
 	OTPBackupCount:           10,
+
+	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
+	ReregistrationPasswordSessionClearPeriod: 1 * time.Hour,
 }
 
 var CloudRunConfig = &Config{
@@ -283,6 +292,9 @@ var CloudRunConfig = &Config{
 	OTPRegisterLimit:         3,
 	OTPIssuer:                "CateiruSSO",
 	OTPBackupCount:           10,
+
+	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
+	ReregistrationPasswordSessionClearPeriod: 1 * time.Hour,
 }
 
 var TestConfig = &Config{
@@ -385,6 +397,9 @@ var TestConfig = &Config{
 	OTPRegisterLimit:         3,
 	OTPIssuer:                "CateiruSSO",
 	OTPBackupCount:           10,
+
+	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
+	ReregistrationPasswordSessionClearPeriod: 1 * time.Hour,
 }
 
 func InitConfig(mode string) *Config {
