@@ -16,6 +16,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/handler/mock"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
@@ -320,4 +321,32 @@ func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []s
 	}
 
 	return secret, backups
+}
+
+func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(u *models.User) *mock.MockHandler) {
+	ctx := context.Background()
+
+	t.Run("正しく認証できている", func(t *testing.T) {
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+
+		m := newMock(&user)
+		sessionCookies := RegisterSession(t, ctx, &user)
+		m.Cookie(sessionCookies)
+		c := m.Echo()
+
+		err := h(c)
+		require.NoError(t, err)
+	})
+
+	t.Run("Cookieが空の場合認証できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+
+		m := newMock(&user)
+		c := m.Echo()
+
+		err := h(c)
+		require.NoError(t, err)
+	})
 }

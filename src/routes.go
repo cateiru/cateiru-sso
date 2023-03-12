@@ -25,19 +25,20 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.POST("/v2/login/otp", h.LoginOTPHandler)
 
 	// アカウント操作
-	e.GET("/v2/account/list", h.Root)
-	e.POST("/v2/account/switch", h.Root) // ログインアカウントの変更
-	e.POST("/v2/account/logout", h.Root)
-	e.POST("/v2/account/delete", h.Root)
-	e.GET("/v2/account/otp", h.Root)         // OTPのpublic keyを返す
-	e.POST("/v2/account/otp", h.Root)        // OTP設定
-	e.GET("/v2/account/otp_backups", h.Root) // OTPのバックアップコード
-	e.POST("/v2/account/password", h.Root)   // パスワードの更新or新規作成
-	e.POST("/v2/account/begin_webauthn", h.Root)
-	e.POST("/v2/account/webauthn", h.Root) // passkey更新or新規作成
+	e.GET("/v2/account/list", h.AccountListHandler)
+	e.POST("/v2/account/switch", h.AccountSwitchHandler) // ログインアカウントの変更
+	e.POST("/v2/account/logout", h.AccountLogoutHandler)
+	e.POST("/v2/account/delete", h.AccountDeleteHandler)
+	e.GET("/v2/account/otp", h.AccountOTPPublicKeyHandler)      // OTPのpublic keyを返す
+	e.POST("/v2/account/otp", h.AccountOTPHandler)              // OTP設定
+	e.GET("/v2/account/otp_backups", h.AccountOTPBackupHandler) // OTPのバックアップコード
+	e.POST("/v2/account/password", h.AccountPasswordHandler)    // パスワードの更新or新規作成
+	e.POST("/v2/account/begin_webauthn", h.AccountBeginWebauthnHandler)
+	e.POST("/v2/account/webauthn", h.AccountWebauthnHandler)        // passkey更新or新規作成
+	e.GET("/v2/account/certificates", h.AccountCertificatesHandler) // 認証の設定情報
 
-	e.POST("/v2/account/forget/password", h.Root) // パスワード再登録リクエスト
-	e.POST("/v2/account/reregistration/password", h.Root)
+	e.POST("/v2/account/forget/password", h.AccountForgetPasswordHandler) // パスワード再登録リクエスト
+	e.POST("/v2/account/reregistration/password", h.AccountReRegisterPasswordHandler)
 
 	// ユーザ情報
 	e.GET("/v2/user/me", h.Root)
