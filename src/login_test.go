@@ -921,6 +921,13 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		err = h.LoginOTPHandler(c)
 		require.EqualError(t, err, "code=403, message=login failed, unique=8")
+
+		// retry_count++
+		s, err := models.OtpSessions(
+			models.OtpSessionWhere.ID.EQ(otpSession),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, s.RetryCount, uint8(1))
 	})
 
 	t.Run("失敗: OTPが空", func(t *testing.T) {

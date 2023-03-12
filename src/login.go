@@ -462,6 +462,10 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 		}
 	}
 	if !result {
+		// retry_countを更新するのでUPDATE
+		if _, err := session.Update(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
 		return NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
 	}
 
