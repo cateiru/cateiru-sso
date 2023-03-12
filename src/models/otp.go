@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // Otp is an object representing the database table.
 type Otp struct {
-	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Secret   null.String `boil:"secret" json:"secret,omitempty" toml:"secret" yaml:"secret,omitempty"`
-	Created  time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	UserID   string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Secret   string    `boil:"secret" json:"secret" toml:"secret" yaml:"secret"`
+	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	Modified time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
 	R *otpR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L otpL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -61,12 +60,12 @@ var OtpTableColumns = struct {
 
 var OtpWhere = struct {
 	UserID   whereHelperstring
-	Secret   whereHelpernull_String
+	Secret   whereHelperstring
 	Created  whereHelpertime_Time
 	Modified whereHelpertime_Time
 }{
 	UserID:   whereHelperstring{field: "`otp`.`user_id`"},
-	Secret:   whereHelpernull_String{field: "`otp`.`secret`"},
+	Secret:   whereHelperstring{field: "`otp`.`secret`"},
 	Created:  whereHelpertime_Time{field: "`otp`.`created`"},
 	Modified: whereHelpertime_Time{field: "`otp`.`modified`"},
 }

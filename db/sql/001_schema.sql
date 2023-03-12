@@ -150,7 +150,7 @@ CREATE TABLE `otp` (
     `user_id` VARCHAR(32) NOT NULL,
 
     -- TODO: サイズの最適化をしたい
-    `secret` VARCHAR(31),
+    `secret` VARCHAR(31) NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
