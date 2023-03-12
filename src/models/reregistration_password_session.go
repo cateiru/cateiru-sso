@@ -27,6 +27,7 @@ type ReregistrationPasswordSession struct {
 	Email       string    `boil:"email" json:"email" toml:"email" yaml:"email"`
 	Period      time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	PeriodClear time.Time `boil:"period_clear" json:"period_clear" toml:"period_clear" yaml:"period_clear"`
+	Completed   bool      `boil:"completed" json:"completed" toml:"completed" yaml:"completed"`
 	Created     time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 
 	R *reregistrationPasswordSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,12 +39,14 @@ var ReregistrationPasswordSessionColumns = struct {
 	Email       string
 	Period      string
 	PeriodClear string
+	Completed   string
 	Created     string
 }{
 	ID:          "id",
 	Email:       "email",
 	Period:      "period",
 	PeriodClear: "period_clear",
+	Completed:   "completed",
 	Created:     "created",
 }
 
@@ -52,12 +55,14 @@ var ReregistrationPasswordSessionTableColumns = struct {
 	Email       string
 	Period      string
 	PeriodClear string
+	Completed   string
 	Created     string
 }{
 	ID:          "reregistration_password_session.id",
 	Email:       "reregistration_password_session.email",
 	Period:      "reregistration_password_session.period",
 	PeriodClear: "reregistration_password_session.period_clear",
+	Completed:   "reregistration_password_session.completed",
 	Created:     "reregistration_password_session.created",
 }
 
@@ -68,12 +73,14 @@ var ReregistrationPasswordSessionWhere = struct {
 	Email       whereHelperstring
 	Period      whereHelpertime_Time
 	PeriodClear whereHelpertime_Time
+	Completed   whereHelperbool
 	Created     whereHelpertime_Time
 }{
 	ID:          whereHelperstring{field: "`reregistration_password_session`.`id`"},
 	Email:       whereHelperstring{field: "`reregistration_password_session`.`email`"},
 	Period:      whereHelpertime_Time{field: "`reregistration_password_session`.`period`"},
 	PeriodClear: whereHelpertime_Time{field: "`reregistration_password_session`.`period_clear`"},
+	Completed:   whereHelperbool{field: "`reregistration_password_session`.`completed`"},
 	Created:     whereHelpertime_Time{field: "`reregistration_password_session`.`created`"},
 }
 
@@ -94,9 +101,9 @@ func (*reregistrationPasswordSessionR) NewStruct() *reregistrationPasswordSessio
 type reregistrationPasswordSessionL struct{}
 
 var (
-	reregistrationPasswordSessionAllColumns            = []string{"id", "email", "period", "period_clear", "created"}
+	reregistrationPasswordSessionAllColumns            = []string{"id", "email", "period", "period_clear", "completed", "created"}
 	reregistrationPasswordSessionColumnsWithoutDefault = []string{"id", "email"}
-	reregistrationPasswordSessionColumnsWithDefault    = []string{"period", "period_clear", "created"}
+	reregistrationPasswordSessionColumnsWithDefault    = []string{"period", "period_clear", "completed", "created"}
 	reregistrationPasswordSessionPrimaryKeyColumns     = []string{"id"}
 	reregistrationPasswordSessionGeneratedColumns      = []string{}
 )

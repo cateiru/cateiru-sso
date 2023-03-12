@@ -258,6 +258,7 @@ CREATE TABLE `reregistration_password_session` (
 
     -- 疲労攻撃を回避するため有効期限と別のレコード削除期限を設ける
     `period_clear` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `completed` BOOLEAN NOT NULL DEFAULT 0,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
