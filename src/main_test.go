@@ -242,6 +242,7 @@ func RegisterPassword(t *testing.T, ctx context.Context, u *models.User, passwor
 	require.NoError(t, err)
 }
 
+// ユーザーにPasskeyを登録する
 func RegisterPasskey(t *testing.T, ctx context.Context, u *models.User, userData ...src.UserData) {
 	id, err := lib.RandomBytes(64)
 	require.NoError(t, err)
@@ -287,4 +288,36 @@ func RegisterPasskey(t *testing.T, ctx context.Context, u *models.User, userData
 	}
 	err = passkeyLoginDevice.Insert(ctx, DB, boil.Infer())
 	require.NoError(t, err)
+}
+
+// OTPを設定する
+// 戻り値はOTPのシークレットとバックアップコード
+func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []string) {
+	otp, err := lib.NewOTP(C.OTPIssuer, u.UserName)
+	require.NoError(t, err)
+
+	secret := otp.GetSecret()
+
+	otpDB := models.Otp{
+		UserID: u.ID,
+		Secret: secret,
+	}
+	err = otpDB.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+
+	backups := make([]string, 10)
+	for i := 0; 10 > i; i++ {
+		code, err := lib.RandomStr(15)
+		require.NoError(t, err)
+		backups[i] = code
+
+		backupDB := models.OtpBackup{
+			UserID: u.ID,
+			Code:   code,
+		}
+		err = backupDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	}
+
+	return secret, backups
 }
