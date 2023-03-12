@@ -61,10 +61,15 @@ type Config struct {
 
 	// OTPセッションの有効期限
 	OTPSessionPeriod time.Duration
+	// OTP登録セッションの有効期限
+	OTPRegisterSessionPeriod time.Duration
 	// OTPのリトライ回数の上限
 	OTPRetryLimit uint8
+	// OTP登録セッションのリトライ回数上限
+	OTPRegisterLimit uint8
 	// OTPのissuer
-	OTPIssuer string
+	OTPIssuer      string
+	OTPBackupCount uint8
 }
 
 // Cookieの設定
@@ -178,9 +183,12 @@ var LocalConfig = &Config{
 		KeyLen:  32,
 	},
 
-	OTPSessionPeriod: 5 * time.Minute,
-	OTPRetryLimit:    5,
-	OTPIssuer:        "CateiruSSO",
+	OTPSessionPeriod:         5 * time.Minute,
+	OTPRegisterSessionPeriod: 5 * time.Minute,
+	OTPRetryLimit:            5,
+	OTPRegisterLimit:         3,
+	OTPIssuer:                "CateiruSSO",
+	OTPBackupCount:           10,
 }
 
 var CloudRunConfig = &Config{
@@ -269,9 +277,12 @@ var CloudRunConfig = &Config{
 		KeyLen:  32,
 	},
 
-	OTPSessionPeriod: 5 * time.Minute,
-	OTPRetryLimit:    5,
-	OTPIssuer:        "CateiruSSO",
+	OTPSessionPeriod:         5 * time.Minute,
+	OTPRegisterSessionPeriod: 5 * time.Minute,
+	OTPRetryLimit:            5,
+	OTPRegisterLimit:         3,
+	OTPIssuer:                "CateiruSSO",
+	OTPBackupCount:           10,
 }
 
 var TestConfig = &Config{
@@ -368,9 +379,12 @@ var TestConfig = &Config{
 		KeyLen:  32,
 	},
 
-	OTPSessionPeriod: 5 * time.Minute,
-	OTPRetryLimit:    5,
-	OTPIssuer:        "CateiruSSO",
+	OTPSessionPeriod:         5 * time.Minute,
+	OTPRegisterSessionPeriod: 5 * time.Minute,
+	OTPRetryLimit:            5,
+	OTPRegisterLimit:         3,
+	OTPIssuer:                "CateiruSSO",
+	OTPBackupCount:           10,
 }
 
 func InitConfig(mode string) *Config {
