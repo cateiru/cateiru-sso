@@ -4,8 +4,10 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/contents"
 	"github.com/cateiru/go-http-easy-test/handler/mock"
@@ -14,6 +16,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
 func TestLoginUserHandler(t *testing.T) {
@@ -468,46 +472,138 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 }
 
 func TestLoginWebauthnHandler(t *testing.T) {
-	// ctx := context.Background()
-	// h := NewTestHandler(t)
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
 	// Webauthnのセッションを作成する
-	// registerWebauthnSession := func(email string) string {
-	// 	user, err := src.NewWebAuthnUserRegister(email)
-	// 	require.NoError(t, err)
-	// 	webauthnSessionId, err := lib.RandomStr(31)
-	// 	require.NoError(t, err)
+	registerWebauthnSession := func(user *models.User) string {
+		webuathnUser, err := src.NewWebAuthnUserFromDB(ctx, DB, user)
+		require.NoError(t, err)
+		webauthnSessionId, err := lib.RandomStr(31)
+		require.NoError(t, err)
 
-	// 	_, s, err := h.WebAuthn.BeginRegistration(user)
-	// 	require.NoError(t, err)
+		_, s, err := h.WebAuthn.BeginLogin(webuathnUser)
+		require.NoError(t, err)
 
-	// 	row := types.JSON{}
-	// 	err = row.Marshal(s)
-	// 	require.NoError(t, err)
+		row := types.JSON{}
+		err = row.Marshal(s)
+		require.NoError(t, err)
 
-	// 	webauthnSession := models.WebauthnSession{
-	// 		ID:               webauthnSessionId,
-	// 		WebauthnUserID:   s.UserID,
-	// 		UserDisplayName:  s.UserDisplayName,
-	// 		Challenge:        s.Challenge,
-	// 		UserVerification: string(s.UserVerification),
-	// 		Row:              row,
+		webauthnSession := models.WebauthnSession{
+			ID:               webauthnSessionId,
+			WebauthnUserID:   s.UserID,
+			UserID:           null.NewString(user.ID, true),
+			UserDisplayName:  s.UserDisplayName,
+			Challenge:        s.Challenge,
+			UserVerification: string(s.UserVerification),
+			Row:              row,
 
-	// 		Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
-	// 	}
-	// 	err = webauthnSession.Insert(ctx, h.DB, boil.Infer())
-	// 	require.NoError(t, err)
+			Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+		}
+		err = webauthnSession.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
 
-	// 	return webauthnSessionId
-	// }
+		return webauthnSessionId
+	}
 
-	t.Run("成功", func(t *testing.T) {})
+	t.Run("成功", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {})
+		RegisterPasskey(t, ctx, &u)
+		webauthnSession := registerWebauthnSession(&u)
 
-	t.Run("失敗: セッションが空", func(t *testing.T) {})
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		c := m.Echo()
 
-	t.Run("失敗: セッショントークンが不正", func(t *testing.T) {})
+		err = h.LoginWebauthnHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		// cookieは設定されているか（セッショントークンのみ見る）
+		var sessionCookie *http.Cookie = nil
+		for _, cookie := range m.Response().Cookies() {
+			if cookie.Name == C.SessionCookie.Name {
+				sessionCookie = cookie
+				break
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		// セッションはBodyのユーザと同じか
+		sessionUser, err := models.Users(
+			qm.InnerJoin("session on session.user_id = user.id"),
+			qm.Where("session.id = ?", sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionUser.ID, response.User.ID)
+
+		// ログイントライ履歴が保存されている
+		existsLoginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existsLoginTryHistory)
+
+		// WebauthnSessionは削除されている
+		existsWebauthnSession, err := models.WebauthnSessionExists(ctx, DB, webauthnSession)
+		require.NoError(t, err)
+		require.False(t, existsWebauthnSession)
+	})
+
+	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPasskey(t, ctx, &u)
+		webauthnSession := registerWebauthnSession(&u)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid content-type")
+	})
+
+	t.Run("失敗: セッションが空", func(t *testing.T) {
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.EqualError(t, err, "code=400, message=http: named cookie not present")
+	})
+
+	t.Run("失敗: セッショントークンが不正", func(t *testing.T) {
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: "hogehoge",
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+	})
 }
 
 func TestLoginPasswordHandler(t *testing.T) {

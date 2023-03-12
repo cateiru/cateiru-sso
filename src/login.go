@@ -258,7 +258,6 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		}
 		return loginTryHistory.Insert(ctx, h.DB, boil.Infer())
 	})
-
 	if err != nil {
 		return err
 	}
