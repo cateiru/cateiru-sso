@@ -35,6 +35,77 @@ func TestNewWebAuthUserRegister(t *testing.T) {
 	})
 }
 
+func TestNewWebauthnUserFromUser(t *testing.T) {
+	t.Run("それぞれのメソッドが正しく返せる", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		user, err := src.NewWebauthnUserFromUser(&u)
+		require.NoError(t, err)
+
+		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnName(), u.UserName)
+		require.Equal(t, user.WebAuthnDisplayName(), u.Email)
+		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
+		require.Equal(t, user.WebAuthnIcon(), "")
+	})
+
+	t.Run("FamilyNameとGivenNameが設定されている", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		u.FamilyName = null.NewString("Family", true)
+		u.GivenName = null.NewString("Given", true)
+
+		user, err := src.NewWebauthnUserFromUser(&u)
+		require.NoError(t, err)
+
+		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnName(), u.UserName)
+		require.Equal(t, user.WebAuthnDisplayName(), "Family Given")
+		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
+		require.Equal(t, user.WebAuthnIcon(), "")
+	})
+
+	t.Run("MiddleNameがある", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		u.FamilyName = null.NewString("Family", true)
+		u.GivenName = null.NewString("Given", true)
+		u.MiddleName = null.NewString("Middle", true)
+
+		user, err := src.NewWebauthnUserFromUser(&u)
+		require.NoError(t, err)
+
+		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnName(), u.UserName)
+		require.Equal(t, user.WebAuthnDisplayName(), "Family Middle Given")
+		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
+		require.Equal(t, user.WebAuthnIcon(), "")
+	})
+
+	t.Run("icon設定されている", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		u.Avatar = null.NewString("https://example.com/avater", true)
+
+		user, err := src.NewWebauthnUserFromUser(&u)
+		require.NoError(t, err)
+
+		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnName(), u.UserName)
+		require.Equal(t, user.WebAuthnDisplayName(), u.Email)
+		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
+		require.Equal(t, user.WebAuthnIcon(), "https://example.com/avater")
+	})
+}
+
 func TestNewWebAuthnUserFromDB(t *testing.T) {
 	ctx := context.Background()
 

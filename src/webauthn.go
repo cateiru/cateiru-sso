@@ -71,6 +71,41 @@ func NewWebAuthnUserFromDB(ctx context.Context, db *sql.DB, user *models.User) (
 	}, nil
 }
 
+func NewWebauthnUserFromUser(user *models.User) (*WebAuthnUser, error) {
+	displayName := ""
+	if user.FamilyName.Valid && user.GivenName.Valid {
+		// 名前が設定されている場合はフォーマットする
+		// 順序は姓名と、日本式
+		if user.MiddleName.Valid {
+			displayName = fmt.Sprintf("%s %s %s", user.FamilyName.String, user.MiddleName.String, user.GivenName.String)
+		} else {
+			displayName = fmt.Sprintf("%s %s", user.FamilyName.String, user.GivenName.String)
+		}
+	} else {
+		// 設定していない場合はEmail
+		displayName = user.Email
+	}
+
+	icon := ""
+	if user.Avatar.Valid {
+		icon = user.Avatar.String
+	}
+
+	id, err := lib.RandomBytes(64)
+	if err != nil {
+		return nil, err
+	}
+
+	return &WebAuthnUser{
+		ID:         id,
+		Credential: []webauthn.Credential{},
+
+		Name:        user.UserName,
+		DisplayName: displayName,
+		Icon:        icon,
+	}, nil
+}
+
 // 新規作成で使用するwebauthnのユーザを作成する
 // WebAuthnで使用するユーザIDを生成します
 func NewWebAuthnUserRegister(email string) (*WebAuthnUser, error) {
