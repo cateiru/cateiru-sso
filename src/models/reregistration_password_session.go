@@ -23,51 +23,58 @@ import (
 
 // ReregistrationPasswordSession is an object representing the database table.
 type ReregistrationPasswordSession struct {
-	ID      string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Email   string    `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Period  time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
-	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	ID          string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Email       string    `boil:"email" json:"email" toml:"email" yaml:"email"`
+	Period      time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
+	PeriodClear time.Time `boil:"period_clear" json:"period_clear" toml:"period_clear" yaml:"period_clear"`
+	Created     time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
 
 	R *reregistrationPasswordSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L reregistrationPasswordSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ReregistrationPasswordSessionColumns = struct {
-	ID      string
-	Email   string
-	Period  string
-	Created string
+	ID          string
+	Email       string
+	Period      string
+	PeriodClear string
+	Created     string
 }{
-	ID:      "id",
-	Email:   "email",
-	Period:  "period",
-	Created: "created",
+	ID:          "id",
+	Email:       "email",
+	Period:      "period",
+	PeriodClear: "period_clear",
+	Created:     "created",
 }
 
 var ReregistrationPasswordSessionTableColumns = struct {
-	ID      string
-	Email   string
-	Period  string
-	Created string
+	ID          string
+	Email       string
+	Period      string
+	PeriodClear string
+	Created     string
 }{
-	ID:      "reregistration_password_session.id",
-	Email:   "reregistration_password_session.email",
-	Period:  "reregistration_password_session.period",
-	Created: "reregistration_password_session.created",
+	ID:          "reregistration_password_session.id",
+	Email:       "reregistration_password_session.email",
+	Period:      "reregistration_password_session.period",
+	PeriodClear: "reregistration_password_session.period_clear",
+	Created:     "reregistration_password_session.created",
 }
 
 // Generated where
 
 var ReregistrationPasswordSessionWhere = struct {
-	ID      whereHelperstring
-	Email   whereHelperstring
-	Period  whereHelpertime_Time
-	Created whereHelpertime_Time
+	ID          whereHelperstring
+	Email       whereHelperstring
+	Period      whereHelpertime_Time
+	PeriodClear whereHelpertime_Time
+	Created     whereHelpertime_Time
 }{
-	ID:      whereHelperstring{field: "`reregistration_password_session`.`id`"},
-	Email:   whereHelperstring{field: "`reregistration_password_session`.`email`"},
-	Period:  whereHelpertime_Time{field: "`reregistration_password_session`.`period`"},
-	Created: whereHelpertime_Time{field: "`reregistration_password_session`.`created`"},
+	ID:          whereHelperstring{field: "`reregistration_password_session`.`id`"},
+	Email:       whereHelperstring{field: "`reregistration_password_session`.`email`"},
+	Period:      whereHelpertime_Time{field: "`reregistration_password_session`.`period`"},
+	PeriodClear: whereHelpertime_Time{field: "`reregistration_password_session`.`period_clear`"},
+	Created:     whereHelpertime_Time{field: "`reregistration_password_session`.`created`"},
 }
 
 // ReregistrationPasswordSessionRels is where relationship names are stored.
@@ -87,9 +94,9 @@ func (*reregistrationPasswordSessionR) NewStruct() *reregistrationPasswordSessio
 type reregistrationPasswordSessionL struct{}
 
 var (
-	reregistrationPasswordSessionAllColumns            = []string{"id", "email", "period", "created"}
+	reregistrationPasswordSessionAllColumns            = []string{"id", "email", "period", "period_clear", "created"}
 	reregistrationPasswordSessionColumnsWithoutDefault = []string{"id", "email"}
-	reregistrationPasswordSessionColumnsWithDefault    = []string{"period", "created"}
+	reregistrationPasswordSessionColumnsWithDefault    = []string{"period", "period_clear", "created"}
 	reregistrationPasswordSessionPrimaryKeyColumns     = []string{"id"}
 	reregistrationPasswordSessionGeneratedColumns      = []string{}
 )
