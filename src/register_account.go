@@ -131,6 +131,7 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	if err != nil {
 		L.Error("mail",
 			zap.String("Email", email),
+			zap.String("Subject", m.Subject),
 			zap.Error(err),
 			zap.String("IP", ip),
 			zap.String("Device", userData.Device),
@@ -144,6 +145,7 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	// メールを送信したのでログを出す
 	L.Info("mail",
 		zap.String("Email", email),
+		zap.String("Subject", m.Subject),
 		zap.String("MailGunMessage", msg),
 		zap.String("MailGunID", id),
 		zap.String("IP", ip),
@@ -267,6 +269,7 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 	if err != nil {
 		L.Error("mail",
 			zap.String("Email", registerSession.Email),
+			zap.String("Subject", m.Subject),
 			zap.Error(err),
 			zap.String("IP", ip),
 			zap.String("Device", userData.Device),
@@ -280,6 +283,7 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 	// メールを送信したのでログを出す
 	L.Info("mail",
 		zap.String("Email", registerSession.Email),
+		zap.String("Subject", m.Subject),
 		zap.String("MailGunMessage", msg),
 		zap.String("MailGunID", id),
 		zap.String("IP", ip),
