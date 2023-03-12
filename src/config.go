@@ -63,6 +63,8 @@ type Config struct {
 	OTPSessionPeriod time.Duration
 	// OTPのリトライ回数の上限
 	OTPRetryLimit uint8
+	// OTPのissuer
+	OTPIssuer string
 }
 
 // Cookieの設定
@@ -178,6 +180,7 @@ var LocalConfig = &Config{
 
 	OTPSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:    5,
+	OTPIssuer:        "CateiruSSO",
 }
 
 var CloudRunConfig = &Config{
@@ -268,6 +271,7 @@ var CloudRunConfig = &Config{
 
 	OTPSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:    5,
+	OTPIssuer:        "CateiruSSO",
 }
 
 var TestConfig = &Config{
@@ -366,6 +370,7 @@ var TestConfig = &Config{
 
 	OTPSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:    5,
+	OTPIssuer:        "CateiruSSO",
 }
 
 func InitConfig(mode string) *Config {
