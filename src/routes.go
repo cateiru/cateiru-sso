@@ -96,4 +96,6 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.POST("/v2/admin/brand", h.Root) // ブランドの付与、削除
 	e.POST("/v2/admin/staff", h.Root) // スタッフフラグの付与、削除
 	e.POST("/v2/admin/broadcast", h.Root)
+	e.GET("/v2/admin/user/role", h.Root)
+	e.POST("/v2/admin/user/role", h.Root)
 }

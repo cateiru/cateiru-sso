@@ -9,8 +9,10 @@ import (
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/types"
 	"go.uber.org/zap"
 )
 
@@ -334,10 +336,125 @@ func (h *Handler) AccountPasswordHandler(c echo.Context) error {
 }
 
 func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
-	return nil
+	ctx := c.Request().Context()
+
+	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	if err != nil {
+		return err
+	}
+
+	webauthnUser, err := NewWebauthnUserFromUser(user)
+	if err != nil {
+		return err
+	}
+	creation, s, err := h.WebAuthn.BeginRegistration(webauthnUser)
+	if err != nil {
+		return err
+	}
+
+	row := types.JSON{}
+	if err = row.Marshal(s); err != nil {
+		return err
+	}
+	webauthnSessionId, err := lib.RandomStr(31)
+	if err != nil {
+		return err
+	}
+	webauthnSession := models.WebauthnSession{
+		ID:               webauthnSessionId,
+		WebauthnUserID:   s.UserID,
+		UserDisplayName:  s.UserDisplayName,
+		Challenge:        s.Challenge,
+		UserVerification: string(s.UserVerification),
+		Row:              row,
+
+		Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+	}
+	if err := webauthnSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	for _, cookie := range setCookies {
+		c.SetCookie(cookie)
+	}
+	cookie := &http.Cookie{
+		Name:     h.C.WebAuthnSessionCookie.Name,
+		Value:    webauthnSessionId,
+		Path:     h.C.WebAuthnSessionCookie.Path,
+		Domain:   h.C.Host.Host,
+		Secure:   h.C.WebAuthnSessionCookie.Secure,
+		HttpOnly: h.C.WebAuthnSessionCookie.HttpOnly,
+		MaxAge:   h.C.WebAuthnSessionCookie.MaxAge,
+		SameSite: h.C.WebAuthnSessionCookie.SameSite,
+	}
+	c.SetCookie(cookie)
+
+	return c.JSON(http.StatusOK, creation)
 }
 
 func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	if c.Request().Header.Get("Content-Type") != "application/json" {
+		return NewHTTPError(http.StatusBadRequest, "invalid content-type")
+	}
+
+	webauthnToken, err := c.Cookie(h.C.WebAuthnSessionCookie.Name)
+	if err != nil {
+		return NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	if err != nil {
+		return err
+	}
+
+	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value)
+	if err != nil {
+		return err
+	}
+
+	rowCredential := types.JSON{}
+	if err := rowCredential.Marshal(credential); err != nil {
+		return err
+	}
+	passkey := models.Passkey{
+		UserID:          user.ID,
+		WebauthnUserID:  credential.ID,
+		Credential:      rowCredential,
+		FlagBackupState: credential.Flags.BackupState,
+	}
+	if err := passkey.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
+		return err
+	}
+
+	for _, cookie := range setCookies {
+		c.SetCookie(cookie)
+	}
+
+	// 履歴は削除する
+	if _, err := models.PasskeyLoginDevices(
+		models.PasskeyLoginDeviceWhere.UserID.EQ(user.ID),
+	).DeleteAll(ctx, h.DB); err != nil {
+		return err
+	}
+
+	ua, err := h.ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+	passkeyLoginDevice := models.PasskeyLoginDevice{
+		UserID:           user.ID,
+		Device:           null.NewString(ua.Device, true),
+		Os:               null.NewString(ua.OS, true),
+		Browser:          null.NewString(ua.Browser, true),
+		IsMobile:         null.NewBool(ua.IsMobile, true),
+		IsRegisterDevice: true, // 登録したデバイスなのでtrue
+	}
+	if err := passkeyLoginDevice.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
