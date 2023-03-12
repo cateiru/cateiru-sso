@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
@@ -262,6 +263,30 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
+	// Passkeyのログインデバイスを保存する
+	existPasskeyLoginDevice, err := models.PasskeyLoginDevices(
+		qm.Where("user_id = ?", user.ID),
+		qm.And("device = ?", ua.Device),
+		qm.And("os = ?", ua.OS),
+		qm.And("browser = ?", ua.Browser),
+		qm.And("is_mobile = ?", ua.IsMobile),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !existPasskeyLoginDevice {
+		passkeyLoginDevice := models.PasskeyLoginDevice{
+			UserID:   user.ID,
+			Device:   null.NewString(ua.Device, true),
+			Os:       null.NewString(ua.OS, true),
+			Browser:  null.NewString(ua.Browser, true),
+			IsMobile: null.NewBool(ua.IsMobile, true),
+		}
+		if err := passkeyLoginDevice.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+	}
+
 	session, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
 	if err != nil {
 		return err
@@ -368,7 +393,7 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 			Period: time.Now().Add(h.C.OTPSessionPeriod),
 		}
 		if err := otpSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
-			return nil
+			return err
 		}
 
 		return c.JSON(http.StatusOK, LoginResponse{

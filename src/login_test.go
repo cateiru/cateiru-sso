@@ -13,6 +13,7 @@ import (
 	"github.com/cateiru/go-http-easy-test/handler/mock"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/mileusna/useragent"
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
@@ -521,6 +522,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 			Value: webauthnSession,
 		}
 		m.Cookie([]*http.Cookie{cookie})
+		m.R.Header.Add("User-Agent", `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36`)
 		c := m.Echo()
 
 		err = h.LoginWebauthnHandler(c)
@@ -561,6 +563,50 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		existsWebauthnSession, err := models.WebauthnSessionExists(ctx, DB, webauthnSession)
 		require.NoError(t, err)
 		require.False(t, existsWebauthnSession)
+
+		// PasskeyLoginDeviceが追加されている
+		passkeyLoginDevices, err := models.PasskeyLoginDevices(
+			models.PasskeyLoginDeviceWhere.UserID.EQ(u.ID),
+		).Count(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, passkeyLoginDevices, int64(2))
+	})
+
+	t.Run("成功", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		userAgent := `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36`
+		ua := useragent.Parse(userAgent)
+		userData := src.UserData{
+			Device:   ua.Device,
+			OS:       ua.OS,
+			Browser:  ua.Name,
+			IsMobile: ua.Mobile,
+		}
+
+		RegisterPasskey(t, ctx, &u, userData)
+		webauthnSession := registerWebauthnSession(&u)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		m.R.Header.Add("User-Agent", userAgent)
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.NoError(t, err)
+
+		// 同じUAのPasskeyLoginDeviceが存在する場合はInsertしない
+		passkeyLoginDevices, err := models.PasskeyLoginDevices(
+			models.PasskeyLoginDeviceWhere.UserID.EQ(u.ID),
+		).Count(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, passkeyLoginDevices, int64(1))
 	})
 
 	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {
