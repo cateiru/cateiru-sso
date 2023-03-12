@@ -149,8 +149,7 @@ CREATE TABLE `password` (
 CREATE TABLE `otp` (
     `user_id` VARCHAR(32) NOT NULL,
 
-    -- TODO: サイズの最適化をしたい
-    `secret` VARCHAR(31) NOT NULL,
+    `secret` TEXT NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -164,7 +163,7 @@ CREATE TABLE `otp_backup` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id` VARCHAR(32) NOT NULL,
 
-    `code` TEXT NOT NULL,
+    `code` VARCHAR(15) NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
