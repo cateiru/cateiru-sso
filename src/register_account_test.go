@@ -507,6 +507,7 @@ func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 		require.Equal(t, webauthnSession.Challenge, resp.Response.Challenge.String())
 		require.Equal(t, protocol.URLEncodedBase64(webauthnSession.WebauthnUserID).String(), resp.Response.User.ID)
 		require.Equal(t, webauthnSession.UserDisplayName, "") // 定義はされているのに何故か代入していない
+		require.Equal(t, webauthnSession.Identifier, int8(1))
 
 		// rowにjsonが入っている
 		sessionFromRow := new(webauthn.SessionData)
@@ -602,7 +603,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 	}
 
 	// Webauthnのセッションを作成する
-	registerWebauthnSession := func(email string) string {
+	registerWebauthnSession := func(email string, identifier int8) string {
 		user, err := src.NewWebAuthnUserRegister(email)
 		require.NoError(t, err)
 		webauthnSessionId, err := lib.RandomStr(31)
@@ -624,7 +625,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 			Row:              row,
 
 			Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
-			Identifier: 1,
+			Identifier: identifier,
 		}
 		err = webauthnSession.Insert(ctx, h.DB, boil.Infer())
 		require.NoError(t, err)
@@ -636,7 +637,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		email := RandomEmail(t)
 
 		s := createSession(email, true)
-		webauthnSession := registerWebauthnSession(email)
+		webauthnSession := registerWebauthnSession(email, 1)
 
 		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
@@ -703,7 +704,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 	t.Run("失敗: X-Register-Tokenがない", func(t *testing.T) {
 		email := RandomEmail(t)
 
-		webauthnSession := registerWebauthnSession(email)
+		webauthnSession := registerWebauthnSession(email, 1)
 
 		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
@@ -737,7 +738,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 	t.Run("失敗:  X-Register-Tokenが不正", func(t *testing.T) {
 		email := RandomEmail(t)
 
-		webauthnSession := registerWebauthnSession(email)
+		webauthnSession := registerWebauthnSession(email, 1)
 
 		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
@@ -758,7 +759,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		email := RandomEmail(t)
 
 		s := createSession(email, false) // 認証終わってない
-		webauthnSession := registerWebauthnSession(email)
+		webauthnSession := registerWebauthnSession(email, 1)
 
 		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
@@ -779,7 +780,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		email := RandomEmail(t)
 
 		s := createSession(email, true)
-		webauthnSession := registerWebauthnSession(email)
+		webauthnSession := registerWebauthnSession(email, 1)
 
 		// 有効期限 - 10日
 		s.Period = s.Period.Add(-24 * 10 * time.Hour)
@@ -821,11 +822,32 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		require.EqualError(t, err, "code=403, message=invalid webauthn token")
 	})
 
+	t.Run("失敗: webauthnTokenのIdentifierが違う", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		s := createSession(email, true)
+		webauthnSession := registerWebauthnSession(email, 5)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthnHandler(c)
+		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+	})
+
 	t.Run("失敗: webauthnTokenが有効期限切れ", func(t *testing.T) {
 		email := RandomEmail(t)
 
 		s := createSession(email, true)
-		webauthnSession := registerWebauthnSession(email)
+		webauthnSession := registerWebauthnSession(email, 1)
 
 		// 有効期限切れにする
 		session, err := models.WebauthnSessions(
@@ -855,7 +877,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		email := RandomEmail(t)
 
 		s := createSession(email, true)
-		webauthnSession := registerWebauthnSession(email)
+		webauthnSession := registerWebauthnSession(email, 1)
 
 		m, err := mock.NewMock("", http.MethodPost, "/")
 		require.NoError(t, err)
