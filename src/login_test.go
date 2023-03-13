@@ -419,6 +419,7 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 
 		require.Equal(t, webauthnSession.Challenge, resp.Response.Challenge.String())
 		require.Equal(t, webauthnSession.UserID.String, u.ID)
+		require.Equal(t, webauthnSession.Identifier, int8(2))
 
 		// rowにjsonが入っている
 		sessionFromRow := new(webauthn.SessionData)
@@ -478,7 +479,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	// Webauthnのセッションを作成する
-	registerWebauthnSession := func(user *models.User) string {
+	registerWebauthnSession := func(user *models.User, identifier int8) string {
 		webuathnUser, err := src.NewWebAuthnUserFromDB(ctx, DB, user)
 		require.NoError(t, err)
 		webauthnSessionId, err := lib.RandomStr(31)
@@ -501,7 +502,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 			Row:              row,
 
 			Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
-			Identifier: 2,
+			Identifier: identifier,
 		}
 		err = webauthnSession.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
@@ -514,7 +515,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		RegisterPasskey(t, ctx, &u)
-		webauthnSession := registerWebauthnSession(&u)
+		webauthnSession := registerWebauthnSession(&u, 2)
 
 		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
@@ -587,7 +588,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		}
 
 		RegisterPasskey(t, ctx, &u, userData)
-		webauthnSession := registerWebauthnSession(&u)
+		webauthnSession := registerWebauthnSession(&u, 2)
 
 		m, err := mock.NewJson("/", "", http.MethodPost)
 		require.NoError(t, err)
@@ -615,7 +616,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		RegisterPasskey(t, ctx, &u)
-		webauthnSession := registerWebauthnSession(&u)
+		webauthnSession := registerWebauthnSession(&u, 2)
 
 		m, err := mock.NewMock("", http.MethodPost, "/")
 		require.NoError(t, err)
@@ -645,6 +646,26 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
 			Value: "hogehoge",
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+	})
+
+	t.Run("失敗: identifierが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPasskey(t, ctx, &u)
+		webauthnSession := registerWebauthnSession(&u, 4)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
 		}
 		m.Cookie([]*http.Cookie{cookie})
 		c := m.Echo()
