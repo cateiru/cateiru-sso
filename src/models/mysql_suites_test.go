@@ -12,6 +12,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("BroadcastNotices", testBroadcastNoticesUpsert)
 
+	t.Run("CertificateSessions", testCertificateSessionsUpsert)
+
 	t.Run("Clients", testClientsUpsert)
 
 	t.Run("ClientAllowRules", testClientAllowRulesUpsert)

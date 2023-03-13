@@ -7,6 +7,7 @@ var TableNames = struct {
 	Brand                         string
 	BroadcastEntry                string
 	BroadcastNotice               string
+	CertificateSession            string
 	Client                        string
 	ClientAllowRule               string
 	ClientQuiz                    string
@@ -39,6 +40,7 @@ var TableNames = struct {
 	Brand:                         "brand",
 	BroadcastEntry:                "broadcast_entry",
 	BroadcastNotice:               "broadcast_notice",
+	CertificateSession:            "certificate_session",
 	Client:                        "client",
 	ClientAllowRule:               "client_allow_rule",
 	ClientQuiz:                    "client_quiz",

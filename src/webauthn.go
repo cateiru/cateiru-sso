@@ -145,7 +145,7 @@ func (w *WebAuthnUser) WebAuthnIcon() string {
 }
 
 // Webauthnを登録する
-func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string) (*webauthn.Credential, error) {
+func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string, identifier int8) (*webauthn.Credential, error) {
 	response, err := h.WebAuthn.ParseCreate(body)
 	if err != nil {
 		return nil, NewHTTPError(http.StatusBadRequest, err)
@@ -153,6 +153,7 @@ func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthn
 
 	webauthnSession, err := models.WebauthnSessions(
 		models.WebauthnSessionWhere.ID.EQ(webauthnSessionToken),
+		models.WebauthnSessionWhere.Identifier.EQ(identifier),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
@@ -200,7 +201,7 @@ func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthn
 }
 
 // Webauthnでログインする
-func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string, before func(u *models.User) error) (*models.User, error) {
+func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string, identifier int8, before func(u *models.User) error) (*models.User, error) {
 	response, err := h.WebAuthn.ParseLogin(body)
 	if err != nil {
 		return nil, NewHTTPError(http.StatusBadRequest, err)
@@ -208,6 +209,7 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 
 	webauthnSession, err := models.WebauthnSessions(
 		models.WebauthnSessionWhere.ID.EQ(webauthnSessionToken),
+		models.WebauthnSessionWhere.Identifier.EQ(identifier),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")

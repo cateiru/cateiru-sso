@@ -500,7 +500,8 @@ func TestLoginWebauthnHandler(t *testing.T) {
 			UserVerification: string(s.UserVerification),
 			Row:              row,
 
-			Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+			Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
+			Identifier: 2,
 		}
 		err = webauthnSession.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)

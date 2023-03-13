@@ -273,7 +273,14 @@ func (h *Handler) AccountOTPHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, backups)
 }
 
+// OTPを削除する
+// TODO: パスワードを求める
+func (h *Handler) AccountDeleteOTPHandler(c echo.Context) error {
+	return nil
+}
+
 // OTPのバックアップコードを返す
+// TODO: パスワードを求める
 func (h *Handler) AccountOTPBackupHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -335,6 +342,12 @@ func (h *Handler) AccountPasswordHandler(c echo.Context) error {
 	return nil
 }
 
+// パスワード更新
+// TODO: 前のパスワードを求める
+func (h *Handler) AccountUpdatePasswordHandler(c echo.Context) error {
+	return nil
+}
+
 func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -368,7 +381,8 @@ func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 		UserVerification: string(s.UserVerification),
 		Row:              row,
 
-		Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+		Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
+		Identifier: 3,
 	}
 	if err := webauthnSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
@@ -409,7 +423,7 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
-	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value)
+	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value, 3)
 	if err != nil {
 		return err
 	}
@@ -456,46 +470,6 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 	}
 
 	return nil
-}
-
-// アカウントの認証情報を返す
-// パスワードの設定可否、Passkeyの設定可否、OTPの設定可否
-func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
-	ctx := c.Request().Context()
-
-	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
-	if err != nil {
-		return err
-	}
-
-	password, err := models.Passwords(
-		models.PasswordWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	otp, err := models.Otps(
-		models.OtpWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	passkey, err := models.Passkeys(
-		models.PasskeyWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-
-	for _, cookie := range setCookies {
-		c.SetCookie(cookie)
-	}
-
-	return c.JSON(http.StatusOK, AccountCertificates{
-		Password: password,
-		OTP:      otp,
-		Passkey:  passkey,
-	})
 }
 
 // メールアドレスを指定して、パスワード再設定メールを送信する
@@ -547,7 +521,7 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 		return err
 	}
 	if !existPassword {
-		return NewHTTPError(http.StatusBadRequest, "no registered password")
+		return NewHTTPError(http.StatusBadRequest, "no reregister password")
 	}
 
 	// すでにセッションが存在している
@@ -622,6 +596,11 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 		zap.Bool("IsMobile", ua.IsMobile),
 	)
 
+	return nil
+}
+
+// TODO: そのセッションが有効かどうか判定する
+func (h *Handler) AccountReRegisterIsSessionHandler(c echo.Context) error {
 	return nil
 }
 
@@ -704,5 +683,53 @@ func (h *Handler) AccountReRegisterPasswordHandler(c echo.Context) error {
 		return err
 	}
 
+	return nil
+}
+
+// アカウントの認証情報を返す
+// パスワードの設定可否、Passkeyの設定可否、OTPの設定可否
+func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	if err != nil {
+		return err
+	}
+
+	password, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	otp, err := models.Otps(
+		models.OtpWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	passkey, err := models.Passkeys(
+		models.PasskeyWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	for _, cookie := range setCookies {
+		c.SetCookie(cookie)
+	}
+
+	return c.JSON(http.StatusOK, AccountCertificates{
+		Password: password,
+		OTP:      otp,
+		Passkey:  passkey,
+	})
+}
+
+func (h *Handler) AccountCertificatesBeginWebauthnHandler(c echo.Context) error {
+	return nil
+}
+
+func (h *Handler) AccountCertificateUserHandler(c echo.Context) error {
 	return nil
 }

@@ -441,7 +441,8 @@ func (h *Handler) RegisterBeginWebAuthnHandler(c echo.Context) error {
 		UserVerification: string(s.UserVerification),
 		Row:              row,
 
-		Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+		Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
+		Identifier: 1,
 	}
 	if err := webauthnSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
@@ -505,7 +506,7 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
-	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value)
+	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value, 1)
 	if err != nil {
 		return err
 	}

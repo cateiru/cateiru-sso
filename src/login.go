@@ -206,7 +206,8 @@ func (h *Handler) LoginBeginWebauthnHandler(c echo.Context) error {
 		UserVerification: string(s.UserVerification),
 		Row:              row,
 
-		Period: time.Now().Add(h.C.WebAuthnSessionPeriod),
+		Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
+		Identifier: 2,
 	}
 	if err := webauthnSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
@@ -247,7 +248,7 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
-	user, err := h.LoginWebauthn(ctx, c.Request().Body, webauthnToken.Value, func(u *models.User) error {
+	user, err := h.LoginWebauthn(ctx, c.Request().Body, webauthnToken.Value, 2, func(u *models.User) error {
 		// ログイントライ履歴を追加する
 		loginTryHistory := models.LoginTryHistory{
 			UserID:   u.ID,

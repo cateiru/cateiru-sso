@@ -204,7 +204,6 @@ CREATE TABLE `register_otp_session` (
     `id` VARCHAR(31) NOT NULL,
     `user_id` VARCHAR(32) NOT NULL,
 
-    -- TODO: 文字サイズを最適化したい
     `public_key` TEXT NOT NULL,
     `secret` TEXT NOT NULL,
 
@@ -407,12 +406,37 @@ CREATE TABLE `webauthn_session` (
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    -- 識別子
+    `identifier` TINYINT NOT NULL DEFAULT 0,
+
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY(`id`),
-    INDEX `webauthn_register_session_webauthn_user_id` (`webauthn_user_id`)
+    INDEX `webauthn_session_user_id` (`user_id`),
+    INDEX `webauthn_session_webauthn_user_id` (`webauthn_user_id`),
+    INDEX `webauthn_session_identifier` (`identifier`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- パスワード変更時など、認証しているユーザーに対してさらに認証を求めるときのセッション
+CREATE TABLE `certificate_session` (
+    -- ランダムにトークンを生成する
+    `id` VARCHAR(31) NOT NULL,
+
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 識別子
+    `identifier` TINYINT NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `certificate_session_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- OAuthで接続したときのセッション

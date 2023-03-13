@@ -215,6 +215,8 @@ func TestRegisterWebauthn(t *testing.T) {
 			Row:              row,
 
 			Period: time.Now().Add(C.WebAuthnSessionPeriod),
+
+			Identifier: 10,
 		}
 		err = webauthnSession.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
@@ -229,7 +231,7 @@ func TestRegisterWebauthn(t *testing.T) {
 
 		webauthSession := createWebauthSession(ctx, userId)
 
-		credential, err := h.RegisterWebauthn(ctx, nil, webauthSession)
+		credential, err := h.RegisterWebauthn(ctx, nil, webauthSession, 10)
 		require.NoError(t, err)
 		require.NotNil(t, credential)
 
@@ -255,7 +257,7 @@ func TestRegisterWebauthn(t *testing.T) {
 		_, err = s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		_, err = h.RegisterWebauthn(ctx, nil, webauthSession)
+		_, err = h.RegisterWebauthn(ctx, nil, webauthSession, 10)
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 
 		// セッションは削除されている
@@ -264,6 +266,17 @@ func TestRegisterWebauthn(t *testing.T) {
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.False(t, exists)
+	})
+
+	t.Run("identifierが違う", func(t *testing.T) {
+		ctx := context.Background()
+		userId, err := lib.RandomBytes(10)
+		require.NoError(t, err)
+
+		webauthSession := createWebauthSession(ctx, userId)
+
+		_, err = h.RegisterWebauthn(ctx, nil, webauthSession, 5)
+		require.EqualError(t, err, "code=403, message=invalid webauthn token")
 	})
 }
 
@@ -295,7 +308,8 @@ func TestLoginWebauthn(t *testing.T) {
 			UserVerification: string(session.UserVerification),
 			Row:              row,
 
-			Period: time.Now().Add(C.WebAuthnSessionPeriod),
+			Period:     time.Now().Add(C.WebAuthnSessionPeriod),
+			Identifier: 2,
 		}
 		err = webauthnSession.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
@@ -312,7 +326,7 @@ func TestLoginWebauthn(t *testing.T) {
 
 		webauthSession := createWebauthSession(ctx, userId, &user)
 
-		loggedInUser, err := h.LoginWebauthn(ctx, nil, webauthSession, func(u *models.User) error { return nil })
+		loggedInUser, err := h.LoginWebauthn(ctx, nil, webauthSession, 2, func(u *models.User) error { return nil })
 		require.NoError(t, err)
 
 		require.Equal(t, loggedInUser.ID, user.ID)
@@ -341,7 +355,7 @@ func TestLoginWebauthn(t *testing.T) {
 		_, err = s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		_, err = h.LoginWebauthn(ctx, nil, webauthSession, func(u *models.User) error { return nil })
+		_, err = h.LoginWebauthn(ctx, nil, webauthSession, 2, func(u *models.User) error { return nil })
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 
 		// セッションは削除されている

@@ -29,16 +29,22 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.POST("/v2/account/switch", h.AccountSwitchHandler) // ログインアカウントの変更
 	e.HEAD("/v2/account/logout", h.AccountLogoutHandler)
 	e.HEAD("/v2/account/delete", h.AccountDeleteHandler)
-	e.GET("/v2/account/otp", h.AccountOTPPublicKeyHandler)      // OTPのpublic keyを返す
-	e.POST("/v2/account/otp", h.AccountOTPHandler)              // OTP設定
-	e.GET("/v2/account/otp_backups", h.AccountOTPBackupHandler) // OTPのバックアップコード
-	e.POST("/v2/account/password", h.AccountPasswordHandler)    // パスワードの更新or新規作成
+	e.GET("/v2/account/otp", h.AccountOTPPublicKeyHandler)               // OTPのpublic keyを返す
+	e.POST("/v2/account/otp", h.AccountOTPHandler)                       // OTP設定
+	e.POST("/v2/account/otp/delete", h.AccountDeleteOTPHandler)          // OTP削除
+	e.POST("/v2/account/otp/backups", h.AccountOTPBackupHandler)         // OTPのバックアップコード
+	e.POST("/v2/account/password", h.AccountPasswordHandler)             // パスワードの新規作成
+	e.PUT("/v2/account/password/update", h.AccountUpdatePasswordHandler) // パスワードの更新
 	e.POST("/v2/account/begin_webauthn", h.AccountBeginWebauthnHandler)
-	e.POST("/v2/account/webauthn", h.AccountWebauthnHandler)        // passkey更新or新規作成
-	e.GET("/v2/account/certificates", h.AccountCertificatesHandler) // 認証の設定情報
+	e.POST("/v2/account/webauthn", h.AccountWebauthnHandler) // passkey更新or新規作成
 
-	e.POST("/v2/account/forget/password", h.AccountForgetPasswordHandler) // パスワード再登録リクエスト
+	e.POST("/v2/account/forget/password", h.AccountForgetPasswordHandler)                // パスワード再登録リクエスト
+	e.POST("/v2/account/reregistration/is_session", h.AccountReRegisterIsSessionHandler) // そのセッションが有効かどうか判定する
 	e.POST("/v2/account/reregistration/password", h.AccountReRegisterPasswordHandler)
+
+	e.GET("/v2/account/certificates", h.AccountCertificatesHandler) // 認証の設定情報
+	e.POST("/v2/account/certificates/begin_webauthn", h.AccountCertificatesBeginWebauthnHandler)
+	e.POST("/v2/account/certificates", h.Root) // パスワードの変更などでログインしているユーザーに認証を求める
 
 	// ユーザ情報
 	e.GET("/v2/user/me", h.Root)

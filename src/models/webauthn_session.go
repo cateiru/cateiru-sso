@@ -33,6 +33,7 @@ type WebauthnSession struct {
 	UserVerification string      `boil:"user_verification" json:"user_verification" toml:"user_verification" yaml:"user_verification"`
 	Row              types.JSON  `boil:"row" json:"row" toml:"row" yaml:"row"`
 	Period           time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
+	Identifier       int8        `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
 	Created          time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
 	Modified         time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
@@ -49,6 +50,7 @@ var WebauthnSessionColumns = struct {
 	UserVerification string
 	Row              string
 	Period           string
+	Identifier       string
 	Created          string
 	Modified         string
 }{
@@ -60,6 +62,7 @@ var WebauthnSessionColumns = struct {
 	UserVerification: "user_verification",
 	Row:              "row",
 	Period:           "period",
+	Identifier:       "identifier",
 	Created:          "created",
 	Modified:         "modified",
 }
@@ -73,6 +76,7 @@ var WebauthnSessionTableColumns = struct {
 	UserVerification string
 	Row              string
 	Period           string
+	Identifier       string
 	Created          string
 	Modified         string
 }{
@@ -84,6 +88,7 @@ var WebauthnSessionTableColumns = struct {
 	UserVerification: "webauthn_session.user_verification",
 	Row:              "webauthn_session.row",
 	Period:           "webauthn_session.period",
+	Identifier:       "webauthn_session.identifier",
 	Created:          "webauthn_session.created",
 	Modified:         "webauthn_session.modified",
 }
@@ -99,6 +104,7 @@ var WebauthnSessionWhere = struct {
 	UserVerification whereHelperstring
 	Row              whereHelpertypes_JSON
 	Period           whereHelpertime_Time
+	Identifier       whereHelperint8
 	Created          whereHelpertime_Time
 	Modified         whereHelpertime_Time
 }{
@@ -110,6 +116,7 @@ var WebauthnSessionWhere = struct {
 	UserVerification: whereHelperstring{field: "`webauthn_session`.`user_verification`"},
 	Row:              whereHelpertypes_JSON{field: "`webauthn_session`.`row`"},
 	Period:           whereHelpertime_Time{field: "`webauthn_session`.`period`"},
+	Identifier:       whereHelperint8{field: "`webauthn_session`.`identifier`"},
 	Created:          whereHelpertime_Time{field: "`webauthn_session`.`created`"},
 	Modified:         whereHelpertime_Time{field: "`webauthn_session`.`modified`"},
 }
@@ -131,9 +138,9 @@ func (*webauthnSessionR) NewStruct() *webauthnSessionR {
 type webauthnSessionL struct{}
 
 var (
-	webauthnSessionAllColumns            = []string{"id", "user_id", "webauthn_user_id", "user_display_name", "challenge", "user_verification", "row", "period", "created", "modified"}
+	webauthnSessionAllColumns            = []string{"id", "user_id", "webauthn_user_id", "user_display_name", "challenge", "user_verification", "row", "period", "identifier", "created", "modified"}
 	webauthnSessionColumnsWithoutDefault = []string{"id", "user_id", "webauthn_user_id", "user_display_name", "challenge", "row"}
-	webauthnSessionColumnsWithDefault    = []string{"user_verification", "period", "created", "modified"}
+	webauthnSessionColumnsWithDefault    = []string{"user_verification", "period", "identifier", "created", "modified"}
 	webauthnSessionPrimaryKeyColumns     = []string{"id"}
 	webauthnSessionGeneratedColumns      = []string{}
 )
