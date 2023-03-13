@@ -323,6 +323,7 @@ func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []s
 	return secret, backups
 }
 
+// そのHandlerが認証が必要かどうかをテストする
 func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(u *models.User) *mock.MockHandler) {
 	ctx := context.Background()
 
@@ -347,6 +348,6 @@ func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(u *mod
 		c := m.Echo()
 
 		err := h(c)
-		require.NoError(t, err)
+		require.EqualError(t, err, "code=403, message=login failed, unique=8")
 	})
 }

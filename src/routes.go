@@ -27,8 +27,8 @@ func Routes(e *echo.Echo, h *Handler) {
 	// アカウント操作
 	e.GET("/v2/account/list", h.AccountListHandler)
 	e.POST("/v2/account/switch", h.AccountSwitchHandler) // ログインアカウントの変更
-	e.POST("/v2/account/logout", h.AccountLogoutHandler)
-	e.POST("/v2/account/delete", h.AccountDeleteHandler)
+	e.HEAD("/v2/account/logout", h.AccountLogoutHandler)
+	e.HEAD("/v2/account/delete", h.AccountDeleteHandler)
 	e.GET("/v2/account/otp", h.AccountOTPPublicKeyHandler)      // OTPのpublic keyを返す
 	e.POST("/v2/account/otp", h.AccountOTPHandler)              // OTP設定
 	e.GET("/v2/account/otp_backups", h.AccountOTPBackupHandler) // OTPのバックアップコード

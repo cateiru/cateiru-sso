@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/contents"
 	"github.com/cateiru/go-http-easy-test/handler/mock"
 	"github.com/stretchr/testify/require"
@@ -211,11 +212,67 @@ func TestAccountSwitchHandler(t *testing.T) {
 }
 
 func TestAccountLogoutHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
+	SessionTest(t, h.AccountLogoutHandler, func(u *models.User) *mock.MockHandler {
+		m, err := mock.NewMock("", http.MethodHead, "/")
+		require.NoError(t, err)
+		return m
+	})
+
+	t.Run("ログアウトできる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		session := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewMock("", http.MethodHead, "/")
+		require.NoError(t, err)
+		m.Cookie(session)
+		c := m.Echo()
+
+		err = h.AccountLogoutHandler(c)
+		require.NoError(t, err)
+
+		// すべてのCookieが削除されている
+		cookies := m.Response().Cookies()
+		for _, cookie := range cookies {
+			require.Equal(t, cookie.MaxAge, -1)
+		}
+	})
 }
 
 func TestAccountDeleteHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
+	SessionTest(t, h.AccountDeleteHandler, func(u *models.User) *mock.MockHandler {
+		m, err := mock.NewMock("", http.MethodHead, "/")
+		require.NoError(t, err)
+		return m
+	})
+
+	t.Run("削除されている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		session := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewMock("", http.MethodHead, "/")
+		require.NoError(t, err)
+		m.Cookie(session)
+		c := m.Echo()
+
+		err = h.AccountLogoutHandler(c)
+		require.NoError(t, err)
+
+		// すべてのCookieが削除されている
+		cookies := m.Response().Cookies()
+		for _, cookie := range cookies {
+			require.Equal(t, cookie.MaxAge, -1)
+		}
+
+		// TODO: 色々削除されているか確認する
+	})
 }
 
 func TestAccountOTPPublicKeyHandler(t *testing.T) {
