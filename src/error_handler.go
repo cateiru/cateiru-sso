@@ -30,6 +30,8 @@ const (
 	ErrBeAbleToLoginWithAnotherAccount = 9
 	// ユーザがいない
 	ErrNotFoundUser = 10
+	// パスワード登録していない
+	ErrNoRegisteredPassword = 11
 )
 
 type HTTPError struct {

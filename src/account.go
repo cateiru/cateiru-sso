@@ -40,6 +40,10 @@ type AccountCertificates struct {
 	Passkey  bool `json:"passkey"`
 }
 
+type AccountReRegisterPasswordIsSession struct {
+	Active bool `json:"active"`
+}
+
 // ログイン可能なアカウントのリストを返すハンドラ
 // 複数アカウントにログインしている場合のやつ
 func (h *Handler) AccountListHandler(c echo.Context) error {
@@ -71,9 +75,8 @@ func (h *Handler) AccountSwitchHandler(c echo.Context) error {
 	if userId == "" {
 		return NewHTTPError(http.StatusBadRequest, "user_id is empty")
 	}
-	cookies := c.Cookies()
 
-	_, _, err := h.Session.Login(ctx, cookies, true)
+	_, err := h.Session.SimpleLogin(ctx, c, true)
 	if err != nil {
 		return err
 	}
@@ -93,19 +96,17 @@ func (h *Handler) AccountSwitchHandler(c echo.Context) error {
 func (h *Handler) AccountLogoutHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	cookies := c.Cookies()
-
-	user, _, err := h.Session.Login(ctx, cookies, true)
+	user, err := h.Session.SimpleLogin(ctx, c, true)
 	if err != nil {
 		return err
 	}
 
-	setCookies, err := h.Session.Logout(ctx, cookies, user)
-	if err != nil {
-		return err
-	}
+	setCookies, err := h.Session.Logout(ctx, c.Cookies(), user)
 	for _, cookie := range setCookies {
 		c.SetCookie(cookie)
+	}
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -117,7 +118,7 @@ func (h *Handler) AccountDeleteHandler(c echo.Context) error {
 
 	cookies := c.Cookies()
 
-	user, _, err := h.Session.Login(ctx, cookies, true)
+	user, err := h.Session.SimpleLogin(ctx, c, true)
 	if err != nil {
 		return err
 	}
@@ -126,11 +127,11 @@ func (h *Handler) AccountDeleteHandler(c echo.Context) error {
 	// TODO
 
 	setCookies, err := h.Session.Logout(ctx, cookies, user)
-	if err != nil {
-		return err
-	}
 	for _, cookie := range setCookies {
 		c.SetCookie(cookie)
+	}
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -140,9 +141,19 @@ func (h *Handler) AccountDeleteHandler(c echo.Context) error {
 func (h *Handler) AccountOTPPublicKeyHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	user, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
+	}
+
+	existPassword, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !existPassword {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "no registered password")
 	}
 
 	otp, err := lib.NewOTP(h.C.OTPIssuer, user.UserName)
@@ -165,10 +176,6 @@ func (h *Handler) AccountOTPPublicKeyHandler(c echo.Context) error {
 		return err
 	}
 
-	for _, cookie := range setCookies {
-		c.SetCookie(cookie)
-	}
-
 	return c.JSON(http.StatusOK, AccountOTPPublic{
 		OTPSession: session,
 		PublicKey:  otp.GetPublic(),
@@ -188,9 +195,19 @@ func (h *Handler) AccountOTPHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "code is empty")
 	}
 
-	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	user, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
+	}
+
+	existPassword, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !existPassword {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "no registered password")
 	}
 
 	otpSession, err := models.RegisterOtpSessions(
@@ -266,27 +283,73 @@ func (h *Handler) AccountOTPHandler(c echo.Context) error {
 		return err
 	}
 
-	for _, cookie := range setCookies {
-		c.SetCookie(cookie)
-	}
-
 	return c.JSON(http.StatusOK, backups)
 }
 
 // OTPを削除する
-// TODO: パスワードを求める
 func (h *Handler) AccountDeleteOTPHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	password := c.FormValue("password")
+	if password == "" {
+		return NewHTTPError(http.StatusBadRequest, "password is empty")
+	}
+
+	user, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	// パスワードの検証
+	p, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "no registered password")
+	}
+	if !h.Password.VerifyPassword(password, p.Hash, p.Salt) {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrLoginFailed, "failed password")
+	}
+
+	// OTP削除
+	if _, err := models.Otps(
+		models.OtpWhere.UserID.EQ(user.ID),
+	).DeleteAll(ctx, h.DB); err != nil {
+		return err
+	}
+	// OTPのバックアップ削除
+	if _, err := models.OtpBackups(
+		models.OtpBackupWhere.UserID.EQ(user.ID),
+	).DeleteAll(ctx, h.DB); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // OTPのバックアップコードを返す
-// TODO: パスワードを求める
 func (h *Handler) AccountOTPBackupHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	password := c.FormValue("password")
+	if password == "" {
+		return NewHTTPError(http.StatusBadRequest, "password is empty")
+	}
+
+	user, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
+	}
+
+	// パスワードの検証
+	p, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "no registered password")
+	}
+	if !h.Password.VerifyPassword(password, p.Hash, p.Salt) {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrLoginFailed, "failed password")
 	}
 
 	backups, err := models.OtpBackups(
@@ -301,10 +364,6 @@ func (h *Handler) AccountOTPBackupHandler(c echo.Context) error {
 		backupCodes[i] = b.Code
 	}
 
-	for _, cookie := range setCookies {
-		c.SetCookie(cookie)
-	}
-
 	return c.JSON(http.StatusOK, backupCodes)
 }
 
@@ -316,7 +375,7 @@ func (h *Handler) AccountPasswordHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "invalid password")
 	}
 
-	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	user, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -335,23 +394,59 @@ func (h *Handler) AccountPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	for _, cookie := range setCookies {
-		c.SetCookie(cookie)
-	}
-
 	return nil
 }
 
 // パスワード更新
-// TODO: 前のパスワードを求める
 func (h *Handler) AccountUpdatePasswordHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	newPassword := c.FormValue("new_password")
+	if !lib.ValidatePassword(newPassword) {
+		return NewHTTPError(http.StatusBadRequest, "invalid password")
+	}
+	oldPassword := c.FormValue("old_password")
+	if oldPassword == "" {
+		return NewHTTPError(http.StatusBadRequest, "password is empty")
+	}
+
+	user, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	// パスワードの検証
+	p, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "no registered password")
+	}
+	if !h.Password.VerifyPassword(oldPassword, p.Hash, p.Salt) {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrLoginFailed, "failed password")
+	}
+
+	hash, salt, err := h.Password.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	password := models.Password{
+		UserID: user.ID,
+		Salt:   salt,
+		Hash:   hash,
+	}
+	if err := password.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	user, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -388,9 +483,6 @@ func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
-	for _, cookie := range setCookies {
-		c.SetCookie(cookie)
-	}
 	cookie := &http.Cookie{
 		Name:     h.C.WebAuthnSessionCookie.Name,
 		Value:    webauthnSessionId,
@@ -418,7 +510,7 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
+	user, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -440,10 +532,6 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 	}
 	if err := passkey.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
 		return err
-	}
-
-	for _, cookie := range setCookies {
-		c.SetCookie(cookie)
 	}
 
 	// 履歴は削除する
@@ -470,6 +558,42 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 	}
 
 	return nil
+}
+
+// アカウントの認証情報を返す
+// パスワードの設定可否、Passkeyの設定可否、OTPの設定可否
+func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	user, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	password, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	otp, err := models.Otps(
+		models.OtpWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	passkey, err := models.Passkeys(
+		models.PasskeyWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, AccountCertificates{
+		Password: password,
+		OTP:      otp,
+		Passkey:  passkey,
+	})
 }
 
 // メールアドレスを指定して、パスワード再設定メールを送信する
@@ -521,7 +645,7 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 		return err
 	}
 	if !existPassword {
-		return NewHTTPError(http.StatusBadRequest, "no reregister password")
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "no registered password")
 	}
 
 	// すでにセッションが存在している
@@ -599,9 +723,46 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 	return nil
 }
 
-// TODO: そのセッションが有効かどうか判定する
-func (h *Handler) AccountReRegisterIsSessionHandler(c echo.Context) error {
-	return nil
+// パスワード再設定のトークンが有効化どうか
+func (h *Handler) AccountReRegisterAvailableTokenHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	email := c.FormValue("email")
+	if !lib.ValidateEmail(email) {
+		return NewHTTPError(http.StatusBadRequest, "invalid email")
+	}
+	token := c.FormValue("reregister_token")
+	if token == "" {
+		return NewHTTPError(http.StatusBadRequest, "reregister_token is empty")
+	}
+
+	session, err := models.ReregistrationPasswordSessions(
+		qm.Where("id = ?", token),
+		qm.And("completed = FALSE"),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return c.JSON(http.StatusOK, &AccountReRegisterPasswordIsSession{
+			Active: false,
+		})
+	}
+	if err != nil {
+		return err
+	}
+	// セッションが有効期限切れの場合
+	if time.Now().After(session.Period) {
+		return c.JSON(http.StatusOK, &AccountReRegisterPasswordIsSession{
+			Active: false,
+		})
+	}
+	if session.Email != email {
+		return c.JSON(http.StatusOK, &AccountReRegisterPasswordIsSession{
+			Active: false,
+		})
+	}
+
+	return c.JSON(http.StatusOK, &AccountReRegisterPasswordIsSession{
+		Active: true,
+	})
 }
 
 // パスワード再設定
@@ -683,53 +844,5 @@ func (h *Handler) AccountReRegisterPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	return nil
-}
-
-// アカウントの認証情報を返す
-// パスワードの設定可否、Passkeyの設定可否、OTPの設定可否
-func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
-	ctx := c.Request().Context()
-
-	user, setCookies, err := h.Session.Login(ctx, c.Cookies())
-	if err != nil {
-		return err
-	}
-
-	password, err := models.Passwords(
-		models.PasswordWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	otp, err := models.Otps(
-		models.OtpWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	passkey, err := models.Passkeys(
-		models.PasskeyWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-
-	for _, cookie := range setCookies {
-		c.SetCookie(cookie)
-	}
-
-	return c.JSON(http.StatusOK, AccountCertificates{
-		Password: password,
-		OTP:      otp,
-		Passkey:  passkey,
-	})
-}
-
-func (h *Handler) AccountCertificatesBeginWebauthnHandler(c echo.Context) error {
-	return nil
-}
-
-func (h *Handler) AccountCertificateUserHandler(c echo.Context) error {
 	return nil
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -19,6 +20,7 @@ import (
 )
 
 type SessionInterface interface {
+	SimpleLogin(ctx context.Context, c echo.Context, useSessionOnly ...bool) (*models.User, error)
 	Login(ctx context.Context, cookies []*http.Cookie, useSessionOnly ...bool) (*models.User, []*http.Cookie, error)
 	Logout(ctx context.Context, cookies []*http.Cookie, user *models.User) ([]*http.Cookie, error)
 	NewRegisterSession(ctx context.Context, user *models.User, ua *UserData, ip string) (*RegisterSession, error)
@@ -53,6 +55,25 @@ func NewSession(c *Config, db *sql.DB) *Session {
 		RefreshDBPeriod:  c.RefreshDBPeriod,
 		DB:               db,
 	}
+}
+
+func (s *Session) SimpleLogin(ctx context.Context, c echo.Context, useSessionOnly ...bool) (*models.User, error) {
+	sessionOnlyFlag := false
+	if len(useSessionOnly) >= 1 {
+		sessionOnlyFlag = useSessionOnly[0]
+	}
+
+	user, setCookies, err := s.Login(ctx, c.Cookies(), sessionOnlyFlag)
+	if sessionOnlyFlag {
+		for _, cookie := range setCookies {
+			c.SetCookie(cookie)
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 // ログインする

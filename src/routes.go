@@ -24,7 +24,7 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.POST("/v2/login/password", h.LoginPasswordHandler)
 	e.POST("/v2/login/otp", h.LoginOTPHandler)
 
-	// アカウント操作
+	// アカウントの認証周り操作
 	e.GET("/v2/account/list", h.AccountListHandler)
 	e.POST("/v2/account/switch", h.AccountSwitchHandler) // ログインアカウントの変更
 	e.HEAD("/v2/account/logout", h.AccountLogoutHandler)
@@ -36,15 +36,12 @@ func Routes(e *echo.Echo, h *Handler) {
 	e.POST("/v2/account/password", h.AccountPasswordHandler)             // パスワードの新規作成
 	e.PUT("/v2/account/password/update", h.AccountUpdatePasswordHandler) // パスワードの更新
 	e.POST("/v2/account/begin_webauthn", h.AccountBeginWebauthnHandler)
-	e.POST("/v2/account/webauthn", h.AccountWebauthnHandler) // passkey更新or新規作成
-
-	e.POST("/v2/account/forget/password", h.AccountForgetPasswordHandler)                // パスワード再登録リクエスト
-	e.POST("/v2/account/reregistration/is_session", h.AccountReRegisterIsSessionHandler) // そのセッションが有効かどうか判定する
-	e.POST("/v2/account/reregistration/password", h.AccountReRegisterPasswordHandler)
-
+	e.POST("/v2/account/webauthn", h.AccountWebauthnHandler)        // passkey更新or新規作成
 	e.GET("/v2/account/certificates", h.AccountCertificatesHandler) // 認証の設定情報
-	e.POST("/v2/account/certificates/begin_webauthn", h.AccountCertificatesBeginWebauthnHandler)
-	e.POST("/v2/account/certificates", h.Root) // パスワードの変更などでログインしているユーザーに認証を求める
+
+	e.POST("/v2/account/forget/password", h.AccountForgetPasswordHandler)                          // パスワード再登録リクエスト
+	e.POST("/v2/account/reregistration/available_token", h.AccountReRegisterAvailableTokenHandler) // そのセッションが有効かどうか判定する
+	e.POST("/v2/account/reregistration/password", h.AccountReRegisterPasswordHandler)
 
 	// ユーザ情報
 	e.GET("/v2/user/me", h.Root)

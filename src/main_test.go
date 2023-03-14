@@ -324,14 +324,14 @@ func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []s
 }
 
 // そのHandlerが認証が必要かどうかをテストする
-func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(u *models.User) *mock.MockHandler) {
+func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *mock.MockHandler) {
 	ctx := context.Background()
 
 	t.Run("正しく認証できている", func(t *testing.T) {
 		email := RandomEmail(t)
 		user := RegisterUser(t, ctx, email)
 
-		m := newMock(&user)
+		m := newMock(ctx, &user)
 		sessionCookies := RegisterSession(t, ctx, &user)
 		m.Cookie(sessionCookies)
 		c := m.Echo()
@@ -344,7 +344,7 @@ func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(u *mod
 		email := RandomEmail(t)
 		user := RegisterUser(t, ctx, email)
 
-		m := newMock(&user)
+		m := newMock(ctx, &user)
 		c := m.Echo()
 
 		err := h(c)

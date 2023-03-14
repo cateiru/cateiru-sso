@@ -8,10 +8,13 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/contents"
 	"github.com/cateiru/go-http-easy-test/handler/mock"
+	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestAccountListHandler(t *testing.T) {
@@ -215,7 +218,7 @@ func TestAccountLogoutHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountLogoutHandler, func(u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountLogoutHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
 		m, err := mock.NewMock("", http.MethodHead, "/")
 		require.NoError(t, err)
 		return m
@@ -246,7 +249,7 @@ func TestAccountDeleteHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountDeleteHandler, func(u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountDeleteHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
 		m, err := mock.NewMock("", http.MethodHead, "/")
 		require.NoError(t, err)
 		return m
@@ -276,29 +279,343 @@ func TestAccountDeleteHandler(t *testing.T) {
 }
 
 func TestAccountOTPPublicKeyHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功", func(t *testing.T) {})
+	SessionTest(t, h.AccountOTPPublicKeyHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+		RegisterPassword(t, ctx, u)
 
-	t.Run("失敗: パスワードを設定していない", func(t *testing.T) {})
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		return m
+	})
+
+	t.Run("成功", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPPublicKeyHandler(c)
+		require.NoError(t, err)
+
+		var response = src.AccountOTPPublic{}
+		err = m.Json(&response)
+		require.NoError(t, err)
+
+		session, err := models.RegisterOtpSessions(
+			models.RegisterOtpSessionWhere.ID.EQ(response.OTPSession),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, session.PublicKey, response.PublicKey)
+	})
+
+	t.Run("失敗: パスワードを設定していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewMock("", http.MethodPost, "/")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPPublicKeyHandler(c)
+		require.EqualError(t, err, "code=400, message=no registered password, unique=11")
+	})
 }
 
 func TestAccountOTPHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: 新規に追加", func(t *testing.T) {})
+	registerOtpSession := func(ctx context.Context, u *models.User) (string, string) {
+		otp, err := lib.NewOTP(C.OTPIssuer, u.UserName)
+		require.NoError(t, err)
 
-	t.Run("成功: OTPを更新する", func(t *testing.T) {})
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		otpRegisterSession := models.RegisterOtpSession{
+			ID:        session,
+			UserID:    u.ID,
+			PublicKey: otp.GetPublic(),
+			Secret:    otp.GetSecret(),
+			Period:    time.Now().Add(C.OTPRegisterSessionPeriod),
+		}
+		err = otpRegisterSession.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
 
-	t.Run("失敗: セッションが空", func(t *testing.T) {})
+		return session, otp.GetSecret()
+	}
 
-	t.Run("失敗: セッションが不正", func(t *testing.T) {})
+	SessionTest(t, h.AccountOTPHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+		RegisterPassword(t, ctx, u)
+		session, _ := registerOtpSession(ctx, u)
 
-	t.Run("失敗: セッションの有効期限が切れている", func(t *testing.T) {})
+		form := contents.NewMultipart()
+		form.Insert("otp_session", session)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		return m
+	})
 
-	t.Run("失敗: セッションのリトライ回数上限を超えている", func(t *testing.T) {})
+	t.Run("成功: 新規に追加", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: OTPが認証できない", func(t *testing.T) {})
+		cookies := RegisterSession(t, ctx, &u)
+		RegisterPassword(t, ctx, &u)
+		session, secretKey := registerOtpSession(ctx, &u)
 
-	t.Run("失敗: パスワードを設定していない", func(t *testing.T) {})
+		code, err := totp.GenerateCode(secretKey, time.Now())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("otp_session", session)
+		form.Insert("code", code)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPHandler(c)
+		require.NoError(t, err)
+
+		backups := []string{}
+		err = m.Json(&backups)
+		require.NoError(t, err)
+		require.Len(t, backups, int(C.OTPBackupCount))
+
+		// セッションは削除
+		existsRegisterOTPSession, err := models.RegisterOtpSessions(
+			models.RegisterOtpSessionWhere.ID.EQ(session),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existsRegisterOTPSession)
+
+		// OTPが設定されている
+		otp, err := models.Otps(
+			models.OtpWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, otp.Secret, secretKey)
+	})
+
+	t.Run("成功: OTPを更新する", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+		RegisterPassword(t, ctx, &u)
+		secret, backups := RegisterOTP(t, ctx, &u)
+		session, secretKey := registerOtpSession(ctx, &u)
+
+		code, err := totp.GenerateCode(secretKey, time.Now())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("otp_session", session)
+		form.Insert("code", code)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPHandler(c)
+		require.NoError(t, err)
+
+		// backupsがすべて更新されている
+		newBackups := []string{}
+		err = m.Json(&newBackups)
+		require.NoError(t, err)
+		require.Len(t, newBackups, int(C.OTPBackupCount))
+		for i, b := range backups {
+			for bb := range newBackups[i:] {
+				require.NotEqual(t, b, bb)
+			}
+		}
+
+		// セッションは削除
+		existsRegisterOTPSession, err := models.RegisterOtpSessions(
+			models.RegisterOtpSessionWhere.ID.EQ(session),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existsRegisterOTPSession)
+
+		// OTPが更新されている
+		otp, err := models.Otps(
+			models.OtpWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.NotEqual(t, otp.Secret, secret)
+	})
+
+	t.Run("失敗: セッションが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+		RegisterPassword(t, ctx, &u)
+		_, secretKey := registerOtpSession(ctx, &u)
+
+		code, err := totp.GenerateCode(secretKey, time.Now())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("code", code)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPHandler(c)
+		require.EqualError(t, err, "code=400, message=otp_session is empty")
+	})
+
+	t.Run("失敗: セッションが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+		RegisterPassword(t, ctx, &u)
+		_, secretKey := registerOtpSession(ctx, &u)
+
+		code, err := totp.GenerateCode(secretKey, time.Now())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("otp_session", "hogehoge")
+		form.Insert("code", code)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid otp_session")
+	})
+
+	t.Run("失敗: セッションの有効期限が切れている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+		RegisterPassword(t, ctx, &u)
+		session, secretKey := registerOtpSession(ctx, &u)
+
+		// 有効期限 - 10日
+		s, err := models.RegisterOtpSessions(
+			models.RegisterOtpSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		s.Period = time.Now().Add(-24 * 10 * time.Hour)
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		code, err := totp.GenerateCode(secretKey, time.Now())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("otp_session", session)
+		form.Insert("code", code)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPHandler(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("失敗: セッションのリトライ回数上限を超えている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+		RegisterPassword(t, ctx, &u)
+		session, secretKey := registerOtpSession(ctx, &u)
+
+		// リトライ上限にする
+		s, err := models.RegisterOtpSessions(
+			models.RegisterOtpSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		s.RetryCount = C.OTPRegisterLimit
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		code, err := totp.GenerateCode(secretKey, time.Now())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("otp_session", session)
+		form.Insert("code", code)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPHandler(c)
+		require.EqualError(t, err, "code=403, message=exceeded retry, unique=4")
+	})
+
+	t.Run("失敗: OTPが認証できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+		RegisterPassword(t, ctx, &u)
+		session, _ := registerOtpSession(ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("otp_session", session)
+		form.Insert("code", "123456")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPHandler(c)
+		require.EqualError(t, err, "code=403, message=failed otp validate")
+
+		// リトライカウントが++される
+		s, err := models.RegisterOtpSessions(
+			models.RegisterOtpSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, s.RetryCount, uint8(1))
+	})
+
+	t.Run("失敗: パスワードを設定していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+		session, secretKey := registerOtpSession(ctx, &u)
+
+		code, err := totp.GenerateCode(secretKey, time.Now())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("otp_session", session)
+		form.Insert("code", code)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPHandler(c)
+		require.EqualError(t, err, "code=400, message=no registered password, unique=11")
+	})
 }
 
 func TestAccountDeleteOTPHandler(t *testing.T) {
@@ -358,6 +675,8 @@ func TestAccountWebauthnHandler(t *testing.T) {
 	t.Run("失敗: セッションが不正", func(t *testing.T) {})
 
 	t.Run("失敗: セッションの有効期限切れ", func(t *testing.T) {})
+
+	t.Run("失敗: セッションのidentifierが不正", func(t *testing.T) {})
 }
 
 func TestAccountCertificatesHandler(t *testing.T) {
@@ -385,7 +704,7 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 	t.Run("失敗: すでにセッションが存在している", func(t *testing.T) {})
 }
 
-func TestAccountReRegisterIsSessionHandler(t *testing.T) {
+func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
 	t.Run("セッションが存在する", func(t *testing.T) {})
 
 	t.Run("セッションが存在しない", func(t *testing.T) {})

@@ -18,6 +18,10 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
+func TestSimpleLogin(t *testing.T) {
+	// TODO: 後でやる
+}
+
 func TestLogin(t *testing.T) {
 	createSession := func(ctx context.Context, user *models.User) string {
 		sessionToken, err := lib.RandomStr(31)
