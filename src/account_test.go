@@ -619,27 +619,245 @@ func TestAccountOTPHandler(t *testing.T) {
 }
 
 func TestAccountDeleteOTPHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功", func(t *testing.T) {})
+	SessionTest(t, h.AccountDeleteOTPHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+		password := "password"
+		RegisterPassword(t, ctx, u, password)
+		RegisterOTP(t, ctx, u)
 
-	t.Run("失敗: パスワードが空", func(t *testing.T) {})
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		return m
+	})
 
-	t.Run("失敗: パスワードが不正", func(t *testing.T) {})
+	t.Run("成功", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: OTPをそもそも設定していない", func(t *testing.T) {})
+		password := "password"
+		RegisterPassword(t, ctx, &u, password)
+		RegisterOTP(t, ctx, &u)
 
-	t.Run("失敗: そもそもパスワードを設定していない", func(t *testing.T) {})
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountDeleteOTPHandler(c)
+		require.NoError(t, err)
+
+		// OTPが削除されている
+		existOTP, err := models.Otps(
+			models.OtpWhere.UserID.EQ(u.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existOTP)
+
+		// OTPのバックアップが削除されている
+		backups, err := models.OtpBackups(
+			models.OtpBackupWhere.UserID.EQ(u.ID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+		require.Len(t, backups, 0)
+	})
+
+	t.Run("失敗: パスワードが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		password := "password"
+		RegisterPassword(t, ctx, &u, password)
+		RegisterOTP(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountDeleteOTPHandler(c)
+		require.EqualError(t, err, "code=400, message=password is empty")
+	})
+
+	t.Run("失敗: パスワードが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		password := "password"
+		RegisterPassword(t, ctx, &u, password)
+		RegisterOTP(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("password", "hogehoge")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountDeleteOTPHandler(c)
+		require.EqualError(t, err, "code=400, message=failed password, unique=8")
+	})
+
+	t.Run("失敗: OTPをそもそも設定していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		password := "password"
+		RegisterPassword(t, ctx, &u, password)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountDeleteOTPHandler(c)
+		require.EqualError(t, err, "code=400, message=otp is not registered")
+	})
+
+	t.Run("失敗: そもそもパスワードを設定していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		password := "password"
+		RegisterOTP(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountDeleteOTPHandler(c)
+		require.EqualError(t, err, "code=400, message=no registered password, unique=11")
+	})
 }
 
 func TestAccountOTPBackupHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: バックアップコードが返される", func(t *testing.T) {})
+	t.Run("成功: バックアップコードが返される", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("OTPが設定されていない=バックアップコードが無いと空", func(t *testing.T) {})
+		password := "password"
+		RegisterPassword(t, ctx, &u, password)
+		RegisterOTP(t, ctx, &u)
 
-	t.Run("失敗: パスワードが空", func(t *testing.T) {})
+		cookies := RegisterSession(t, ctx, &u)
 
-	t.Run("失敗: パスワードが不正", func(t *testing.T) {})
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPBackupHandler(c)
+		require.NoError(t, err)
+
+		backups := []string{}
+		err = m.Json(&backups)
+		require.NoError(t, err)
+
+		b, err := models.OtpBackups(
+			models.OtpBackupWhere.UserID.EQ(u.ID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		dbBackupCodes := make([]string, len(b))
+		for i, bb := range b {
+			dbBackupCodes[i] = bb.Code
+		}
+
+		require.EqualValues(t, backups, dbBackupCodes)
+	})
+
+	t.Run("OTPが設定されていない=バックアップコードが無いと空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		password := "password"
+		RegisterPassword(t, ctx, &u, password)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPBackupHandler(c)
+		require.NoError(t, err)
+
+		backups := []string{}
+		err = m.Json(&backups)
+		require.NoError(t, err)
+
+		require.Len(t, backups, 0)
+	})
+
+	t.Run("失敗: パスワードが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		password := "password"
+		RegisterPassword(t, ctx, &u, password)
+		RegisterOTP(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPBackupHandler(c)
+		require.EqualError(t, err, "code=400, message=password is empty")
+	})
+
+	t.Run("失敗: パスワードが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		password := "password"
+		RegisterPassword(t, ctx, &u, password)
+		RegisterOTP(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("password", "password124")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.AccountOTPBackupHandler(c)
+		require.EqualError(t, err, "code=400, message=failed password, unique=8")
+	})
 }
 
 func TestAccountPasswordHandler(t *testing.T) {

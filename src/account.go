@@ -311,6 +311,16 @@ func (h *Handler) AccountDeleteOTPHandler(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusBadRequest, ErrLoginFailed, "failed password")
 	}
 
+	existOtp, err := models.Otps(
+		models.OtpWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !existOtp {
+		return NewHTTPError(http.StatusBadRequest, "otp is not registered")
+	}
+
 	// OTP削除
 	if _, err := models.Otps(
 		models.OtpWhere.UserID.EQ(user.ID),
