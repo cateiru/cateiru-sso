@@ -12,6 +12,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/contents"
 	"github.com/cateiru/go-http-easy-test/handler/mock"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -1042,7 +1043,46 @@ func TestAccountUpdatePasswordHandler(t *testing.T) {
 }
 
 func TestAccountBeginWebauthnHandler(t *testing.T) {
-	t.Run("成功: webauthnのチャレンジを取得できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	t.Run("成功: webauthnのチャレンジを取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewGet("", "/")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountBeginWebauthnHandler(c)
+		require.NoError(t, err)
+
+		// レスポンス
+		response := protocol.CredentialCreation{}
+		require.NoError(t, m.Json(&response))
+		require.NotNil(t, response.Response)
+
+		// Cookie
+		var cookie *http.Cookie = nil
+		for _, co := range m.Response().Cookies() {
+			if co.Name == C.WebAuthnSessionCookie.Name {
+				cookie = co
+			}
+		}
+		require.NotNil(t, cookie)
+
+		// セッションがある
+		session, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(cookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, protocol.URLEncodedBase64(session.WebauthnUserID).String(), response.Response.User.ID)
+	})
 }
 
 func TestAccountWebauthnHandler(t *testing.T) {
