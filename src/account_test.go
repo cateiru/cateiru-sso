@@ -251,7 +251,7 @@ func TestAccountDeleteHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountDeleteHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountLogoutHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
 		m, err := mock.NewMock("", http.MethodHead, "/")
 		require.NoError(t, err)
 		return m
@@ -757,6 +757,18 @@ func TestAccountOTPBackupHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.AccountOTPBackupHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+		password := "password"
+		RegisterPassword(t, ctx, u, password)
+		RegisterOTP(t, ctx, u)
+
+		form := contents.NewMultipart()
+		form.Insert("password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		return m
+	})
+
 	t.Run("成功: バックアップコードが返される", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -866,6 +878,16 @@ func TestAccountPasswordHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.AccountPasswordHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+		password := "password_123456"
+
+		form := contents.NewMultipart()
+		form.Insert("new_password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		return m
+	})
+
 	t.Run("成功: 新規に作成できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -940,6 +962,20 @@ func TestAccountPasswordHandler(t *testing.T) {
 func TestAccountUpdatePasswordHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.AccountUpdatePasswordHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+		password := "password"
+		newPassword := "password_123456"
+		RegisterPassword(t, ctx, u, password)
+
+		form := contents.NewMultipart()
+		form.Insert("new_password", newPassword)
+		form.Insert("old_password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: 更新できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -1047,6 +1083,13 @@ func TestAccountBeginWebauthnHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+		m, err := mock.NewGet("", "/")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: webauthnのチャレンジを取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1089,6 +1132,14 @@ func TestAccountBeginWebauthnHandler(t *testing.T) {
 func TestAccountWebauthnHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	// TODO: セッションのテストを追加する
+	// SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	// 	m, err := mock.NewJson("/", "", http.MethodPost)
+	// 	require.NoError(t, err)
+
+	// 	return m
+	// })
 
 	registerWebauthnSession := func(u *models.User) string {
 		webauthnUser, err := src.NewWebauthnUserFromUser(u)
@@ -1343,14 +1394,120 @@ func TestAccountWebauthnHandler(t *testing.T) {
 }
 
 func TestAccountCertificatesHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: パスワード、OTP、Passkeyすべて設定している", func(t *testing.T) {})
+	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+		RegisterPassword(t, ctx, u)
 
-	t.Run("成功: パスワードのみ", func(t *testing.T) {})
+		m, err := mock.NewGet("", "/")
+		require.NoError(t, err)
 
-	t.Run("成功: パスワード、OTP", func(t *testing.T) {})
+		return m
+	})
 
-	t.Run("成功: Passkeyのみ", func(t *testing.T) {})
+	t.Run("成功: パスワード、OTP、Passkeyすべて設定している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+		RegisterOTP(t, ctx, &u)
+		RegisterPasskey(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewGet("", "/")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountCertificatesHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountCertificates{}
+		require.NoError(t, m.Json(&response))
+
+		require.True(t, response.Password)
+		require.True(t, response.OTP)
+		require.True(t, response.Passkey)
+	})
+
+	t.Run("成功: パスワードのみ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewGet("", "/")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountCertificatesHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountCertificates{}
+		require.NoError(t, m.Json(&response))
+
+		require.True(t, response.Password)
+		require.False(t, response.OTP)
+		require.False(t, response.Passkey)
+	})
+
+	t.Run("成功: パスワード、OTP", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+		RegisterOTP(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewGet("", "/")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountCertificatesHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountCertificates{}
+		require.NoError(t, m.Json(&response))
+
+		require.True(t, response.Password)
+		require.True(t, response.OTP)
+		require.False(t, response.Passkey)
+	})
+
+	t.Run("成功: Passkeyのみ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPasskey(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewGet("", "/")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountCertificatesHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountCertificates{}
+		require.NoError(t, m.Json(&response))
+
+		require.False(t, response.Password)
+		require.False(t, response.OTP)
+		require.True(t, response.Passkey)
+	})
 }
 
 func TestAccountForgetPasswordHandler(t *testing.T) {
