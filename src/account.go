@@ -395,12 +395,24 @@ func (h *Handler) AccountPasswordHandler(c echo.Context) error {
 		return err
 	}
 
+	// パスワード更新は、現在のパスワードの検証も行うのでこのハンドラでは新規
+	// 作成のみを受付る
+	existPassword, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if existPassword {
+		return NewHTTPError(http.StatusBadRequest, "password is already exists")
+	}
+
 	password := models.Password{
 		UserID: user.ID,
 		Salt:   salt,
 		Hash:   hash,
 	}
-	if err := password.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
+	if err := password.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 

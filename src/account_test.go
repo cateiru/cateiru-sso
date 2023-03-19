@@ -861,11 +861,78 @@ func TestAccountOTPBackupHandler(t *testing.T) {
 }
 
 func TestAccountPasswordHandler(t *testing.T) {
-	t.Run("成功: 新規に作成できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: すでに作成している", func(t *testing.T) {})
+	t.Run("成功: 新規に作成できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: 新しいパスワードが要件不足", func(t *testing.T) {})
+		cookies := RegisterSession(t, ctx, &u)
+
+		password := "password_123456"
+
+		form := contents.NewMultipart()
+		form.Insert("new_password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountPasswordHandler(c)
+		require.NoError(t, err)
+
+		// パスワードが設定されている
+		pw, err := models.Passwords(
+			models.PasswordWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		ok := C.Password.VerifyPassword(password, pw.Hash, pw.Salt)
+		require.True(t, ok)
+	})
+
+	t.Run("失敗: すでに作成している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		password := "password_123456"
+		RegisterPassword(t, ctx, &u, password)
+
+		form := contents.NewMultipart()
+		form.Insert("new_password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=password is already exists")
+	})
+
+	t.Run("失敗: 新しいパスワードが要件不足", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		password := "p"
+
+		form := contents.NewMultipart()
+		form.Insert("new_password", password)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid password")
+	})
 }
 
 func TestAccountUpdatePasswordHandler(t *testing.T) {
