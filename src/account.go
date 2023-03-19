@@ -520,6 +520,8 @@ func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, creation)
 }
 
+// Passkeyの新規追加・更新
+// 本当は、更新時にはすでに登録しているPasskeyを求めたいけどフローが複雑になるので後々
 func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -529,7 +531,7 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 
 	webauthnToken, err := c.Cookie(h.C.WebAuthnSessionCookie.Name)
 	if err != nil {
-		return NewHTTPError(http.StatusBadRequest, err)
+		return NewHTTPError(http.StatusBadRequest, "session is empty")
 	}
 
 	user, err := h.Session.SimpleLogin(ctx, c)

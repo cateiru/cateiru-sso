@@ -16,6 +16,7 @@ import (
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
 func TestAccountListHandler(t *testing.T) {
@@ -1086,17 +1087,259 @@ func TestAccountBeginWebauthnHandler(t *testing.T) {
 }
 
 func TestAccountWebauthnHandler(t *testing.T) {
-	t.Run("成功", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {})
+	registerWebauthnSession := func(u *models.User) string {
+		webauthnUser, err := src.NewWebauthnUserFromUser(u)
+		require.NoError(t, err)
+		_, s, err := h.WebAuthn.BeginRegistration(webauthnUser)
+		require.NoError(t, err)
 
-	t.Run("失敗: セッションが空", func(t *testing.T) {})
+		row := types.JSON{}
+		err = row.Marshal(s)
+		require.NoError(t, err)
 
-	t.Run("失敗: セッションが不正", func(t *testing.T) {})
+		webauthnSessionId, err := lib.RandomStr(31)
+		require.NoError(t, err)
 
-	t.Run("失敗: セッションの有効期限切れ", func(t *testing.T) {})
+		webauthnSession := models.WebauthnSession{
+			ID:               webauthnSessionId,
+			WebauthnUserID:   s.UserID,
+			UserDisplayName:  s.UserDisplayName,
+			Challenge:        s.Challenge,
+			UserVerification: string(s.UserVerification),
+			Row:              row,
 
-	t.Run("失敗: セッションのidentifierが不正", func(t *testing.T) {})
+			Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
+			Identifier: 3,
+		}
+		err = webauthnSession.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		return webauthnSessionId
+	}
+
+	t.Run("成功: 新規追加", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		session := registerWebauthnSession(&u)
+		sessionCookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: session,
+		}
+		cookies = append(cookies, sessionCookie)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnHandler(c)
+		require.NoError(t, err)
+
+		// セッションは削除される
+		existSession, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(session),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existSession)
+
+		// passkeyが登録されている
+		existsPasskey, err := models.Passkeys(
+			models.PasskeyWhere.UserID.EQ(u.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existsPasskey)
+
+		// ログインデバイス履歴が追加されている
+		passkeyLoginDevices, err := models.PasskeyLoginDevices(
+			models.PasskeyLoginDeviceWhere.UserID.EQ(u.ID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+		require.Len(t, passkeyLoginDevices, 1, "作ったばっかりなので1つ")
+		require.True(t, passkeyLoginDevices[0].IsRegisterDevice, "登録したデバイスになっている")
+	})
+
+	t.Run("成功: 更新", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPasskey(t, ctx, &u)
+
+		oldPasskey, err := models.Passkeys(
+			models.PasskeyWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		session := registerWebauthnSession(&u)
+		sessionCookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: session,
+		}
+		cookies = append(cookies, sessionCookie)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnHandler(c)
+		require.NoError(t, err)
+
+		// セッションは削除される
+		existSession, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(session),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existSession)
+
+		// passkeyが更新されている
+		newPasskey, err := models.Passkeys(
+			models.PasskeyWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.NotEqual(t, oldPasskey.WebauthnUserID, newPasskey.WebauthnUserID)
+
+		// ログインデバイス履歴がリセットされている
+		passkeyLoginDevices, err := models.PasskeyLoginDevices(
+			models.PasskeyLoginDeviceWhere.UserID.EQ(u.ID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+		require.Len(t, passkeyLoginDevices, 1, "作ったばっかりなので1つ")
+		require.True(t, passkeyLoginDevices[0].IsRegisterDevice, "登録したデバイスになっている")
+	})
+
+	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		session := registerWebauthnSession(&u)
+		sessionCookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: session,
+		}
+		cookies = append(cookies, sessionCookie)
+
+		m, err := mock.NewMock("", http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid content-type")
+	})
+
+	t.Run("失敗: セッションが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnHandler(c)
+		require.EqualError(t, err, "code=400, message=session is empty")
+	})
+
+	t.Run("失敗: セッションが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		sessionCookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: "hogehoge123",
+		}
+		cookies = append(cookies, sessionCookie)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnHandler(c)
+		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+	})
+
+	t.Run("失敗: セッションの有効期限切れ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		session := registerWebauthnSession(&u)
+		sessionCookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: session,
+		}
+		cookies = append(cookies, sessionCookie)
+
+		// 有効期限+10h
+		s, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		s.Period = s.Period.Add(-10 * time.Hour)
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnHandler(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("失敗: セッションのidentifierが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		session := registerWebauthnSession(&u)
+		sessionCookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: session,
+		}
+		cookies = append(cookies, sessionCookie)
+
+		s, err := models.WebauthnSessions(
+			models.WebauthnSessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		s.Identifier = 10
+		_, err = s.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := mock.NewJson("/", "", http.MethodPost)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnHandler(c)
+		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+	})
 }
 
 func TestAccountCertificatesHandler(t *testing.T) {
