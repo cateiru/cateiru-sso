@@ -360,10 +360,14 @@ func TestAccountOTPHandler(t *testing.T) {
 
 	SessionTest(t, h.AccountOTPHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
 		RegisterPassword(t, ctx, u)
-		session, _ := registerOtpSession(ctx, u)
+		session, secretKey := registerOtpSession(ctx, u)
+
+		code, err := totp.GenerateCode(secretKey, time.Now())
+		require.NoError(t, err)
 
 		form := contents.NewMultipart()
 		form.Insert("otp_session", session)
+		form.Insert("code", code)
 		m, err := mock.NewFormData("/", form, http.MethodPost)
 		require.NoError(t, err)
 		return m
