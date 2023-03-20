@@ -1,6 +1,6 @@
 module github.com/cateiru/cateiru-sso
 
-go 1.19
+go 1.20
 
 require (
 	github.com/cateiru/go-client-hints/v2 v2.0.2
