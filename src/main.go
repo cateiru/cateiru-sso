@@ -40,7 +40,7 @@ func Server(c *Config) error {
 		return err
 	}
 	// APIのルート設定
-	Routes(e, handler)
+	Routes(e, handler, c)
 
 	// オレオレ証明書で実行する
 	// ローカル環境用

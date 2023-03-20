@@ -121,7 +121,7 @@ func ValidateGender(gender string) bool {
 
 // 誕生日 YYYY-MM-DDの形式
 func ValidateBirthDate(b string) (*time.Time, bool) {
-	birthDate, err := time.Parse("2006-01-02", b)
+	birthDate, err := time.Parse(time.DateOnly, b)
 	if err != nil {
 		return nil, false
 	}

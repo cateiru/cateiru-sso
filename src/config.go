@@ -80,6 +80,13 @@ type Config struct {
 	// メールアドレス更新のセッション有効期限
 	UpdateEmailSessionPeriod time.Duration
 	UpdateEmailRetryCount    uint8
+
+	// Internal エンドポイントのBasic Auth
+	InternalBasicAuthUserName string
+	InternalBasicAuthPassword string
+
+	// CDNのホスト
+	CDNHost *url.URL
 }
 
 // Cookieの設定
