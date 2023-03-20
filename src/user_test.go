@@ -11,6 +11,8 @@ import (
 func TestUserMeHandler(t *testing.T) {
 
 	t.Run("成功: ユーザ情報を取得できる", func(t *testing.T) {})
+
+	t.Run("成功: 設定がない場合は空", func(t *testing.T) {})
 }
 
 func TestUserUpdateHandler(t *testing.T) {

@@ -76,6 +76,10 @@ type Config struct {
 	// パスワード再設定のレコード削除有効期限
 	// この有効期限が切れるまで再度メールを送信することができない
 	ReregistrationPasswordSessionClearPeriod time.Duration
+
+	// メールアドレス更新のセッション有効期限
+	UpdateEmailSessionPeriod time.Duration
+	UpdateEmailRetryCount    uint8
 }
 
 // Cookieの設定
@@ -198,6 +202,9 @@ var LocalConfig = &Config{
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
 	ReregistrationPasswordSessionClearPeriod: 1 * time.Hour,
+
+	UpdateEmailSessionPeriod: 5 * time.Minute,
+	UpdateEmailRetryCount:    5,
 }
 
 var CloudRunConfig = &Config{
@@ -295,6 +302,9 @@ var CloudRunConfig = &Config{
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
 	ReregistrationPasswordSessionClearPeriod: 1 * time.Hour,
+
+	UpdateEmailSessionPeriod: 5 * time.Minute,
+	UpdateEmailRetryCount:    5,
 }
 
 var TestConfig = &Config{
@@ -400,6 +410,9 @@ var TestConfig = &Config{
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
 	ReregistrationPasswordSessionClearPeriod: 1 * time.Hour,
+
+	UpdateEmailSessionPeriod: 5 * time.Minute,
+	UpdateEmailRetryCount:    5,
 }
 
 func InitConfig(mode string) *Config {
