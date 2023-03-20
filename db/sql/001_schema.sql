@@ -229,9 +229,6 @@ CREATE TABLE `email_verify_session` (
     -- 認証コード
     `verify_code` CHAR(6) NOT NULL,
 
-    -- メール送信回数
-    `send_count` TINYINT UNSIGNED NOT NULL DEFAULT 1,
-
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
