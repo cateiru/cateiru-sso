@@ -86,7 +86,10 @@ type Config struct {
 	InternalBasicAuthPassword string
 
 	// CDNのホスト
-	CDNHost *url.URL
+	CDNHost        *url.URL
+	FastlyApiToken string
+
+	StorageBucketName string
 }
 
 // Cookieの設定
@@ -220,6 +223,8 @@ var LocalConfig = &Config{
 		Host:   "localhost:4000",
 		Scheme: "http",
 	},
+
+	StorageBucketName: "cateiru-sso",
 }
 
 var CloudRunConfig = &Config{
@@ -328,6 +333,8 @@ var CloudRunConfig = &Config{
 		Host:   "cdn.sso.cateiru.com",
 		Scheme: "https",
 	},
+
+	StorageBucketName: "cateiru-sso",
 }
 
 var TestConfig = &Config{
@@ -444,6 +451,8 @@ var TestConfig = &Config{
 		Host:   "localhost:4000",
 		Scheme: "http",
 	},
+
+	StorageBucketName: "test-cateiru-sso",
 }
 
 func InitConfig(mode string) *Config {

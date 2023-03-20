@@ -312,6 +312,7 @@ certificates/*
 !certificates/.gitkeep
 
 .data/*
+.storage/*
 
 db/.data/**
 !db/.data/.gitkeep

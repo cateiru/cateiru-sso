@@ -1,33 +1,85 @@
 package lib
 
+import (
+	"context"
+	"io"
+
+	"cloud.google.com/go/storage"
+)
+
 type CloudStorageInterface interface {
-	Get(path string) ([]byte, error)
-	Insert(path string, data []byte) error
-	Update(path string, data []byte) error
-	Delete(path string) error
+	Read(ctx context.Context, path string) ([]byte, string, error)
+	Write(ctx context.Context, path string, data io.Reader, contentType string) error
+	Delete(ctx context.Context, path string) error
 }
 
 type CloudStorage struct {
+	BucketName string
 }
 
-func NewCloudStorage() CloudStorageInterface {
-	return &CloudStorage{}
+func NewCloudStorage(bucketName string) CloudStorageInterface {
+
+	return &CloudStorage{
+		BucketName: bucketName,
+	}
 }
 
 // クラウドストレージから取得する
-func (c *CloudStorage) Get(path string) ([]byte, error) {
-	return []byte{}, nil
+func (c *CloudStorage) Read(ctx context.Context, path string) ([]byte, string, error) {
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return nil, "", err
+	}
+	defer client.Close()
+	rc := client.Bucket(c.BucketName)
+	object := rc.Object(path)
+
+	reader, err := object.NewReader(ctx)
+	if err != nil {
+		return nil, "", err
+	}
+	defer reader.Close()
+
+	b, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, "", err
+	}
+	contentType := reader.Attrs.ContentType
+
+	return b, contentType, nil
 }
 
-func (c *CloudStorage) Insert(path string, data []byte) error {
-	return nil
-}
+// ファイル書き出し
+func (c *CloudStorage) Write(ctx context.Context, path string, data io.Reader, contentType string) error {
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+	rc := client.Bucket(c.BucketName)
+	object := rc.Object(path)
 
-func (c *CloudStorage) Update(path string, data []byte) error {
+	writer := object.NewWriter(ctx)
+	defer writer.Close()
+	writer.ContentType = contentType
+
+	_, err = io.Copy(writer, data)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // クラウドストレージから削除する
-func (c *CloudStorage) Delete(path string) error {
-	return nil
+func (c *CloudStorage) Delete(ctx context.Context, path string) error {
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+	rc := client.Bucket(c.BucketName)
+	object := rc.Object(path)
+
+	return object.Delete(ctx)
 }
