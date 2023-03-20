@@ -212,6 +212,14 @@ var LocalConfig = &Config{
 
 	UpdateEmailSessionPeriod: 5 * time.Minute,
 	UpdateEmailRetryCount:    5,
+
+	InternalBasicAuthUserName: "user",
+	InternalBasicAuthPassword: "password",
+
+	CDNHost: &url.URL{
+		Host:   "localhost:4000",
+		Scheme: "http",
+	},
 }
 
 var CloudRunConfig = &Config{
@@ -312,6 +320,14 @@ var CloudRunConfig = &Config{
 
 	UpdateEmailSessionPeriod: 5 * time.Minute,
 	UpdateEmailRetryCount:    5,
+
+	InternalBasicAuthUserName: "user",
+	InternalBasicAuthPassword: "password",
+
+	CDNHost: &url.URL{
+		Host:   "cdn.sso.cateiru.com",
+		Scheme: "https",
+	},
 }
 
 var TestConfig = &Config{
@@ -420,6 +436,14 @@ var TestConfig = &Config{
 
 	UpdateEmailSessionPeriod: 5 * time.Minute,
 	UpdateEmailRetryCount:    5,
+
+	InternalBasicAuthUserName: "user",
+	InternalBasicAuthPassword: "password",
+
+	CDNHost: &url.URL{
+		Host:   "localhost:4000",
+		Scheme: "http",
+	},
 }
 
 func InitConfig(mode string) *Config {
