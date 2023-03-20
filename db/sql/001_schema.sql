@@ -646,6 +646,9 @@ CREATE TABLE `login_try_history` (
     -- INET6_ATON、INET6_NTOAを使用して格納する
     `ip` VARBINARY(16) NOT NULL,
 
+    -- 識別子
+    `identifier` TINYINT NOT NULL DEFAULT 0,
+
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

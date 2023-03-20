@@ -24,79 +24,86 @@ import (
 
 // LoginTryHistory is an object representing the database table.
 type LoginTryHistory struct {
-	ID       uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Device   null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
-	Os       null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
-	Browser  null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
-	IsMobile null.Bool   `boil:"is_mobile" json:"is_mobile,omitempty" toml:"is_mobile" yaml:"is_mobile,omitempty"`
-	IP       []byte      `boil:"ip" json:"ip" toml:"ip" yaml:"ip"`
-	Created  time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	ID         uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID     string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Device     null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
+	Os         null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
+	Browser    null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
+	IsMobile   null.Bool   `boil:"is_mobile" json:"is_mobile,omitempty" toml:"is_mobile" yaml:"is_mobile,omitempty"`
+	IP         []byte      `boil:"ip" json:"ip" toml:"ip" yaml:"ip"`
+	Identifier int8        `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
+	Created    time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
 
 	R *loginTryHistoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L loginTryHistoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var LoginTryHistoryColumns = struct {
-	ID       string
-	UserID   string
-	Device   string
-	Os       string
-	Browser  string
-	IsMobile string
-	IP       string
-	Created  string
+	ID         string
+	UserID     string
+	Device     string
+	Os         string
+	Browser    string
+	IsMobile   string
+	IP         string
+	Identifier string
+	Created    string
 }{
-	ID:       "id",
-	UserID:   "user_id",
-	Device:   "device",
-	Os:       "os",
-	Browser:  "browser",
-	IsMobile: "is_mobile",
-	IP:       "ip",
-	Created:  "created",
+	ID:         "id",
+	UserID:     "user_id",
+	Device:     "device",
+	Os:         "os",
+	Browser:    "browser",
+	IsMobile:   "is_mobile",
+	IP:         "ip",
+	Identifier: "identifier",
+	Created:    "created",
 }
 
 var LoginTryHistoryTableColumns = struct {
-	ID       string
-	UserID   string
-	Device   string
-	Os       string
-	Browser  string
-	IsMobile string
-	IP       string
-	Created  string
+	ID         string
+	UserID     string
+	Device     string
+	Os         string
+	Browser    string
+	IsMobile   string
+	IP         string
+	Identifier string
+	Created    string
 }{
-	ID:       "login_try_history.id",
-	UserID:   "login_try_history.user_id",
-	Device:   "login_try_history.device",
-	Os:       "login_try_history.os",
-	Browser:  "login_try_history.browser",
-	IsMobile: "login_try_history.is_mobile",
-	IP:       "login_try_history.ip",
-	Created:  "login_try_history.created",
+	ID:         "login_try_history.id",
+	UserID:     "login_try_history.user_id",
+	Device:     "login_try_history.device",
+	Os:         "login_try_history.os",
+	Browser:    "login_try_history.browser",
+	IsMobile:   "login_try_history.is_mobile",
+	IP:         "login_try_history.ip",
+	Identifier: "login_try_history.identifier",
+	Created:    "login_try_history.created",
 }
 
 // Generated where
 
 var LoginTryHistoryWhere = struct {
-	ID       whereHelperuint
-	UserID   whereHelperstring
-	Device   whereHelpernull_String
-	Os       whereHelpernull_String
-	Browser  whereHelpernull_String
-	IsMobile whereHelpernull_Bool
-	IP       whereHelper__byte
-	Created  whereHelpertime_Time
+	ID         whereHelperuint
+	UserID     whereHelperstring
+	Device     whereHelpernull_String
+	Os         whereHelpernull_String
+	Browser    whereHelpernull_String
+	IsMobile   whereHelpernull_Bool
+	IP         whereHelper__byte
+	Identifier whereHelperint8
+	Created    whereHelpertime_Time
 }{
-	ID:       whereHelperuint{field: "`login_try_history`.`id`"},
-	UserID:   whereHelperstring{field: "`login_try_history`.`user_id`"},
-	Device:   whereHelpernull_String{field: "`login_try_history`.`device`"},
-	Os:       whereHelpernull_String{field: "`login_try_history`.`os`"},
-	Browser:  whereHelpernull_String{field: "`login_try_history`.`browser`"},
-	IsMobile: whereHelpernull_Bool{field: "`login_try_history`.`is_mobile`"},
-	IP:       whereHelper__byte{field: "`login_try_history`.`ip`"},
-	Created:  whereHelpertime_Time{field: "`login_try_history`.`created`"},
+	ID:         whereHelperuint{field: "`login_try_history`.`id`"},
+	UserID:     whereHelperstring{field: "`login_try_history`.`user_id`"},
+	Device:     whereHelpernull_String{field: "`login_try_history`.`device`"},
+	Os:         whereHelpernull_String{field: "`login_try_history`.`os`"},
+	Browser:    whereHelpernull_String{field: "`login_try_history`.`browser`"},
+	IsMobile:   whereHelpernull_Bool{field: "`login_try_history`.`is_mobile`"},
+	IP:         whereHelper__byte{field: "`login_try_history`.`ip`"},
+	Identifier: whereHelperint8{field: "`login_try_history`.`identifier`"},
+	Created:    whereHelpertime_Time{field: "`login_try_history`.`created`"},
 }
 
 // LoginTryHistoryRels is where relationship names are stored.
@@ -116,9 +123,9 @@ func (*loginTryHistoryR) NewStruct() *loginTryHistoryR {
 type loginTryHistoryL struct{}
 
 var (
-	loginTryHistoryAllColumns            = []string{"id", "user_id", "device", "os", "browser", "is_mobile", "ip", "created"}
+	loginTryHistoryAllColumns            = []string{"id", "user_id", "device", "os", "browser", "is_mobile", "ip", "identifier", "created"}
 	loginTryHistoryColumnsWithoutDefault = []string{"user_id", "device", "os", "browser", "is_mobile", "ip"}
-	loginTryHistoryColumnsWithDefault    = []string{"id", "created"}
+	loginTryHistoryColumnsWithDefault    = []string{"id", "identifier", "created"}
 	loginTryHistoryPrimaryKeyColumns     = []string{"id"}
 	loginTryHistoryGeneratedColumns      = []string{}
 )
