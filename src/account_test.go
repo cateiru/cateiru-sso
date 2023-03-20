@@ -1548,6 +1548,51 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 		require.True(t, existsReregistrationPasswordSession)
 	})
 
+	t.Run("成功: period_clearの有効期限が切れてしまっている場合、DBから削除される", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		// 有効期限切れのセッションを作成する
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.ReregistrationPasswordSession{
+			ID:          token,
+			Email:       email,
+			Period:      time.Now().Add(-100 * time.Hour),
+			PeriodClear: time.Now().Add(-10 * time.Hour),
+		}
+		err = session.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountForgetPasswordHandler(c)
+		require.NoError(t, err)
+
+		// ログイントライ履歴が保存されている
+		existLoginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u.ID),
+			qm.And("identifier = 1"),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.True(t, existLoginTryHistory)
+
+		// パスワード再設定セッションが保存されている
+		reRegistrationPasswordSession, err := models.ReregistrationPasswordSessions(
+			models.ReregistrationPasswordSessionWhere.Email.EQ(email),
+		).Count(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, reRegistrationPasswordSession, int64(1), "前のセッションは削除されているので1つしかない")
+	})
+
 	t.Run("失敗: メールアドレスが空", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1646,27 +1691,372 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 }
 
 func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
-	t.Run("セッションが存在する", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("セッションが存在しない", func(t *testing.T) {})
+	registerSession := func(u *models.User, period time.Time, completed bool) string {
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.ReregistrationPasswordSession{
+			ID:          token,
+			Email:       u.Email,
+			Period:      period,
+			PeriodClear: time.Now().Add(C.ReregistrationPasswordSessionClearPeriod),
 
-	t.Run("セッションが有効期限切れ", func(t *testing.T) {})
+			Completed: completed,
+		}
 
-	t.Run("セッションは使用済み", func(t *testing.T) {})
+		err = session.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		return token
+	}
+
+	t.Run("セッションが存在する", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			false,
+		)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("reregister_token", token)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterAvailableTokenHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountReRegisterPasswordIsSession{}
+		require.NoError(t, m.Json(&response))
+		require.True(t, response.Active)
+	})
+
+	t.Run("セッションが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		RegisterUser(t, ctx, email)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("reregister_token", "hogehoge")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterAvailableTokenHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountReRegisterPasswordIsSession{}
+		require.NoError(t, m.Json(&response))
+		require.False(t, response.Active)
+	})
+
+	t.Run("セッションが有効期限切れ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(-10*time.Hour),
+			false,
+		)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("reregister_token", token)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterAvailableTokenHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountReRegisterPasswordIsSession{}
+		require.NoError(t, m.Json(&response))
+		require.False(t, response.Active)
+	})
+
+	t.Run("セッションは使用済み", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			true,
+		)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("reregister_token", token)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterAvailableTokenHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountReRegisterPasswordIsSession{}
+		require.NoError(t, m.Json(&response))
+		require.False(t, response.Active)
+	})
+
+	t.Run("emailが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		email2 := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			false,
+		)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email2)
+		form.Insert("reregister_token", token)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterAvailableTokenHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountReRegisterPasswordIsSession{}
+		require.NoError(t, m.Json(&response))
+		require.False(t, response.Active)
+	})
 }
 
 func TestAccountReRegisterPasswordHandler(t *testing.T) {
-	t.Run("成功: パスワードを新しくできる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: reCAPTCHA失敗", func(t *testing.T) {})
+	registerSession := func(u *models.User, period time.Time, completed bool) string {
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.ReregistrationPasswordSession{
+			ID:          token,
+			Email:       u.Email,
+			Period:      period,
+			PeriodClear: time.Now().Add(C.ReregistrationPasswordSessionClearPeriod),
 
-	t.Run("失敗: tokenが空", func(t *testing.T) {})
+			Completed: completed,
+		}
 
-	t.Run("失敗: tokenが不正", func(t *testing.T) {})
+		err = session.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
 
-	t.Run("失敗: セッションが有効期限切れ", func(t *testing.T) {})
+		return token
+	}
 
-	t.Run("セッションは使用済み", func(t *testing.T) {})
+	t.Run("成功: パスワードを新しくできる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("emailが不正", func(t *testing.T) {})
+		RegisterPassword(t, ctx, &u)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			false,
+		)
+
+		newPassword := "password_1234567"
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("reregister_token", token)
+		form.Insert("new_password", newPassword)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterPasswordHandler(c)
+		require.NoError(t, err)
+
+		// セッションは使用済みフラグが立ち、削除されない
+		session, err := models.ReregistrationPasswordSessions(
+			models.ReregistrationPasswordSessionWhere.ID.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, session.Completed)
+
+		// パスワードが更新されている
+		password, err := models.Passwords(
+			models.PasswordWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		isVerify := C.Password.VerifyPassword(newPassword, password.Hash, password.Salt)
+		require.True(t, isVerify)
+	})
+
+	t.Run("失敗: reCAPTCHA失敗", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			false,
+		)
+
+		newPassword := "password_1234567"
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "fail")
+		form.Insert("reregister_token", token)
+		form.Insert("new_password", newPassword)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=reCAPTCHA validation failed, unique=1")
+	})
+
+	t.Run("失敗: tokenが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		newPassword := "password_1234567"
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("new_password", newPassword)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=reregister_token is empty")
+	})
+
+	t.Run("失敗: tokenが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		newPassword := "password_1234567"
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("reregister_token", "hogehoge")
+		form.Insert("new_password", newPassword)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid token")
+	})
+
+	t.Run("失敗: セッションが有効期限切れ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(-10*time.Hour),
+			false,
+		)
+
+		newPassword := "password_1234567"
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("reregister_token", token)
+		form.Insert("new_password", newPassword)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterPasswordHandler(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("セッションは使用済み", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			true,
+		)
+
+		newPassword := "password_1234567"
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("reregister_token", token)
+		form.Insert("new_password", newPassword)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid token")
+	})
+
+	t.Run("emailが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		email2 := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			false,
+		)
+
+		newPassword := "password_1234567"
+
+		form := contents.NewMultipart()
+		form.Insert("email", email2)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("reregister_token", token)
+		form.Insert("new_password", newPassword)
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterPasswordHandler(c)
+		require.EqualError(t, err, "code=403, message=email is different")
+	})
 }

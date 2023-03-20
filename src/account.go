@@ -674,15 +674,21 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 	}
 
 	// すでにセッションが存在している
-	existSession, err := models.ReregistrationPasswordSessions(
-		qm.Where("email = ?", email),
-		qm.And("period_clear > NOW()"),
-	).Exists(ctx, h.DB)
-	if err != nil {
+	reRegisterSession, err := models.ReregistrationPasswordSessions(
+		models.ReregistrationPasswordSessionWhere.Email.EQ(email),
+	).One(ctx, h.DB)
+	// レコードが無い以外のエラーは500にする
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
-	}
-	if existSession {
-		return NewHTTPError(http.StatusBadRequest, "already sessions")
+	} else if err == nil {
+		// period_clearが有効期限過ぎていたら削除してそのまま続ける
+		if time.Now().After(reRegisterSession.PeriodClear) {
+			if _, err := reRegisterSession.Delete(ctx, h.DB); err != nil {
+				return err
+			}
+		} else {
+			return NewHTTPError(http.StatusBadRequest, "already sessions")
+		}
 	}
 
 	token, err := lib.RandomStr(31)
@@ -781,6 +787,7 @@ func (h *Handler) AccountReRegisterAvailableTokenHandler(c echo.Context) error {
 	session, err := models.ReregistrationPasswordSessions(
 		qm.Where("id = ?", token),
 		qm.And("completed = FALSE"),
+		qm.And("email = ?", email),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
 		return c.JSON(http.StatusOK, &AccountReRegisterPasswordIsSession{
@@ -868,7 +875,7 @@ func (h *Handler) AccountReRegisterPasswordHandler(c echo.Context) error {
 
 	// パスワードを更新する
 	passwordDB, err := models.Passwords(
-		qm.InnerJoin("user on user.id = password.id"),
+		qm.InnerJoin("user on user.id = password.user_id"),
 		qm.Where("user.email = ?", session.Email),
 	).One(ctx, h.DB)
 	if err != nil {
