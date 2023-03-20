@@ -103,3 +103,11 @@ func ValidateOS(os string, currentOS string) bool {
 
 	return false
 }
+
+// 0: 不明、1: 男性、2: 女性、9: 適用不能
+func ValidateGender(gender string) bool {
+	if gender == "0" || gender == "1" || gender == "2" || gender == "9" {
+		return true
+	}
+	return false
+}

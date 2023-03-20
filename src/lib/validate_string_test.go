@@ -149,3 +149,27 @@ func TestValidateOS(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateGender(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		genders := []string{
+			"0", "1", "2", "9",
+		}
+
+		for _, g := range genders {
+			require.True(t, lib.ValidateGender(g))
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		genders := []string{
+			"男性",
+			"Man",
+			"5",
+		}
+
+		for _, g := range genders {
+			require.False(t, lib.ValidateGender(g))
+		}
+	})
+}
