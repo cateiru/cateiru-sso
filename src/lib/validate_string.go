@@ -3,6 +3,7 @@ package lib
 import (
 	"regexp"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -16,6 +17,11 @@ var appleOS = []string{
 	"macOS",
 	"iOS",
 	"iPadOS",
+}
+
+// TODO: 埋める & テスト
+var locales = []string{
+	"ja-JP",
 }
 
 // Emailの形式が正しいかを検証する
@@ -104,10 +110,34 @@ func ValidateOS(os string, currentOS string) bool {
 	return false
 }
 
+// 性別判定
 // 0: 不明、1: 男性、2: 女性、9: 適用不能
 func ValidateGender(gender string) bool {
 	if gender == "0" || gender == "1" || gender == "2" || gender == "9" {
 		return true
+	}
+	return false
+}
+
+// 誕生日 YYYY-MM-DDの形式
+func ValidateBirthDate(b string) (*time.Time, bool) {
+	birthDate, err := time.Parse("2006-01-02", b)
+	if err != nil {
+		return nil, false
+	}
+
+	// 現在時刻より先なのはありえないのでそのときはfalse
+	if time.Now().Before(birthDate) {
+		return nil, false
+	}
+	return &birthDate, true
+}
+
+func ValidateLocale(l string) bool {
+	for _, locale := range locales {
+		if locale == l {
+			return true
+		}
 	}
 	return false
 }

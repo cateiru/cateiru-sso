@@ -2,6 +2,7 @@ package lib_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/stretchr/testify/require"
@@ -172,4 +173,45 @@ func TestValidateGender(t *testing.T) {
 			require.False(t, lib.ValidateGender(g))
 		}
 	})
+}
+
+func TestValidateBirthDate(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		birthDates := []string{
+			"2000-10-01",
+			"1999-03-10",
+		}
+
+		for _, birthDate := range birthDates {
+			b, ok := lib.ValidateBirthDate(birthDate)
+			require.True(t, ok)
+			require.NotNil(t, b)
+		}
+	})
+
+	t.Run("失敗: パース不可", func(t *testing.T) {
+		birthDates := []string{
+			"2000-01",
+			"aaaaaaaa",
+		}
+
+		for _, birthDate := range birthDates {
+			b, ok := lib.ValidateBirthDate(birthDate)
+			require.False(t, ok)
+			require.Nil(t, b)
+		}
+	})
+
+	t.Run("失敗: 現在時刻より新しい", func(t *testing.T) {
+		d := time.Now().Add(10 * 24 * time.Hour)
+		birthDate := d.Format("2006-01-02")
+
+		b, ok := lib.ValidateBirthDate(birthDate)
+		require.False(t, ok)
+		require.Nil(t, b)
+	})
+}
+
+func TestValidateLocale(t *testing.T) {
+	// TODO
 }
