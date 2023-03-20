@@ -225,6 +225,7 @@ CREATE TABLE `register_otp_session` (
 CREATE TABLE `email_verify_session` (
     `id` VARCHAR(31) NOT NULL,
     `user_id` VARCHAR(32) NOT NULL,
+    `new_email` VARCHAR(255) NOT NULL,
 
     -- 認証コード
     `verify_code` CHAR(6) NOT NULL,

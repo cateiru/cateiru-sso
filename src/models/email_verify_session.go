@@ -25,6 +25,7 @@ import (
 type EmailVerifySession struct {
 	ID         string    `boil:"id" json:"id" toml:"id" yaml:"id"`
 	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	NewEmail   string    `boil:"new_email" json:"new_email" toml:"new_email" yaml:"new_email"`
 	VerifyCode string    `boil:"verify_code" json:"verify_code" toml:"verify_code" yaml:"verify_code"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
@@ -38,6 +39,7 @@ type EmailVerifySession struct {
 var EmailVerifySessionColumns = struct {
 	ID         string
 	UserID     string
+	NewEmail   string
 	VerifyCode string
 	Period     string
 	RetryCount string
@@ -46,6 +48,7 @@ var EmailVerifySessionColumns = struct {
 }{
 	ID:         "id",
 	UserID:     "user_id",
+	NewEmail:   "new_email",
 	VerifyCode: "verify_code",
 	Period:     "period",
 	RetryCount: "retry_count",
@@ -56,6 +59,7 @@ var EmailVerifySessionColumns = struct {
 var EmailVerifySessionTableColumns = struct {
 	ID         string
 	UserID     string
+	NewEmail   string
 	VerifyCode string
 	Period     string
 	RetryCount string
@@ -64,6 +68,7 @@ var EmailVerifySessionTableColumns = struct {
 }{
 	ID:         "email_verify_session.id",
 	UserID:     "email_verify_session.user_id",
+	NewEmail:   "email_verify_session.new_email",
 	VerifyCode: "email_verify_session.verify_code",
 	Period:     "email_verify_session.period",
 	RetryCount: "email_verify_session.retry_count",
@@ -99,6 +104,7 @@ func (w whereHelperuint8) NIN(slice []uint8) qm.QueryMod {
 var EmailVerifySessionWhere = struct {
 	ID         whereHelperstring
 	UserID     whereHelperstring
+	NewEmail   whereHelperstring
 	VerifyCode whereHelperstring
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
@@ -107,6 +113,7 @@ var EmailVerifySessionWhere = struct {
 }{
 	ID:         whereHelperstring{field: "`email_verify_session`.`id`"},
 	UserID:     whereHelperstring{field: "`email_verify_session`.`user_id`"},
+	NewEmail:   whereHelperstring{field: "`email_verify_session`.`new_email`"},
 	VerifyCode: whereHelperstring{field: "`email_verify_session`.`verify_code`"},
 	Period:     whereHelpertime_Time{field: "`email_verify_session`.`period`"},
 	RetryCount: whereHelperuint8{field: "`email_verify_session`.`retry_count`"},
@@ -131,8 +138,8 @@ func (*emailVerifySessionR) NewStruct() *emailVerifySessionR {
 type emailVerifySessionL struct{}
 
 var (
-	emailVerifySessionAllColumns            = []string{"id", "user_id", "verify_code", "period", "retry_count", "created", "modified"}
-	emailVerifySessionColumnsWithoutDefault = []string{"id", "user_id", "verify_code"}
+	emailVerifySessionAllColumns            = []string{"id", "user_id", "new_email", "verify_code", "period", "retry_count", "created", "modified"}
+	emailVerifySessionColumnsWithoutDefault = []string{"id", "user_id", "new_email", "verify_code"}
 	emailVerifySessionColumnsWithDefault    = []string{"period", "retry_count", "created", "modified"}
 	emailVerifySessionPrimaryKeyColumns     = []string{"id"}
 	emailVerifySessionGeneratedColumns      = []string{}
