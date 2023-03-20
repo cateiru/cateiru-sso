@@ -205,7 +205,7 @@ var CloudRunConfig = &Config{
 
 	SelfSignedCert:      false,
 	UseReCaptcha:        true,
-	ReCaptchaSecret:     "", // TODO
+	ReCaptchaSecret:     "", // TODO 環境変数から取得できるようにする
 	ReCaptchaAllowScore: 50,
 
 	DatabaseConfig: &mysql.Config{},

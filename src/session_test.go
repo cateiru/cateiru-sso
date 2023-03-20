@@ -11,6 +11,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/go-http-easy-test/handler/mock"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
@@ -19,7 +20,47 @@ import (
 )
 
 func TestSimpleLogin(t *testing.T) {
-	// TODO: 後でやる
+	createSession := func(ctx context.Context, user *models.User) string {
+		sessionToken, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		s := models.Session{
+			ID:     sessionToken,
+			UserID: user.ID,
+
+			Period: time.Now().Add(C.SessionDBPeriod),
+		}
+		err = s.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+		return sessionToken
+	}
+
+	s := src.NewSession(C, DB)
+
+	// セッショントークンを使用してログインします
+	// 一般的なログイン方法
+	t.Run("成功: セッショントークン", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		sessionToken := createSession(ctx, &u)
+
+		cookie := &http.Cookie{
+			Name:  C.SessionCookie.Name,
+			Value: sessionToken,
+		}
+
+		m, err := mock.NewGet("", "/")
+		require.NoError(t, err)
+		m.Cookie([]*http.Cookie{
+			cookie,
+		})
+		c := m.Echo()
+
+		loginUser, err := s.SimpleLogin(ctx, c)
+		require.NoError(t, err)
+		require.Equal(t, loginUser.ID, u.ID)
+	})
 }
 
 func TestLogin(t *testing.T) {
