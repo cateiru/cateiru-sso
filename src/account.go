@@ -3,6 +3,7 @@ package src
 import (
 	"database/sql"
 	"errors"
+	"net"
 	"net/http"
 	"time"
 
@@ -700,6 +701,23 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 
 	ua, err := h.ParseUA(c.Request())
 	if err != nil {
+		return err
+	}
+
+	// ログイントライ履歴を保存する
+	loginTryHistory := models.LoginTryHistory{
+		UserID: user.ID,
+
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+
+		IP: net.ParseIP(ip),
+
+		Identifier: 1, // パスワード再登録なので1
+	}
+	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 

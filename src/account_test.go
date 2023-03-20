@@ -16,6 +16,7 @@ import (
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
@@ -1511,17 +1512,137 @@ func TestAccountCertificatesHandler(t *testing.T) {
 }
 
 func TestAccountForgetPasswordHandler(t *testing.T) {
-	t.Run("成功: メールを送信できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: メールアドレスが空", func(t *testing.T) {})
+	t.Run("成功: メールを送信できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: メールアドレスが存在しない", func(t *testing.T) {})
+		RegisterPassword(t, ctx, &u)
 
-	t.Run("失敗: reCAPTCHA失敗", func(t *testing.T) {})
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
 
-	t.Run("失敗: パスワード設定していない", func(t *testing.T) {})
+		c := m.Echo()
 
-	t.Run("失敗: すでにセッションが存在している", func(t *testing.T) {})
+		err = h.AccountForgetPasswordHandler(c)
+		require.NoError(t, err)
+
+		// ログイントライ履歴が保存されている
+		existLoginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u.ID),
+			qm.And("identifier = 1"),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.True(t, existLoginTryHistory)
+
+		// パスワード再設定セッションが保存されている
+		existsReregistrationPasswordSession, err := models.ReregistrationPasswordSessions(
+			models.ReregistrationPasswordSessionWhere.Email.EQ(email),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existsReregistrationPasswordSession)
+	})
+
+	t.Run("失敗: メールアドレスが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("recaptcha", "hogehoge")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountForgetPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid email")
+	})
+
+	t.Run("失敗: メールアドレスが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountForgetPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=user not found, unique=10")
+	})
+
+	t.Run("失敗: reCAPTCHA失敗", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "fail")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountForgetPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=reCAPTCHA validation failed, unique=1")
+	})
+
+	t.Run("失敗: パスワード設定していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		RegisterUser(t, ctx, email)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountForgetPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=no registered password, unique=11")
+	})
+
+	t.Run("失敗: すでにセッションが存在している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		// セッションを作成する
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.ReregistrationPasswordSession{
+			ID:          token,
+			Email:       email,
+			Period:      time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			PeriodClear: time.Now().Add(C.ReregistrationPasswordSessionClearPeriod),
+		}
+		err = session.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := contents.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := mock.NewFormData("/", form, http.MethodPost)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountForgetPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=already sessions")
+	})
 }
 
 func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
