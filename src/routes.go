@@ -54,7 +54,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// ユーザ情報
 	user := version.Group("/user")
 	user.GET("/me", h.UserMeHandler)
-	user.PUT("", h.UserUpdateHandler)                // ユーザ情報の更新
+	user.PUT("/", h.UserUpdateHandler)               // ユーザ情報の更新
+	user.POST("/user_name", h.UserUserNameHandler)   // ユーザー名のチェック
 	user.PUT("/setting", h.UserUpdateSettingHandler) // 設定の更新
 	user.GET("/brand", h.UserBrandHandler)
 	user.POST("/email", h.UserUpdateEmailHandler)                  // Email変更

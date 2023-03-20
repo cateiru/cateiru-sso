@@ -21,6 +21,11 @@ type UserMeResponse struct {
 	Setting  *models.Setting `json:"setting,omitempty"`
 }
 
+type UserUserNameResponse struct {
+	UserName string `json:"user_name"`
+	Ok       bool   `json:"ok"`
+}
+
 type UserBrandResponse struct {
 	Brand string `json:"brand,omitempty"`
 }
@@ -108,6 +113,36 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, user)
+}
+
+// リアルタイムでユーザーIDが使用されているかチェックするハンドラ
+func (h *Handler) UserUserNameHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	_, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	userName := c.FormValue("user_name")
+	if userName == "" {
+		return c.JSON(http.StatusOK, &UserUserNameResponse{
+			UserName: "",
+			Ok:       false,
+		})
+	}
+
+	existUser, err := models.Users(
+		models.UserWhere.UserName.EQ(userName),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &UserUserNameResponse{
+		UserName: userName,
+		Ok:       existUser,
+	})
 }
 
 // ユーザの設定を更新する
