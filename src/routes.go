@@ -41,22 +41,22 @@ func Routes(e *echo.Echo, h *Handler) {
 
 	e.POST("/v2/account/forget/password", h.AccountForgetPasswordHandler)                          // パスワード再登録リクエスト
 	e.POST("/v2/account/reregistration/available_token", h.AccountReRegisterAvailableTokenHandler) // そのセッションが有効かどうか判定する
-	e.POST("/v2/account/reregistration/password", h.AccountReRegisterPasswordHandler)
+	e.POST("/v2/account/reregistration/password", h.AccountReRegisterPasswordHandler)              // パスワード更新
 
 	// ユーザ情報
-	e.GET("/v2/user/me", h.Root)
-	e.PUT("/v2/user", h.Root) // ユーザ情報の更新
-	e.PUT("/v2/user/setting", h.Root)
-	e.GET("/v2/user/brand", h.Root)
-	e.POST("/v2/user/email", h.Root)          // Email変更
-	e.POST("/v2/user/email/register", h.Root) // Email変更確認コード打つ
-	e.POST("/v2/user/avatar", h.Root)         // アバター画像の設定
-	e.DELETE("/v2/user/avatar", h.Root)
-	e.GET("/v2/user/client/login", h.Root)   // ログインしているSSOクライアント
-	e.GET("/v2/user/client/history", h.Root) // クライアントのログイン履歴
-	e.POST("/v2/user/client/logout", h.Root) // クライアントからログアウト
+	e.GET("/v2/user/me", h.UserMeHandler)
+	e.PUT("/v2/user", h.UserUpdateHandler)                // ユーザ情報の更新
+	e.PUT("/v2/user/setting", h.UserUpdateSettingHandler) // 設定の更新
+	e.GET("/v2/user/brand", h.UserBrandHandler)
+	e.POST("/v2/user/email", h.UserUpdateEmailHandler)                  // Email変更
+	e.POST("/v2/user/email/register", h.UserUpdateEmailRegisterHandler) // Email変更確認コード打つ
+	e.POST("/v2/user/avatar", h.UserAvatarHandler)                      // アバター画像の設定
+	e.DELETE("/v2/user/avatar", h.UserDeleteAvatarHandler)
+	e.POST("/v2/user/client/logout", h.UserLogoutClient) // クライアントからログアウト
 
 	// 履歴
+	e.GET("/v2/history/client/login", h.Root)  // ログインしているSSOクライアント
+	e.GET("/v2/history/client", h.Root)        // クライアントのログイン履歴
 	e.GET("/v2/history/login_devices", h.Root) // 現在ログインしているデバイス
 	e.GET("/v2/history/login", h.Root)         // ログイン履歴
 	e.GET("/v2/history/try_login", h.Root)     // ログイントライ履歴
