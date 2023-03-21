@@ -70,4 +70,14 @@ func TestStorage(t *testing.T) {
 		require.ErrorIs(t, err, storage.ErrObjectNotExist)
 	})
 
+	t.Run("Content-Typeが空", func(t *testing.T) {
+		dir := "target"
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		filename := r + ".txt"
+
+		err = s.Write(ctx, filepath.Join(dir, filename), strings.NewReader("hogehoge"), "")
+		require.EqualError(t, err, "Content-Type is empty")
+	})
+
 }

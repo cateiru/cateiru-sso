@@ -2,6 +2,7 @@ package lib
 
 import (
 	"context"
+	"errors"
 	"io"
 
 	"cloud.google.com/go/storage"
@@ -51,6 +52,10 @@ func (c *CloudStorage) Read(ctx context.Context, path string) ([]byte, string, e
 
 // ファイル書き出し
 func (c *CloudStorage) Write(ctx context.Context, path string, data io.Reader, contentType string) error {
+	if contentType == "" {
+		return errors.New("Content-Type is empty")
+	}
+
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return err
