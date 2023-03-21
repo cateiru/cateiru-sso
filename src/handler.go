@@ -25,6 +25,8 @@ type Handler struct {
 	WebAuthn  lib.WebAuthnInterface
 	Session   SessionInterface
 	Password  lib.PasswordInterface
+	Storage   lib.CloudStorageInterface
+	CDN       lib.CDNInterface
 }
 
 func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
@@ -42,6 +44,9 @@ func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 
 	session := NewSession(config, db)
 
+	storage := lib.NewCloudStorage(config.StorageBucketName)
+	cdn := lib.NewCDN(config.FastlyApiToken)
+
 	return &Handler{
 		DB:        db,
 		C:         config,
@@ -50,6 +55,8 @@ func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 		WebAuthn:  webauthn,
 		Session:   session,
 		Password:  config.Password,
+		Storage:   storage,
+		CDN:       cdn,
 	}, nil
 }
 

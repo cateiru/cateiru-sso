@@ -223,6 +223,7 @@ var LocalConfig = &Config{
 		Host:   "localhost:4000",
 		Scheme: "http",
 	},
+	FastlyApiToken: "",
 
 	StorageBucketName: "cateiru-sso",
 }
@@ -333,6 +334,7 @@ var CloudRunConfig = &Config{
 		Host:   "cdn.sso.cateiru.com",
 		Scheme: "https",
 	},
+	FastlyApiToken: "", // TODO: 環境変数から
 
 	StorageBucketName: "cateiru-sso",
 }
@@ -451,6 +453,7 @@ var TestConfig = &Config{
 		Host:   "localhost:4000",
 		Scheme: "http",
 	},
+	FastlyApiToken: "",
 
 	StorageBucketName: "test-cateiru-sso",
 }

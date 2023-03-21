@@ -16,6 +16,8 @@ type SenderMock struct{}
 type WebAuthnMock struct {
 	M *lib.WebAuthn
 }
+type CDNMock struct {
+}
 
 func (c *ReCaptchaMock) ValidateOrder(token string, remoteIp string) (*lib.RecaptchaResponse, error) {
 	if token == "" {
@@ -77,4 +79,11 @@ func (a *WebAuthnMock) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentia
 func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
 	// TODO
 	return &webauthn.Credential{}, nil
+}
+
+func (c *CDNMock) Purge(url string) error {
+	return nil
+}
+func (c *CDNMock) SoftPurge(url string) error {
+	return nil
 }

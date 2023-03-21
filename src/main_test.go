@@ -215,6 +215,8 @@ func NewTestHandler(t *testing.T) *src.Handler {
 
 	s := src.NewSession(C, DB)
 
+	storage := lib.NewCloudStorage(C.StorageBucketName)
+
 	return &src.Handler{
 		DB:        DB,
 		C:         C,
@@ -225,6 +227,8 @@ func NewTestHandler(t *testing.T) *src.Handler {
 		},
 		Session:  s,
 		Password: C.Password,
+		Storage:  storage,
+		CDN:      &CDNMock{},
 	}
 }
 

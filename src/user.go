@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"net/url"
+	"path/filepath"
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
@@ -35,6 +37,10 @@ type UpdateEmailTemplate struct {
 	NewEmail string
 	Code     string
 	Period   time.Time
+}
+
+type UserAvatarResponse struct {
+	Avatar string `json:"avatar"`
 }
 
 func (h *Handler) UserMeHandler(c echo.Context) error {
@@ -363,11 +369,84 @@ func (h *Handler) UserUpdateEmailRegisterHandler(c echo.Context) error {
 
 // アバターの更新
 func (h *Handler) UserAvatarHandler(c echo.Context) error {
-	return nil
+	ctx := c.Request().Context()
+
+	fileHeader, err := c.FormFile("image")
+	if err != nil {
+		return err
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		return err
+	}
+	contentType := fileHeader.Header.Get("Content-Type")
+	if !lib.ValidateContentType(contentType) {
+		return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
+	}
+
+	user, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	path := filepath.Join("avatar", user.ID)
+	if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+		return err
+	}
+
+	// 画像URLはCDNをかますのでCDNのホストにする
+	url := &url.URL{
+		Scheme: h.C.CDNHost.Scheme,
+		Host:   h.C.CDNHost.Host,
+		Path:   path,
+	}
+	// user更新（設定していない場合）
+	if !user.Avatar.Valid {
+		user.Avatar = null.NewString(url.String(), true)
+		if _, err := user.Update(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+	}
+
+	if err := h.CDN.Purge(url.String()); err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &UserAvatarResponse{
+		Avatar: url.String(),
+	})
 }
 
 // アバターの削除
 func (h *Handler) UserDeleteAvatarHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	user, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	path := filepath.Join("avatar", user.ID)
+	if err := h.Storage.Delete(ctx, path); err != nil {
+		return err
+	}
+
+	// user更新
+	user.Avatar = null.NewString("", false)
+	if _, err := user.Update(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	// CDNをパージ
+	url := &url.URL{
+		Scheme: h.C.CDNHost.Scheme,
+		Host:   h.C.CDNHost.Host,
+		Path:   path,
+	}
+	if err := h.CDN.Purge(url.String()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
