@@ -3,8 +3,9 @@ module github.com/cateiru/cateiru-sso
 go 1.20
 
 require (
+	cloud.google.com/go/storage v1.30.0
 	github.com/cateiru/go-client-hints/v2 v2.0.2
-	github.com/cateiru/go-http-easy-test v1.1.2
+	github.com/cateiru/go-http-easy-test/v2 v2.0.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/go-webauthn/webauthn v0.8.2
@@ -25,6 +26,7 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.6.0
 	golang.org/x/net v0.8.0
+	golang.org/x/text v0.8.0
 )
 
 require (
@@ -32,9 +34,7 @@ require (
 	cloud.google.com/go/compute v1.18.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v0.13.0 // indirect
-	cloud.google.com/go/storage v1.30.0 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
-	github.com/cateiru/go-http-easy-test/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dunglas/httpsfv v1.0.1 // indirect
 	github.com/ericlagergren/decimal v0.0.0-20221120152707-495c53812d05 // indirect
@@ -82,7 +82,6 @@ require (
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.114.0 // indirect
