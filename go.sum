@@ -101,6 +101,8 @@ github.com/boombuler/barcode v1.0.1 h1:NDBbPmhS+EqABEs5Kg3n/5ZNjy73Pz7SIV+KCeqyX
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/cateiru/go-client-hints/v2 v2.0.2 h1:eufza6ujLXKfGeCPV62DEchWnT7Rtg4i80xjDKwcXlY=
 github.com/cateiru/go-client-hints/v2 v2.0.2/go.mod h1:6OMtotEUT4JAlC9JLzN7TvrU51NIVG3PVtF7xA59TW8=
+github.com/cateiru/go-client-hints/v2 v2.1.0 h1:lCfP3TtkNmx+WRByz6ujdk74t03WIdPAPjmaKUlq1n8=
+github.com/cateiru/go-client-hints/v2 v2.1.0/go.mod h1:6OMtotEUT4JAlC9JLzN7TvrU51NIVG3PVtF7xA59TW8=
 github.com/cateiru/go-http-easy-test/v2 v2.0.0 h1:bdc3HgQ95/+MPB5jbIo9xB+uCr+m7FsDiNp8Q8V96NQ=
 github.com/cateiru/go-http-easy-test/v2 v2.0.0/go.mod h1:3DcSzPZ+1psQ7ZyAGOY4H3ovCxwsTnEDiTRYw3/Bmtg=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
