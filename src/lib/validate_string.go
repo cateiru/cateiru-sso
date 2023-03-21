@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"golang.org/x/text/language"
 )
 
 var emailReg = regexp.MustCompile(`^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9]+\.)+[a-zA-Z]{2,}$`)
@@ -19,9 +21,11 @@ var appleOS = []string{
 	"iPadOS",
 }
 
-// TODO: 埋める & テスト
-var locales = []string{
-	"ja-JP",
+var allowContentType = []string{
+	"image/gif",
+	"image/jpeg",
+	"image/png",
+	"image/webp",
 }
 
 // Emailの形式が正しいかを検証する
@@ -134,8 +138,13 @@ func ValidateBirthDate(b string) (*time.Time, bool) {
 }
 
 func ValidateLocale(l string) bool {
-	for _, locale := range locales {
-		if locale == l {
+	_, err := language.Parse(l)
+	return err == nil
+}
+
+func ValidateContentType(c string) bool {
+	for _, allow := range allowContentType {
+		if allow == c {
 			return true
 		}
 	}

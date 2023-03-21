@@ -213,5 +213,53 @@ func TestValidateBirthDate(t *testing.T) {
 }
 
 func TestValidateLocale(t *testing.T) {
-	// TODO
+	t.Run("成功", func(t *testing.T) {
+		locales := []string{
+			"ja-JP",
+			"en-US",
+			"sr-Cyrl-BA",
+		}
+
+		for _, l := range locales {
+			require.True(t, lib.ValidateLocale(l), l)
+		}
+	})
+
+	t.Run("存在しないロケールID", func(t *testing.T) {
+		locales := []string{
+			"xx-YY-ZZ", "ab-CD-EF", "mn-OP-QR", "ij-KL-MN", "uv-WX-YZ", "rs-TU-VW", "gh-JK-LM", "pq-RS-TU", "cd-EF-GH", "op-QR-ST",
+		}
+
+		for _, l := range locales {
+			require.False(t, lib.ValidateLocale(l), l)
+		}
+	})
+}
+
+func TestValidateContentType(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		contentTypes := []string{
+			"image/gif",
+			"image/jpeg",
+			"image/png",
+			"image/webp",
+		}
+
+		for _, c := range contentTypes {
+			require.True(t, lib.ValidateContentType(c), c)
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		contentTypes := []string{
+			"image/x-jng",
+			"image/bmp",
+			"image/tiff",
+			"image/svg+xml",
+		}
+
+		for _, c := range contentTypes {
+			require.False(t, lib.ValidateContentType(c), c)
+		}
+	})
 }
