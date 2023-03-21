@@ -1137,14 +1137,6 @@ func TestAccountWebauthnHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	// TODO: セッションのテストを追加する
-	// SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-	// 	m, err := easy.NewJson("/", http.MethodPost, "")
-	// 	require.NoError(t, err)
-
-	// 	return m
-	// })
-
 	registerWebauthnSession := func(u *models.User) string {
 		webauthnUser, err := src.NewWebauthnUserFromUser(u)
 		require.NoError(t, err)
@@ -1175,6 +1167,20 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		return webauthnSessionId
 	}
 
+	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		session := registerWebauthnSession(u)
+		sessionCookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: session,
+		}
+
+		m, err := easy.NewJson("/", http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie([]*http.Cookie{sessionCookie})
+
+		return m
+	})
+
 	t.Run("成功: 新規追加", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1186,11 +1192,11 @@ func TestAccountWebauthnHandler(t *testing.T) {
 			Name:  C.WebAuthnSessionCookie.Name,
 			Value: session,
 		}
-		cookies = append(cookies, sessionCookie)
 
 		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
+		m.Cookie([]*http.Cookie{sessionCookie})
 
 		c := m.Echo()
 
@@ -1238,11 +1244,11 @@ func TestAccountWebauthnHandler(t *testing.T) {
 			Name:  C.WebAuthnSessionCookie.Name,
 			Value: session,
 		}
-		cookies = append(cookies, sessionCookie)
 
 		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
+		m.Cookie([]*http.Cookie{sessionCookie})
 
 		c := m.Echo()
 
@@ -1283,11 +1289,11 @@ func TestAccountWebauthnHandler(t *testing.T) {
 			Name:  C.WebAuthnSessionCookie.Name,
 			Value: session,
 		}
-		cookies = append(cookies, sessionCookie)
 
 		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
+		m.Cookie([]*http.Cookie{sessionCookie})
 
 		c := m.Echo()
 
@@ -1321,11 +1327,11 @@ func TestAccountWebauthnHandler(t *testing.T) {
 			Name:  C.WebAuthnSessionCookie.Name,
 			Value: "hogehoge123",
 		}
-		cookies = append(cookies, sessionCookie)
 
 		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
+		m.Cookie([]*http.Cookie{sessionCookie})
 
 		c := m.Echo()
 
@@ -1344,7 +1350,6 @@ func TestAccountWebauthnHandler(t *testing.T) {
 			Name:  C.WebAuthnSessionCookie.Name,
 			Value: session,
 		}
-		cookies = append(cookies, sessionCookie)
 
 		// 有効期限+10h
 		s, err := models.WebauthnSessions(
@@ -1358,6 +1363,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
+		m.Cookie([]*http.Cookie{sessionCookie})
 
 		c := m.Echo()
 
@@ -1376,7 +1382,6 @@ func TestAccountWebauthnHandler(t *testing.T) {
 			Name:  C.WebAuthnSessionCookie.Name,
 			Value: session,
 		}
-		cookies = append(cookies, sessionCookie)
 
 		s, err := models.WebauthnSessions(
 			models.WebauthnSessionWhere.ID.EQ(session),
@@ -1389,6 +1394,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
+		m.Cookie([]*http.Cookie{sessionCookie})
 
 		c := m.Echo()
 
