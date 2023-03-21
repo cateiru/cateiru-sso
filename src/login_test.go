@@ -9,8 +9,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
-	"github.com/cateiru/go-http-easy-test/contents"
-	"github.com/cateiru/go-http-easy-test/handler/mock"
+	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/mileusna/useragent"
@@ -32,10 +31,10 @@ func TestLoginUserHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &user)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -60,10 +59,10 @@ func TestLoginUserHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &user)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", user.UserName)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -92,10 +91,10 @@ func TestLoginUserHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &user)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -119,10 +118,10 @@ func TestLoginUserHandler(t *testing.T) {
 
 		RegisterPasskey(t, ctx, &user)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
 			Device:   "",
@@ -164,10 +163,10 @@ func TestLoginUserHandler(t *testing.T) {
 		err := passkeyHistory.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
 			Browser:  "Safari",
@@ -198,10 +197,10 @@ func TestLoginUserHandler(t *testing.T) {
 
 		RegisterPasskey(t, ctx, &user)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
 			Browser:  "Safari",
@@ -233,10 +232,10 @@ func TestLoginUserHandler(t *testing.T) {
 		RegisterPasskey(t, ctx, &user)
 		RegisterPassword(t, ctx, &user)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
 			Device:   "",
@@ -276,10 +275,10 @@ func TestLoginUserHandler(t *testing.T) {
 		_, err = passkeyHistory.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
 			Device:   "",
@@ -305,10 +304,10 @@ func TestLoginUserHandler(t *testing.T) {
 		require.False(t, response.AvailablePassword)
 	})
 	t.Run("失敗: username_or_emailが空", func(t *testing.T) {
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", "")
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
 			Device:   "",
@@ -324,10 +323,10 @@ func TestLoginUserHandler(t *testing.T) {
 		require.EqualError(t, err, "code=400, message=username_or_email is empty")
 	})
 	t.Run("失敗: username_or_emailの値が不正", func(t *testing.T) {
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", "aaaa")
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
 			Device:   "",
@@ -348,9 +347,9 @@ func TestLoginUserHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &user)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", user.UserName)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -364,10 +363,10 @@ func TestLoginUserHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &user)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", user.UserName)
 		form.Insert("recaptcha", "fail")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -387,10 +386,10 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 
 		RegisterPasskey(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "aaaa")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -435,10 +434,10 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 
 		RegisterPasskey(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "fail")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -447,10 +446,10 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 	})
 
 	t.Run("失敗: ユーザが存在しない", func(t *testing.T) {
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", "hogehoge")
 		form.Insert("recaptcha", "aaa")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -462,10 +461,10 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "aaaa")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -517,7 +516,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		RegisterPasskey(t, ctx, &u)
 		webauthnSession := registerWebauthnSession(&u, 2)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -590,7 +589,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		RegisterPasskey(t, ctx, &u, userData)
 		webauthnSession := registerWebauthnSession(&u, 2)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -618,7 +617,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		RegisterPasskey(t, ctx, &u)
 		webauthnSession := registerWebauthnSession(&u, 2)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -632,7 +631,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	})
 
 	t.Run("失敗: セッションが空", func(t *testing.T) {
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -641,7 +640,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	})
 
 	t.Run("失敗: セッショントークンが不正", func(t *testing.T) {
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -661,7 +660,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		RegisterPasskey(t, ctx, &u)
 		webauthnSession := registerWebauthnSession(&u, 4)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -685,11 +684,11 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &u, "password123ABC123123")
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("password", "password123ABC123123")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -735,11 +734,11 @@ func TestLoginPasswordHandler(t *testing.T) {
 		RegisterPassword(t, ctx, &u, "password123ABC123123")
 		RegisterOTP(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("password", "password123ABC123123")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -765,11 +764,11 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("password", "")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -783,11 +782,11 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &u, "password123ABC123123")
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("password", "aaaaa")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -801,11 +800,11 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &u, "password123ABC123123")
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "fail")
 		form.Insert("password", "password123ABC123123")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -817,11 +816,11 @@ func TestLoginPasswordHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("password", "password123ABC123123")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -835,11 +834,11 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &u, "password123ABC123123")
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("username_or_email", "hogehoge")
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("password", "password123ABC123123")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -876,10 +875,10 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		otpSession := registerOTPSession(&u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", otpSession)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -925,10 +924,10 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		otpSession := registerOTPSession(&u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", otpSession)
 		form.Insert("code", backup)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -980,10 +979,10 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		otpSession := registerOTPSession(&u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", otpSession)
 		form.Insert("code", "123456")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -1006,9 +1005,9 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		otpSession := registerOTPSession(&u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", otpSession)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -1024,9 +1023,9 @@ func TestLoginOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secret, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -1042,10 +1041,10 @@ func TestLoginOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secret, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", "hogehoge")
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -1072,10 +1071,10 @@ func TestLoginOTPHandler(t *testing.T) {
 		_, err = s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", otpSession)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -1102,10 +1101,10 @@ func TestLoginOTPHandler(t *testing.T) {
 		_, err = s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", otpSession)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 

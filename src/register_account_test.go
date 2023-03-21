@@ -10,8 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
-	"github.com/cateiru/go-http-easy-test/contents"
-	"github.com/cateiru/go-http-easy-test/handler/mock"
+	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/stretchr/testify/require"
@@ -27,10 +26,10 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	t.Run("成功する", func(t *testing.T) {
 		email := RandomEmail(t)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -57,10 +56,10 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	t.Run("Emailが不正な形式の場合エラー", func(t *testing.T) {
 		email := "hogehoge124"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -71,9 +70,9 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	t.Run("reCAPTCHA tokenが無いとエラー", func(t *testing.T) {
 		email := RandomEmail(t)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -84,10 +83,10 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 	t.Run("reCAPTCHAのチャレンジ失敗", func(t *testing.T) {
 		email := RandomEmail(t)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "fail")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -113,10 +112,10 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// アクセスする
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -130,10 +129,10 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 		RegisterUser(t, ctx, email)
 
 		// アクセスする
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -174,9 +173,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 
 		s := createSession(email, 1)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -198,9 +197,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("tokenが空だとエラー", func(t *testing.T) {
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -213,8 +212,8 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 
 		s := createSession(email, 1)
 
-		form := contents.NewMultipart()
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		form := easy.NewMultipart()
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -228,9 +227,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 
 		s := createSession(email, 1)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("recaptcha", "fail")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -240,9 +239,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 	})
 
 	t.Run("tokenが不正", func(t *testing.T) {
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", "123")
 		require.NoError(t, err)
 		c := m.Echo()
@@ -261,9 +260,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -277,9 +276,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 
 		s := createSession(email, 3)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -298,9 +297,9 @@ func TestReSendVerifyEmailHandler(t *testing.T) {
 		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("recaptcha", "123abc")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -342,9 +341,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 
 		s := createSession(email, 0)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("code", s.VerifyCode)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -375,9 +374,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 
 		s := createSession(email, 0)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("code", s.VerifyCode)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -390,9 +389,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 
 		s := createSession(email, 0)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("code", s.VerifyCode)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", "123")
 		require.NoError(t, err)
 		c := m.Echo()
@@ -411,9 +410,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("code", s.VerifyCode)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -428,9 +427,9 @@ func TestRegisterVerifyEmailHandler(t *testing.T) {
 		// すでに5回リトライ済み
 		s := createSession(email, 5)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("code", s.VerifyCode)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -473,7 +472,7 @@ func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 
 		s := createSession(email, true)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -518,7 +517,7 @@ func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 	})
 
 	t.Run("tokenが無い", func(t *testing.T) {
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -527,7 +526,7 @@ func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 	})
 
 	t.Run("tokenが不正", func(t *testing.T) {
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		m.R.Header.Add("X-Register-Token", "123")
 		require.NoError(t, err)
 		c := m.Echo()
@@ -547,7 +546,7 @@ func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -564,7 +563,7 @@ func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 
 		s := createSession(email, false)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		m.R.Header.Add("X-Register-Token", s.ID)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -639,7 +638,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		s := createSession(email, true)
 		webauthnSession := registerWebauthnSession(email, 1)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -706,7 +705,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 
 		webauthnSession := registerWebauthnSession(email, 1)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		cookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -725,7 +724,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 
 		s := createSession(email, true)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 
@@ -740,7 +739,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 
 		webauthnSession := registerWebauthnSession(email, 1)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", "hogehoge")
 		cookie := &http.Cookie{
@@ -761,7 +760,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		s := createSession(email, false) // 認証終わってない
 		webauthnSession := registerWebauthnSession(email, 1)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -787,7 +786,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		_, err := s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -807,7 +806,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 
 		s := createSession(email, true)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -828,7 +827,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		s := createSession(email, true)
 		webauthnSession := registerWebauthnSession(email, 5)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -858,7 +857,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		_, err = session.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -879,7 +878,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		s := createSession(email, true)
 		webauthnSession := registerWebauthnSession(email, 1)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 		cookie := &http.Cookie{
@@ -929,9 +928,9 @@ func TestRegisterPasswordHandler(t *testing.T) {
 
 		password := "password123456789"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 
@@ -982,9 +981,9 @@ func TestRegisterPasswordHandler(t *testing.T) {
 	t.Run("失敗: X-Register-Tokenが無い", func(t *testing.T) {
 		password := "password123456789"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -995,9 +994,9 @@ func TestRegisterPasswordHandler(t *testing.T) {
 	t.Run("失敗: X-Register-Tokenの値が不正", func(t *testing.T) {
 		password := "password123456789"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", "hogehoge123")
 
@@ -1012,9 +1011,9 @@ func TestRegisterPasswordHandler(t *testing.T) {
 
 		password := "password123456789"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 
@@ -1034,9 +1033,9 @@ func TestRegisterPasswordHandler(t *testing.T) {
 
 		password := "password123456789"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 
@@ -1052,9 +1051,9 @@ func TestRegisterPasswordHandler(t *testing.T) {
 
 		password := ""
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 
@@ -1069,9 +1068,9 @@ func TestRegisterPasswordHandler(t *testing.T) {
 
 		password := "あああああああああああああああああああああああああああああああああああああああああああああああああああああ"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.R.Header.Add("X-Register-Token", s.ID)
 

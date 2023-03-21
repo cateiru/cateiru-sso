@@ -14,7 +14,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
-	"github.com/cateiru/go-http-easy-test/handler/mock"
+	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
@@ -110,7 +110,7 @@ func RegisterUser(t *testing.T, ctx context.Context, email string) models.User {
 	return *dbU
 }
 
-func SetUserData(t *testing.T, m *mock.MockHandler, userData *src.UserData) {
+func SetUserData(t *testing.T, m *easy.MockHandler, userData *src.UserData) {
 	// iPhone safari
 	if userData.Browser == "Safari" && userData.OS == "iOS" && userData.Device == "iPhone" && userData.IsMobile {
 		m.R.Header.Set("User-Agent", `Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_2 like Mac OS X) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.0 Mobile/14F89 Safari/602.1`)
@@ -331,7 +331,7 @@ func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []s
 }
 
 // そのHandlerが認証が必要かどうかをテストする
-func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *mock.MockHandler) {
+func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler) {
 	ctx := context.Background()
 
 	t.Run("正しく認証できている", func(t *testing.T) {

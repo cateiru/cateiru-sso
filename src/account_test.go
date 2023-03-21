@@ -10,8 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
-	"github.com/cateiru/go-http-easy-test/contents"
-	"github.com/cateiru/go-http-easy-test/handler/mock"
+	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
@@ -35,7 +34,7 @@ func TestAccountListHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u1, &u2, &u3)
 
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -66,7 +65,7 @@ func TestAccountListHandler(t *testing.T) {
 	})
 
 	t.Run("Cookieに何もない場合は空", func(t *testing.T) {
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -97,7 +96,7 @@ func TestAccountListHandler(t *testing.T) {
 			Value: "aaaaa",
 		}
 
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie([]*http.Cookie{
 			cookie,
@@ -127,9 +126,9 @@ func TestAccountSwitchHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u1, &u2)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("user_id", u2.ID)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -153,9 +152,9 @@ func TestAccountSwitchHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("user_id", u.ID)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
 
@@ -169,9 +168,9 @@ func TestAccountSwitchHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u1)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("user_id", u1.ID)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -186,9 +185,9 @@ func TestAccountSwitchHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u1)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("user_id", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -205,9 +204,9 @@ func TestAccountSwitchHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u1)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("user_id", u2.ID)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -221,8 +220,8 @@ func TestAccountLogoutHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountLogoutHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
-		m, err := mock.NewMock("", http.MethodHead, "/")
+	SessionTest(t, h.AccountLogoutHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodHead, "")
 		require.NoError(t, err)
 		return m
 	})
@@ -232,7 +231,7 @@ func TestAccountLogoutHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 		session := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewMock("", http.MethodHead, "/")
+		m, err := easy.NewMock("/", http.MethodHead, "")
 		require.NoError(t, err)
 		m.Cookie(session)
 		c := m.Echo()
@@ -252,8 +251,8 @@ func TestAccountDeleteHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountLogoutHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
-		m, err := mock.NewMock("", http.MethodHead, "/")
+	SessionTest(t, h.AccountLogoutHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodHead, "")
 		require.NoError(t, err)
 		return m
 	})
@@ -263,7 +262,7 @@ func TestAccountDeleteHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 		session := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewMock("", http.MethodHead, "/")
+		m, err := easy.NewMock("/", http.MethodHead, "")
 		require.NoError(t, err)
 		m.Cookie(session)
 		c := m.Echo()
@@ -285,10 +284,10 @@ func TestAccountOTPPublicKeyHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountOTPPublicKeyHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountOTPPublicKeyHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		RegisterPassword(t, ctx, u)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		return m
 	})
@@ -300,7 +299,7 @@ func TestAccountOTPPublicKeyHandler(t *testing.T) {
 		RegisterPassword(t, ctx, &u)
 		cookies := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -325,7 +324,7 @@ func TestAccountOTPPublicKeyHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewMock("", http.MethodPost, "/")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -358,17 +357,17 @@ func TestAccountOTPHandler(t *testing.T) {
 		return session, otp.GetSecret()
 	}
 
-	SessionTest(t, h.AccountOTPHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountOTPHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		RegisterPassword(t, ctx, u)
 		session, secretKey := registerOtpSession(ctx, u)
 
 		code, err := totp.GenerateCode(secretKey, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", session)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
 	})
@@ -384,10 +383,10 @@ func TestAccountOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secretKey, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", session)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -428,10 +427,10 @@ func TestAccountOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secretKey, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", session)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -477,9 +476,9 @@ func TestAccountOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secretKey, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -499,10 +498,10 @@ func TestAccountOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secretKey, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", "hogehoge")
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -531,10 +530,10 @@ func TestAccountOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secretKey, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", session)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -563,10 +562,10 @@ func TestAccountOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secretKey, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", session)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -583,10 +582,10 @@ func TestAccountOTPHandler(t *testing.T) {
 		RegisterPassword(t, ctx, &u)
 		session, _ := registerOtpSession(ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", session)
 		form.Insert("code", "123456")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -612,10 +611,10 @@ func TestAccountOTPHandler(t *testing.T) {
 		code, err := totp.GenerateCode(secretKey, time.Now())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("otp_session", session)
 		form.Insert("code", code)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -629,14 +628,14 @@ func TestAccountDeleteOTPHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountDeleteOTPHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountDeleteOTPHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		password := "password"
 		RegisterPassword(t, ctx, u, password)
 		RegisterOTP(t, ctx, u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
 	})
@@ -651,9 +650,9 @@ func TestAccountDeleteOTPHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -686,8 +685,8 @@ func TestAccountDeleteOTPHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		form := easy.NewMultipart()
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -706,9 +705,9 @@ func TestAccountDeleteOTPHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -726,9 +725,9 @@ func TestAccountDeleteOTPHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -746,9 +745,9 @@ func TestAccountDeleteOTPHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -762,14 +761,14 @@ func TestAccountOTPBackupHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountOTPBackupHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountOTPBackupHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		password := "password"
 		RegisterPassword(t, ctx, u, password)
 		RegisterOTP(t, ctx, u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
 	})
@@ -784,9 +783,9 @@ func TestAccountOTPBackupHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -820,9 +819,9 @@ func TestAccountOTPBackupHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -847,8 +846,8 @@ func TestAccountOTPBackupHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		form := easy.NewMultipart()
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -867,9 +866,9 @@ func TestAccountOTPBackupHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("password", "password124")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 		c := m.Echo()
@@ -883,12 +882,12 @@ func TestAccountPasswordHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountPasswordHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountPasswordHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		password := "password_123456"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
 	})
@@ -901,9 +900,9 @@ func TestAccountPasswordHandler(t *testing.T) {
 
 		password := "password_123456"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -931,9 +930,9 @@ func TestAccountPasswordHandler(t *testing.T) {
 		password := "password_123456"
 		RegisterPassword(t, ctx, &u, password)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -951,9 +950,9 @@ func TestAccountPasswordHandler(t *testing.T) {
 
 		password := "p"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -968,15 +967,15 @@ func TestAccountUpdatePasswordHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountUpdatePasswordHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountUpdatePasswordHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		password := "password"
 		newPassword := "password_123456"
 		RegisterPassword(t, ctx, u, password)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", newPassword)
 		form.Insert("old_password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		return m
@@ -992,10 +991,10 @@ func TestAccountUpdatePasswordHandler(t *testing.T) {
 		newPassword := "password_123456"
 		RegisterPassword(t, ctx, &u, password)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", newPassword)
 		form.Insert("old_password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1024,9 +1023,9 @@ func TestAccountUpdatePasswordHandler(t *testing.T) {
 		newPassword := "password_123456"
 		RegisterPassword(t, ctx, &u, password)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", newPassword)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1046,10 +1045,10 @@ func TestAccountUpdatePasswordHandler(t *testing.T) {
 		newPassword := "password_123456"
 		RegisterPassword(t, ctx, &u, password)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", newPassword)
 		form.Insert("old_password", "hogehoge123")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1069,10 +1068,10 @@ func TestAccountUpdatePasswordHandler(t *testing.T) {
 		newPassword := "p"
 		RegisterPassword(t, ctx, &u, password)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("new_password", newPassword)
 		form.Insert("old_password", password)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1088,8 +1087,8 @@ func TestAccountBeginWebauthnHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
-		m, err := mock.NewGet("", "/")
+	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 
 		return m
@@ -1101,7 +1100,7 @@ func TestAccountBeginWebauthnHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1139,8 +1138,8 @@ func TestAccountWebauthnHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	// TODO: セッションのテストを追加する
-	// SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
-	// 	m, err := mock.NewJson("/", "", http.MethodPost)
+	// SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+	// 	m, err := easy.NewJson("/", http.MethodPost, "")
 	// 	require.NoError(t, err)
 
 	// 	return m
@@ -1189,7 +1188,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		}
 		cookies = append(cookies, sessionCookie)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1241,7 +1240,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		}
 		cookies = append(cookies, sessionCookie)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1286,7 +1285,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		}
 		cookies = append(cookies, sessionCookie)
 
-		m, err := mock.NewMock("", http.MethodPost, "")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1302,7 +1301,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1324,7 +1323,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		}
 		cookies = append(cookies, sessionCookie)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1356,7 +1355,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		_, err = s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1387,7 +1386,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		_, err = s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		m, err := mock.NewJson("/", "", http.MethodPost)
+		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1402,10 +1401,10 @@ func TestAccountCertificatesHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *mock.MockHandler {
+	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		RegisterPassword(t, ctx, u)
 
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 
 		return m
@@ -1421,7 +1420,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1446,7 +1445,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1472,7 +1471,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1497,7 +1496,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		m, err := mock.NewGet("", "/")
+		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookies)
 
@@ -1525,10 +1524,10 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1570,10 +1569,10 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 		err = session.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1603,9 +1602,9 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1617,10 +1616,10 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 	t.Run("失敗: メールアドレスが存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1635,10 +1634,10 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 
 		RegisterPassword(t, ctx, &u)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "fail")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1651,10 +1650,10 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 		email := RandomEmail(t)
 		RegisterUser(t, ctx, email)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1681,10 +1680,10 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 		err = session.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1726,10 +1725,10 @@ func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
 			false,
 		)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("reregister_token", token)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1746,10 +1745,10 @@ func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
 		email := RandomEmail(t)
 		RegisterUser(t, ctx, email)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("reregister_token", "hogehoge")
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1772,10 +1771,10 @@ func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
 			false,
 		)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("reregister_token", token)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1798,10 +1797,10 @@ func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
 			true,
 		)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("reregister_token", token)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1825,10 +1824,10 @@ func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
 			false,
 		)
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email2)
 		form.Insert("reregister_token", token)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1878,12 +1877,12 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		newPassword := "password_1234567"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("reregister_token", token)
 		form.Insert("new_password", newPassword)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1922,12 +1921,12 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		newPassword := "password_1234567"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "fail")
 		form.Insert("reregister_token", token)
 		form.Insert("new_password", newPassword)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1944,11 +1943,11 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		newPassword := "password_1234567"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("new_password", newPassword)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1965,12 +1964,12 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		newPassword := "password_1234567"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("reregister_token", "hogehoge")
 		form.Insert("new_password", newPassword)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -1993,12 +1992,12 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		newPassword := "password_1234567"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("reregister_token", token)
 		form.Insert("new_password", newPassword)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -2021,12 +2020,12 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		newPassword := "password_1234567"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("reregister_token", token)
 		form.Insert("new_password", newPassword)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
@@ -2050,12 +2049,12 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		newPassword := "password_1234567"
 
-		form := contents.NewMultipart()
+		form := easy.NewMultipart()
 		form.Insert("email", email2)
 		form.Insert("recaptcha", "hogehoge")
 		form.Insert("reregister_token", token)
 		form.Insert("new_password", newPassword)
-		m, err := mock.NewFormData("/", form, http.MethodPost)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
 		c := m.Echo()
