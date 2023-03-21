@@ -28,7 +28,12 @@ CREATE TABLE `user` (
 
     -- ロケールID
     -- デフォルトは日本(ja_JP)
-    `locale_id` CHAR(5) DEFAULT 'ja_JP' NOT NULL,
+    -- CharGPT:
+    -- スクリプトタグや変種タグが含まれる場合、BCP 47のタグの最大文字列長は最大で15文字程度になる可能性があります。
+    -- これは、言語タグが2文字、地域タグが2文字、スクリプトタグが4文字、変種タグが最大で7文字まで許容されるためです。
+    -- ただし、スクリプトタグや変種タグが必ずしもすべての場合に必要とされるわけではないため、必要に応じて長さを調整する必要があります。
+    -- また、BCP 47のタグは将来的に変更や追加がある可能性があるため、データベースの設計には余裕を持たせておくことが望ましいです。
+    `locale_id` VARCHAR(15) DEFAULT 'ja-JP' NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
