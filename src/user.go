@@ -68,13 +68,13 @@ func (h *Handler) UserMeHandler(c echo.Context) error {
 func (h *Handler) UserUpdateHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	userName := c.FormValue("user_name")
-	familyName := c.FormValue("family_name")
-	middleName := c.FormValue("middle_name")
-	givenName := c.FormValue("given_name")
-	gender := c.FormValue("gender")
-	birthDateStr := c.FormValue("birth_date")
-	localeID := c.FormValue("locale_id")
+	userName := c.FormValue("user_name")      // 指定しないと更新しない
+	familyName := c.FormValue("family_name")  // 指定しないと削除
+	middleName := c.FormValue("middle_name")  // 指定しないと削除
+	givenName := c.FormValue("given_name")    // 指定しないと削除
+	gender := c.FormValue("gender")           // 指定しないと更新しない
+	birthDateStr := c.FormValue("birth_date") // 指定しないと削除
+	localeID := c.FormValue("locale_id")      // 指定しないと更新しない
 
 	user, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
@@ -82,20 +82,34 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 	}
 
 	// ユーザ名は削除不可
-	if !lib.ValidateUsername(userName) {
-		return NewHTTPError(http.StatusBadRequest, "invalid user_name")
+	if userName != "" {
+		if !lib.ValidateUsername(userName) {
+			return NewHTTPError(http.StatusBadRequest, "invalid user_name")
+		}
+		existUser, err := models.Users(
+			models.UserWhere.UserName.EQ(userName),
+		).Exists(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		if existUser {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyExistUser, "user already exists")
+		}
+
+		user.UserName = userName
 	}
-	user.UserName = userName
 
 	user.FamilyName = null.NewString(familyName, len(familyName) != 0)
 	user.MiddleName = null.NewString(middleName, len(middleName) != 0)
 	user.GivenName = null.NewString(givenName, len(givenName) != 0)
 
 	// genderはデフォルト値が9
-	if !lib.ValidateGender(gender) {
-		return NewHTTPError(http.StatusBadRequest, "invalid gender")
+	if gender != "" {
+		if !lib.ValidateGender(gender) {
+			return NewHTTPError(http.StatusBadRequest, "invalid gender")
+		}
+		user.Gender = gender
 	}
-	user.Gender = gender
 
 	if birthDateStr != "" {
 		birthDate, ok := lib.ValidateBirthDate(birthDateStr)
@@ -109,10 +123,12 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 	}
 
 	// localeIDのデフォルト値はja-JP
-	if !lib.ValidateLocale(localeID) {
-		return NewHTTPError(http.StatusBadRequest, "invalid locale_id")
+	if localeID != "" {
+		if !lib.ValidateLocale(localeID) {
+			return NewHTTPError(http.StatusBadRequest, "invalid locale_id")
+		}
+		user.LocaleID = localeID
 	}
-	user.LocaleID = localeID
 
 	if _, err := user.Update(ctx, h.DB, boil.Infer()); err != nil {
 		return err
@@ -147,7 +163,7 @@ func (h *Handler) UserUserNameHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, &UserUserNameResponse{
 		UserName: userName,
-		Ok:       existUser,
+		Ok:       !existUser,
 	})
 }
 
