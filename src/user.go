@@ -415,7 +415,7 @@ func (h *Handler) UserAvatarHandler(c echo.Context) error {
 
 	fileHeader, err := c.FormFile("image")
 	if err != nil {
-		return err
+		return NewHTTPError(http.StatusBadRequest, err)
 	}
 	file, err := fileHeader.Open()
 	if err != nil {
@@ -466,6 +466,10 @@ func (h *Handler) UserDeleteAvatarHandler(c echo.Context) error {
 	user, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
+	}
+
+	if !user.Avatar.Valid {
+		return NewHTTPError(http.StatusBadRequest, "avatar is not set")
 	}
 
 	path := filepath.Join("avatar", user.ID)

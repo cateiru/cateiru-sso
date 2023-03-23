@@ -3,9 +3,13 @@ package src_test
 import (
 	"context"
 	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
@@ -966,15 +970,182 @@ func TestUserUpdateEmailRegisterHandler(t *testing.T) {
 }
 
 func TestUserAvatarHandler(t *testing.T) {
-	t.Run("成功: アバターを新規作成できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: アバターを更新できる", func(t *testing.T) {})
+	t.Run("成功: アバターを新規作成できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: 画像が指定されていない", func(t *testing.T) {})
+		cookies := RegisterSession(t, ctx, &u)
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form := easy.NewMultipart()
+		form.InsertFile("image", image)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserAvatarHandler(c)
+		require.NoError(t, err)
+
+		dbUser, err := models.Users(
+			models.UserWhere.ID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		path := filepath.Join("avatar", u.ID)
+		url := &url.URL{
+			Scheme: C.CDNHost.Scheme,
+			Host:   C.CDNHost.Host,
+			Path:   path,
+		}
+		require.Equal(t, dbUser.Avatar.String, url.String())
+
+		time.Sleep(1 * time.Second)
+
+		storage := lib.NewCloudStorage(C.StorageBucketName)
+		_, contentType, err := storage.Read(ctx, path)
+		require.NoError(t, err)
+		require.Equal(t, contentType, "image/png")
+	})
+
+	t.Run("成功: アバターを更新できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		u.Avatar = null.NewString("https://example.com/avatar", true)
+		_, err := u.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form := easy.NewMultipart()
+		form.InsertFile("image", image)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserAvatarHandler(c)
+		require.NoError(t, err)
+
+		time.Sleep(1 * time.Second)
+
+		path := filepath.Join("avatar", u.ID)
+		storage := lib.NewCloudStorage(C.StorageBucketName)
+		_, contentType, err := storage.Read(ctx, path)
+		require.NoError(t, err)
+		require.Equal(t, contentType, "image/png")
+	})
+
+	t.Run("失敗: 画像が指定されていない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserAvatarHandler(c)
+		require.EqualError(t, err, "code=400, message=http: no such file")
+	})
+
+	t.Run("失敗: 画像ファイルじゃない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		image, err := os.Open("./user_test.go")
+		require.NoError(t, err)
+		defer image.Close()
+		form := easy.NewMultipart()
+		form.InsertFile("image", image)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserAvatarHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid Content-Type")
+	})
 }
 
 func TestUserDeleteAvatarHandler(t *testing.T) {
-	t.Run("成功: アバターが削除されている", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	s := lib.NewCloudStorage(C.StorageBucketName)
+
+	t.Run("成功: アバターが削除されている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		path := filepath.Join("avatar", u.ID)
+		url := &url.URL{
+			Scheme: C.CDNHost.Scheme,
+			Host:   C.CDNHost.Host,
+			Path:   path,
+		}
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		err = s.Write(ctx, path, image, "image/png")
+		require.NoError(t, err)
+
+		time.Sleep(1 * time.Second)
+
+		u.Avatar = null.NewString(url.String(), true)
+		_, err = u.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserDeleteAvatarHandler(c)
+		require.NoError(t, err)
+
+		time.Sleep(1 * time.Second)
+
+		_, _, err = s.Read(ctx, path)
+		require.ErrorIs(t, err, storage.ErrObjectNotExist)
+	})
+
+	t.Run("失敗: アバターは設定されていない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserDeleteAvatarHandler(c)
+		require.EqualError(t, err, "code=400, message=avatar is not set")
+	})
 }
 
 // TODO: クライアントの実装してから

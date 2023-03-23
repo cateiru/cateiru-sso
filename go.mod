@@ -5,7 +5,7 @@ go 1.20
 require (
 	cloud.google.com/go/storage v1.30.0
 	github.com/cateiru/go-client-hints/v2 v2.1.0
-	github.com/cateiru/go-http-easy-test/v2 v2.0.0
+	github.com/cateiru/go-http-easy-test/v2 v2.0.1
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/go-webauthn/webauthn v0.8.2
