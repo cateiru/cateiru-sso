@@ -2,17 +2,81 @@ package src_test
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestUserMeHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: ユーザ情報を取得できる", func(t *testing.T) {})
+	t.Run("成功: ユーザ情報を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("成功: 設定がない場合は空", func(t *testing.T) {})
+		cookies := RegisterSession(t, ctx, &u)
+
+		// 設定追加
+		setting := models.Setting{
+			UserID:        u.ID,
+			NoticeEmail:   false,
+			NoticeWebpush: true,
+		}
+		require.NoError(t, setting.Insert(ctx, DB, boil.Infer()))
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserMeHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserMeResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.NotNil(t, response.UserInfo)
+		require.Equal(t, response.UserInfo.ID, u.ID)
+		require.Equal(t, response.UserInfo.UserName, u.UserName)
+		require.Equal(t, response.UserInfo.Email, email)
+
+		require.NotNil(t, response.Setting)
+		require.Equal(t, response.Setting.UserID, u.ID)
+		require.Equal(t, response.Setting.NoticeEmail, false)
+	})
+
+	t.Run("成功: 設定がない場合は空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserMeHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserMeResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.NotNil(t, response.UserInfo)
+		require.Equal(t, response.UserInfo.ID, u.ID)
+		require.Equal(t, response.UserInfo.UserName, u.UserName)
+		require.Equal(t, response.UserInfo.Email, email)
+
+		require.Nil(t, response.Setting)
+	})
 }
 
 func TestUserUpdateHandler(t *testing.T) {
