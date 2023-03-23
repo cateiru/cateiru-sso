@@ -532,32 +532,437 @@ func TestUserUpdateSettingHandler(t *testing.T) {
 }
 
 func TestUserBrandHandler(t *testing.T) {
-	t.Run("成功: ブランドを取得できる", func(t *testing.T) {
-		t.Run("ブランドが指定されている", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-		t.Run("ブランドは設定されていない", func(t *testing.T) {})
+	SessionTest(t, h.UserBrandHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("成功: ブランドを取得できる", func(t *testing.T) {
+		t.Run("ブランドが指定されている", func(t *testing.T) {
+			email := RandomEmail(t)
+			u := RegisterUser(t, ctx, email)
+
+			cookies := RegisterSession(t, ctx, &u)
+
+			m, err := easy.NewMock("/", http.MethodGet, "")
+			require.NoError(t, err)
+			m.Cookie(cookies)
+
+			c := m.Echo()
+
+			err = h.UserBrandHandler(c)
+			require.NoError(t, err)
+
+			response := src.UserBrandResponse{}
+			require.NoError(t, m.Json(&response))
+
+			require.Equal(t, response.Brand, "")
+		})
+
+		t.Run("ブランドは設定されていない", func(t *testing.T) {
+			email := RandomEmail(t)
+			u := RegisterUser(t, ctx, email)
+
+			brand := models.Brand{
+				UserID: u.ID,
+				Brand:  "pro",
+			}
+			err := brand.Insert(ctx, DB, boil.Infer())
+			require.NoError(t, err)
+
+			cookies := RegisterSession(t, ctx, &u)
+
+			m, err := easy.NewMock("/", http.MethodGet, "")
+			require.NoError(t, err)
+			m.Cookie(cookies)
+
+			c := m.Echo()
+
+			err = h.UserBrandHandler(c)
+			require.NoError(t, err)
+
+			response := src.UserBrandResponse{}
+			require.NoError(t, m.Json(&response))
+
+			require.Equal(t, response.Brand, "pro")
+		})
 	})
 }
 
 func TestUserUpdateEmailHandler(t *testing.T) {
-	t.Run("成功: メールアドレスに更新メールが送られる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: メールアドレスが空", func(t *testing.T) {})
+	SessionTest(t, h.UserUpdateEmailHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		newEmail := RandomEmail(t)
 
-	t.Run("失敗: メールアドレスはすでに別のユーザが使用している", func(t *testing.T) {})
+		form := easy.NewMultipart()
+		form.Insert("new_email", newEmail)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
 
-	t.Run("失敗: メールアドレスが不正", func(t *testing.T) {})
+		return m
+	})
+
+	t.Run("成功: メールアドレスに更新メールが送られる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("new_email", newEmail)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserUpdateEmailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		session, err := models.EmailVerifySessions(
+			models.EmailVerifySessionWhere.ID.EQ(response.Session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, session.UserID, u.ID)
+		require.Equal(t, session.NewEmail, newEmail)
+	})
+
+	t.Run("失敗: メールアドレスが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("recaptcha", "hogehoge")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=empty new email")
+	})
+
+	t.Run("失敗: メールアドレスはすでに別のユーザが使用している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+		RegisterUser(t, ctx, newEmail)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("new_email", newEmail)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=email already used, unique=12")
+	})
+
+	t.Run("失敗: メールアドレスが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("new_email", "hogehoge")
+		form.Insert("recaptcha", "hogehoge")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=empty new email")
+	})
+
+	t.Run("失敗: reCAPTCHAが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("new_email", newEmail)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=reCAPTCHA token is empty")
+	})
+
+	t.Run("失敗: reCAPTCHAが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("new_email", newEmail)
+		form.Insert("recaptcha", "fail")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailHandler(c)
+		require.EqualError(t, err, "code=400, message=reCAPTCHA validation failed, unique=1")
+	})
 }
 
 func TestUserUpdateEmailRegisterHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: メールアドレスを更新できる", func(t *testing.T) {})
+	registerEmailSession := func(u *models.User, newEmail string) (string, string) {
 
-	t.Run("失敗: セッションが無い", func(t *testing.T) {})
+		sessionId, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		code, err := lib.RandomNumber(6)
+		require.NoError(t, err)
 
-	t.Run("失敗: セッションが不正", func(t *testing.T) {})
+		session := models.EmailVerifySession{
+			ID:         sessionId,
+			UserID:     u.ID,
+			NewEmail:   newEmail,
+			VerifyCode: code,
+			Period:     time.Now().Add(h.C.UpdateEmailSessionPeriod),
+		}
+		err = session.Insert(ctx, h.DB, boil.Infer())
+		require.NoError(t, err)
 
-	t.Run("失敗: セッションの有効期限切れ", func(t *testing.T) {})
+		return sessionId, code
+	}
+
+	SessionTest(t, h.UserUpdateEmailRegisterHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		newEmail := RandomEmail(t)
+		session, code := registerEmailSession(u, newEmail)
+
+		form := easy.NewMultipart()
+		form.Insert("update_token", session)
+		form.Insert("code", code)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("成功: メールアドレスを更新できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+		session, code := registerEmailSession(&u, newEmail)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("update_token", session)
+		form.Insert("code", code)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailRegisterHandler(c)
+		require.NoError(t, err)
+
+		newUser, err := models.Users(
+			models.UserWhere.ID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, newUser.Email, newEmail)
+
+		// セッションは削除されている
+		existSession, err := models.EmailVerifySessions(
+			models.EmailVerifySessionWhere.ID.EQ(session),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existSession)
+	})
+
+	t.Run("失敗: codeが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+		session, _ := registerEmailSession(&u, newEmail)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("update_token", session)
+		form.Insert("code", "12345")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailRegisterHandler(c)
+		require.EqualError(t, err, "code=403, message=invalid code")
+
+		// リトライカウント++されている
+		se, err := models.EmailVerifySessions(
+			models.EmailVerifySessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, se.RetryCount, uint8(1))
+	})
+
+	t.Run("失敗: リトライ上限", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+		session, code := registerEmailSession(&u, newEmail)
+
+		// リトライ上限にする
+		se, err := models.EmailVerifySessions(
+			models.EmailVerifySessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		se.RetryCount = C.UpdateEmailRetryCount
+		_, err = se.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("update_token", session)
+		form.Insert("code", code)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailRegisterHandler(c)
+		require.EqualError(t, err, "code=403, message=exceeded retry, unique=4")
+
+		// セッションは削除されている
+		existSession, err := models.EmailVerifySessions(
+			models.EmailVerifySessionWhere.ID.EQ(session),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existSession)
+	})
+
+	t.Run("失敗: セッションが無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+		_, code := registerEmailSession(&u, newEmail)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("code", code)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailRegisterHandler(c)
+		require.EqualError(t, err, "code=400, message=update_token is empty")
+	})
+
+	t.Run("失敗: セッションが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+		_, code := registerEmailSession(&u, newEmail)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("update_token", "hogehoge")
+		form.Insert("code", code)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailRegisterHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid session")
+	})
+
+	t.Run("失敗: セッションの有効期限切れ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		newEmail := RandomEmail(t)
+		session, code := registerEmailSession(&u, newEmail)
+
+		// セッションの有効期限をきらす
+		se, err := models.EmailVerifySessions(
+			models.EmailVerifySessionWhere.ID.EQ(session),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		se.Period = time.Now().Add(-10 * 24 * time.Hour)
+		_, err = se.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("update_token", session)
+		form.Insert("code", code)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateEmailRegisterHandler(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+
+		// セッションは削除されている
+		existSession, err := models.EmailVerifySessions(
+			models.EmailVerifySessionWhere.ID.EQ(session),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existSession)
+	})
 }
 
 func TestUserAvatarHandler(t *testing.T) {

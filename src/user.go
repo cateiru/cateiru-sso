@@ -39,6 +39,10 @@ type UpdateEmailTemplate struct {
 	Period   time.Time
 }
 
+type UserUpdateEmailResponse struct {
+	Session string `json:"session"`
+}
+
 type UserAvatarResponse struct {
 	Avatar string `json:"avatar"`
 }
@@ -249,7 +253,17 @@ func (h *Handler) UserUpdateEmailHandler(c echo.Context) error {
 		}
 	}
 
-	id, err := lib.RandomStr(31)
+	existEmail, err := models.Users(
+		models.UserWhere.Email.EQ(newEmail),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if existEmail {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyExistUser, "email already used")
+	}
+
+	sessionId, err := lib.RandomStr(31)
 	if err != nil {
 		return err
 	}
@@ -259,10 +273,11 @@ func (h *Handler) UserUpdateEmailHandler(c echo.Context) error {
 	}
 
 	session := models.EmailVerifySession{
-		ID:       id,
-		UserID:   user.ID,
-		NewEmail: newEmail,
-		Period:   time.Now().Add(h.C.UpdateEmailSessionPeriod),
+		ID:         sessionId,
+		UserID:     user.ID,
+		NewEmail:   newEmail,
+		VerifyCode: code,
+		Period:     time.Now().Add(h.C.UpdateEmailSessionPeriod),
 	}
 	if err := session.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
@@ -320,7 +335,9 @@ func (h *Handler) UserUpdateEmailHandler(c echo.Context) error {
 		zap.Bool("IsMobile", ua.IsMobile),
 	)
 
-	return nil
+	return c.JSON(http.StatusOK, &UserUpdateEmailResponse{
+		Session: sessionId,
+	})
 }
 
 // Email更新の確認して実際に更新するハンドラ
@@ -329,11 +346,11 @@ func (h *Handler) UserUpdateEmailRegisterHandler(c echo.Context) error {
 
 	token := c.FormValue("update_token")
 	if token == "" {
-		return NewHTTPError(http.StatusOK, "update_token is empty")
+		return NewHTTPError(http.StatusBadRequest, "update_token is empty")
 	}
 	code := c.FormValue("code")
 	if code == "" {
-		return NewHTTPError(http.StatusOK, "code is empty")
+		return NewHTTPError(http.StatusBadRequest, "code is empty")
 	}
 
 	user, err := h.Session.SimpleLogin(ctx, c)
@@ -344,6 +361,9 @@ func (h *Handler) UserUpdateEmailRegisterHandler(c echo.Context) error {
 	session, err := models.EmailVerifySessions(
 		models.EmailVerifySessionWhere.ID.EQ(token),
 	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "invalid session")
+	}
 	if err != nil {
 		return err
 	}
@@ -380,6 +400,12 @@ func (h *Handler) UserUpdateEmailRegisterHandler(c echo.Context) error {
 	if _, err := user.Update(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
+
+	// セッションは削除
+	if _, err := session.Delete(ctx, h.DB); err != nil {
+		return err
+	}
+
 	return nil
 }
 
