@@ -15,9 +15,7 @@ var TableNames = struct {
 	ClientScope                   string
 	ClientSession                 string
 	EmailVerifySession            string
-	LoginClient                   string
 	LoginClientHistory            string
-	LoginClientScope              string
 	LoginHistory                  string
 	LoginTryHistory               string
 	OauthSession                  string
@@ -48,9 +46,7 @@ var TableNames = struct {
 	ClientScope:                   "client_scope",
 	ClientSession:                 "client_session",
 	EmailVerifySession:            "email_verify_session",
-	LoginClient:                   "login_client",
 	LoginClientHistory:            "login_client_history",
-	LoginClientScope:              "login_client_scope",
 	LoginHistory:                  "login_history",
 	LoginTryHistory:               "login_try_history",
 	OauthSession:                  "oauth_session",

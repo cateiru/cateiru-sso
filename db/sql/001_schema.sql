@@ -362,7 +362,9 @@ CREATE TABLE `client_refresh` (
 
     -- クライアントのID
     `client_id` VARCHAR(31) NOT NULL,
-    `login_client_id` INT UNSIGNED NOT NULL,
+
+    -- スコープ
+    `scopes` JSON NOT NULL,
 
     -- client_sessionのid
     `session_id` VARCHAR(31) NOT NULL,
@@ -378,8 +380,7 @@ CREATE TABLE `client_refresh` (
     -- TODO: もっと突き詰める
     INDEX `client_refresh_user_id` (`user_id`),
     INDEX `client_refresh_session_id` (`session_id`),
-    INDEX `client_refresh_client_id` (`client_id`),
-    INDEX `client_refresh_login_client_id` (`login_client_id`)
+    INDEX `client_refresh_client_id` (`client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- WebAuthnを登録・ログインするときに保持する情報
@@ -517,24 +518,6 @@ CREATE TABLE `client_scope` (
     INDEX `client_scope_client_id` (`client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
--- ログインしたSSOクライアントのスコープを保存するテーブル
--- クライアントが途中でスコープを変更してもログイン履歴にはログイン時に求めたスコープとなる
-CREATE TABLE `login_client_scope` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-
-    `login_client_id` INT UNSIGNED NOT NULL,
-
-    -- スコープ名
-    -- ref. https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes
-    `scope` VARCHAR(15) NOT NULL,
-
-    -- 管理用
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (`id`),
-    INDEX `login_client_scope_login_client_id` (`login_client_id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
 -- クライアントのis_allowが1のときのホワイトリストルール
 CREATE TABLE `client_allow_rule` (
     `client_id` VARCHAR(31) NOT NULL,
@@ -572,18 +555,6 @@ CREATE TABLE `client_quiz` (
 
     PRIMARY KEY (`id`),
     INDEX `client_quiz_client_id` (`client_id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
--- 現在ログインしているSSOクライアントテーブル
-CREATE TABLE `login_client` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `client_id` VARCHAR(31) NOT NULL,
-    `user_id` VARCHAR(32) NOT NULL,
-
-    -- 管理用
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- 過去にログインしたSSOクライアントのテーブル

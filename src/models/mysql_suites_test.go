@@ -28,11 +28,7 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("EmailVerifySessions", testEmailVerifySessionsUpsert)
 
-	t.Run("LoginClients", testLoginClientsUpsert)
-
 	t.Run("LoginClientHistories", testLoginClientHistoriesUpsert)
-
-	t.Run("LoginClientScopes", testLoginClientScopesUpsert)
 
 	t.Run("LoginHistories", testLoginHistoriesUpsert)
 
