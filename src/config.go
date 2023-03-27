@@ -90,6 +90,11 @@ type Config struct {
 	FastlyApiToken string
 
 	StorageBucketName string
+
+	// ---- Clientの設定
+
+	ClientSessionPeriod time.Duration
+	ClientRefreshPeriod time.Duration
 }
 
 // Cookieの設定
@@ -114,7 +119,7 @@ var LocalConfig = &Config{
 	SelfSignedCert: true,
 	// ローカル環境はreCAPTCHA使わない
 	UseReCaptcha:        false,
-	ReCaptchaSecret:     "",
+	ReCaptchaSecret:     "secret",
 	ReCaptchaAllowScore: 0,
 
 	DatabaseConfig: &mysql.Config{
@@ -136,9 +141,9 @@ var LocalConfig = &Config{
 		Scheme: "http",
 	},
 
-	FromDomain:        "",
-	MailgunSecret:     "",
-	SenderMailAddress: "",
+	FromDomain:        "m.cateiru.com",
+	MailgunSecret:     "secret",
+	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
@@ -223,9 +228,12 @@ var LocalConfig = &Config{
 		Host:   "localhost:4000",
 		Scheme: "http",
 	},
-	FastlyApiToken: "",
+	FastlyApiToken: "token",
 
 	StorageBucketName: "cateiru-sso",
+
+	ClientSessionPeriod: 1 * time.Hour,  // 1hour
+	ClientRefreshPeriod: 24 * time.Hour, // 1days
 }
 
 var CloudRunConfig = &Config{
@@ -233,7 +241,7 @@ var CloudRunConfig = &Config{
 
 	SelfSignedCert:      false,
 	UseReCaptcha:        true,
-	ReCaptchaSecret:     "", // TODO 環境変数から取得できるようにする
+	ReCaptchaSecret:     os.Getenv("RECAPTCHA_SECRET"),
 	ReCaptchaAllowScore: 50,
 
 	DatabaseConfig: &mysql.Config{},
@@ -255,7 +263,7 @@ var CloudRunConfig = &Config{
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
 
-	WebAuthnConfig: &webauthn.Config{
+	WebAuthnConfig: &webauthn.Config{ // TODO: 有効期限設ける
 		RPDisplayName: "Cateiru SSO",
 		RPID:          "sso.cateiru.com",
 		RPOrigins:     []string{"sso.cateiru.com", "api.sso.cateiru.com"},
@@ -334,9 +342,12 @@ var CloudRunConfig = &Config{
 		Host:   "cdn.sso.cateiru.com",
 		Scheme: "https",
 	},
-	FastlyApiToken: "", // TODO: 環境変数から
+	FastlyApiToken: os.Getenv("FASTLY_API_TOKEN"),
 
 	StorageBucketName: "cateiru-sso",
+
+	ClientSessionPeriod: 1 * time.Hour,  // 1hour
+	ClientRefreshPeriod: 24 * time.Hour, // 1days
 }
 
 var TestConfig = &Config{
@@ -344,7 +355,7 @@ var TestConfig = &Config{
 
 	SelfSignedCert:      false,
 	UseReCaptcha:        true, // mockするので問題なし
-	ReCaptchaSecret:     "",
+	ReCaptchaSecret:     "secret",
 	ReCaptchaAllowScore: 50,
 
 	DatabaseConfig: &mysql.Config{
@@ -367,7 +378,7 @@ var TestConfig = &Config{
 	},
 
 	FromDomain:        "m.cateiru.com",
-	MailgunSecret:     "",
+	MailgunSecret:     "secret",
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 
 	RegisterSessionPeriod:     10 * time.Minute,
@@ -453,9 +464,12 @@ var TestConfig = &Config{
 		Host:   "localhost:4000",
 		Scheme: "http",
 	},
-	FastlyApiToken: "",
+	FastlyApiToken: "token",
 
 	StorageBucketName: "test-cateiru-sso",
+
+	ClientSessionPeriod: 1 * time.Hour,  // 1hour
+	ClientRefreshPeriod: 24 * time.Hour, // 1days
 }
 
 func InitConfig(mode string) *Config {

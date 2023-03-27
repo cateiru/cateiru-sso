@@ -77,7 +77,6 @@ func (a *WebAuthnMock) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentia
 	return &protocol.ParsedCredentialAssertionData{}, nil
 }
 func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
-	// TODO
 	return &webauthn.Credential{}, nil
 }
 

@@ -1,6 +1,8 @@
 package src
 
 import (
+	"database/sql"
+	"errors"
 	"net"
 	"net/http"
 	"time"
@@ -12,25 +14,16 @@ import (
 )
 
 type ClientLoginResponse struct {
-	ClientID string `json:"client_id"`
-
 	Scope   []string
 	Created time.Time `json:"created"`
 
-	// client
-	Name        string      `json:"name"`
-	Description null.String `json:"description,omitempty"`
-	Image       null.String `json:"image,omitempty"`
+	Client *ClientResponse `json:"client"`
 }
 
 type ClientLoginHistoryResponse struct {
-	ID       uint   `json:"id"`
-	ClientID string `json:"client_id"`
+	ID uint `json:"id"`
 
-	// client
-	Name        string      `json:"name"`
-	Description null.String `json:"description,omitempty"`
-	Image       null.String `json:"image,omitempty"`
+	Client *ClientResponse `json:"client"`
 
 	Device   null.String `json:"device"`
 	OS       null.String `json:"os"`
@@ -39,6 +32,14 @@ type ClientLoginHistoryResponse struct {
 	Ip       string      `json:"ip"`
 
 	Created time.Time `json:"created"`
+}
+
+type ClientResponse struct {
+	ClientID string `json:"client_id"`
+
+	Name        string      `json:"name"`
+	Description null.String `json:"description,omitempty"`
+	Image       null.String `json:"image,omitempty"`
 }
 
 type LoginDeviceResponse struct {
@@ -85,26 +86,46 @@ func (h *Handler) HistoryClientLoginHandler(c echo.Context) error {
 		return err
 	}
 
-	clients := []*models.Client{}
-	logins := []ClientLoginResponse{}
-	for _, r := range clientRefresh {
-		// キャッシュしてDBから取得する
-		var client *models.Client = nil
-		for _, mem := range clients {
-			if mem.ClientID == r.ClientID {
-				client = mem
-				break
+	cacheClient := []*ClientResponse{}
+	cacheEmptyClientId := []string{}
+	getClient := func(clientID string) (*ClientResponse, error) {
+		for _, cache := range cacheClient {
+			if cache.ClientID == clientID {
+				return cache, nil
 			}
 		}
-		if client == nil {
-			clientFromDB, err := models.Clients(
-				models.ClientWhere.ClientID.EQ(r.ClientID),
-			).One(ctx, h.DB)
-			if err != nil {
-				return err
+		for _, id := range cacheEmptyClientId {
+			if id == clientID {
+				return nil, nil
 			}
-			clients = append(clients, clientFromDB)
-			client = clientFromDB
+		}
+
+		clientFromDB, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientID),
+		).One(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			cacheEmptyClientId = append(cacheEmptyClientId, clientID)
+			return nil, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		client := &ClientResponse{
+			ClientID:    clientFromDB.ClientID,
+			Name:        clientFromDB.Name,
+			Description: clientFromDB.Description,
+			Image:       clientFromDB.Image,
+		}
+		cacheClient = append(cacheClient, client)
+		return client, nil
+	}
+
+	logins := []ClientLoginResponse{}
+	for _, r := range clientRefresh {
+		client, err := getClient(r.ClientID)
+		if err != nil {
+			return err
 		}
 
 		scope := []string{}
@@ -113,14 +134,10 @@ func (h *Handler) HistoryClientLoginHandler(c echo.Context) error {
 		}
 
 		logins = append(logins, ClientLoginResponse{
-			ClientID: client.ClientID,
-
 			Scope:   scope,
 			Created: r.Created,
 
-			Name:        client.Name,
-			Description: client.Description,
-			Image:       client.Image,
+			Client: client,
 		})
 	}
 
@@ -167,12 +184,7 @@ func (h *Handler) HistoryClientHandler(c echo.Context) error {
 		}
 
 		clientHistories = append(clientHistories, ClientLoginHistoryResponse{
-			ID:       history.ID,
-			ClientID: client.ClientID,
-
-			Name:        client.Name,
-			Description: client.Description,
-			Image:       client.Image,
+			ID: history.ID,
 
 			Device:   history.Device,
 			OS:       history.Os,
@@ -181,6 +193,14 @@ func (h *Handler) HistoryClientHandler(c echo.Context) error {
 			Ip:       net.IP.To16(history.IP).String(),
 
 			Created: history.Created,
+
+			Client: &ClientResponse{
+				ClientID: client.ClientID,
+
+				Name:        client.Name,
+				Description: client.Description,
+				Image:       client.Image,
+			},
 		})
 	}
 

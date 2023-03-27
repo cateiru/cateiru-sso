@@ -471,8 +471,7 @@ CREATE TABLE `oauth_session` (
 -- ODICのクライアント
 CREATE TABLE `client` (
     -- OAuth2.0のClient ID
-    -- 公開されるIDであり、それ単体では使用できないのでv1で良い
-    `client_id` VARCHAR(31) NOT NULL,
+    `client_id` VARCHAR(32) NOT NULL,
 
     -- クライアント名
     `name` VARCHAR(31) NOT NULL,

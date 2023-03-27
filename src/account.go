@@ -124,8 +124,7 @@ func (h *Handler) AccountDeleteHandler(c echo.Context) error {
 		return err
 	}
 
-	// 色々削除する
-	// TODO
+	// TODO: 色々削除する
 
 	setCookies, err := h.Session.Logout(ctx, cookies, user)
 	for _, cookie := range setCookies {

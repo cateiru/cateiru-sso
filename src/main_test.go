@@ -330,6 +330,28 @@ func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []s
 	return secret, backups
 }
 
+// SSOクライアントを作成する
+// 戻り値は、(clientID, clientSecret)
+func RegisterClient(t *testing.T, ctx context.Context, u *models.User) (string, string) {
+	clientID := ulid.Make()
+
+	secret, err := lib.RandomStr(63)
+	require.NoError(t, err)
+
+	client := models.Client{
+		ClientID: clientID.String(),
+
+		Name: "test",
+
+		OwnerUserID:  u.ID,
+		ClientSecret: secret,
+	}
+	err = client.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+
+	return clientID.String(), secret
+}
+
 // そのHandlerが認証が必要かどうかをテストする
 func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler) {
 	ctx := context.Background()
