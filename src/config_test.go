@@ -34,15 +34,6 @@ func TestConfig(t *testing.T) {
 		src.CloudRunConfig,
 	}
 
-	// テストを除外する項目
-	// os.Getenvなどを使用しているやつ
-	// cloudrunのみ
-	ignore := []string{
-		"ReCaptchaSecret",
-		"MailgunSecret",
-		"FastlyApiToken",
-	}
-
 	for _, c := range configs {
 		t.Run(c.Mode, func(t *testing.T) {
 
@@ -52,19 +43,6 @@ func TestConfig(t *testing.T) {
 				field := rt.Field(i)
 				kind := field.Type.Kind()
 				value := rv.FieldByName(field.Name)
-
-				if c.Mode == "cloudrun" {
-					skip := false
-					for _, i := range ignore {
-						if i == field.Name {
-							skip = true
-							break
-						}
-					}
-					if skip {
-						continue
-					}
-				}
 
 				switch kind.String() {
 				case "string":

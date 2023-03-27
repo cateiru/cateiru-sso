@@ -155,32 +155,53 @@ func (h *Handler) HistoryClientHandler(c echo.Context) error {
 
 	histories, err := models.LoginClientHistories(
 		models.LoginClientHistoryWhere.UserID.EQ(u.ID),
+		qm.Limit(50),
 		qm.OrderBy("created DESC"),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
 	}
 
-	clients := []*models.Client{}
-	clientHistories := []ClientLoginHistoryResponse{}
-	for _, history := range histories {
-		// キャッシュしてDBから取得する
-		var client *models.Client = nil
-		for _, mem := range clients {
-			if mem.ClientID == history.ClientID {
-				client = mem
-				break
+	cacheClient := []*ClientResponse{}
+	cacheEmptyClientId := []string{}
+	getClient := func(clientID string) (*ClientResponse, error) {
+		for _, cache := range cacheClient {
+			if cache.ClientID == clientID {
+				return cache, nil
 			}
 		}
-		if client == nil {
-			clientFromDB, err := models.Clients(
-				models.ClientWhere.ClientID.EQ(history.ClientID),
-			).One(ctx, h.DB)
-			if err != nil {
-				return err
+		for _, id := range cacheEmptyClientId {
+			if id == clientID {
+				return nil, nil
 			}
-			clients = append(clients, clientFromDB)
-			client = clientFromDB
+		}
+
+		clientFromDB, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientID),
+		).One(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			cacheEmptyClientId = append(cacheEmptyClientId, clientID)
+			return nil, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		client := &ClientResponse{
+			ClientID:    clientFromDB.ClientID,
+			Name:        clientFromDB.Name,
+			Description: clientFromDB.Description,
+			Image:       clientFromDB.Image,
+		}
+		cacheClient = append(cacheClient, client)
+		return client, nil
+	}
+
+	clientHistories := []ClientLoginHistoryResponse{}
+	for _, history := range histories {
+		client, err := getClient(history.ClientID)
+		if err != nil {
+			return err
 		}
 
 		clientHistories = append(clientHistories, ClientLoginHistoryResponse{
@@ -194,13 +215,7 @@ func (h *Handler) HistoryClientHandler(c echo.Context) error {
 
 			Created: history.Created,
 
-			Client: &ClientResponse{
-				ClientID: client.ClientID,
-
-				Name:        client.Name,
-				Description: client.Description,
-				Image:       client.Image,
-			},
+			Client: client,
 		})
 	}
 

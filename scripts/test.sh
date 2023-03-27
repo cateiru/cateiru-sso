@@ -2,5 +2,9 @@
 
 # Goのテストを行うやつ
 
+export RECAPTCHA_SECRET=secret
+export MAILGUN_SECRET=secret
+export FASTLY_API_TOKEN=token
+
 abspath="$(realpath .)"
-go test -v ./src/... -test.config "$abspath/db/sqlboiler.toml" $@
+go test ./src/... -test.config "$abspath/db/sqlboiler.toml" $@
