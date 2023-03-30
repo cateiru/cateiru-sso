@@ -100,13 +100,16 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	// 管理者用
 	admin := version.Group("/admin")
-	admin.GET("/users", h.Root) // ユーザ一覧
-	admin.GET("/user_detail", h.Root)
-	admin.POST("/brand", h.Root) // ブランドの付与、削除
-	admin.POST("/staff", h.Root) // スタッフフラグの付与、削除
-	admin.POST("/broadcast", h.Root)
-	admin.GET("/user/role", h.Root)
-	admin.POST("/user/role", h.Root)
+	admin.GET("/users", h.AdminUsersHandler) // ユーザ一覧
+	admin.GET("/user_detail", h.AdminUserDetailHandler)
+	admin.POST("/user/brand", h.AdminUserBrandHandler)         // ブランドの付与
+	admin.DELETE("/user/brand", h.AdminUserBrandDeleteHandler) // ブランドの削除
+	admin.POST("/staff", h.AdminStuffHandler)                  // スタッフフラグの付与、削除
+	admin.POST("/broadcast", h.AdminBroadcastHandler)
+	admin.GET("/brand", h.AdminBrandHandler)
+	admin.POST("/brand", h.AdminBrandCreateHandler)
+	admin.PUT("/brand", h.AdminBrandUpdateHandler)
+	admin.DELETE("/brand", h.AdminBrandDeleteHandler)
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
