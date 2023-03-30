@@ -75,7 +75,7 @@ func TestHistoryClientLoginHandler(t *testing.T) {
 		require.Equal(t, response[0].Client.ClientID, clientId)
 	})
 
-	t.Run("成功: クライアントが存在しないのは返らない", func(t *testing.T) {
+	t.Run("成功: クライアントが存在していなくても返る", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
@@ -170,27 +170,177 @@ func TestHistoryClientHandler(t *testing.T) {
 		require.Len(t, response, 1)
 	})
 
-	t.Run("成功: offset使える", func(t *testing.T) {})
+	t.Run("成功: クライアントが存在しなくても返る", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("成功: クライアントが存在しないのは返らない", func(t *testing.T) {})
+		clientId, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		registerClientLoginHistory(clientId, &u)
 
-	t.Run("成功: 何もログインしていないときは空", func(t *testing.T) {})
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.HistoryClientHandler(c)
+		require.NoError(t, err)
+
+		response := []src.ClientLoginHistoryResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 1)
+		require.Nil(t, response[0].Client)
+	})
+
+	t.Run("成功: 最新順に並んでいる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		registerClientLoginHistory(clientId, &u)
+		time.Sleep(1 * time.Second)
+		registerClientLoginHistory(clientId, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.HistoryClientHandler(c)
+		require.NoError(t, err)
+
+		response := []src.ClientLoginHistoryResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 2)
+
+		require.True(t, response[0].Created.After(response[1].Created))
+	})
 }
 
 func TestHistoryLoginDeviceHandler(t *testing.T) {
-	t.Run("成功: ログインしているデバイスを取得できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: 履歴はあるが、リフレッシュトークンが存在しない場合は返さない", func(t *testing.T) {})
+	t.Run("成功: ログインしているデバイスを取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterSession(t, ctx, &u)
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.HistoryLoginDeviceHandler(c)
+		require.NoError(t, err)
+
+		response := []src.LoginDeviceResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 2)
+	})
+
+	t.Run("成功: 履歴はあるが、リフレッシュトークンが存在しない場合は返さない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterSession(t, ctx, &u)
+		cookies := RegisterSession(t, ctx, &u)
+
+		refreshes, err := models.Refreshes(
+			models.RefreshWhere.UserID.EQ(u.ID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+		_, err = refreshes[0].Delete(ctx, DB)
+		require.NoError(t, err)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.HistoryLoginDeviceHandler(c)
+		require.NoError(t, err)
+
+		response := []src.LoginDeviceResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 1)
+	})
 }
 
 func TestHistoryLoginHistoryHandler(t *testing.T) {
-	t.Run("成功: ログイン履歴を取得できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: 個数を指定できる", func(t *testing.T) {})
+	t.Run("成功: ログイン履歴を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		refreshId, err := lib.RandomBytes(16)
+		require.NoError(t, err)
+		history := models.LoginHistory{
+			UserID:    u.ID,
+			RefreshID: refreshId,
+
+			IP: net.ParseIP("10.0.0.1"),
+		}
+		err = history.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.HistoryLoginHistoryHandler(c)
+		require.NoError(t, err)
+
+		response := []src.LoginDeviceResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 2)
+	})
 }
 
 func TestHistoryLoginTryHistoryHandler(t *testing.T) {
-	t.Run("成功: ログイントライ履歴を取得できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: 個数を指定できる", func(t *testing.T) {})
+	t.Run("成功: ログイントライ履歴を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		loginTryHistory := models.LoginTryHistory{
+			UserID: u.ID,
+
+			IP: net.ParseIP("10.0.0.1"),
+		}
+		err := loginTryHistory.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.HistoryLoginTryHistoryHandler(c)
+		require.NoError(t, err)
+
+		response := []src.LoginTryHistoryResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 1)
+	})
 }

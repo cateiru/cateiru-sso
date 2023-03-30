@@ -236,13 +236,15 @@ func (h *Handler) HistoryLoginDeviceHandler(c echo.Context) error {
 	//     on refresh.id = login_history.refresh_id
 	// WHERE login_history.user_id = ?
 	// AND refresh.period > NOW()
-	// ORDER BY login_history.created DESC;
+	// ORDER BY login_history.created DESC
+	// LIMIT 50;
 	loginDevices, err := models.LoginHistories(
 		qm.Select("login_history.*"),
-		qm.InnerJoin("refresh on refresh.id = login_history.refresh_id"),
-		qm.Where("login_history.user_id", u.ID),
+		qm.InnerJoin("refresh ON refresh.history_id = login_history.refresh_id"),
+		qm.Where("login_history.user_id = ?", u.ID),
 		qm.And("refresh.period > NOW()"),
 		qm.OrderBy("login_history.created DESC"),
+		qm.Limit(50),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
@@ -322,6 +324,7 @@ func (h *Handler) HistoryLoginTryHistoryHandler(c echo.Context) error {
 	loginTryHistries, err := models.LoginTryHistories(
 		models.LoginTryHistoryWhere.UserID.EQ(u.ID),
 		qm.OrderBy("created DESC"),
+		qm.Limit(50),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
