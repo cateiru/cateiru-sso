@@ -15,6 +15,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +30,7 @@ type UserUserNameResponse struct {
 }
 
 type UserBrandResponse struct {
-	Brand string `json:"brand,omitempty"`
+	BrandNames []string `json:"brand,omitempty"`
 }
 
 type UpdateEmailTemplate struct {
@@ -204,20 +205,26 @@ func (h *Handler) UserBrandHandler(c echo.Context) error {
 		return err
 	}
 
-	brand, err := models.Brands(
-		models.BrandWhere.UserID.EQ(user.ID),
-	).One(ctx, h.DB)
-	if errors.Is(err, sql.ErrNoRows) {
-		return c.JSON(http.StatusOK, &UserBrandResponse{
-			Brand: "",
-		})
-	}
+	// SELECT brand.* FROM brand
+	// INNER JOIN user_brand ON
+	//	 brand.id = user_brand.brand_id
+	// WHERE user_brand.user_id = ?;
+	brands, err := models.Brands(
+		qm.Select("brand.*"),
+		qm.InnerJoin("user_brand ON brand.id = user_brand.brand_id"),
+		qm.Where("user_brand.user_id = ?", user.ID),
+	).All(ctx, h.DB)
 	if err != nil {
 		return err
 	}
 
+	brandNames := []string{}
+	for _, b := range brands {
+		brandNames = append(brandNames, b.Name)
+	}
+
 	return c.JSON(http.StatusOK, &UserBrandResponse{
-		Brand: brand.Brand,
+		BrandNames: brandNames,
 	})
 }
 

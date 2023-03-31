@@ -547,7 +547,7 @@ func TestUserBrandHandler(t *testing.T) {
 	})
 
 	t.Run("成功: ブランドを取得できる", func(t *testing.T) {
-		t.Run("ブランドが指定されている", func(t *testing.T) {
+		t.Run("ブランドが指定されていない", func(t *testing.T) {
 			email := RandomEmail(t)
 			u := RegisterUser(t, ctx, email)
 
@@ -565,18 +565,26 @@ func TestUserBrandHandler(t *testing.T) {
 			response := src.UserBrandResponse{}
 			require.NoError(t, m.Json(&response))
 
-			require.Equal(t, response.Brand, "")
+			require.Len(t, response.BrandNames, 0)
 		})
 
-		t.Run("ブランドは設定されていない", func(t *testing.T) {
+		t.Run("ブランドは設定されている", func(t *testing.T) {
 			email := RandomEmail(t)
 			u := RegisterUser(t, ctx, email)
 
+			brandId, err := lib.RandomStr(31)
+			require.NoError(t, err)
 			brand := models.Brand{
-				UserID: u.ID,
-				Brand:  "pro",
+				ID:   brandId,
+				Name: "pro",
 			}
-			err := brand.Insert(ctx, DB, boil.Infer())
+			err = brand.Insert(ctx, DB, boil.Infer())
+			require.NoError(t, err)
+			userBrand := models.UserBrand{
+				UserID:  u.ID,
+				BrandID: brandId,
+			}
+			err = userBrand.Insert(ctx, DB, boil.Infer())
 			require.NoError(t, err)
 
 			cookies := RegisterSession(t, ctx, &u)
@@ -593,7 +601,8 @@ func TestUserBrandHandler(t *testing.T) {
 			response := src.UserBrandResponse{}
 			require.NoError(t, m.Json(&response))
 
-			require.Equal(t, response.Brand, "pro")
+			require.Len(t, response.BrandNames, 1)
+			require.Equal(t, response.BrandNames[0], "pro")
 		})
 	})
 }
