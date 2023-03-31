@@ -1,14 +1,5 @@
-import type {NextPage} from 'next';
-import Title from '../components/common/Title';
-import TopPage from '../components/top/TopPage';
-
-const Home: NextPage = () => {
-  return (
-    <>
-      <Title title="CateiruSSO | CateiruのSSOサービス" />
-      <TopPage />
-    </>
-  );
+const Page = () => {
+  return <div>Hello World</div>;
 };
 
-export default Home;
+export default Page;
