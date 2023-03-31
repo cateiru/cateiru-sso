@@ -33,6 +33,7 @@ var TableNames = struct {
 	Setting                       string
 	Staff                         string
 	User                          string
+	UserBrand                     string
 	WebauthnSession               string
 }{
 	Brand:                         "brand",
@@ -64,5 +65,6 @@ var TableNames = struct {
 	Setting:                       "setting",
 	Staff:                         "staff",
 	User:                          "user",
+	UserBrand:                     "user_brand",
 	WebauthnSession:               "webauthn_session",
 }

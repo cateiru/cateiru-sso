@@ -59,19 +59,33 @@ CREATE TABLE `setting` (
     PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
--- ブランドテーブル
-CREATE TABLE `brand` (
+CREATE TABLE `user_brand` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `user_id` VARCHAR(32) NOT NULL,
 
-    -- ブランド名
-    `brand` VARCHAR(31) NOT NULL,
+    -- ブランドID
+    `brand_id` VARCHAR(31) NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
     INDEX `brand_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- ブランドテーブル
+CREATE TABLE `brand` (
+    `id` VARCHAR(31) NOT NULL,
+
+    `name` TEXT NOT NULL,
+
+    `description` TEXT DEFAULT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- スタッフテーブル

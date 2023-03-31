@@ -21,24 +21,24 @@ var (
 	_ = queries.Equal
 )
 
-func testBrands(t *testing.T) {
+func testUserBrands(t *testing.T) {
 	t.Parallel()
 
-	query := Brands()
+	query := UserBrands()
 
 	if query.Query == nil {
 		t.Error("expected a query, got nothing")
 	}
 }
 
-func testBrandsDelete(t *testing.T) {
+func testUserBrandsDelete(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -54,7 +54,7 @@ func testBrandsDelete(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -64,14 +64,14 @@ func testBrandsDelete(t *testing.T) {
 	}
 }
 
-func testBrandsQueryDeleteAll(t *testing.T) {
+func testUserBrandsQueryDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -81,13 +81,13 @@ func testBrandsQueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	if rowsAff, err := Brands().DeleteAll(ctx, tx); err != nil {
+	if rowsAff, err := UserBrands().DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -97,14 +97,14 @@ func testBrandsQueryDeleteAll(t *testing.T) {
 	}
 }
 
-func testBrandsSliceDeleteAll(t *testing.T) {
+func testUserBrandsSliceDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -114,7 +114,7 @@ func testBrandsSliceDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := BrandSlice{o}
+	slice := UserBrandSlice{o}
 
 	if rowsAff, err := slice.DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
@@ -122,7 +122,7 @@ func testBrandsSliceDeleteAll(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -132,14 +132,14 @@ func testBrandsSliceDeleteAll(t *testing.T) {
 	}
 }
 
-func testBrandsExists(t *testing.T) {
+func testUserBrandsExists(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -149,23 +149,23 @@ func testBrandsExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := BrandExists(ctx, tx, o.ID)
+	e, err := UserBrandExists(ctx, tx, o.ID)
 	if err != nil {
-		t.Errorf("Unable to check if Brand exists: %s", err)
+		t.Errorf("Unable to check if UserBrand exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected BrandExists to return true, but got false.")
+		t.Errorf("Expected UserBrandExists to return true, but got false.")
 	}
 }
 
-func testBrandsFind(t *testing.T) {
+func testUserBrandsFind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -175,24 +175,24 @@ func testBrandsFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	brandFound, err := FindBrand(ctx, tx, o.ID)
+	userBrandFound, err := FindUserBrand(ctx, tx, o.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if brandFound == nil {
+	if userBrandFound == nil {
 		t.Error("want a record, got nil")
 	}
 }
 
-func testBrandsBind(t *testing.T) {
+func testUserBrandsBind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -202,19 +202,19 @@ func testBrandsBind(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err = Brands().Bind(ctx, tx, o); err != nil {
+	if err = UserBrands().Bind(ctx, tx, o); err != nil {
 		t.Error(err)
 	}
 }
 
-func testBrandsOne(t *testing.T) {
+func testUserBrandsOne(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -224,38 +224,38 @@ func testBrandsOne(t *testing.T) {
 		t.Error(err)
 	}
 
-	if x, err := Brands().One(ctx, tx); err != nil {
+	if x, err := UserBrands().One(ctx, tx); err != nil {
 		t.Error(err)
 	} else if x == nil {
 		t.Error("expected to get a non nil record")
 	}
 }
 
-func testBrandsAll(t *testing.T) {
+func testUserBrandsAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	brandOne := &Brand{}
-	brandTwo := &Brand{}
-	if err = randomize.Struct(seed, brandOne, brandDBTypes, false, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	userBrandOne := &UserBrand{}
+	userBrandTwo := &UserBrand{}
+	if err = randomize.Struct(seed, userBrandOne, userBrandDBTypes, false, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
-	if err = randomize.Struct(seed, brandTwo, brandDBTypes, false, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	if err = randomize.Struct(seed, userBrandTwo, userBrandDBTypes, false, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = brandOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = userBrandOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = brandTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = userBrandTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := Brands().All(ctx, tx)
+	slice, err := UserBrands().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -265,31 +265,31 @@ func testBrandsAll(t *testing.T) {
 	}
 }
 
-func testBrandsCount(t *testing.T) {
+func testUserBrandsCount(t *testing.T) {
 	t.Parallel()
 
 	var err error
 	seed := randomize.NewSeed()
-	brandOne := &Brand{}
-	brandTwo := &Brand{}
-	if err = randomize.Struct(seed, brandOne, brandDBTypes, false, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	userBrandOne := &UserBrand{}
+	userBrandTwo := &UserBrand{}
+	if err = randomize.Struct(seed, userBrandOne, userBrandDBTypes, false, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
-	if err = randomize.Struct(seed, brandTwo, brandDBTypes, false, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	if err = randomize.Struct(seed, userBrandTwo, userBrandDBTypes, false, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = brandOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = userBrandOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = brandTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = userBrandTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -299,155 +299,155 @@ func testBrandsCount(t *testing.T) {
 	}
 }
 
-func brandBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func brandAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func brandAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func brandBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func brandAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func brandBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func brandAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func brandBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func brandAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
-	*o = Brand{}
+func userBrandAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *UserBrand) error {
+	*o = UserBrand{}
 	return nil
 }
 
-func testBrandsHooks(t *testing.T) {
+func testUserBrandsHooks(t *testing.T) {
 	t.Parallel()
 
 	var err error
 
 	ctx := context.Background()
-	empty := &Brand{}
-	o := &Brand{}
+	empty := &UserBrand{}
+	o := &UserBrand{}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, o, brandDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Brand object: %s", err)
+	if err = randomize.Struct(seed, o, userBrandDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize UserBrand object: %s", err)
 	}
 
-	AddBrandHook(boil.BeforeInsertHook, brandBeforeInsertHook)
+	AddUserBrandHook(boil.BeforeInsertHook, userBrandBeforeInsertHook)
 	if err = o.doBeforeInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeInsertHook function to empty object, but got: %#v", o)
 	}
-	brandBeforeInsertHooks = []BrandHook{}
+	userBrandBeforeInsertHooks = []UserBrandHook{}
 
-	AddBrandHook(boil.AfterInsertHook, brandAfterInsertHook)
+	AddUserBrandHook(boil.AfterInsertHook, userBrandAfterInsertHook)
 	if err = o.doAfterInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterInsertHook function to empty object, but got: %#v", o)
 	}
-	brandAfterInsertHooks = []BrandHook{}
+	userBrandAfterInsertHooks = []UserBrandHook{}
 
-	AddBrandHook(boil.AfterSelectHook, brandAfterSelectHook)
+	AddUserBrandHook(boil.AfterSelectHook, userBrandAfterSelectHook)
 	if err = o.doAfterSelectHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterSelectHook function to empty object, but got: %#v", o)
 	}
-	brandAfterSelectHooks = []BrandHook{}
+	userBrandAfterSelectHooks = []UserBrandHook{}
 
-	AddBrandHook(boil.BeforeUpdateHook, brandBeforeUpdateHook)
+	AddUserBrandHook(boil.BeforeUpdateHook, userBrandBeforeUpdateHook)
 	if err = o.doBeforeUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpdateHook function to empty object, but got: %#v", o)
 	}
-	brandBeforeUpdateHooks = []BrandHook{}
+	userBrandBeforeUpdateHooks = []UserBrandHook{}
 
-	AddBrandHook(boil.AfterUpdateHook, brandAfterUpdateHook)
+	AddUserBrandHook(boil.AfterUpdateHook, userBrandAfterUpdateHook)
 	if err = o.doAfterUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpdateHook function to empty object, but got: %#v", o)
 	}
-	brandAfterUpdateHooks = []BrandHook{}
+	userBrandAfterUpdateHooks = []UserBrandHook{}
 
-	AddBrandHook(boil.BeforeDeleteHook, brandBeforeDeleteHook)
+	AddUserBrandHook(boil.BeforeDeleteHook, userBrandBeforeDeleteHook)
 	if err = o.doBeforeDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeDeleteHook function to empty object, but got: %#v", o)
 	}
-	brandBeforeDeleteHooks = []BrandHook{}
+	userBrandBeforeDeleteHooks = []UserBrandHook{}
 
-	AddBrandHook(boil.AfterDeleteHook, brandAfterDeleteHook)
+	AddUserBrandHook(boil.AfterDeleteHook, userBrandAfterDeleteHook)
 	if err = o.doAfterDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterDeleteHook function to empty object, but got: %#v", o)
 	}
-	brandAfterDeleteHooks = []BrandHook{}
+	userBrandAfterDeleteHooks = []UserBrandHook{}
 
-	AddBrandHook(boil.BeforeUpsertHook, brandBeforeUpsertHook)
+	AddUserBrandHook(boil.BeforeUpsertHook, userBrandBeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpsertHook function to empty object, but got: %#v", o)
 	}
-	brandBeforeUpsertHooks = []BrandHook{}
+	userBrandBeforeUpsertHooks = []UserBrandHook{}
 
-	AddBrandHook(boil.AfterUpsertHook, brandAfterUpsertHook)
+	AddUserBrandHook(boil.AfterUpsertHook, userBrandAfterUpsertHook)
 	if err = o.doAfterUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpsertHook function to empty object, but got: %#v", o)
 	}
-	brandAfterUpsertHooks = []BrandHook{}
+	userBrandAfterUpsertHooks = []UserBrandHook{}
 }
 
-func testBrandsInsert(t *testing.T) {
+func testUserBrandsInsert(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -457,7 +457,7 @@ func testBrandsInsert(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -467,24 +467,24 @@ func testBrandsInsert(t *testing.T) {
 	}
 }
 
-func testBrandsInsertWhitelist(t *testing.T) {
+func testUserBrandsInsertWhitelist(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert(ctx, tx, boil.Whitelist(brandColumnsWithoutDefault...)); err != nil {
+	if err = o.Insert(ctx, tx, boil.Whitelist(userBrandColumnsWithoutDefault...)); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -494,14 +494,14 @@ func testBrandsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testBrandsReload(t *testing.T) {
+func testUserBrandsReload(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -516,14 +516,14 @@ func testBrandsReload(t *testing.T) {
 	}
 }
 
-func testBrandsReloadAll(t *testing.T) {
+func testUserBrandsReloadAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -533,21 +533,21 @@ func testBrandsReloadAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := BrandSlice{o}
+	slice := UserBrandSlice{o}
 
 	if err = slice.ReloadAll(ctx, tx); err != nil {
 		t.Error(err)
 	}
 }
 
-func testBrandsSelect(t *testing.T) {
+func testUserBrandsSelect(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -557,7 +557,7 @@ func testBrandsSelect(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice, err := Brands().All(ctx, tx)
+	slice, err := UserBrands().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,25 +568,25 @@ func testBrandsSelect(t *testing.T) {
 }
 
 var (
-	brandDBTypes = map[string]string{`ID`: `varchar`, `Name`: `text`, `Description`: `text`, `Created`: `datetime`, `Modified`: `datetime`}
-	_            = bytes.MinRead
+	userBrandDBTypes = map[string]string{`ID`: `int`, `UserID`: `varchar`, `BrandID`: `varchar`, `Created`: `datetime`}
+	_                = bytes.MinRead
 )
 
-func testBrandsUpdate(t *testing.T) {
+func testUserBrandsUpdate(t *testing.T) {
 	t.Parallel()
 
-	if 0 == len(brandPrimaryKeyColumns) {
+	if 0 == len(userBrandPrimaryKeyColumns) {
 		t.Skip("Skipping table with no primary key columns")
 	}
-	if len(brandAllColumns) == len(brandPrimaryKeyColumns) {
+	if len(userBrandAllColumns) == len(userBrandPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -596,7 +596,7 @@ func testBrandsUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -605,8 +605,8 @@ func testBrandsUpdate(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	if rowsAff, err := o.Update(ctx, tx, boil.Infer()); err != nil {
@@ -616,18 +616,18 @@ func testBrandsUpdate(t *testing.T) {
 	}
 }
 
-func testBrandsSliceUpdateAll(t *testing.T) {
+func testUserBrandsSliceUpdateAll(t *testing.T) {
 	t.Parallel()
 
-	if len(brandAllColumns) == len(brandPrimaryKeyColumns) {
+	if len(userBrandAllColumns) == len(userBrandPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Brand{}
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := &UserBrand{}
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -637,7 +637,7 @@ func testBrandsSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -646,18 +646,18 @@ func testBrandsSliceUpdateAll(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, brandDBTypes, true, brandPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	if err = randomize.Struct(seed, o, userBrandDBTypes, true, userBrandPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
-	if strmangle.StringSliceMatch(brandAllColumns, brandPrimaryKeyColumns) {
-		fields = brandAllColumns
+	if strmangle.StringSliceMatch(userBrandAllColumns, userBrandPrimaryKeyColumns) {
+		fields = userBrandAllColumns
 	} else {
 		fields = strmangle.SetComplement(
-			brandAllColumns,
-			brandPrimaryKeyColumns,
+			userBrandAllColumns,
+			userBrandPrimaryKeyColumns,
 		)
 	}
 
@@ -675,7 +675,7 @@ func testBrandsSliceUpdateAll(t *testing.T) {
 		}
 	}
 
-	slice := BrandSlice{o}
+	slice := UserBrandSlice{o}
 	if rowsAff, err := slice.UpdateAll(ctx, tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
@@ -683,32 +683,32 @@ func testBrandsSliceUpdateAll(t *testing.T) {
 	}
 }
 
-func testBrandsUpsert(t *testing.T) {
+func testUserBrandsUpsert(t *testing.T) {
 	t.Parallel()
 
-	if len(brandAllColumns) == len(brandPrimaryKeyColumns) {
+	if len(userBrandAllColumns) == len(userBrandPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
-	if len(mySQLBrandUniqueColumns) == 0 {
+	if len(mySQLUserBrandUniqueColumns) == 0 {
 		t.Skip("Skipping table with no unique columns to conflict on")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
-	o := Brand{}
-	if err = randomize.Struct(seed, &o, brandDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	o := UserBrand{}
+	if err = randomize.Struct(seed, &o, userBrandDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 	if err = o.Upsert(ctx, tx, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Brand: %s", err)
+		t.Errorf("Unable to upsert UserBrand: %s", err)
 	}
 
-	count, err := Brands().Count(ctx, tx)
+	count, err := UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -717,15 +717,15 @@ func testBrandsUpsert(t *testing.T) {
 	}
 
 	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, brandDBTypes, false, brandPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Brand struct: %s", err)
+	if err = randomize.Struct(seed, &o, userBrandDBTypes, false, userBrandPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
 	}
 
 	if err = o.Upsert(ctx, tx, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Brand: %s", err)
+		t.Errorf("Unable to upsert UserBrand: %s", err)
 	}
 
-	count, err = Brands().Count(ctx, tx)
+	count, err = UserBrands().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}

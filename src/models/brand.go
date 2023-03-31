@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -23,63 +24,45 @@ import (
 
 // Brand is an object representing the database table.
 type Brand struct {
-	ID      uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID  string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Brand   string    `boil:"brand" json:"brand" toml:"brand" yaml:"brand"`
-	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Created     time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	Modified    time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
 	R *brandR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L brandL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var BrandColumns = struct {
-	ID      string
-	UserID  string
-	Brand   string
-	Created string
+	ID          string
+	Name        string
+	Description string
+	Created     string
+	Modified    string
 }{
-	ID:      "id",
-	UserID:  "user_id",
-	Brand:   "brand",
-	Created: "created",
+	ID:          "id",
+	Name:        "name",
+	Description: "description",
+	Created:     "created",
+	Modified:    "modified",
 }
 
 var BrandTableColumns = struct {
-	ID      string
-	UserID  string
-	Brand   string
-	Created string
+	ID          string
+	Name        string
+	Description string
+	Created     string
+	Modified    string
 }{
-	ID:      "brand.id",
-	UserID:  "brand.user_id",
-	Brand:   "brand.brand",
-	Created: "brand.created",
+	ID:          "brand.id",
+	Name:        "brand.name",
+	Description: "brand.description",
+	Created:     "brand.created",
+	Modified:    "brand.modified",
 }
 
 // Generated where
-
-type whereHelperuint struct{ field string }
-
-func (w whereHelperuint) EQ(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperuint) NEQ(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperuint) LT(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperuint) LTE(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperuint) GT(x uint) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperuint) GTE(x uint) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperuint) IN(slice []uint) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperuint) NIN(slice []uint) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
 
 type whereHelperstring struct{ field string }
 
@@ -104,6 +87,44 @@ func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
+type whereHelpernull_String struct{ field string }
+
+func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 type whereHelpertime_Time struct{ field string }
 
 func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
@@ -126,15 +147,17 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 }
 
 var BrandWhere = struct {
-	ID      whereHelperuint
-	UserID  whereHelperstring
-	Brand   whereHelperstring
-	Created whereHelpertime_Time
+	ID          whereHelperstring
+	Name        whereHelperstring
+	Description whereHelpernull_String
+	Created     whereHelpertime_Time
+	Modified    whereHelpertime_Time
 }{
-	ID:      whereHelperuint{field: "`brand`.`id`"},
-	UserID:  whereHelperstring{field: "`brand`.`user_id`"},
-	Brand:   whereHelperstring{field: "`brand`.`brand`"},
-	Created: whereHelpertime_Time{field: "`brand`.`created`"},
+	ID:          whereHelperstring{field: "`brand`.`id`"},
+	Name:        whereHelperstring{field: "`brand`.`name`"},
+	Description: whereHelpernull_String{field: "`brand`.`description`"},
+	Created:     whereHelpertime_Time{field: "`brand`.`created`"},
+	Modified:    whereHelpertime_Time{field: "`brand`.`modified`"},
 }
 
 // BrandRels is where relationship names are stored.
@@ -154,9 +177,9 @@ func (*brandR) NewStruct() *brandR {
 type brandL struct{}
 
 var (
-	brandAllColumns            = []string{"id", "user_id", "brand", "created"}
-	brandColumnsWithoutDefault = []string{"user_id", "brand"}
-	brandColumnsWithDefault    = []string{"id", "created"}
+	brandAllColumns            = []string{"id", "name", "description", "created", "modified"}
+	brandColumnsWithoutDefault = []string{"id", "name", "description"}
+	brandColumnsWithDefault    = []string{"created", "modified"}
 	brandPrimaryKeyColumns     = []string{"id"}
 	brandGeneratedColumns      = []string{}
 )
@@ -452,7 +475,7 @@ func Brands(mods ...qm.QueryMod) brandQuery {
 
 // FindBrand retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindBrand(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols ...string) (*Brand, error) {
+func FindBrand(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Brand, error) {
 	brandObj := &Brand{}
 
 	sel := "*"
@@ -539,26 +562,15 @@ func (o *Brand) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into brand")
 	}
 
-	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == brandMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -813,27 +825,16 @@ func (o *Brand) Upsert(ctx context.Context, exec boil.ContextExecutor, updateCol
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for brand")
 	}
 
-	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == brandMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1011,7 +1012,7 @@ func (o *BrandSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) e
 }
 
 // BrandExists checks if the Brand row exists.
-func BrandExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bool, error) {
+func BrandExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `brand` where `id`=? limit 1)"
 
