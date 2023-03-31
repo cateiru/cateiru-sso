@@ -362,7 +362,6 @@ CREATE TABLE `client_session` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY(`id`),
-    -- TODO: もっと突き詰める
     INDEX `client_session_user_id` (`user_id`),
     INDEX `client_session_client_id` (`client_id`),
     INDEX `client_session_login_client_id` (`login_client_id`)
@@ -391,7 +390,6 @@ CREATE TABLE `client_refresh` (
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY(`id`),
-    -- TODO: もっと突き詰める
     INDEX `client_refresh_user_id` (`user_id`),
     INDEX `client_refresh_session_id` (`session_id`),
     INDEX `client_refresh_client_id` (`client_id`)

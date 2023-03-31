@@ -17,8 +17,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
-// TODO
-
 func TestHistoryClientLoginHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)

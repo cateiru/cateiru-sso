@@ -164,6 +164,18 @@ var LocalConfig = &Config{
 		RPDisplayName: "Cateiru SSO Local",
 		RPID:          "sso.cateiru.test",
 		RPOrigins:     []string{"sso.cateiru.test:8080", "sso.cateiru.test:3000"},
+		Timeouts: webauthn.TimeoutsConfig{
+			Login: webauthn.TimeoutConfig{
+				Enforce:    true,
+				Timeout:    time.Second * 60,
+				TimeoutUVD: time.Second * 60,
+			},
+			Registration: webauthn.TimeoutConfig{
+				Enforce:    true,
+				Timeout:    time.Second * 60,
+				TimeoutUVD: time.Second * 60,
+			},
+		},
 	},
 	WebAuthnSessionPeriod: 5 * time.Minute,
 	WebAuthnSessionCookie: CookieConfig{
@@ -284,10 +296,22 @@ var CloudRunConfig = &Config{
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
 
-	WebAuthnConfig: &webauthn.Config{ // TODO: 有効期限設ける
+	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO",
 		RPID:          "sso.cateiru.com",
 		RPOrigins:     []string{"sso.cateiru.com", "api.sso.cateiru.com"},
+		Timeouts: webauthn.TimeoutsConfig{
+			Login: webauthn.TimeoutConfig{
+				Enforce:    true,
+				Timeout:    time.Second * 60,
+				TimeoutUVD: time.Second * 60,
+			},
+			Registration: webauthn.TimeoutConfig{
+				Enforce:    true,
+				Timeout:    time.Second * 60,
+				TimeoutUVD: time.Second * 60,
+			},
+		},
 	},
 	WebAuthnSessionPeriod: 5 * time.Minute,
 	WebAuthnSessionCookie: CookieConfig{
@@ -377,7 +401,6 @@ var CloudRunConfig = &Config{
 
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
-
 }
 
 var TestConfig = &Config{
