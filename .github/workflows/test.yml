@@ -37,6 +37,6 @@ jobs:
     - name: Build
       run: go build -v ./...
     - name: Test
-      run: ./scripts/test.sh -v -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic
+      run: ./scripts/test.sh -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
