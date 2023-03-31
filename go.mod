@@ -24,7 +24,7 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.14.1
 	github.com/volatiletech/strmangle v0.0.4
 	go.uber.org/zap v1.24.0
-	golang.org/x/crypto v0.6.0
+	golang.org/x/crypto v0.7.0
 	golang.org/x/net v0.8.0
 	golang.org/x/text v0.8.0
 )
@@ -41,6 +41,7 @@ require (
 	github.com/facebookgo/ensure v0.0.0-20200202191622-63f1cf65ac4c // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
+	github.com/fastly/go-fastly/v7 v7.5.4 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
 	github.com/go-webauthn/revoke v0.1.9 // indirect
@@ -51,9 +52,12 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/go-tpm v0.3.3 // indirect
+	github.com/google/jsonapi v1.0.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/googleapis/gax-go/v2 v2.8.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
@@ -65,6 +69,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.26.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
+	github.com/peterhellberg/link v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect

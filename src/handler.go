@@ -52,7 +52,10 @@ func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 	session := NewSession(config, db)
 
 	storage := lib.NewCloudStorage(config.StorageBucketName)
-	cdn := lib.NewCDN(config.FastlyApiToken)
+	cdn, err := lib.NewCDN(config.FastlyApiToken)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Handler{
 		DB:        db,

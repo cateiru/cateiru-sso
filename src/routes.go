@@ -106,8 +106,11 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.DELETE("/user/brand", h.AdminUserBrandDeleteHandler) // ブランドの削除
 	admin.POST("/staff", h.AdminStaffHandler)                  // スタッフフラグの付与、削除
 	admin.POST("/broadcast", h.AdminBroadcastHandler)
+
 	admin.GET("/brand", h.AdminBrandHandler)
 	admin.POST("/brand", h.AdminBrandCreateHandler)
+	admin.PUT("/brand", h.AdminBrandUpdateHandler)
+	admin.DELETE("/brand", h.AdminBrandDeleteHandler)
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
