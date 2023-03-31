@@ -3,6 +3,7 @@ package src
 import (
 	"database/sql"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -17,6 +18,11 @@ func Init(mode string) {
 
 func Main(mode string) {
 	config := InitConfig(mode)
+
+	// CloudStorageのために環境変数を設定する
+	if config.StorageEmulatorHost.IsValid {
+		os.Setenv("STORAGE_EMULATOR_HOST", config.StorageEmulatorHost.Value)
+	}
 
 	if err := Server(config); err != nil {
 		S.Fatal(err)

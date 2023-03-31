@@ -74,6 +74,10 @@ yarn install
 go run .
 ```
 
+[tips]
+
+[`cosmtrek/air`](https://github.com/cosmtrek/air)を使用すると変更をリアルタイムで反映できます。
+
 Goを起動したまま、別のターミナルで、以下を入力してNext.jsを実行してください。
 
 ```bash
@@ -81,3 +85,15 @@ yarn dev:ssl
 ```
 
 [https://sso.cateiru.test:3000](https://sso.cateiru.test:3000)にアクセスできて、ログインが可能であれば成功です。
+
+## テストをする
+
+### APIのテスト
+
+- `docker-compose`でデータベースが実行されている必要があります。
+
+```bash
+./scripts/test.sh
+```
+
+- テストでは、毎回TRUNCATE TABLEが実行されます

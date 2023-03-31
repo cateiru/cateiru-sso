@@ -51,9 +51,6 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	// ローカルのCloud Storage接続
-	os.Setenv("STORAGE_EMULATOR_HOST", "localhost:4443")
-
 	flag.Parse()
 
 	code := m.Run()

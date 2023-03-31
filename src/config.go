@@ -94,6 +94,12 @@ type Config struct {
 
 	StorageBucketName string
 
+	// CloudStorageのエミュレータホスト
+	StorageEmulatorHost struct {
+		Value   string
+		IsValid bool
+	}
+
 	// ---- Clientの設定
 
 	ClientSessionPeriod time.Duration
@@ -129,18 +135,18 @@ var LocalConfig = &Config{
 		DBName:               "cateiru-sso",
 		User:                 "docker",
 		Passwd:               "docker",
-		Addr:                 "localhost:3306",
+		Addr:                 "localhost:3306", // APIから接続するのでlocalhost
 		Net:                  "tcp",
 		ParseTime:            true,
 		Loc:                  time.FixedZone("Asia/Tokyo", 9*60*60),
 		AllowNativePasswords: true,
 	},
 	Host: &url.URL{
-		Host:   "api.sso.cateiru.test:8080",
+		Host:   "sso.cateiru.test:8080",
 		Scheme: "http",
 	},
 	SiteHost: &url.URL{
-		Host:   "sso.cateiru.test",
+		Host:   "sso.cateiru.test:3000",
 		Scheme: "http",
 	},
 
@@ -157,7 +163,7 @@ var LocalConfig = &Config{
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO Local",
 		RPID:          "sso.cateiru.test",
-		RPOrigins:     []string{"sso.cateiru.test", "api.sso.cateiru.test"},
+		RPOrigins:     []string{"sso.cateiru.test:8080", "sso.cateiru.test:3000"},
 	},
 	WebAuthnSessionPeriod: 5 * time.Minute,
 	WebAuthnSessionCookie: CookieConfig{
@@ -230,12 +236,20 @@ var LocalConfig = &Config{
 	InternalBasicAuthPassword: "password",
 
 	CDNHost: &url.URL{
-		Host:   "localhost:4000",
+		Host:   "sso.cateiru.test:4443",
 		Scheme: "http",
 	},
 	FastlyApiToken: "token",
 
 	StorageBucketName: "cateiru-sso",
+
+	StorageEmulatorHost: struct {
+		Value   string
+		IsValid bool
+	}{
+		Value:   "localhost:4443",
+		IsValid: true,
+	},
 
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
@@ -353,8 +367,17 @@ var CloudRunConfig = &Config{
 
 	StorageBucketName: "cateiru-sso",
 
+	StorageEmulatorHost: struct {
+		Value   string
+		IsValid bool
+	}{
+		Value:   "",
+		IsValid: false,
+	},
+
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
+
 }
 
 var TestConfig = &Config{
@@ -476,6 +499,14 @@ var TestConfig = &Config{
 	FastlyApiToken: "token",
 
 	StorageBucketName: "test-cateiru-sso",
+
+	StorageEmulatorHost: struct {
+		Value   string
+		IsValid bool
+	}{
+		Value:   "localhost:4443",
+		IsValid: true,
+	},
 
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
