@@ -926,3 +926,30 @@ func TestLoggedInAccounts(t *testing.T) {
 		require.Len(t, users, 0)
 	})
 }
+
+func TestRequireStuff(t *testing.T) {
+	ctx := context.Background()
+	s := src.NewSession(C, DB)
+
+	t.Run("成功: スタッフである", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		staff := models.Staff{
+			UserID: u.ID,
+		}
+		err := staff.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		err = s.RequireStuff(ctx, &u)
+		require.NoError(t, err)
+	})
+
+	t.Run("成功: スタッフじゃない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		err := s.RequireStuff(ctx, &u)
+		require.EqualError(t, err, "code=403, message=require staff")
+	})
+}

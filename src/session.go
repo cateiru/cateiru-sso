@@ -729,3 +729,17 @@ func (s *Session) LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) 
 
 	return users, nil
 }
+
+// スタッフのみ
+func (s *Session) RequireStuff(ctx context.Context, user *models.User) error {
+	isStuff, err := models.Staffs(
+		models.StaffWhere.UserID.EQ(user.ID),
+	).Exists(ctx, s.DB)
+	if err != nil {
+		return err
+	}
+	if !isStuff {
+		return NewHTTPError(http.StatusForbidden, "require staff")
+	}
+	return nil
+}
