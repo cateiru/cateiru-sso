@@ -35,6 +35,9 @@ type Config struct {
 	MailgunSecret     string
 	SenderMailAddress string
 
+	// メールを送信するかどうか
+	SendMail bool
+
 	// アカウント登録時に使用するセッションの有効期限
 	RegisterSessionPeriod     time.Duration
 	RegisterSessionRetryLimit uint8
@@ -133,17 +136,19 @@ var LocalConfig = &Config{
 		AllowNativePasswords: true,
 	},
 	Host: &url.URL{
-		Host:   "localhost:8080",
+		Host:   "api.sso.cateiru.test:8080",
 		Scheme: "http",
 	},
 	SiteHost: &url.URL{
-		Host:   "localhost:3000",
+		Host:   "sso.cateiru.test",
 		Scheme: "http",
 	},
 
-	FromDomain:        "m.cateiru.com",
+	FromDomain:        "m.cateiru.test",
 	MailgunSecret:     "secret",
-	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+	SenderMailAddress: "CateiruSSO <sso@m.cateiru.test>",
+
+	SendMail: false,
 
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
@@ -151,8 +156,8 @@ var LocalConfig = &Config{
 
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO Local",
-		RPID:          "localhost:3000",
-		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
+		RPID:          "sso.cateiru.test",
+		RPOrigins:     []string{"sso.cateiru.test", "api.sso.cateiru.test"},
 	},
 	WebAuthnSessionPeriod: 5 * time.Minute,
 	WebAuthnSessionCookie: CookieConfig{
@@ -258,6 +263,8 @@ var CloudRunConfig = &Config{
 	FromDomain:        "m.cateiru.com",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+
+	SendMail: true,
 
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
@@ -380,6 +387,8 @@ var TestConfig = &Config{
 	FromDomain:        "m.cateiru.com",
 	MailgunSecret:     "secret",
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+
+	SendMail: true,
 
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,

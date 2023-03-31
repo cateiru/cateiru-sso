@@ -2,6 +2,7 @@ package src
 
 import (
 	"database/sql"
+	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -61,22 +62,33 @@ func Server(c *Config) error {
 func ServerMiddleWare(e *echo.Echo) {
 	// リクエストごとにログを出す
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
-		LogMethod: true,
-		LogHost:   true,
-		LogError:  true,
+		LogURI:      true,
+		LogStatus:   true,
+		LogMethod:   true,
+		LogHost:     true,
+		LogError:    true,
+		LogRemoteIP: true,
 
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			if v.Error != nil {
+				code := http.StatusInternalServerError
+				he, ok := v.Error.(*HTTPError)
+				echohe, eok := v.Error.(*echo.HTTPError)
+				if ok {
+					code = he.Code
+				} else if eok {
+					code = echohe.Code
+				}
+
 				// エラーコードが400番台の場合はInfo
-				if v.Status >= 400 && v.Status < 500 {
+				if code >= 400 && code < 500 {
 					L.Info("request",
 						zap.String("URI", v.URI),
 						zap.String("method", v.Method),
-						zap.Int("status", v.Status),
+						zap.Int("status", code),
 						zap.String("host", v.Host),
 						zap.String("response_time", time.Since(v.StartTime).String()),
+						zap.String("ip", v.RemoteIP),
 						zap.String("error_message", v.Error.Error()),
 					)
 					return nil
@@ -84,9 +96,10 @@ func ServerMiddleWare(e *echo.Echo) {
 				L.Error("request",
 					zap.String("URI", v.URI),
 					zap.String("method", v.Method),
-					zap.Int("status", v.Status),
+					zap.Int("status", code),
 					zap.String("host", v.Host),
 					zap.String("response_time", time.Since(v.StartTime).String()),
+					zap.String("ip", v.RemoteIP),
 					zap.String("error_message", v.Error.Error()),
 				)
 			} else {
@@ -96,6 +109,7 @@ func ServerMiddleWare(e *echo.Echo) {
 					zap.Int("status", v.Status),
 					zap.String("host", v.Host),
 					zap.String("response_time", time.Since(v.StartTime).String()),
+					zap.String("ip", v.RemoteIP),
 				)
 			}
 			return nil

@@ -23,20 +23,20 @@ const handle = app.getRequestHandler();
 
   // Use HTTPS if HTTPS option enabled
   const hasCertificates =
-    fs.existsSync('./certificates/localhost.key') &&
-    fs.existsSync('./certificates/localhost.crt');
+    fs.existsSync('./certificates/tls.key') &&
+    fs.existsSync('./certificates/tls.crt');
   const useHttps = process.env.HTTPS === 'true' && hasCertificates;
 
   if (useHttps) {
     const options = {
-      key: fs.readFileSync('./certificates/localhost.key'),
-      cert: fs.readFileSync('./certificates/localhost.crt'),
+      key: fs.readFileSync('./certificates/tls.key'),
+      cert: fs.readFileSync('./certificates/tls.crt'),
     };
     const server = https.createServer(options, expressApp);
     server.listen(port, host);
-    console.log(`> Ready on https://localhost:${port}`);
+    console.log(`> Ready on https://sso.cateiru.test`);
   } else {
     expressApp.listen(port, host);
-    console.log(`> Ready on http://localhost:${port}`);
+    console.log(`> Ready on http://sso.cateiru.test`);
   }
 })();

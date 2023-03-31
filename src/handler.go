@@ -8,6 +8,7 @@ import (
 	goclienthints "github.com/cateiru/go-client-hints/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/mileusna/useragent"
+	"go.uber.org/zap"
 )
 
 type UserData struct {
@@ -32,9 +33,15 @@ type Handler struct {
 func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 	reCaptcha := lib.NewReCaptcha(config.ReCaptchaSecret)
 
-	sender, err := lib.NewSender("../templates/*", config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
-	if err != nil {
-		return nil, err
+	var sender lib.SenderInterface = nil
+	if !config.SendMail {
+		s, err := lib.NewSender(`templates/*`, config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
+		if err != nil {
+			return nil, err
+		}
+		sender = s
+	} else {
+		sender = &SenderMock{}
 	}
 
 	webauthn, err := lib.NewWebAuthn(config.WebAuthnConfig)
@@ -92,4 +99,17 @@ func (h *Handler) ParseUA(r *http.Request) (*UserData, error) {
 		Device:   ua.Device,
 		IsMobile: ua.Mobile,
 	}, nil
+}
+
+// ローカル環境ではメールを送信したくないのでモックする
+type SenderMock struct{}
+
+func (s *SenderMock) Send(m *lib.MailBody) (string, string, error) {
+	L.Info("send mail",
+		zap.String("email_address", m.EmailAddress),
+		zap.String("subject", m.Subject),
+		zap.Any("data", m.Data),
+	)
+
+	return "", "", nil
 }

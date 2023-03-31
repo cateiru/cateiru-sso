@@ -70,8 +70,6 @@ func (he *HTTPError) Error() string {
 // 基本エラー時には、{"message": "error message"}のjsonを返す
 // unique_codeもあれば表記
 func CustomHTTPErrorHandler(err error, c echo.Context) {
-	c.Logger().Error(err)
-
 	code := http.StatusInternalServerError
 	he, ok := err.(*HTTPError)
 	if ok {
