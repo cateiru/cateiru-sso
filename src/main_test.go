@@ -380,3 +380,49 @@ func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx co
 		require.EqualError(t, err, "code=403, message=login failed, unique=8")
 	})
 }
+
+func StuffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler) {
+	ctx := context.Background()
+
+	defaultEmail := RandomEmail(t)
+	defaultUser := RegisterUser(t, ctx, defaultEmail)
+
+	secondEmail := RandomEmail(t)
+	secondUser := RegisterUser(t, ctx, secondEmail)
+	sessionCookies := RegisterSession(t, ctx, &secondUser)
+
+	t.Run("正しく認証できていてスタッフである", func(t *testing.T) {
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+
+		staff := models.Staff{
+			UserID: user.ID,
+		}
+		err := staff.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m := newMock(ctx, &user)
+		m.Cookie(sessionCookies)
+		c := m.Echo()
+
+		err = h(c)
+		require.NoError(t, err)
+	})
+
+	t.Run("Cookieが空の場合認証できない", func(t *testing.T) {
+		m := newMock(ctx, &defaultUser)
+		c := m.Echo()
+
+		err := h(c)
+		require.EqualError(t, err, "code=403, message=login failed, unique=8")
+	})
+
+	t.Run("スタッフではない", func(t *testing.T) {
+		m := newMock(ctx, &secondUser)
+		m.Cookie(sessionCookies)
+		c := m.Echo()
+
+		err := h(c)
+		require.EqualError(t, err, "code=403, message=require stuff")
+	})
+}

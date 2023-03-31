@@ -26,6 +26,7 @@ type SessionInterface interface {
 	NewRegisterSession(ctx context.Context, user *models.User, ua *UserData, ip string) (*RegisterSession, error)
 	SwitchAccount(ctx context.Context, cookies []*http.Cookie, userID string) ([]*http.Cookie, error)
 	LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) ([]*models.User, error)
+	RequireStuff(ctx context.Context, user *models.User) error
 }
 
 type RegisterSession struct {
