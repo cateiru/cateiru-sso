@@ -26,6 +26,7 @@ jobs:
     timeout-minutes: 5
     env: 
       TZ: "Asia/Tokyo"
+      STORAGE_URL: "localhost:4443"
     steps:
     - uses: actions/checkout@v2
     - name: Set up Go
