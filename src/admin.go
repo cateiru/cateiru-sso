@@ -43,7 +43,7 @@ func (h *Handler) AdminUsersHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 
@@ -64,12 +64,15 @@ func (h *Handler) AdminUserDetailHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	userId := c.QueryParam("user_id")
+	if userId == "" {
+		return NewHTTPError(http.StatusBadRequest, "user_id is required")
+	}
 
 	u, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 
@@ -139,7 +142,7 @@ func (h *Handler) AdminUserBrandHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 
@@ -191,7 +194,7 @@ func (h *Handler) AdminUserBrandDeleteHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 
@@ -217,7 +220,7 @@ func (h *Handler) AdminUserBrandDeleteHandler(c echo.Context) error {
 }
 
 // スタッフフラグの追加と削除を行う
-func (h *Handler) AdminStuffHandler(c echo.Context) error {
+func (h *Handler) AdminStaffHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	userId := c.FormValue("user_id")
@@ -230,8 +233,19 @@ func (h *Handler) AdminStuffHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
+	}
+
+	// userが存在するかチェックする
+	existUser, err := models.Users(
+		models.UserWhere.ID.EQ(userId),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !existUser {
+		return NewHTTPError(http.StatusNotFound, "user not found")
 	}
 
 	staff, err := models.Staffs(
@@ -246,6 +260,7 @@ func (h *Handler) AdminStuffHandler(c echo.Context) error {
 		if err := newStaff.Insert(ctx, h.DB, boil.Infer()); err != nil {
 			return err
 		}
+		return nil
 	}
 	if err != nil {
 		return err
@@ -267,7 +282,7 @@ func (h *Handler) AdminBroadcastHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 
@@ -285,7 +300,7 @@ func (h *Handler) AdminBrandHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 
@@ -308,7 +323,7 @@ func (h *Handler) AdminBrandHandler(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, []models.Brand{*brand})
+	return c.JSON(http.StatusOK, []*models.Brand{brand})
 }
 
 // ブランドを新規作成する
@@ -325,7 +340,7 @@ func (h *Handler) AdminBrandCreateHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 
@@ -364,7 +379,7 @@ func (h *Handler) AdminBrandUpdateHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 
@@ -400,7 +415,7 @@ func (h *Handler) AdminBrandDeleteHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := h.Session.RequireStuff(ctx, u); err != nil {
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
 		return err
 	}
 

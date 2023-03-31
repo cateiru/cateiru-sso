@@ -104,7 +104,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.GET("/user_detail", h.AdminUserDetailHandler)
 	admin.POST("/user/brand", h.AdminUserBrandHandler)         // ブランドの付与
 	admin.DELETE("/user/brand", h.AdminUserBrandDeleteHandler) // ブランドの削除
-	admin.POST("/staff", h.AdminStuffHandler)                  // スタッフフラグの付与、削除
+	admin.POST("/staff", h.AdminStaffHandler)                  // スタッフフラグの付与、削除
 	admin.POST("/broadcast", h.AdminBroadcastHandler)
 	admin.GET("/brand", h.AdminBrandHandler)
 	admin.POST("/brand", h.AdminBrandCreateHandler)

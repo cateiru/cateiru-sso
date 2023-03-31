@@ -927,7 +927,7 @@ func TestLoggedInAccounts(t *testing.T) {
 	})
 }
 
-func TestRequireStuff(t *testing.T) {
+func TestRequireStaff(t *testing.T) {
 	ctx := context.Background()
 	s := src.NewSession(C, DB)
 
@@ -941,7 +941,7 @@ func TestRequireStuff(t *testing.T) {
 		err := staff.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		err = s.RequireStuff(ctx, &u)
+		err = s.RequireStaff(ctx, &u)
 		require.NoError(t, err)
 	})
 
@@ -949,7 +949,7 @@ func TestRequireStuff(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		err := s.RequireStuff(ctx, &u)
+		err := s.RequireStaff(ctx, &u)
 		require.EqualError(t, err, "code=403, message=require staff")
 	})
 }

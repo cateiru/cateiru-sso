@@ -26,7 +26,7 @@ type SessionInterface interface {
 	NewRegisterSession(ctx context.Context, user *models.User, ua *UserData, ip string) (*RegisterSession, error)
 	SwitchAccount(ctx context.Context, cookies []*http.Cookie, userID string) ([]*http.Cookie, error)
 	LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) ([]*models.User, error)
-	RequireStuff(ctx context.Context, user *models.User) error
+	RequireStaff(ctx context.Context, user *models.User) error
 }
 
 type RegisterSession struct {
@@ -732,14 +732,14 @@ func (s *Session) LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) 
 }
 
 // スタッフのみ
-func (s *Session) RequireStuff(ctx context.Context, user *models.User) error {
-	isStuff, err := models.Staffs(
+func (s *Session) RequireStaff(ctx context.Context, user *models.User) error {
+	isStaff, err := models.Staffs(
 		models.StaffWhere.UserID.EQ(user.ID),
 	).Exists(ctx, s.DB)
 	if err != nil {
 		return err
 	}
-	if !isStuff {
+	if !isStaff {
 		return NewHTTPError(http.StatusForbidden, "require staff")
 	}
 	return nil

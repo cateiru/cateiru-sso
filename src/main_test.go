@@ -349,6 +349,30 @@ func RegisterClient(t *testing.T, ctx context.Context, u *models.User) (string, 
 	return clientID.String(), secret
 }
 
+func RegisterBrand(t *testing.T, ctx context.Context, name string, description string, u ...*models.User) string {
+	brandId, err := lib.RandomStr(31)
+	require.NoError(t, err)
+
+	brand := models.Brand{
+		ID:          brandId,
+		Name:        name,
+		Description: null.NewString(description, description != ""),
+	}
+	err = brand.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+
+	for _, user := range u {
+		brandUser := models.UserBrand{
+			BrandID: brand.ID,
+			UserID:  user.ID,
+		}
+		err = brandUser.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	}
+
+	return brandId
+}
+
 // そのHandlerが認証が必要かどうかをテストする
 func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler) {
 	ctx := context.Background()
@@ -378,7 +402,7 @@ func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx co
 	})
 }
 
-func StuffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler) {
+func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler) {
 	ctx := context.Background()
 
 	defaultEmail := RandomEmail(t)
@@ -398,8 +422,10 @@ func StuffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock fun
 		err := staff.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
+		staffSessionCookies := RegisterSession(t, ctx, &user)
+
 		m := newMock(ctx, &user)
-		m.Cookie(sessionCookies)
+		m.Cookie(staffSessionCookies)
 		c := m.Echo()
 
 		err = h(c)
@@ -420,6 +446,6 @@ func StuffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock fun
 		c := m.Echo()
 
 		err := h(c)
-		require.EqualError(t, err, "code=403, message=require stuff")
+		require.EqualError(t, err, "code=403, message=require staff")
 	})
 }
