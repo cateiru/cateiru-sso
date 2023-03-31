@@ -93,6 +93,10 @@ yarn dev:ssl
 - `docker-compose`でデータベースが実行されている必要があります。
 
 ```bash
+# CloudStorageをlocalhost:4443で起動する
+export STORAGE_URL=localhost:4443
+./scripts/docker-compose-db.sh up -d
+
 ./scripts/test.sh
 ```
 
