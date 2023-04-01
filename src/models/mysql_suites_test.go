@@ -18,8 +18,6 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("ClientAllowRules", testClientAllowRulesUpsert)
 
-	t.Run("ClientQuizzes", testClientQuizzesUpsert)
-
 	t.Run("ClientRefreshes", testClientRefreshesUpsert)
 
 	t.Run("ClientScopes", testClientScopesUpsert)

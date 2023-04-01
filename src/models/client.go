@@ -24,100 +24,93 @@ import (
 
 // Client is an object representing the database table.
 type Client struct {
-	ClientID         string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	Name             string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Description      null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Image            null.String `boil:"image" json:"image,omitempty" toml:"image" yaml:"image,omitempty"`
-	IsAllow          bool        `boil:"is_allow" json:"is_allow" toml:"is_allow" yaml:"is_allow"`
-	Indispensable2fa bool        `boil:"indispensable_2fa" json:"indispensable_2fa" toml:"indispensable_2fa" yaml:"indispensable_2fa"`
-	Prompt           null.String `boil:"prompt" json:"prompt,omitempty" toml:"prompt" yaml:"prompt,omitempty"`
-	OwnerUserID      string      `boil:"owner_user_id" json:"owner_user_id" toml:"owner_user_id" yaml:"owner_user_id"`
-	ClientSecret     string      `boil:"client_secret" json:"client_secret" toml:"client_secret" yaml:"client_secret"`
-	Created          time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified         time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	ClientID     string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	Name         string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description  null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Image        null.String `boil:"image" json:"image,omitempty" toml:"image" yaml:"image,omitempty"`
+	IsAllow      bool        `boil:"is_allow" json:"is_allow" toml:"is_allow" yaml:"is_allow"`
+	Prompt       null.String `boil:"prompt" json:"prompt,omitempty" toml:"prompt" yaml:"prompt,omitempty"`
+	OwnerUserID  string      `boil:"owner_user_id" json:"owner_user_id" toml:"owner_user_id" yaml:"owner_user_id"`
+	ClientSecret string      `boil:"client_secret" json:"client_secret" toml:"client_secret" yaml:"client_secret"`
+	Created      time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	Modified     time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
 
 	R *clientR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L clientL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ClientColumns = struct {
-	ClientID         string
-	Name             string
-	Description      string
-	Image            string
-	IsAllow          string
-	Indispensable2fa string
-	Prompt           string
-	OwnerUserID      string
-	ClientSecret     string
-	Created          string
-	Modified         string
+	ClientID     string
+	Name         string
+	Description  string
+	Image        string
+	IsAllow      string
+	Prompt       string
+	OwnerUserID  string
+	ClientSecret string
+	Created      string
+	Modified     string
 }{
-	ClientID:         "client_id",
-	Name:             "name",
-	Description:      "description",
-	Image:            "image",
-	IsAllow:          "is_allow",
-	Indispensable2fa: "indispensable_2fa",
-	Prompt:           "prompt",
-	OwnerUserID:      "owner_user_id",
-	ClientSecret:     "client_secret",
-	Created:          "created",
-	Modified:         "modified",
+	ClientID:     "client_id",
+	Name:         "name",
+	Description:  "description",
+	Image:        "image",
+	IsAllow:      "is_allow",
+	Prompt:       "prompt",
+	OwnerUserID:  "owner_user_id",
+	ClientSecret: "client_secret",
+	Created:      "created",
+	Modified:     "modified",
 }
 
 var ClientTableColumns = struct {
-	ClientID         string
-	Name             string
-	Description      string
-	Image            string
-	IsAllow          string
-	Indispensable2fa string
-	Prompt           string
-	OwnerUserID      string
-	ClientSecret     string
-	Created          string
-	Modified         string
+	ClientID     string
+	Name         string
+	Description  string
+	Image        string
+	IsAllow      string
+	Prompt       string
+	OwnerUserID  string
+	ClientSecret string
+	Created      string
+	Modified     string
 }{
-	ClientID:         "client.client_id",
-	Name:             "client.name",
-	Description:      "client.description",
-	Image:            "client.image",
-	IsAllow:          "client.is_allow",
-	Indispensable2fa: "client.indispensable_2fa",
-	Prompt:           "client.prompt",
-	OwnerUserID:      "client.owner_user_id",
-	ClientSecret:     "client.client_secret",
-	Created:          "client.created",
-	Modified:         "client.modified",
+	ClientID:     "client.client_id",
+	Name:         "client.name",
+	Description:  "client.description",
+	Image:        "client.image",
+	IsAllow:      "client.is_allow",
+	Prompt:       "client.prompt",
+	OwnerUserID:  "client.owner_user_id",
+	ClientSecret: "client.client_secret",
+	Created:      "client.created",
+	Modified:     "client.modified",
 }
 
 // Generated where
 
 var ClientWhere = struct {
-	ClientID         whereHelperstring
-	Name             whereHelperstring
-	Description      whereHelpernull_String
-	Image            whereHelpernull_String
-	IsAllow          whereHelperbool
-	Indispensable2fa whereHelperbool
-	Prompt           whereHelpernull_String
-	OwnerUserID      whereHelperstring
-	ClientSecret     whereHelperstring
-	Created          whereHelpertime_Time
-	Modified         whereHelpertime_Time
+	ClientID     whereHelperstring
+	Name         whereHelperstring
+	Description  whereHelpernull_String
+	Image        whereHelpernull_String
+	IsAllow      whereHelperbool
+	Prompt       whereHelpernull_String
+	OwnerUserID  whereHelperstring
+	ClientSecret whereHelperstring
+	Created      whereHelpertime_Time
+	Modified     whereHelpertime_Time
 }{
-	ClientID:         whereHelperstring{field: "`client`.`client_id`"},
-	Name:             whereHelperstring{field: "`client`.`name`"},
-	Description:      whereHelpernull_String{field: "`client`.`description`"},
-	Image:            whereHelpernull_String{field: "`client`.`image`"},
-	IsAllow:          whereHelperbool{field: "`client`.`is_allow`"},
-	Indispensable2fa: whereHelperbool{field: "`client`.`indispensable_2fa`"},
-	Prompt:           whereHelpernull_String{field: "`client`.`prompt`"},
-	OwnerUserID:      whereHelperstring{field: "`client`.`owner_user_id`"},
-	ClientSecret:     whereHelperstring{field: "`client`.`client_secret`"},
-	Created:          whereHelpertime_Time{field: "`client`.`created`"},
-	Modified:         whereHelpertime_Time{field: "`client`.`modified`"},
+	ClientID:     whereHelperstring{field: "`client`.`client_id`"},
+	Name:         whereHelperstring{field: "`client`.`name`"},
+	Description:  whereHelpernull_String{field: "`client`.`description`"},
+	Image:        whereHelpernull_String{field: "`client`.`image`"},
+	IsAllow:      whereHelperbool{field: "`client`.`is_allow`"},
+	Prompt:       whereHelpernull_String{field: "`client`.`prompt`"},
+	OwnerUserID:  whereHelperstring{field: "`client`.`owner_user_id`"},
+	ClientSecret: whereHelperstring{field: "`client`.`client_secret`"},
+	Created:      whereHelpertime_Time{field: "`client`.`created`"},
+	Modified:     whereHelpertime_Time{field: "`client`.`modified`"},
 }
 
 // ClientRels is where relationship names are stored.
@@ -137,9 +130,9 @@ func (*clientR) NewStruct() *clientR {
 type clientL struct{}
 
 var (
-	clientAllColumns            = []string{"client_id", "name", "description", "image", "is_allow", "indispensable_2fa", "prompt", "owner_user_id", "client_secret", "created", "modified"}
+	clientAllColumns            = []string{"client_id", "name", "description", "image", "is_allow", "prompt", "owner_user_id", "client_secret", "created", "modified"}
 	clientColumnsWithoutDefault = []string{"client_id", "name", "description", "image", "prompt", "owner_user_id", "client_secret"}
-	clientColumnsWithDefault    = []string{"is_allow", "indispensable_2fa", "created", "modified"}
+	clientColumnsWithDefault    = []string{"is_allow", "created", "modified"}
 	clientPrimaryKeyColumns     = []string{"client_id"}
 	clientGeneratedColumns      = []string{}
 )

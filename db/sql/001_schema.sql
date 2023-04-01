@@ -494,10 +494,8 @@ CREATE TABLE `client` (
 
     -- ホワイトリストを使用するかどうか
     `is_allow` BOOLEAN NOT NULL DEFAULT 0,
-    -- 二段階認証をしたユーザのみに限定するかどうか
-    `indispensable_2fa` BOOLEAN NOT NULL DEFAULT 0,
-    -- prompt_loginが1の場合、OAuthの認証リクエスト時にログイン、クイズを求めることを強制する
-    `prompt` ENUM('login', 'quiz') DEFAULT NULL,
+    -- OAuthの認証リクエスト時にログイン、2faログインを求めることを強制する
+    `prompt` ENUM('login', '2fa_login') DEFAULT NULL,
 
     `owner_user_id` VARCHAR(32) NOT NULL,
 
@@ -543,29 +541,6 @@ CREATE TABLE `client_allow_rule` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`client_id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
--- クライアントの認証方法でrequire_quizが1の場合のクイズ
--- reCAPTCHAのようなやつ
--- 転売対策とかに有効
-CREATE TABLE `client_quiz` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `client_id` VARCHAR(31) NOT NULL,
-
-    `title` TEXT NOT NULL,
-    -- 複数の回答方法や選択肢がある場合があるので
-    -- 答えは正規表現で記述する
-    `answer_regexp` TEXT NOT NULL,
-
-    -- 選択肢
-    `choices` JSON DEFAULT NULL,
-
-    -- 管理用
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (`id`),
-    INDEX `client_quiz_client_id` (`client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- 過去にログインしたSSOクライアントのテーブル

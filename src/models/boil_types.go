@@ -53,13 +53,13 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 
 // Enum values for ClientPrompt
 const (
-	ClientPromptLogin string = "login"
-	ClientPromptQuiz  string = "quiz"
+	ClientPromptLogin    string = "login"
+	ClientPrompt2faLogin string = "2fa_login"
 )
 
 func AllClientPrompt() []string {
 	return []string{
 		ClientPromptLogin,
-		ClientPromptQuiz,
+		ClientPrompt2faLogin,
 	}
 }
