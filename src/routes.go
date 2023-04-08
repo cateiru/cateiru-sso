@@ -79,12 +79,13 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	// SSOクライアント
 	client := version.Group("/client")
-	client.GET("/list", h.Root) // クライアント一覧
-	client.GET("/", h.Root)
-	client.POST("/", h.Root) // クライアント新規作成
-	client.PUT("/", h.Root)  // クライアントの編集
-	client.DELETE("/", h.Root)
-	client.GET("/login_users", h.Root) // ログインしているユーザ一覧
+	client.GET("/", h.ClientHandler)
+	client.POST("/", h.ClientCreateHandler) // クライアント新規作成
+	client.PUT("/", h.ClientUpdateHandler)  // クライアントの編集
+	client.DELETE("/", h.ClientDeleteHandler)
+	client.POST("/allow_user", h.ClientAddAllowUser)
+	client.DELETE("/allow_user", h.ClientDeleteAllowUser)
+	client.GET("/login_users", h.ClientLoginUsersHandler) // ログインしているユーザ一覧
 
 	// OIDC
 	oidc := version.Group("/oidc")
