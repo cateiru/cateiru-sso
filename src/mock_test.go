@@ -69,14 +69,14 @@ func (a *WebAuthnMock) FinishRegistration(user webauthn.User, session webauthn.S
 		},
 	}, nil
 }
-func (a *WebAuthnMock) BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
+func (a *WebAuthnMock) BeginLogin() (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
 	// 影響は無いのでmockしない
-	return a.M.BeginLogin(user)
+	return a.M.BeginLogin()
 }
 func (a *WebAuthnMock) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentialAssertionData, err error) {
 	return &protocol.ParsedCredentialAssertionData{}, nil
 }
-func (a *WebAuthnMock) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
+func (a *WebAuthnMock) FinishLogin(handler webauthn.DiscoverableUserHandler, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
 	return &webauthn.Credential{}, nil
 }
 

@@ -3,6 +3,7 @@ package src
 import (
 	"database/sql"
 	"errors"
+	"net"
 	"net/http"
 	"time"
 
@@ -434,12 +435,9 @@ func (h *Handler) RegisterBeginWebAuthnHandler(c echo.Context) error {
 	}
 
 	webauthnSession := models.WebauthnSession{
-		ID:               webauthnSessionId,
-		WebauthnUserID:   s.UserID,
-		UserDisplayName:  s.UserDisplayName,
-		Challenge:        s.Challenge,
-		UserVerification: string(s.UserVerification),
-		Row:              row,
+		ID:     webauthnSessionId,
+		UserID: null.NewString(string(user.ID), true),
+		Row:    row,
 
 		Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
 		Identifier: 1,
@@ -506,13 +504,13 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
-	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value, 1)
+	credential, webauthnUser, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value, 1)
 	if err != nil {
 		return err
 	}
 
 	// 登録フロー
-	user, err := RegisterUser(ctx, h.DB, registerSession.Email)
+	user, err := RegisterUser(ctx, h.DB, registerSession.Email, string(webauthnUser.WebAuthnID()))
 	if err != nil {
 		return err
 	}
@@ -527,25 +525,18 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 	if err := rowCredential.Marshal(credential); err != nil {
 		return err
 	}
-	passkey := models.Passkey{
-		UserID:          user.ID,
-		WebauthnUserID:  credential.ID,
-		Credential:      rowCredential,
-		FlagBackupState: credential.Flags.BackupState,
+	passkey := models.Webauthn{
+		UserID:     user.ID,
+		Credential: rowCredential,
+
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+
+		IP: net.ParseIP(ip),
 	}
 	if err := passkey.Insert(ctx, h.DB, boil.Infer()); err != nil {
-		return err
-	}
-
-	passkeyLoginDevice := models.PasskeyLoginDevice{
-		UserID:           user.ID,
-		Device:           null.NewString(ua.Device, true),
-		Os:               null.NewString(ua.OS, true),
-		Browser:          null.NewString(ua.Browser, true),
-		IsMobile:         null.NewBool(ua.IsMobile, true),
-		IsRegisterDevice: true, // 登録したデバイスなのでtrue
-	}
-	if err := passkeyLoginDevice.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 

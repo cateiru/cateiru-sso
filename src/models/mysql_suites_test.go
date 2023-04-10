@@ -40,10 +40,6 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("OtpSessions", testOtpSessionsUpsert)
 
-	t.Run("Passkeys", testPasskeysUpsert)
-
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesUpsert)
-
 	t.Run("Passwords", testPasswordsUpsert)
 
 	t.Run("Refreshes", testRefreshesUpsert)
@@ -63,6 +59,8 @@ func TestUpsert(t *testing.T) {
 	t.Run("Users", testUsersUpsert)
 
 	t.Run("UserBrands", testUserBrandsUpsert)
+
+	t.Run("Webauthns", testWebauthnsUpsert)
 
 	t.Run("WebauthnSessions", testWebauthnSessionsUpsert)
 }

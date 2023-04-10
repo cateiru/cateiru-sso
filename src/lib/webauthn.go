@@ -12,8 +12,8 @@ type WebAuthnInterface interface {
 	ParseCreate(body io.Reader) (pcc *protocol.ParsedCredentialCreationData, err error)
 	ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentialAssertionData, err error)
 	FinishRegistration(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialCreationData) (*webauthn.Credential, error)
-	BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error)
-	FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error)
+	BeginLogin() (*protocol.CredentialAssertion, *webauthn.SessionData, error)
+	FinishLogin(handler webauthn.DiscoverableUserHandler, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error)
 }
 
 type WebAuthn struct {
@@ -50,8 +50,8 @@ func (a *WebAuthn) FinishRegistration(user webauthn.User, session webauthn.Sessi
 }
 
 // ログイン: config作成
-func (a *WebAuthn) BeginLogin(user webauthn.User) (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
-	return a.W.BeginLogin(user)
+func (a *WebAuthn) BeginLogin() (*protocol.CredentialAssertion, *webauthn.SessionData, error) {
+	return a.W.BeginDiscoverableLogin()
 }
 
 func (a *WebAuthn) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentialAssertionData, err error) {
@@ -59,9 +59,6 @@ func (a *WebAuthn) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentialAss
 }
 
 // ログイン: 検証
-//
-// response create is...
-// `response, err := protocol.ParseCredentialRequestResponseBody(r.Body)`
-func (a *WebAuthn) FinishLogin(user webauthn.User, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
-	return a.W.ValidateLogin(user, session, response)
+func (a *WebAuthn) FinishLogin(handler webauthn.DiscoverableUserHandler, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
+	return a.W.ValidateDiscoverableLogin(handler, session, response)
 }

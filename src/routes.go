@@ -44,7 +44,9 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	account.POST("/password", h.AccountPasswordHandler)             // パスワードの新規作成
 	account.PUT("/password/update", h.AccountUpdatePasswordHandler) // パスワードの更新
 	account.POST("/begin_webauthn", h.AccountBeginWebauthnHandler)
+	account.GET("/webauthn", h.Root)                           // TODO: Webauthnを登録している端末一覧
 	account.POST("/webauthn", h.AccountWebauthnHandler)        // passkey更新or新規作成
+	account.DELETE("/webauthn", h.Root)                        // TODO: Webauthnを削除する
 	account.GET("/certificates", h.AccountCertificatesHandler) // 認証の設定情報
 
 	account.POST("/forget/password", h.AccountForgetPasswordHandler)                          // パスワード再登録リクエスト

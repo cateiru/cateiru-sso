@@ -12,7 +12,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
@@ -21,7 +20,6 @@ type LoginUser struct {
 	UserName          string      `json:"user_name"`
 	AvailablePasskey  bool        `json:"available_passkey"`
 	AvailablePassword bool        `json:"available_password"`
-	AutoUsePasskey    bool        `json:"auto_use_passkey"`
 }
 
 type LoginResponse struct {
@@ -65,68 +63,20 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 		return err
 	}
 
-	availablePasskey := false
-	autoUsePasskey := false
-	availablePassword := false
-
-	// Passkeyの判定
-	ua, err := h.ParseUA(c.Request())
+	availablePasskey, err := models.Webauthns(
+		models.WebauthnWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
 	if err != nil {
 		return err
-	}
-	passkeyLoginDevices, err := models.PasskeyLoginDevices(
-		models.PasskeyLoginDeviceWhere.UserID.EQ(user.ID),
-	).All(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	if len(passkeyLoginDevices) >= 1 {
-		availablePasskey = true
-
-		passkey, err := models.Passkeys(
-			models.PasskeyWhere.UserID.EQ(user.ID),
-		).One(ctx, h.DB)
-		if err != nil {
-			return err
-		}
-
-		if ua.Browser != "" && ua.OS != "" {
-			for _, devices := range passkeyLoginDevices {
-				// Passkeyを登録したOSと同じOSであれば自動ログイン
-				// iCloudなどOSで共有可能な場合があるので
-				if devices.IsRegisterDevice {
-					if devices.Os.String == ua.OS {
-						autoUsePasskey = true
-						break
-					}
-				}
-				// 過去にログインしたことあるブラウザ
-				if devices.Os.String == ua.OS &&
-					devices.Browser.String == ua.Browser &&
-					devices.Device.String == ua.Device &&
-					(!devices.IsMobile.Valid || devices.IsMobile.Bool == ua.IsMobile) { // IsMobileがある場合はそれも使用して判定する
-					autoUsePasskey = true
-					break
-				}
-
-				// BackupStateがtrueの場合（iCloudなどで共有されている場合）は
-				// OSで判定する
-				if passkey.FlagBackupState && lib.ValidateOS(devices.Os.String, ua.OS) {
-					autoUsePasskey = true
-					break
-				}
-			}
-		}
 	}
 
 	// パスワードの設定
-	passwordExists, err := models.Passwords(
+	availablePassword, err := models.Passwords(
 		models.PasswordWhere.UserID.EQ(user.ID),
 	).Exists(ctx, h.DB)
 	if err != nil {
 		return err
 	}
-	availablePassword = passwordExists
 
 	// PasskeyかPasswordかならずどちらかは存在するはず
 	if !availablePasskey && !availablePassword {
@@ -137,7 +87,6 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 		Avatar:            user.Avatar,
 		UserName:          user.UserName,
 		AvailablePasskey:  availablePasskey,
-		AutoUsePasskey:    autoUsePasskey,
 		AvailablePassword: availablePassword,
 	}
 	return c.JSON(http.StatusOK, loginUser)
@@ -147,47 +96,13 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 func (h *Handler) LoginBeginWebauthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	userNameOrEmail := c.FormValue("username_or_email")
-	recaptcha := c.FormValue("recaptcha")
-	ip := c.RealIP()
-
-	if userNameOrEmail == "" {
-		return NewHTTPError(http.StatusBadRequest, "username_or_email is empty")
-	}
-	if recaptcha == "" {
-		return NewHTTPError(http.StatusBadRequest, "reCAPTCHA token is empty")
-	}
-
-	// reCAPTCHA
-	if h.C.UseReCaptcha {
-		order, err := h.ReCaptcha.ValidateOrder(recaptcha, ip)
-		if err != nil {
-			return err
-		}
-		// 検証に失敗した or スコアが閾値以下の場合はエラーにする
-		if !order.Success || order.Score < h.C.ReCaptchaAllowScore {
-			return NewHTTPUniqueError(http.StatusBadRequest, ErrReCaptcha, "reCAPTCHA validation failed")
-		}
-	}
-
-	user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
-	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrNotFoundUser, "user not found")
-	}
-	if err != nil {
-		return err
-	}
-
-	webauthnUser, err := NewWebAuthnUserFromDB(ctx, h.DB, user)
-	if err != nil {
-		return err
-	}
 	webauthnSessionId, err := lib.RandomStr(31)
 	if err != nil {
 		return err
 	}
 
-	creation, s, err := h.WebAuthn.BeginLogin(webauthnUser)
+	// ユーザーは指定しない
+	creation, s, err := h.WebAuthn.BeginLogin()
 	if err != nil {
 		return err
 	}
@@ -198,13 +113,8 @@ func (h *Handler) LoginBeginWebauthnHandler(c echo.Context) error {
 	}
 
 	webauthnSession := models.WebauthnSession{
-		ID:               webauthnSessionId,
-		UserID:           null.NewString(user.ID, true),
-		WebauthnUserID:   s.UserID,
-		UserDisplayName:  s.UserDisplayName,
-		Challenge:        s.Challenge,
-		UserVerification: string(s.UserVerification),
-		Row:              row,
+		ID:  webauthnSessionId,
+		Row: row,
 
 		Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
 		Identifier: 2,
@@ -262,30 +172,6 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 	})
 	if err != nil {
 		return err
-	}
-
-	// Passkeyのログインデバイスを保存する
-	existPasskeyLoginDevice, err := models.PasskeyLoginDevices(
-		qm.Where("user_id = ?", user.ID),
-		qm.And("device = ?", ua.Device),
-		qm.And("os = ?", ua.OS),
-		qm.And("browser = ?", ua.Browser),
-		qm.And("is_mobile = ?", ua.IsMobile),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	if !existPasskeyLoginDevice {
-		passkeyLoginDevice := models.PasskeyLoginDevice{
-			UserID:   user.ID,
-			Device:   null.NewString(ua.Device, true),
-			Os:       null.NewString(ua.OS, true),
-			Browser:  null.NewString(ua.Browser, true),
-			IsMobile: null.NewBool(ua.IsMobile, true),
-		}
-		if err := passkeyLoginDevice.Insert(ctx, h.DB, boil.Infer()); err != nil {
-			return err
-		}
 	}
 
 	session, err := h.Session.NewRegisterSession(ctx, user, ua, ip)

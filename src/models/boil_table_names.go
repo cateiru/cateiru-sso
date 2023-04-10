@@ -21,8 +21,6 @@ var TableNames = struct {
 	Otp                           string
 	OtpBackup                     string
 	OtpSession                    string
-	Passkey                       string
-	PasskeyLoginDevice            string
 	Password                      string
 	Refresh                       string
 	RegisterOtpSession            string
@@ -33,6 +31,7 @@ var TableNames = struct {
 	Staff                         string
 	User                          string
 	UserBrand                     string
+	Webauthn                      string
 	WebauthnSession               string
 }{
 	Brand:                         "brand",
@@ -52,8 +51,6 @@ var TableNames = struct {
 	Otp:                           "otp",
 	OtpBackup:                     "otp_backup",
 	OtpSession:                    "otp_session",
-	Passkey:                       "passkey",
-	PasskeyLoginDevice:            "passkey_login_device",
 	Password:                      "password",
 	Refresh:                       "refresh",
 	RegisterOtpSession:            "register_otp_session",
@@ -64,5 +61,6 @@ var TableNames = struct {
 	Staff:                         "staff",
 	User:                          "user",
 	UserBrand:                     "user_brand",
+	Webauthn:                      "webauthn",
 	WebauthnSession:               "webauthn_session",
 }

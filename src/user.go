@@ -511,7 +511,7 @@ func (h *Handler) UserLogoutClient(c echo.Context) error {
 
 // ユーザを新規に作成する
 // 最初は、ユーザ名などの情報はデフォルト値に設定する（ユーザ登録フローの簡略化のため）
-func RegisterUser(ctx context.Context, db *sql.DB, email string) (*models.User, error) {
+func RegisterUser(ctx context.Context, db *sql.DB, email string, ids ...string) (*models.User, error) {
 	// もう一度Emailが登録されていないか確認する
 	exist, err := models.Users(models.UserWhere.Email.EQ(email)).Exists(ctx, db)
 	if err != nil {
@@ -521,10 +521,15 @@ func RegisterUser(ctx context.Context, db *sql.DB, email string) (*models.User, 
 		return nil, NewHTTPUniqueError(http.StatusBadRequest, ErrImpossibleRegisterAccount, "impossible register account")
 	}
 
-	id := ulid.Make()
+	var id string
+	if (len(ids)) <= 0 {
+		id = ulid.Make().String()
+	} else {
+		id = ids[0]
+	}
 
 	u := models.User{
-		ID:    id.String(),
+		ID:    id,
 		Email: email,
 	}
 	if err := u.Insert(ctx, db, boil.Infer()); err != nil {
@@ -536,7 +541,7 @@ func RegisterUser(ctx context.Context, db *sql.DB, email string) (*models.User, 
 	)
 
 	return models.Users(
-		models.UserWhere.ID.EQ(id.String()),
+		models.UserWhere.ID.EQ(id),
 	).One(ctx, db)
 }
 

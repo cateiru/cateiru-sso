@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/oklog/ulid/v2"
 )
 
 type WebAuthnUser struct {
@@ -27,10 +27,9 @@ type WebAuthnUser struct {
 // DBからWebAuthnにわたす用のユーザを作成します
 // ユーザはログインしている必要があり、かつpasskeyが登録されている必要があります
 func NewWebAuthnUserFromDB(ctx context.Context, db *sql.DB, user *models.User) (*WebAuthnUser, error) {
-	passkey, err := models.Passkeys(models.PasskeyWhere.UserID.EQ(user.ID)).One(ctx, db)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, NewHTTPError(403, "passkey was not registered")
-	}
+	webauthnCredentials, err := models.Webauthns(
+		models.WebauthnWhere.UserID.EQ(user.ID),
+	).All(ctx, db)
 	if err != nil {
 		return nil, err
 	}
@@ -54,16 +53,18 @@ func NewWebAuthnUserFromDB(ctx context.Context, db *sql.DB, user *models.User) (
 		icon = user.Avatar.String
 	}
 
-	credential := new(webauthn.Credential)
-	if err := passkey.Credential.Unmarshal(credential); err != nil {
-		return nil, err
+	credentials := []webauthn.Credential{}
+	for _, webauthnCredential := range webauthnCredentials {
+		credential := &webauthn.Credential{}
+		if err := webauthnCredential.Credential.Unmarshal(credential); err != nil {
+			return nil, err
+		}
+		credentials = append(credentials, *credential)
 	}
 
 	return &WebAuthnUser{
-		ID: passkey.WebauthnUserID,
-		Credential: []webauthn.Credential{
-			*credential,
-		},
+		ID:         []byte(user.ID),
+		Credential: credentials,
 
 		Name:        user.UserName,
 		DisplayName: displayName,
@@ -71,7 +72,7 @@ func NewWebAuthnUserFromDB(ctx context.Context, db *sql.DB, user *models.User) (
 	}, nil
 }
 
-func NewWebauthnUserFromUser(user *models.User) (*WebAuthnUser, error) {
+func NewWebAuthnUserNoCredential(user *models.User) (*WebAuthnUser, error) {
 	displayName := ""
 	if user.FamilyName.Valid && user.GivenName.Valid {
 		// 名前が設定されている場合はフォーマットする
@@ -91,13 +92,8 @@ func NewWebauthnUserFromUser(user *models.User) (*WebAuthnUser, error) {
 		icon = user.Avatar.String
 	}
 
-	id, err := lib.RandomBytes(64)
-	if err != nil {
-		return nil, err
-	}
-
 	return &WebAuthnUser{
-		ID:         id,
+		ID:         []byte(user.ID),
 		Credential: []webauthn.Credential{},
 
 		Name:        user.UserName,
@@ -106,13 +102,9 @@ func NewWebauthnUserFromUser(user *models.User) (*WebAuthnUser, error) {
 	}, nil
 }
 
-// 新規作成で使用するwebauthnのユーザを作成する
-// WebAuthnで使用するユーザIDを生成します
+// ユーザが存在しない状態でWebAuthnを登録する場合に使用します
 func NewWebAuthnUserRegister(email string) (*WebAuthnUser, error) {
-	id, err := lib.RandomBytes(64)
-	if err != nil {
-		return nil, err
-	}
+	id := ulid.Make().Bytes()
 
 	return &WebAuthnUser{
 		ID:         id,
@@ -145,10 +137,10 @@ func (w *WebAuthnUser) WebAuthnIcon() string {
 }
 
 // Webauthnを登録する
-func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string, identifier int8) (*webauthn.Credential, error) {
+func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string, identifier int8) (*webauthn.Credential, webauthn.User, error) {
 	response, err := h.WebAuthn.ParseCreate(body)
 	if err != nil {
-		return nil, NewHTTPError(http.StatusBadRequest, err)
+		return nil, nil, NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	webauthnSession, err := models.WebauthnSessions(
@@ -156,48 +148,70 @@ func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthn
 		models.WebauthnSessionWhere.Identifier.EQ(identifier),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
+		return nil, nil, NewHTTPError(http.StatusForbidden, "invalid webauthn token")
 	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if time.Now().After(webauthnSession.Period) {
 		// webauthnセッションは削除
 		_, err := webauthnSession.Delete(ctx, h.DB)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		return nil, NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
+		return nil, nil, NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
 	// Rowから取得する
 	session := new(webauthn.SessionData)
 	err = webauthnSession.Row.Unmarshal(session)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	webauthnUser := &WebAuthnUser{
-		ID:         webauthnSession.WebauthnUserID,
-		Credential: []webauthn.Credential{},
+	createUser := func() (*WebAuthnUser, error) {
+		if !webauthnSession.UserID.Valid {
+			return nil, NewHTTPError(http.StatusInternalServerError, "user not found")
+		}
 
-		Name:        "",
-		DisplayName: webauthnSession.UserDisplayName,
-		Icon:        "",
+		user, err := models.Users(
+			models.UserWhere.ID.EQ(webauthnSession.UserID.String),
+		).One(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			return &WebAuthnUser{
+				ID:         []byte(webauthnSession.UserID.String),
+				Credential: []webauthn.Credential{},
+
+				// 認証には使わないので空
+				Name:        "",
+				DisplayName: "",
+				Icon:        "",
+			}, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		// user存在するならちゃんと埋めてあげる
+		return NewWebAuthnUserNoCredential(user)
+	}
+	webauthnUser, err := createUser()
+	if err != nil {
+		return nil, nil, err
 	}
 
 	credential, err := h.WebAuthn.FinishRegistration(webauthnUser, *session, response)
 	if err != nil {
-		return nil, NewHTTPError(http.StatusForbidden, err)
+		return nil, nil, NewHTTPError(http.StatusForbidden, err)
 	}
 
 	// WebauthnSessionは削除
 	if _, err := webauthnSession.Delete(ctx, h.DB); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return credential, nil
+	return credential, webauthnUser, nil
 }
 
 // Webauthnでログインする
@@ -217,9 +231,6 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 	if err != nil {
 		return nil, err
 	}
-	if !webauthnSession.UserID.Valid || webauthnSession.UserID.String == "" {
-		return nil, NewHTTPError(http.StatusInternalServerError, "user is empty")
-	}
 
 	if time.Now().After(webauthnSession.Period) {
 		// webauthnセッションは削除
@@ -237,27 +248,23 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 		return nil, err
 	}
 
-	webauthnUser := &WebAuthnUser{
-		ID:         webauthnSession.WebauthnUserID,
-		Credential: []webauthn.Credential{},
-
-		Name:        "",
-		DisplayName: webauthnSession.UserDisplayName,
-		Icon:        "",
+	// idからユーザーとクレデンシャルを引く
+	var loginUser *models.User
+	handler := func(rawID, userHandle []byte) (user webauthn.User, err error) {
+		u, err := models.Users(
+			models.UserWhere.ID.EQ(string(userHandle)),
+		).One(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, NewHTTPError(http.StatusForbidden, "invalid user")
+		}
+		if err != nil {
+			return nil, err
+		}
+		loginUser = u
+		return NewWebAuthnUserFromDB(ctx, h.DB, u)
 	}
 
-	user, err := models.Users(
-		models.UserWhere.ID.EQ(webauthnSession.UserID.String),
-	).One(ctx, h.DB)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := before(user); err != nil {
-		return nil, err
-	}
-
-	_, err = h.WebAuthn.FinishLogin(webauthnUser, *session, response)
+	_, err = h.WebAuthn.FinishLogin(handler, *session, response)
 	if err != nil {
 		return nil, NewHTTPError(http.StatusForbidden, err)
 	}
@@ -267,5 +274,5 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 		return nil, err
 	}
 
-	return user, nil
+	return loginUser, nil
 }

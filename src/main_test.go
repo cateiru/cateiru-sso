@@ -261,6 +261,7 @@ func RegisterPasskey(t *testing.T, ctx context.Context, u *models.User, userData
 	if len(userData) > 0 {
 		ua = &userData[0]
 	}
+	ip := "203.0.113.2"
 
 	credential := webauthn.Credential{
 		ID: id,
@@ -274,24 +275,18 @@ func RegisterPasskey(t *testing.T, ctx context.Context, u *models.User, userData
 	err = rowCredential.Marshal(credential)
 	require.NoError(t, err)
 
-	passkey := models.Passkey{
-		UserID:          u.ID,
-		WebauthnUserID:  credential.ID,
-		Credential:      rowCredential,
-		FlagBackupState: credential.Flags.BackupState,
+	passkey := models.Webauthn{
+		UserID:     u.ID,
+		Credential: rowCredential,
+
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+
+		IP: net.ParseIP(ip),
 	}
 	err = passkey.Insert(ctx, DB, boil.Infer())
-	require.NoError(t, err)
-
-	passkeyLoginDevice := models.PasskeyLoginDevice{
-		UserID:           u.ID,
-		Device:           null.NewString(ua.Device, true),
-		Os:               null.NewString(ua.OS, true),
-		Browser:          null.NewString(ua.Browser, true),
-		IsMobile:         null.NewBool(ua.IsMobile, true),
-		IsRegisterDevice: true, // 登録したデバイスなのでtrue
-	}
-	err = passkeyLoginDevice.Insert(ctx, DB, boil.Infer())
 	require.NoError(t, err)
 }
 

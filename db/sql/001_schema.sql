@@ -104,53 +104,31 @@ CREATE TABLE `staff` (
     PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
--- passkeyを保存するテーブル
-CREATE TABLE `passkey` (
-    `user_id` VARCHAR(32) NOT NULL,
+-- WebAuthnを保存するテーブル
+CREATE TABLE `webauthn` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-    -- WebauthnID
-    -- このIDを使用してpasskeyを認証する
-    -- 64byteのランダムな文字列
-    `webauthn_user_id` VARBINARY(64) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
 
     -- webauthn.Credentialのオブジェクト
     `credential` JSON NOT NULL,
 
-    -- authenticatorData.flagsのBackupState値
-    -- これが1の場合はpasskeyが複数デバイス感で共有される可能性がある
-    -- ref. https://www.docswell.com/s/ydnjp/KWDLDZ-2022-10-14-141235#p20
-    `flag_backup_state` BOOLEAN NOT NULL DEFAULT 0,
-
-    -- 管理用
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (`user_id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
--- iCloudのPasskeyなどは複数のApple端末で共有できるため、
--- Passkeyでログインした端末を記録しておくためのテーブル
-CREATE TABLE `passkey_login_device` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `user_id` VARCHAR(32) NOT NULL,
-
-    -- 使用した端末のUA
+    -- 登録した端末の情報
     `device` VARCHAR(31) DEFAULT NULL,
     `os` VARCHAR(31) DEFAULT NULL,
     `browser` VARCHAR(31) DEFAULT NULL,
     `is_mobile` BOOLEAN DEFAULT NULL,
 
-    -- passkeyを登録したデバイスかどうか
-    `is_register_device` BOOLEAN NOT NULL DEFAULT 0,
+    `ip` VARBINARY(16) NOT NULL,
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `passkey_login_device_user_id` (`user_id`)
+    INDEX `webauthn_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
--- パスポートを保存するテーブル
+-- パスワードを保存するテーブル
 CREATE TABLE `password` (
     `user_id` VARCHAR(32) NOT NULL,
 
@@ -402,19 +380,7 @@ CREATE TABLE `webauthn_session` (
     `id` VARCHAR(31) NOT NULL,
 
     -- 紐付けられるユーザ
-    -- ログインの場合ではこれにユーザIDが入る
     `user_id` VARCHAR(32) DEFAULT NULL,
-
-    -- WebAuthnID
-    -- いわゆるユーザID
-    `webauthn_user_id` VARBINARY(64) NOT NULL,
-    `user_display_name` TEXT NOT NULL,
-
-    -- チャレンジ
-    -- チャレンジは（16 バイト以上の）ランダムな情報のバッファーであること
-    `challenge` TEXT NOT NULL,
-
-    `user_verification` VARCHAR(15) NOT NULL DEFAULT 'preferred',
 
     -- webauthn.SessionData のjsonデータ
     `row` JSON NOT NULL,
@@ -431,7 +397,6 @@ CREATE TABLE `webauthn_session` (
 
     PRIMARY KEY(`id`),
     INDEX `webauthn_session_user_id` (`user_id`),
-    INDEX `webauthn_session_webauthn_user_id` (`webauthn_user_id`),
     INDEX `webauthn_session_identifier` (`identifier`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 

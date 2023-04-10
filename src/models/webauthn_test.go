@@ -21,24 +21,24 @@ var (
 	_ = queries.Equal
 )
 
-func testPasskeys(t *testing.T) {
+func testWebauthns(t *testing.T) {
 	t.Parallel()
 
-	query := Passkeys()
+	query := Webauthns()
 
 	if query.Query == nil {
 		t.Error("expected a query, got nothing")
 	}
 }
 
-func testPasskeysDelete(t *testing.T) {
+func testWebauthnsDelete(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -54,7 +54,7 @@ func testPasskeysDelete(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -64,14 +64,14 @@ func testPasskeysDelete(t *testing.T) {
 	}
 }
 
-func testPasskeysQueryDeleteAll(t *testing.T) {
+func testWebauthnsQueryDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -81,13 +81,13 @@ func testPasskeysQueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	if rowsAff, err := Passkeys().DeleteAll(ctx, tx); err != nil {
+	if rowsAff, err := Webauthns().DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -97,14 +97,14 @@ func testPasskeysQueryDeleteAll(t *testing.T) {
 	}
 }
 
-func testPasskeysSliceDeleteAll(t *testing.T) {
+func testWebauthnsSliceDeleteAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -114,7 +114,7 @@ func testPasskeysSliceDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := PasskeySlice{o}
+	slice := WebauthnSlice{o}
 
 	if rowsAff, err := slice.DeleteAll(ctx, tx); err != nil {
 		t.Error(err)
@@ -122,7 +122,7 @@ func testPasskeysSliceDeleteAll(t *testing.T) {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -132,14 +132,14 @@ func testPasskeysSliceDeleteAll(t *testing.T) {
 	}
 }
 
-func testPasskeysExists(t *testing.T) {
+func testWebauthnsExists(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -149,23 +149,23 @@ func testPasskeysExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := PasskeyExists(ctx, tx, o.UserID)
+	e, err := WebauthnExists(ctx, tx, o.ID)
 	if err != nil {
-		t.Errorf("Unable to check if Passkey exists: %s", err)
+		t.Errorf("Unable to check if Webauthn exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected PasskeyExists to return true, but got false.")
+		t.Errorf("Expected WebauthnExists to return true, but got false.")
 	}
 }
 
-func testPasskeysFind(t *testing.T) {
+func testWebauthnsFind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -175,24 +175,24 @@ func testPasskeysFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	passkeyFound, err := FindPasskey(ctx, tx, o.UserID)
+	webauthnFound, err := FindWebauthn(ctx, tx, o.ID)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if passkeyFound == nil {
+	if webauthnFound == nil {
 		t.Error("want a record, got nil")
 	}
 }
 
-func testPasskeysBind(t *testing.T) {
+func testWebauthnsBind(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -202,19 +202,19 @@ func testPasskeysBind(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err = Passkeys().Bind(ctx, tx, o); err != nil {
+	if err = Webauthns().Bind(ctx, tx, o); err != nil {
 		t.Error(err)
 	}
 }
 
-func testPasskeysOne(t *testing.T) {
+func testWebauthnsOne(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -224,38 +224,38 @@ func testPasskeysOne(t *testing.T) {
 		t.Error(err)
 	}
 
-	if x, err := Passkeys().One(ctx, tx); err != nil {
+	if x, err := Webauthns().One(ctx, tx); err != nil {
 		t.Error(err)
 	} else if x == nil {
 		t.Error("expected to get a non nil record")
 	}
 }
 
-func testPasskeysAll(t *testing.T) {
+func testWebauthnsAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	passkeyOne := &Passkey{}
-	passkeyTwo := &Passkey{}
-	if err = randomize.Struct(seed, passkeyOne, passkeyDBTypes, false, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	webauthnOne := &Webauthn{}
+	webauthnTwo := &Webauthn{}
+	if err = randomize.Struct(seed, webauthnOne, webauthnDBTypes, false, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
-	if err = randomize.Struct(seed, passkeyTwo, passkeyDBTypes, false, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	if err = randomize.Struct(seed, webauthnTwo, webauthnDBTypes, false, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = passkeyOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = webauthnOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = passkeyTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = webauthnTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := Passkeys().All(ctx, tx)
+	slice, err := Webauthns().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -265,31 +265,31 @@ func testPasskeysAll(t *testing.T) {
 	}
 }
 
-func testPasskeysCount(t *testing.T) {
+func testWebauthnsCount(t *testing.T) {
 	t.Parallel()
 
 	var err error
 	seed := randomize.NewSeed()
-	passkeyOne := &Passkey{}
-	passkeyTwo := &Passkey{}
-	if err = randomize.Struct(seed, passkeyOne, passkeyDBTypes, false, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	webauthnOne := &Webauthn{}
+	webauthnTwo := &Webauthn{}
+	if err = randomize.Struct(seed, webauthnOne, webauthnDBTypes, false, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
-	if err = randomize.Struct(seed, passkeyTwo, passkeyDBTypes, false, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	if err = randomize.Struct(seed, webauthnTwo, webauthnDBTypes, false, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = passkeyOne.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = webauthnOne.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = passkeyTwo.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = webauthnTwo.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -299,155 +299,155 @@ func testPasskeysCount(t *testing.T) {
 	}
 }
 
-func passkeyBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnBeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func passkeyAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnAfterInsertHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func passkeyAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnAfterSelectHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func passkeyBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnBeforeUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func passkeyAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnAfterUpdateHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func passkeyBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnBeforeDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func passkeyAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnAfterDeleteHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func passkeyBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnBeforeUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func passkeyAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Passkey) error {
-	*o = Passkey{}
+func webauthnAfterUpsertHook(ctx context.Context, e boil.ContextExecutor, o *Webauthn) error {
+	*o = Webauthn{}
 	return nil
 }
 
-func testPasskeysHooks(t *testing.T) {
+func testWebauthnsHooks(t *testing.T) {
 	t.Parallel()
 
 	var err error
 
 	ctx := context.Background()
-	empty := &Passkey{}
-	o := &Passkey{}
+	empty := &Webauthn{}
+	o := &Webauthn{}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, o, passkeyDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Passkey object: %s", err)
+	if err = randomize.Struct(seed, o, webauthnDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize Webauthn object: %s", err)
 	}
 
-	AddPasskeyHook(boil.BeforeInsertHook, passkeyBeforeInsertHook)
+	AddWebauthnHook(boil.BeforeInsertHook, webauthnBeforeInsertHook)
 	if err = o.doBeforeInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeInsertHook function to empty object, but got: %#v", o)
 	}
-	passkeyBeforeInsertHooks = []PasskeyHook{}
+	webauthnBeforeInsertHooks = []WebauthnHook{}
 
-	AddPasskeyHook(boil.AfterInsertHook, passkeyAfterInsertHook)
+	AddWebauthnHook(boil.AfterInsertHook, webauthnAfterInsertHook)
 	if err = o.doAfterInsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterInsertHook function to empty object, but got: %#v", o)
 	}
-	passkeyAfterInsertHooks = []PasskeyHook{}
+	webauthnAfterInsertHooks = []WebauthnHook{}
 
-	AddPasskeyHook(boil.AfterSelectHook, passkeyAfterSelectHook)
+	AddWebauthnHook(boil.AfterSelectHook, webauthnAfterSelectHook)
 	if err = o.doAfterSelectHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterSelectHook function to empty object, but got: %#v", o)
 	}
-	passkeyAfterSelectHooks = []PasskeyHook{}
+	webauthnAfterSelectHooks = []WebauthnHook{}
 
-	AddPasskeyHook(boil.BeforeUpdateHook, passkeyBeforeUpdateHook)
+	AddWebauthnHook(boil.BeforeUpdateHook, webauthnBeforeUpdateHook)
 	if err = o.doBeforeUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpdateHook function to empty object, but got: %#v", o)
 	}
-	passkeyBeforeUpdateHooks = []PasskeyHook{}
+	webauthnBeforeUpdateHooks = []WebauthnHook{}
 
-	AddPasskeyHook(boil.AfterUpdateHook, passkeyAfterUpdateHook)
+	AddWebauthnHook(boil.AfterUpdateHook, webauthnAfterUpdateHook)
 	if err = o.doAfterUpdateHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpdateHook function to empty object, but got: %#v", o)
 	}
-	passkeyAfterUpdateHooks = []PasskeyHook{}
+	webauthnAfterUpdateHooks = []WebauthnHook{}
 
-	AddPasskeyHook(boil.BeforeDeleteHook, passkeyBeforeDeleteHook)
+	AddWebauthnHook(boil.BeforeDeleteHook, webauthnBeforeDeleteHook)
 	if err = o.doBeforeDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeDeleteHook function to empty object, but got: %#v", o)
 	}
-	passkeyBeforeDeleteHooks = []PasskeyHook{}
+	webauthnBeforeDeleteHooks = []WebauthnHook{}
 
-	AddPasskeyHook(boil.AfterDeleteHook, passkeyAfterDeleteHook)
+	AddWebauthnHook(boil.AfterDeleteHook, webauthnAfterDeleteHook)
 	if err = o.doAfterDeleteHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterDeleteHook function to empty object, but got: %#v", o)
 	}
-	passkeyAfterDeleteHooks = []PasskeyHook{}
+	webauthnAfterDeleteHooks = []WebauthnHook{}
 
-	AddPasskeyHook(boil.BeforeUpsertHook, passkeyBeforeUpsertHook)
+	AddWebauthnHook(boil.BeforeUpsertHook, webauthnBeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpsertHook function to empty object, but got: %#v", o)
 	}
-	passkeyBeforeUpsertHooks = []PasskeyHook{}
+	webauthnBeforeUpsertHooks = []WebauthnHook{}
 
-	AddPasskeyHook(boil.AfterUpsertHook, passkeyAfterUpsertHook)
+	AddWebauthnHook(boil.AfterUpsertHook, webauthnAfterUpsertHook)
 	if err = o.doAfterUpsertHooks(ctx, nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpsertHook function to empty object, but got: %#v", o)
 	}
-	passkeyAfterUpsertHooks = []PasskeyHook{}
+	webauthnAfterUpsertHooks = []WebauthnHook{}
 }
 
-func testPasskeysInsert(t *testing.T) {
+func testWebauthnsInsert(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -457,7 +457,7 @@ func testPasskeysInsert(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -467,24 +467,24 @@ func testPasskeysInsert(t *testing.T) {
 	}
 }
 
-func testPasskeysInsertWhitelist(t *testing.T) {
+func testWebauthnsInsertWhitelist(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert(ctx, tx, boil.Whitelist(passkeyColumnsWithoutDefault...)); err != nil {
+	if err = o.Insert(ctx, tx, boil.Whitelist(webauthnColumnsWithoutDefault...)); err != nil {
 		t.Error(err)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -494,14 +494,14 @@ func testPasskeysInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testPasskeysReload(t *testing.T) {
+func testWebauthnsReload(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -516,14 +516,14 @@ func testPasskeysReload(t *testing.T) {
 	}
 }
 
-func testPasskeysReloadAll(t *testing.T) {
+func testWebauthnsReloadAll(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -533,21 +533,21 @@ func testPasskeysReloadAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice := PasskeySlice{o}
+	slice := WebauthnSlice{o}
 
 	if err = slice.ReloadAll(ctx, tx); err != nil {
 		t.Error(err)
 	}
 }
 
-func testPasskeysSelect(t *testing.T) {
+func testWebauthnsSelect(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -557,7 +557,7 @@ func testPasskeysSelect(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice, err := Passkeys().All(ctx, tx)
+	slice, err := Webauthns().All(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,25 +568,25 @@ func testPasskeysSelect(t *testing.T) {
 }
 
 var (
-	passkeyDBTypes = map[string]string{`UserID`: `varchar`, `WebauthnUserID`: `varbinary`, `Credential`: `json`, `FlagBackupState`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
-	_              = bytes.MinRead
+	webauthnDBTypes = map[string]string{`ID`: `bigint`, `UserID`: `varchar`, `Credential`: `json`, `Device`: `varchar`, `Os`: `varchar`, `Browser`: `varchar`, `IsMobile`: `tinyint`, `IP`: `varbinary`, `Created`: `datetime`}
+	_               = bytes.MinRead
 )
 
-func testPasskeysUpdate(t *testing.T) {
+func testWebauthnsUpdate(t *testing.T) {
 	t.Parallel()
 
-	if 0 == len(passkeyPrimaryKeyColumns) {
+	if 0 == len(webauthnPrimaryKeyColumns) {
 		t.Skip("Skipping table with no primary key columns")
 	}
-	if len(passkeyAllColumns) == len(passkeyPrimaryKeyColumns) {
+	if len(webauthnAllColumns) == len(webauthnPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -596,7 +596,7 @@ func testPasskeysUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -605,8 +605,8 @@ func testPasskeysUpdate(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	if rowsAff, err := o.Update(ctx, tx, boil.Infer()); err != nil {
@@ -616,18 +616,18 @@ func testPasskeysUpdate(t *testing.T) {
 	}
 }
 
-func testPasskeysSliceUpdateAll(t *testing.T) {
+func testWebauthnsSliceUpdateAll(t *testing.T) {
 	t.Parallel()
 
-	if len(passkeyAllColumns) == len(passkeyPrimaryKeyColumns) {
+	if len(webauthnAllColumns) == len(webauthnPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &Passkey{}
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := &Webauthn{}
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
@@ -637,7 +637,7 @@ func testPasskeysSliceUpdateAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -646,18 +646,18 @@ func testPasskeysSliceUpdateAll(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, o, passkeyDBTypes, true, passkeyPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	if err = randomize.Struct(seed, o, webauthnDBTypes, true, webauthnPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
-	if strmangle.StringSliceMatch(passkeyAllColumns, passkeyPrimaryKeyColumns) {
-		fields = passkeyAllColumns
+	if strmangle.StringSliceMatch(webauthnAllColumns, webauthnPrimaryKeyColumns) {
+		fields = webauthnAllColumns
 	} else {
 		fields = strmangle.SetComplement(
-			passkeyAllColumns,
-			passkeyPrimaryKeyColumns,
+			webauthnAllColumns,
+			webauthnPrimaryKeyColumns,
 		)
 	}
 
@@ -675,7 +675,7 @@ func testPasskeysSliceUpdateAll(t *testing.T) {
 		}
 	}
 
-	slice := PasskeySlice{o}
+	slice := WebauthnSlice{o}
 	if rowsAff, err := slice.UpdateAll(ctx, tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
@@ -683,32 +683,32 @@ func testPasskeysSliceUpdateAll(t *testing.T) {
 	}
 }
 
-func testPasskeysUpsert(t *testing.T) {
+func testWebauthnsUpsert(t *testing.T) {
 	t.Parallel()
 
-	if len(passkeyAllColumns) == len(passkeyPrimaryKeyColumns) {
+	if len(webauthnAllColumns) == len(webauthnPrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
-	if len(mySQLPasskeyUniqueColumns) == 0 {
+	if len(mySQLWebauthnUniqueColumns) == 0 {
 		t.Skip("Skipping table with no unique columns to conflict on")
 	}
 
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
-	o := Passkey{}
-	if err = randomize.Struct(seed, &o, passkeyDBTypes, false); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	o := Webauthn{}
+	if err = randomize.Struct(seed, &o, webauthnDBTypes, false); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 	if err = o.Upsert(ctx, tx, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Passkey: %s", err)
+		t.Errorf("Unable to upsert Webauthn: %s", err)
 	}
 
-	count, err := Passkeys().Count(ctx, tx)
+	count, err := Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -717,15 +717,15 @@ func testPasskeysUpsert(t *testing.T) {
 	}
 
 	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &o, passkeyDBTypes, false, passkeyPrimaryKeyColumns...); err != nil {
-		t.Errorf("Unable to randomize Passkey struct: %s", err)
+	if err = randomize.Struct(seed, &o, webauthnDBTypes, false, webauthnPrimaryKeyColumns...); err != nil {
+		t.Errorf("Unable to randomize Webauthn struct: %s", err)
 	}
 
 	if err = o.Upsert(ctx, tx, boil.Infer(), boil.Infer()); err != nil {
-		t.Errorf("Unable to upsert Passkey: %s", err)
+		t.Errorf("Unable to upsert Webauthn: %s", err)
 	}
 
-	count, err = Passkeys().Count(ctx, tx)
+	count, err = Webauthns().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}

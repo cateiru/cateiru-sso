@@ -29,8 +29,6 @@ func TestParent(t *testing.T) {
 	t.Run("Otps", testOtps)
 	t.Run("OtpBackups", testOtpBackups)
 	t.Run("OtpSessions", testOtpSessions)
-	t.Run("Passkeys", testPasskeys)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevices)
 	t.Run("Passwords", testPasswords)
 	t.Run("Refreshes", testRefreshes)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessions)
@@ -41,6 +39,7 @@ func TestParent(t *testing.T) {
 	t.Run("Staffs", testStaffs)
 	t.Run("Users", testUsers)
 	t.Run("UserBrands", testUserBrands)
+	t.Run("Webauthns", testWebauthns)
 	t.Run("WebauthnSessions", testWebauthnSessions)
 }
 
@@ -62,8 +61,6 @@ func TestDelete(t *testing.T) {
 	t.Run("Otps", testOtpsDelete)
 	t.Run("OtpBackups", testOtpBackupsDelete)
 	t.Run("OtpSessions", testOtpSessionsDelete)
-	t.Run("Passkeys", testPasskeysDelete)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesDelete)
 	t.Run("Passwords", testPasswordsDelete)
 	t.Run("Refreshes", testRefreshesDelete)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsDelete)
@@ -74,6 +71,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Staffs", testStaffsDelete)
 	t.Run("Users", testUsersDelete)
 	t.Run("UserBrands", testUserBrandsDelete)
+	t.Run("Webauthns", testWebauthnsDelete)
 	t.Run("WebauthnSessions", testWebauthnSessionsDelete)
 }
 
@@ -95,8 +93,6 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Otps", testOtpsQueryDeleteAll)
 	t.Run("OtpBackups", testOtpBackupsQueryDeleteAll)
 	t.Run("OtpSessions", testOtpSessionsQueryDeleteAll)
-	t.Run("Passkeys", testPasskeysQueryDeleteAll)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesQueryDeleteAll)
 	t.Run("Passwords", testPasswordsQueryDeleteAll)
 	t.Run("Refreshes", testRefreshesQueryDeleteAll)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsQueryDeleteAll)
@@ -107,6 +103,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Staffs", testStaffsQueryDeleteAll)
 	t.Run("Users", testUsersQueryDeleteAll)
 	t.Run("UserBrands", testUserBrandsQueryDeleteAll)
+	t.Run("Webauthns", testWebauthnsQueryDeleteAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsQueryDeleteAll)
 }
 
@@ -128,8 +125,6 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Otps", testOtpsSliceDeleteAll)
 	t.Run("OtpBackups", testOtpBackupsSliceDeleteAll)
 	t.Run("OtpSessions", testOtpSessionsSliceDeleteAll)
-	t.Run("Passkeys", testPasskeysSliceDeleteAll)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesSliceDeleteAll)
 	t.Run("Passwords", testPasswordsSliceDeleteAll)
 	t.Run("Refreshes", testRefreshesSliceDeleteAll)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsSliceDeleteAll)
@@ -140,6 +135,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Staffs", testStaffsSliceDeleteAll)
 	t.Run("Users", testUsersSliceDeleteAll)
 	t.Run("UserBrands", testUserBrandsSliceDeleteAll)
+	t.Run("Webauthns", testWebauthnsSliceDeleteAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsSliceDeleteAll)
 }
 
@@ -161,8 +157,6 @@ func TestExists(t *testing.T) {
 	t.Run("Otps", testOtpsExists)
 	t.Run("OtpBackups", testOtpBackupsExists)
 	t.Run("OtpSessions", testOtpSessionsExists)
-	t.Run("Passkeys", testPasskeysExists)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesExists)
 	t.Run("Passwords", testPasswordsExists)
 	t.Run("Refreshes", testRefreshesExists)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsExists)
@@ -173,6 +167,7 @@ func TestExists(t *testing.T) {
 	t.Run("Staffs", testStaffsExists)
 	t.Run("Users", testUsersExists)
 	t.Run("UserBrands", testUserBrandsExists)
+	t.Run("Webauthns", testWebauthnsExists)
 	t.Run("WebauthnSessions", testWebauthnSessionsExists)
 }
 
@@ -194,8 +189,6 @@ func TestFind(t *testing.T) {
 	t.Run("Otps", testOtpsFind)
 	t.Run("OtpBackups", testOtpBackupsFind)
 	t.Run("OtpSessions", testOtpSessionsFind)
-	t.Run("Passkeys", testPasskeysFind)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesFind)
 	t.Run("Passwords", testPasswordsFind)
 	t.Run("Refreshes", testRefreshesFind)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsFind)
@@ -206,6 +199,7 @@ func TestFind(t *testing.T) {
 	t.Run("Staffs", testStaffsFind)
 	t.Run("Users", testUsersFind)
 	t.Run("UserBrands", testUserBrandsFind)
+	t.Run("Webauthns", testWebauthnsFind)
 	t.Run("WebauthnSessions", testWebauthnSessionsFind)
 }
 
@@ -227,8 +221,6 @@ func TestBind(t *testing.T) {
 	t.Run("Otps", testOtpsBind)
 	t.Run("OtpBackups", testOtpBackupsBind)
 	t.Run("OtpSessions", testOtpSessionsBind)
-	t.Run("Passkeys", testPasskeysBind)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesBind)
 	t.Run("Passwords", testPasswordsBind)
 	t.Run("Refreshes", testRefreshesBind)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsBind)
@@ -239,6 +231,7 @@ func TestBind(t *testing.T) {
 	t.Run("Staffs", testStaffsBind)
 	t.Run("Users", testUsersBind)
 	t.Run("UserBrands", testUserBrandsBind)
+	t.Run("Webauthns", testWebauthnsBind)
 	t.Run("WebauthnSessions", testWebauthnSessionsBind)
 }
 
@@ -260,8 +253,6 @@ func TestOne(t *testing.T) {
 	t.Run("Otps", testOtpsOne)
 	t.Run("OtpBackups", testOtpBackupsOne)
 	t.Run("OtpSessions", testOtpSessionsOne)
-	t.Run("Passkeys", testPasskeysOne)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesOne)
 	t.Run("Passwords", testPasswordsOne)
 	t.Run("Refreshes", testRefreshesOne)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsOne)
@@ -272,6 +263,7 @@ func TestOne(t *testing.T) {
 	t.Run("Staffs", testStaffsOne)
 	t.Run("Users", testUsersOne)
 	t.Run("UserBrands", testUserBrandsOne)
+	t.Run("Webauthns", testWebauthnsOne)
 	t.Run("WebauthnSessions", testWebauthnSessionsOne)
 }
 
@@ -293,8 +285,6 @@ func TestAll(t *testing.T) {
 	t.Run("Otps", testOtpsAll)
 	t.Run("OtpBackups", testOtpBackupsAll)
 	t.Run("OtpSessions", testOtpSessionsAll)
-	t.Run("Passkeys", testPasskeysAll)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesAll)
 	t.Run("Passwords", testPasswordsAll)
 	t.Run("Refreshes", testRefreshesAll)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsAll)
@@ -305,6 +295,7 @@ func TestAll(t *testing.T) {
 	t.Run("Staffs", testStaffsAll)
 	t.Run("Users", testUsersAll)
 	t.Run("UserBrands", testUserBrandsAll)
+	t.Run("Webauthns", testWebauthnsAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsAll)
 }
 
@@ -326,8 +317,6 @@ func TestCount(t *testing.T) {
 	t.Run("Otps", testOtpsCount)
 	t.Run("OtpBackups", testOtpBackupsCount)
 	t.Run("OtpSessions", testOtpSessionsCount)
-	t.Run("Passkeys", testPasskeysCount)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesCount)
 	t.Run("Passwords", testPasswordsCount)
 	t.Run("Refreshes", testRefreshesCount)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsCount)
@@ -338,6 +327,7 @@ func TestCount(t *testing.T) {
 	t.Run("Staffs", testStaffsCount)
 	t.Run("Users", testUsersCount)
 	t.Run("UserBrands", testUserBrandsCount)
+	t.Run("Webauthns", testWebauthnsCount)
 	t.Run("WebauthnSessions", testWebauthnSessionsCount)
 }
 
@@ -359,8 +349,6 @@ func TestHooks(t *testing.T) {
 	t.Run("Otps", testOtpsHooks)
 	t.Run("OtpBackups", testOtpBackupsHooks)
 	t.Run("OtpSessions", testOtpSessionsHooks)
-	t.Run("Passkeys", testPasskeysHooks)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesHooks)
 	t.Run("Passwords", testPasswordsHooks)
 	t.Run("Refreshes", testRefreshesHooks)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsHooks)
@@ -371,6 +359,7 @@ func TestHooks(t *testing.T) {
 	t.Run("Staffs", testStaffsHooks)
 	t.Run("Users", testUsersHooks)
 	t.Run("UserBrands", testUserBrandsHooks)
+	t.Run("Webauthns", testWebauthnsHooks)
 	t.Run("WebauthnSessions", testWebauthnSessionsHooks)
 }
 
@@ -409,10 +398,6 @@ func TestInsert(t *testing.T) {
 	t.Run("OtpBackups", testOtpBackupsInsertWhitelist)
 	t.Run("OtpSessions", testOtpSessionsInsert)
 	t.Run("OtpSessions", testOtpSessionsInsertWhitelist)
-	t.Run("Passkeys", testPasskeysInsert)
-	t.Run("Passkeys", testPasskeysInsertWhitelist)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesInsert)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesInsertWhitelist)
 	t.Run("Passwords", testPasswordsInsert)
 	t.Run("Passwords", testPasswordsInsertWhitelist)
 	t.Run("Refreshes", testRefreshesInsert)
@@ -433,6 +418,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Users", testUsersInsertWhitelist)
 	t.Run("UserBrands", testUserBrandsInsert)
 	t.Run("UserBrands", testUserBrandsInsertWhitelist)
+	t.Run("Webauthns", testWebauthnsInsert)
+	t.Run("Webauthns", testWebauthnsInsertWhitelist)
 	t.Run("WebauthnSessions", testWebauthnSessionsInsert)
 	t.Run("WebauthnSessions", testWebauthnSessionsInsertWhitelist)
 }
@@ -495,8 +482,6 @@ func TestReload(t *testing.T) {
 	t.Run("Otps", testOtpsReload)
 	t.Run("OtpBackups", testOtpBackupsReload)
 	t.Run("OtpSessions", testOtpSessionsReload)
-	t.Run("Passkeys", testPasskeysReload)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesReload)
 	t.Run("Passwords", testPasswordsReload)
 	t.Run("Refreshes", testRefreshesReload)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsReload)
@@ -507,6 +492,7 @@ func TestReload(t *testing.T) {
 	t.Run("Staffs", testStaffsReload)
 	t.Run("Users", testUsersReload)
 	t.Run("UserBrands", testUserBrandsReload)
+	t.Run("Webauthns", testWebauthnsReload)
 	t.Run("WebauthnSessions", testWebauthnSessionsReload)
 }
 
@@ -528,8 +514,6 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Otps", testOtpsReloadAll)
 	t.Run("OtpBackups", testOtpBackupsReloadAll)
 	t.Run("OtpSessions", testOtpSessionsReloadAll)
-	t.Run("Passkeys", testPasskeysReloadAll)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesReloadAll)
 	t.Run("Passwords", testPasswordsReloadAll)
 	t.Run("Refreshes", testRefreshesReloadAll)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsReloadAll)
@@ -540,6 +524,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Staffs", testStaffsReloadAll)
 	t.Run("Users", testUsersReloadAll)
 	t.Run("UserBrands", testUserBrandsReloadAll)
+	t.Run("Webauthns", testWebauthnsReloadAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsReloadAll)
 }
 
@@ -561,8 +546,6 @@ func TestSelect(t *testing.T) {
 	t.Run("Otps", testOtpsSelect)
 	t.Run("OtpBackups", testOtpBackupsSelect)
 	t.Run("OtpSessions", testOtpSessionsSelect)
-	t.Run("Passkeys", testPasskeysSelect)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesSelect)
 	t.Run("Passwords", testPasswordsSelect)
 	t.Run("Refreshes", testRefreshesSelect)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsSelect)
@@ -573,6 +556,7 @@ func TestSelect(t *testing.T) {
 	t.Run("Staffs", testStaffsSelect)
 	t.Run("Users", testUsersSelect)
 	t.Run("UserBrands", testUserBrandsSelect)
+	t.Run("Webauthns", testWebauthnsSelect)
 	t.Run("WebauthnSessions", testWebauthnSessionsSelect)
 }
 
@@ -594,8 +578,6 @@ func TestUpdate(t *testing.T) {
 	t.Run("Otps", testOtpsUpdate)
 	t.Run("OtpBackups", testOtpBackupsUpdate)
 	t.Run("OtpSessions", testOtpSessionsUpdate)
-	t.Run("Passkeys", testPasskeysUpdate)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesUpdate)
 	t.Run("Passwords", testPasswordsUpdate)
 	t.Run("Refreshes", testRefreshesUpdate)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsUpdate)
@@ -606,6 +588,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Staffs", testStaffsUpdate)
 	t.Run("Users", testUsersUpdate)
 	t.Run("UserBrands", testUserBrandsUpdate)
+	t.Run("Webauthns", testWebauthnsUpdate)
 	t.Run("WebauthnSessions", testWebauthnSessionsUpdate)
 }
 
@@ -627,8 +610,6 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Otps", testOtpsSliceUpdateAll)
 	t.Run("OtpBackups", testOtpBackupsSliceUpdateAll)
 	t.Run("OtpSessions", testOtpSessionsSliceUpdateAll)
-	t.Run("Passkeys", testPasskeysSliceUpdateAll)
-	t.Run("PasskeyLoginDevices", testPasskeyLoginDevicesSliceUpdateAll)
 	t.Run("Passwords", testPasswordsSliceUpdateAll)
 	t.Run("Refreshes", testRefreshesSliceUpdateAll)
 	t.Run("RegisterOtpSessions", testRegisterOtpSessionsSliceUpdateAll)
@@ -639,5 +620,6 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Staffs", testStaffsSliceUpdateAll)
 	t.Run("Users", testUsersSliceUpdateAll)
 	t.Run("UserBrands", testUserBrandsSliceUpdateAll)
+	t.Run("Webauthns", testWebauthnsSliceUpdateAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsSliceUpdateAll)
 }

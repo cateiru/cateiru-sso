@@ -38,7 +38,7 @@ type AccountReRegisterPasswordTemplate struct {
 type AccountCertificates struct {
 	Password bool `json:"password"`
 	OTP      bool `json:"otp"`
-	Passkey  bool `json:"passkey"`
+	WebAuthn bool `json:"webauthn"`
 }
 
 type AccountReRegisterPasswordIsSession struct {
@@ -473,7 +473,7 @@ func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
-	webauthnUser, err := NewWebauthnUserFromUser(user)
+	webauthnUser, err := NewWebAuthnUserFromDB(ctx, h.DB, user)
 	if err != nil {
 		return err
 	}
@@ -491,12 +491,10 @@ func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 	webauthnSession := models.WebauthnSession{
-		ID:               webauthnSessionId,
-		WebauthnUserID:   s.UserID,
-		UserDisplayName:  s.UserDisplayName,
-		Challenge:        s.Challenge,
-		UserVerification: string(s.UserVerification),
-		Row:              row,
+		ID:     webauthnSessionId,
+		UserID: null.NewString(user.ID, true),
+
+		Row: row,
 
 		Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
 		Identifier: 3,
@@ -539,7 +537,7 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
-	credential, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value, 3)
+	credential, _, err := h.RegisterWebauthn(ctx, c.Request().Body, webauthnToken.Value, 3)
 	if err != nil {
 		return err
 	}
@@ -548,36 +546,25 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 	if err := rowCredential.Marshal(credential); err != nil {
 		return err
 	}
-	passkey := models.Passkey{
-		UserID:          user.ID,
-		WebauthnUserID:  credential.ID,
-		Credential:      rowCredential,
-		FlagBackupState: credential.Flags.BackupState,
-	}
-	if err := passkey.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
-		return err
-	}
-
-	// 履歴は削除する
-	if _, err := models.PasskeyLoginDevices(
-		models.PasskeyLoginDeviceWhere.UserID.EQ(user.ID),
-	).DeleteAll(ctx, h.DB); err != nil {
-		return err
-	}
 
 	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
-	passkeyLoginDevice := models.PasskeyLoginDevice{
-		UserID:           user.ID,
-		Device:           null.NewString(ua.Device, true),
-		Os:               null.NewString(ua.OS, true),
-		Browser:          null.NewString(ua.Browser, true),
-		IsMobile:         null.NewBool(ua.IsMobile, true),
-		IsRegisterDevice: true, // 登録したデバイスなのでtrue
+	ip := c.RealIP()
+
+	auth := models.Webauthn{
+		UserID:     user.ID,
+		Credential: rowCredential,
+
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+
+		IP: net.ParseIP(ip),
 	}
-	if err := passkeyLoginDevice.Insert(ctx, h.DB, boil.Infer()); err != nil {
+	if err := auth.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
 		return err
 	}
 
@@ -606,8 +593,8 @@ func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	passkey, err := models.Passkeys(
-		models.PasskeyWhere.UserID.EQ(user.ID),
+	webauthn, err := models.Webauthns(
+		models.WebauthnWhere.UserID.EQ(user.ID),
 	).Exists(ctx, h.DB)
 	if err != nil {
 		return err
@@ -616,7 +603,7 @@ func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, AccountCertificates{
 		Password: password,
 		OTP:      otp,
-		Passkey:  passkey,
+		WebAuthn: webauthn,
 	})
 }
 
