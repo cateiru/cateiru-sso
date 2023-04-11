@@ -138,7 +138,7 @@ func (h *Handler) LoginBeginWebauthnHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, creation)
 }
 
-// Passkeyでログインする
+// WebAuthnでログインする
 // WebauthnSessionCookieは有効期限が短いので削除しないが、DBのセッションは削除する
 func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -158,19 +158,21 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
-	user, err := h.LoginWebauthn(ctx, c.Request().Body, webauthnToken.Value, 2, func(u *models.User) error {
-		// ログイントライ履歴を追加する
-		loginTryHistory := models.LoginTryHistory{
-			UserID:   u.ID,
-			Device:   null.NewString(ua.Device, true),
-			Os:       null.NewString(ua.OS, true),
-			Browser:  null.NewString(ua.Browser, true),
-			IsMobile: null.NewBool(ua.IsMobile, true),
-			IP:       net.ParseIP(ip),
-		}
-		return loginTryHistory.Insert(ctx, h.DB, boil.Infer())
-	})
+	user, err := h.LoginWebauthn(ctx, c.Request().Body, webauthnToken.Value, 2)
 	if err != nil {
+		return err
+	}
+
+	// ログイントライ履歴を追加する
+	loginTryHistory := models.LoginTryHistory{
+		UserID:   user.ID,
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+		IP:       net.ParseIP(ip),
+	}
+	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 

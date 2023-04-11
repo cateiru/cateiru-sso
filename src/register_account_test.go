@@ -13,7 +13,9 @@ import (
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/types"
@@ -503,9 +505,6 @@ func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 
-		require.Equal(t, webauthnSession.Challenge, resp.Response.Challenge.String())
-		require.Equal(t, protocol.URLEncodedBase64(webauthnSession.WebauthnUserID).String(), resp.Response.User.ID)
-		require.Equal(t, webauthnSession.UserDisplayName, "") // 定義はされているのに何故か代入していない
 		require.Equal(t, webauthnSession.Identifier, int8(1))
 
 		// rowにjsonが入っている
@@ -603,7 +602,8 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 
 	// Webauthnのセッションを作成する
 	registerWebauthnSession := func(email string, identifier int8) string {
-		user, err := src.NewWebAuthnUserRegister(email)
+		id := ulid.Make().String()
+		user, err := src.NewWebAuthnUserRegister(email, []byte(id))
 		require.NoError(t, err)
 		webauthnSessionId, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -616,12 +616,9 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		webauthnSession := models.WebauthnSession{
-			ID:               webauthnSessionId,
-			WebauthnUserID:   s.UserID,
-			UserDisplayName:  s.UserDisplayName,
-			Challenge:        s.Challenge,
-			UserVerification: string(s.UserVerification),
-			Row:              row,
+			ID:     webauthnSessionId,
+			UserID: null.NewString(string(user.ID), true),
+			Row:    row,
 
 			Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
 			Identifier: identifier,
@@ -677,17 +674,11 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		require.Equal(t, sessionUser.ID, responseUser.ID)
 
 		// passkeyが保存されているか
-		existsPasskey, err := models.Passkeys(
-			models.PasskeyWhere.UserID.EQ(responseUser.ID),
+		existsPasskey, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(responseUser.ID),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.True(t, existsPasskey)
-
-		passkeyLoginDeviceCount, err := models.PasskeyLoginDevices(
-			models.PasskeyLoginDeviceWhere.UserID.EQ(responseUser.ID),
-		).Count(ctx, DB)
-		require.NoError(t, err)
-		require.Equal(t, passkeyLoginDeviceCount, int64(1))
 
 		// WebauthnSessionは削除されている
 		existsWebauthnSession, err := models.WebauthnSessionExists(ctx, DB, webauthnSession)

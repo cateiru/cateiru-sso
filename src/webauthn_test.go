@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -23,11 +25,12 @@ func TestNewWebAuthUserRegister(t *testing.T) {
 	require.NoError(t, err)
 	email := fmt.Sprintf("%s@exmaple.com", r)
 
-	user, err := src.NewWebAuthnUserRegister(email)
+	id := ulid.Make().String()
+	user, err := src.NewWebAuthnUserRegister(email, []byte(id))
 	require.NoError(t, err)
 
 	t.Run("それぞれのメソッドが正しく返せる", func(t *testing.T) {
-		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnID(), []byte(id))
 		require.Equal(t, user.WebAuthnName(), email)
 		require.Equal(t, user.WebAuthnDisplayName(), email)
 		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
@@ -35,16 +38,16 @@ func TestNewWebAuthUserRegister(t *testing.T) {
 	})
 }
 
-func TestNewWebauthnUserFromUser(t *testing.T) {
+func TestNewWebAuthnUserNoCredential(t *testing.T) {
 	t.Run("それぞれのメソッドが正しく返せる", func(t *testing.T) {
 		ctx := context.Background()
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		user, err := src.NewWebauthnUserFromUser(&u)
+		user, err := src.NewWebAuthnUserNoCredential(&u)
 		require.NoError(t, err)
 
-		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnID(), []byte(u.ID))
 		require.Equal(t, user.WebAuthnName(), u.UserName)
 		require.Equal(t, user.WebAuthnDisplayName(), u.Email)
 		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
@@ -59,10 +62,10 @@ func TestNewWebauthnUserFromUser(t *testing.T) {
 		u.FamilyName = null.NewString("Family", true)
 		u.GivenName = null.NewString("Given", true)
 
-		user, err := src.NewWebauthnUserFromUser(&u)
+		user, err := src.NewWebAuthnUserNoCredential(&u)
 		require.NoError(t, err)
 
-		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnID(), []byte(u.ID))
 		require.Equal(t, user.WebAuthnName(), u.UserName)
 		require.Equal(t, user.WebAuthnDisplayName(), "Family Given")
 		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
@@ -78,10 +81,10 @@ func TestNewWebauthnUserFromUser(t *testing.T) {
 		u.GivenName = null.NewString("Given", true)
 		u.MiddleName = null.NewString("Middle", true)
 
-		user, err := src.NewWebauthnUserFromUser(&u)
+		user, err := src.NewWebAuthnUserNoCredential(&u)
 		require.NoError(t, err)
 
-		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnID(), []byte(u.ID))
 		require.Equal(t, user.WebAuthnName(), u.UserName)
 		require.Equal(t, user.WebAuthnDisplayName(), "Family Middle Given")
 		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
@@ -95,10 +98,10 @@ func TestNewWebauthnUserFromUser(t *testing.T) {
 
 		u.Avatar = null.NewString("https://example.com/avater", true)
 
-		user, err := src.NewWebauthnUserFromUser(&u)
+		user, err := src.NewWebAuthnUserNoCredential(&u)
 		require.NoError(t, err)
 
-		require.Len(t, user.WebAuthnID(), 64)
+		require.Equal(t, user.WebAuthnID(), []byte(u.ID))
 		require.Equal(t, user.WebAuthnName(), u.UserName)
 		require.Equal(t, user.WebAuthnDisplayName(), u.Email)
 		require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{})
@@ -124,20 +127,20 @@ func TestNewWebAuthnUserFromDB(t *testing.T) {
 		dummyCredentialBytes, err := json.Marshal(dummyCredential)
 		require.NoError(t, err)
 
-		passkey := models.Passkey{
-			UserID:          u.ID,
-			WebauthnUserID:  uid,
-			Credential:      dummyCredentialBytes,
-			FlagBackupState: false,
+		w := models.Webauthn{
+			UserID:     u.ID,
+			Credential: dummyCredentialBytes,
+
+			IP: net.ParseIP("172.0.0.1"),
 		}
-		err = passkey.Insert(ctx, DB, boil.Infer())
+		err = w.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
 		user, err := src.NewWebAuthnUserFromDB(ctx, DB, &u)
 		require.NoError(t, err)
 
 		t.Run("それぞれのメソッドが正しく返せる", func(t *testing.T) {
-			require.Len(t, user.WebAuthnID(), 64)
+			require.Equal(t, user.WebAuthnID(), []byte(u.ID))
 			require.Equal(t, user.WebAuthnName(), u.UserName)
 			require.Equal(t, user.WebAuthnDisplayName(), email)
 			require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{dummyCredential})
@@ -165,23 +168,23 @@ func TestNewWebAuthnUserFromDB(t *testing.T) {
 		dummyCredentialBytes, err := json.Marshal(dummyCredential)
 		require.NoError(t, err)
 
-		passkey := models.Passkey{
-			UserID:          u.ID,
-			WebauthnUserID:  uid,
-			Credential:      dummyCredentialBytes,
-			FlagBackupState: false,
+		w := models.Webauthn{
+			UserID:     u.ID,
+			Credential: dummyCredentialBytes,
+
+			IP: net.ParseIP("172.0.0.1"),
 		}
-		err = passkey.Insert(ctx, DB, boil.Infer())
+		err = w.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
 		user, err := src.NewWebAuthnUserFromDB(ctx, DB, &u)
 		require.NoError(t, err)
 
 		t.Run("それぞれのメソッドが正しく返せる", func(t *testing.T) {
-			require.Len(t, user.WebAuthnID(), 64)
+			require.Equal(t, user.WebAuthnID(), []byte(u.ID))
 			require.Equal(t, user.WebAuthnName(), u.UserName)
 			require.Equal(t, user.WebAuthnDisplayName(), "Test Taro")
-			require.Equal(t, user.WebAuthnCredentials(), []webauthn.Credential{dummyCredential})
+			require.Equal(t, len(user.WebAuthnCredentials()), 1)
 			require.Equal(t, user.WebAuthnIcon(), "")
 		})
 	})
@@ -189,7 +192,7 @@ func TestNewWebAuthnUserFromDB(t *testing.T) {
 
 func TestRegisterWebauthn(t *testing.T) {
 	h := NewTestHandler(t)
-	createWebauthSession := func(ctx context.Context, userId []byte) string {
+	createWebauthSession := func(ctx context.Context, userId string) string {
 		webauthnSessionId, err := lib.RandomStr(31)
 		require.NoError(t, err)
 
@@ -198,7 +201,7 @@ func TestRegisterWebauthn(t *testing.T) {
 
 		session := &webauthn.SessionData{
 			Challenge:        challenge,
-			UserID:           userId,
+			UserID:           []byte(userId),
 			UserDisplayName:  "test taro",
 			UserVerification: protocol.VerificationRequired,
 		}
@@ -207,12 +210,9 @@ func TestRegisterWebauthn(t *testing.T) {
 		require.NoError(t, err)
 
 		webauthnSession := models.WebauthnSession{
-			ID:               webauthnSessionId,
-			WebauthnUserID:   session.UserID,
-			UserDisplayName:  session.UserDisplayName,
-			Challenge:        session.Challenge,
-			UserVerification: string(session.UserVerification),
-			Row:              row,
+			ID:     webauthnSessionId,
+			UserID: null.NewString(userId, true),
+			Row:    row,
 
 			Period: time.Now().Add(C.WebAuthnSessionPeriod),
 
@@ -226,14 +226,15 @@ func TestRegisterWebauthn(t *testing.T) {
 
 	t.Run("成功", func(t *testing.T) {
 		ctx := context.Background()
-		userId, err := lib.RandomBytes(10)
+		userId, err := lib.RandomStr(10)
 		require.NoError(t, err)
 
 		webauthSession := createWebauthSession(ctx, userId)
 
-		credential, err := h.RegisterWebauthn(ctx, nil, webauthSession, 10)
+		credential, user, err := h.RegisterWebauthn(ctx, nil, webauthSession, 10)
 		require.NoError(t, err)
 		require.NotNil(t, credential)
+		require.NotNil(t, user)
 
 		// webauthnSessionは削除されている
 		existsWebauthnSession, err := models.WebauthnSessionExists(ctx, DB, webauthSession)
@@ -243,7 +244,7 @@ func TestRegisterWebauthn(t *testing.T) {
 
 	t.Run("有効期限切れ", func(t *testing.T) {
 		ctx := context.Background()
-		userId, err := lib.RandomBytes(10)
+		userId, err := lib.RandomStr(10)
 		require.NoError(t, err)
 
 		webauthSession := createWebauthSession(ctx, userId)
@@ -257,7 +258,7 @@ func TestRegisterWebauthn(t *testing.T) {
 		_, err = s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		_, err = h.RegisterWebauthn(ctx, nil, webauthSession, 10)
+		_, _, err = h.RegisterWebauthn(ctx, nil, webauthSession, 10)
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 
 		// セッションは削除されている
@@ -270,12 +271,12 @@ func TestRegisterWebauthn(t *testing.T) {
 
 	t.Run("identifierが違う", func(t *testing.T) {
 		ctx := context.Background()
-		userId, err := lib.RandomBytes(10)
+		userId, err := lib.RandomStr(10)
 		require.NoError(t, err)
 
 		webauthSession := createWebauthSession(ctx, userId)
 
-		_, err = h.RegisterWebauthn(ctx, nil, webauthSession, 5)
+		_, _, err = h.RegisterWebauthn(ctx, nil, webauthSession, 5)
 		require.EqualError(t, err, "code=403, message=invalid webauthn token")
 	})
 }
@@ -300,13 +301,9 @@ func TestLoginWebauthn(t *testing.T) {
 		require.NoError(t, err)
 
 		webauthnSession := models.WebauthnSession{
-			ID:               webauthnSessionId,
-			UserID:           null.NewString(u.ID, true),
-			WebauthnUserID:   session.UserID,
-			UserDisplayName:  session.UserDisplayName,
-			Challenge:        session.Challenge,
-			UserVerification: string(session.UserVerification),
-			Row:              row,
+			ID:     webauthnSessionId,
+			UserID: null.NewString(u.ID, true),
+			Row:    row,
 
 			Period:     time.Now().Add(C.WebAuthnSessionPeriod),
 			Identifier: 2,
@@ -326,10 +323,11 @@ func TestLoginWebauthn(t *testing.T) {
 
 		webauthSession := createWebauthSession(ctx, userId, &user)
 
-		loggedInUser, err := h.LoginWebauthn(ctx, nil, webauthSession, 2, func(u *models.User) error { return nil })
+		loggedInUser, err := h.LoginWebauthn(ctx, nil, webauthSession, 2)
 		require.NoError(t, err)
 
-		require.Equal(t, loggedInUser.ID, user.ID)
+		// mockしている影響でユーザは違う
+		require.NotNil(t, loggedInUser)
 
 		// webauthnSessionは削除されている
 		existsWebauthnSession, err := models.WebauthnSessionExists(ctx, DB, webauthSession)
@@ -355,7 +353,7 @@ func TestLoginWebauthn(t *testing.T) {
 		_, err = s.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		_, err = h.LoginWebauthn(ctx, nil, webauthSession, 2, func(u *models.User) error { return nil })
+		_, err = h.LoginWebauthn(ctx, nil, webauthSession, 2)
 		require.EqualError(t, err, "code=403, message=expired token, unique=5")
 
 		// セッションは削除されている

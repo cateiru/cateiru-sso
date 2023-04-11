@@ -12,7 +12,6 @@ import (
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
-	"github.com/mileusna/useragent"
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
@@ -50,7 +49,6 @@ func TestLoginUserHandler(t *testing.T) {
 		require.False(t, response.Avatar.Valid)
 		require.Equal(t, response.UserName, user.UserName)
 		require.False(t, response.AvailablePasskey)
-		require.False(t, response.AutoUsePasskey)
 		require.True(t, response.AvailablePassword)
 	})
 	t.Run("成功: ユーザ名", func(t *testing.T) {
@@ -78,7 +76,6 @@ func TestLoginUserHandler(t *testing.T) {
 		require.False(t, response.Avatar.Valid)
 		require.Equal(t, response.UserName, user.UserName)
 		require.False(t, response.AvailablePasskey)
-		require.False(t, response.AutoUsePasskey)
 		require.True(t, response.AvailablePassword)
 	})
 	t.Run("成功: アバターあり", func(t *testing.T) {
@@ -109,10 +106,9 @@ func TestLoginUserHandler(t *testing.T) {
 		require.Equal(t, response.Avatar.String, "https://example.com/avatar")
 		require.Equal(t, response.UserName, user.UserName)
 		require.False(t, response.AvailablePasskey)
-		require.False(t, response.AutoUsePasskey)
 		require.True(t, response.AvailablePassword)
 	})
-	t.Run("成功: passkey登録していて、登録したデバイスでを使用", func(t *testing.T) {
+	t.Run("成功: passkey登録している", func(t *testing.T) {
 		email := RandomEmail(t)
 		user := RegisterUser(t, ctx, email)
 
@@ -143,54 +139,9 @@ func TestLoginUserHandler(t *testing.T) {
 		require.False(t, response.Avatar.Valid)
 		require.Equal(t, response.UserName, user.UserName)
 		require.True(t, response.AvailablePasskey)
-		require.True(t, response.AutoUsePasskey)
 		require.False(t, response.AvailablePassword)
 	})
-	t.Run("成功: passkey登録していて、過去にpasskeyでログインしたデバイスを使用", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
 
-		RegisterPasskey(t, ctx, &user)
-
-		// Passkeyログイン履歴追加
-		passkeyHistory := models.PasskeyLoginDevice{
-			UserID:   user.ID,
-			Device:   null.NewString("iPhone", true),
-			Os:       null.NewString("iOS", true),
-			Browser:  null.NewString("Safari", true),
-			IsMobile: null.NewBool(true, true),
-		}
-		err := passkeyHistory.Insert(ctx, DB, boil.Infer())
-		require.NoError(t, err)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", email)
-		form.Insert("recaptcha", "hogehoge")
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-		userData := &src.UserData{
-			Browser:  "Safari",
-			OS:       "iOS",
-			Device:   "iPhone",
-			IsMobile: true,
-		}
-		SetUserData(t, m, userData)
-
-		c := m.Echo()
-
-		err = h.LoginUserHandler(c)
-		require.NoError(t, err)
-
-		response := src.LoginUser{}
-		err = m.Json(&response)
-		require.NoError(t, err)
-
-		require.False(t, response.Avatar.Valid)
-		require.Equal(t, response.UserName, user.UserName)
-		require.True(t, response.AvailablePasskey)
-		require.True(t, response.AutoUsePasskey)
-		require.False(t, response.AvailablePassword)
-	})
 	t.Run("成功: passkey登録しているけどログインしたことないデバイス", func(t *testing.T) {
 		email := RandomEmail(t)
 		user := RegisterUser(t, ctx, email)
@@ -222,7 +173,6 @@ func TestLoginUserHandler(t *testing.T) {
 		require.False(t, response.Avatar.Valid)
 		require.Equal(t, response.UserName, user.UserName)
 		require.True(t, response.AvailablePasskey)
-		require.False(t, response.AutoUsePasskey)
 		require.False(t, response.AvailablePassword)
 	})
 	t.Run("成功: passkeyとパスワードどっちも登録している", func(t *testing.T) {
@@ -257,52 +207,9 @@ func TestLoginUserHandler(t *testing.T) {
 		require.False(t, response.Avatar.Valid)
 		require.Equal(t, response.UserName, user.UserName)
 		require.True(t, response.AvailablePasskey)
-		require.True(t, response.AutoUsePasskey)
 		require.True(t, response.AvailablePassword)
 	})
-	t.Run("成功: BackupStateがtrueでOSが共有可能", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
 
-		RegisterPasskey(t, ctx, &user)
-
-		// UAを変更する
-		passkeyHistory, err := models.PasskeyLoginDevices(
-			models.PasskeyLoginDeviceWhere.UserID.EQ(user.ID),
-		).One(ctx, DB)
-		require.NoError(t, err)
-		passkeyHistory.Os = null.NewString("macOS", true)
-		_, err = passkeyHistory.Update(ctx, DB, boil.Infer())
-		require.NoError(t, err)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", email)
-		form.Insert("recaptcha", "hogehoge")
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-		userData := &src.UserData{
-			Device:   "",
-			OS:       "iOS",
-			Browser:  "Google Chrome",
-			IsMobile: true,
-		}
-		SetUserData(t, m, userData)
-
-		c := m.Echo()
-
-		err = h.LoginUserHandler(c)
-		require.NoError(t, err)
-
-		response := src.LoginUser{}
-		err = m.Json(&response)
-		require.NoError(t, err)
-
-		require.False(t, response.Avatar.Valid)
-		require.Equal(t, response.UserName, user.UserName)
-		require.True(t, response.AvailablePasskey)
-		require.True(t, response.AutoUsePasskey)
-		require.False(t, response.AvailablePassword)
-	})
 	t.Run("失敗: username_or_emailが空", func(t *testing.T) {
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", "")
@@ -388,7 +295,6 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", u.Email)
-		form.Insert("recaptcha", "aaaa")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		c := m.Echo()
@@ -397,7 +303,6 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// response
-		t.Log(m.W.Body.String())
 		resp := new(protocol.CredentialCreation)
 		require.NoError(t, m.Json(resp))
 
@@ -416,8 +321,7 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 
-		require.Equal(t, webauthnSession.Challenge, resp.Response.Challenge.String())
-		require.Equal(t, webauthnSession.UserID.String, u.ID)
+		require.False(t, webauthnSession.UserID.Valid)
 		require.Equal(t, webauthnSession.Identifier, int8(2))
 
 		// rowにjsonが入っている
@@ -427,50 +331,6 @@ func TestLoginBeginWebauthnHandler(t *testing.T) {
 
 		require.Equal(t, sessionFromRow.Challenge, resp.Response.Challenge.String())
 	})
-
-	t.Run("失敗: reCAPTCHA失敗", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		RegisterPasskey(t, ctx, &u)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", u.Email)
-		form.Insert("recaptcha", "fail")
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-		c := m.Echo()
-
-		err = h.LoginBeginWebauthnHandler(c)
-		require.EqualError(t, err, "code=400, message=reCAPTCHA validation failed, unique=1")
-	})
-
-	t.Run("失敗: ユーザが存在しない", func(t *testing.T) {
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", "hogehoge")
-		form.Insert("recaptcha", "aaa")
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-		c := m.Echo()
-
-		err = h.LoginBeginWebauthnHandler(c)
-		require.EqualError(t, err, "code=400, message=user not found, unique=10")
-	})
-
-	t.Run("失敗: ユーザがpasskeyを登録していない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", u.Email)
-		form.Insert("recaptcha", "aaaa")
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-		c := m.Echo()
-
-		err = h.LoginBeginWebauthnHandler(c)
-		require.EqualError(t, err, "code=403, message=passkey was not registered")
-	})
 }
 
 func TestLoginWebauthnHandler(t *testing.T) {
@@ -478,13 +338,11 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	// Webauthnのセッションを作成する
-	registerWebauthnSession := func(user *models.User, identifier int8) string {
-		webuathnUser, err := src.NewWebAuthnUserFromDB(ctx, DB, user)
-		require.NoError(t, err)
+	registerWebauthnSession := func(identifier int8) string {
 		webauthnSessionId, err := lib.RandomStr(31)
 		require.NoError(t, err)
 
-		_, s, err := h.WebAuthn.BeginLogin(webuathnUser)
+		_, s, err := h.WebAuthn.BeginLogin()
 		require.NoError(t, err)
 
 		row := types.JSON{}
@@ -492,13 +350,8 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		webauthnSession := models.WebauthnSession{
-			ID:               webauthnSessionId,
-			WebauthnUserID:   s.UserID,
-			UserID:           null.NewString(user.ID, true),
-			UserDisplayName:  s.UserDisplayName,
-			Challenge:        s.Challenge,
-			UserVerification: string(s.UserVerification),
-			Row:              row,
+			ID:  webauthnSessionId,
+			Row: row,
 
 			Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
 			Identifier: identifier,
@@ -510,11 +363,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	}
 
 	t.Run("成功", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		RegisterPasskey(t, ctx, &u)
-		webauthnSession := registerWebauthnSession(&u, 2)
+		webauthnSession := registerWebauthnSession(2)
 
 		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)
@@ -555,7 +404,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 
 		// ログイントライ履歴が保存されている
 		existsLoginTryHistory, err := models.LoginTryHistories(
-			models.LoginTryHistoryWhere.UserID.EQ(u.ID),
+			models.LoginTryHistoryWhere.UserID.EQ(sessionUser.ID),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.True(t, existsLoginTryHistory)
@@ -564,50 +413,6 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		existsWebauthnSession, err := models.WebauthnSessionExists(ctx, DB, webauthnSession)
 		require.NoError(t, err)
 		require.False(t, existsWebauthnSession)
-
-		// PasskeyLoginDeviceが追加されている
-		passkeyLoginDevices, err := models.PasskeyLoginDevices(
-			models.PasskeyLoginDeviceWhere.UserID.EQ(u.ID),
-		).Count(ctx, DB)
-		require.NoError(t, err)
-		require.Equal(t, passkeyLoginDevices, int64(2))
-	})
-
-	t.Run("成功", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		userAgent := `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36`
-		ua := useragent.Parse(userAgent)
-		userData := src.UserData{
-			Device:   ua.Device,
-			OS:       ua.OS,
-			Browser:  ua.Name,
-			IsMobile: ua.Mobile,
-		}
-
-		RegisterPasskey(t, ctx, &u, userData)
-		webauthnSession := registerWebauthnSession(&u, 2)
-
-		m, err := easy.NewJson("/", http.MethodPost, "")
-		require.NoError(t, err)
-		cookie := &http.Cookie{
-			Name:  C.WebAuthnSessionCookie.Name,
-			Value: webauthnSession,
-		}
-		m.Cookie([]*http.Cookie{cookie})
-		m.R.Header.Add("User-Agent", userAgent)
-		c := m.Echo()
-
-		err = h.LoginWebauthnHandler(c)
-		require.NoError(t, err)
-
-		// 同じUAのPasskeyLoginDeviceが存在する場合はInsertしない
-		passkeyLoginDevices, err := models.PasskeyLoginDevices(
-			models.PasskeyLoginDeviceWhere.UserID.EQ(u.ID),
-		).Count(ctx, DB)
-		require.NoError(t, err)
-		require.Equal(t, passkeyLoginDevices, int64(1))
 	})
 
 	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {
@@ -615,7 +420,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		RegisterPasskey(t, ctx, &u)
-		webauthnSession := registerWebauthnSession(&u, 2)
+		webauthnSession := registerWebauthnSession(2)
 
 		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
@@ -658,7 +463,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		RegisterPasskey(t, ctx, &u)
-		webauthnSession := registerWebauthnSession(&u, 4)
+		webauthnSession := registerWebauthnSession(4)
 
 		m, err := easy.NewJson("/", http.MethodPost, "")
 		require.NoError(t, err)

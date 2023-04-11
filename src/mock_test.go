@@ -1,13 +1,18 @@
 package src_test
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"io"
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
+	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/oklog/ulid/v2"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // テスト用のmock オブジェクト
@@ -77,6 +82,26 @@ func (a *WebAuthnMock) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentia
 	return &protocol.ParsedCredentialAssertionData{}, nil
 }
 func (a *WebAuthnMock) FinishLogin(handler webauthn.DiscoverableUserHandler, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
+	ctx := context.Background()
+
+	r, err := lib.RandomStr(10)
+	if err != nil {
+		return nil, err
+	}
+	id := ulid.Make()
+
+	u := models.User{
+		ID:    id.String(),
+		Email: fmt.Sprintf("%s@exmaple.com", r),
+	}
+	if err := u.Insert(ctx, DB, boil.Infer()); err != nil {
+		return nil, err
+	}
+
+	if _, err := handler([]byte{}, []byte(u.ID)); err != nil {
+		return nil, err
+	}
+
 	return &webauthn.Credential{}, nil
 }
 

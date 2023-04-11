@@ -11,7 +11,6 @@ import (
 
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/go-webauthn/webauthn/webauthn"
-	"github.com/oklog/ulid/v2"
 )
 
 type WebAuthnUser struct {
@@ -103,9 +102,7 @@ func NewWebAuthnUserNoCredential(user *models.User) (*WebAuthnUser, error) {
 }
 
 // ユーザが存在しない状態でWebAuthnを登録する場合に使用します
-func NewWebAuthnUserRegister(email string) (*WebAuthnUser, error) {
-	id := ulid.Make().Bytes()
-
+func NewWebAuthnUserRegister(email string, id []byte) (*WebAuthnUser, error) {
 	return &WebAuthnUser{
 		ID:         id,
 		Credential: []webauthn.Credential{},
@@ -215,7 +212,7 @@ func (h *Handler) RegisterWebauthn(ctx context.Context, body io.Reader, webauthn
 }
 
 // Webauthnでログインする
-func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string, identifier int8, before func(u *models.User) error) (*models.User, error) {
+func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSessionToken string, identifier int8) (*models.User, error) {
 	response, err := h.WebAuthn.ParseLogin(body)
 	if err != nil {
 		return nil, NewHTTPError(http.StatusBadRequest, err)
@@ -249,7 +246,7 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 	}
 
 	// idからユーザーとクレデンシャルを引く
-	var loginUser *models.User
+	var loginUser models.User
 	handler := func(rawID, userHandle []byte) (user webauthn.User, err error) {
 		u, err := models.Users(
 			models.UserWhere.ID.EQ(string(userHandle)),
@@ -260,7 +257,7 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 		if err != nil {
 			return nil, err
 		}
-		loginUser = u
+		loginUser = *u
 		return NewWebAuthnUserFromDB(ctx, h.DB, u)
 	}
 
@@ -274,5 +271,5 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 		return nil, err
 	}
 
-	return loginUser, nil
+	return &loginUser, nil
 }

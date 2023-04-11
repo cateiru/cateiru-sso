@@ -14,6 +14,7 @@ import (
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/types"
@@ -1126,10 +1127,9 @@ func TestAccountBeginWebauthnHandler(t *testing.T) {
 		// セッションがある
 		session, err := models.WebauthnSessions(
 			models.WebauthnSessionWhere.ID.EQ(cookie.Value),
-		).One(ctx, DB)
+		).Exists(ctx, DB)
 		require.NoError(t, err)
-
-		require.Equal(t, protocol.URLEncodedBase64(session.WebauthnUserID).String(), response.Response.User.ID)
+		require.True(t, session)
 	})
 }
 
@@ -1138,7 +1138,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	registerWebauthnSession := func(u *models.User) string {
-		webauthnUser, err := src.NewWebauthnUserFromUser(u)
+		webauthnUser, err := src.NewWebAuthnUserNoCredential(u)
 		require.NoError(t, err)
 		_, s, err := h.WebAuthn.BeginRegistration(webauthnUser)
 		require.NoError(t, err)
@@ -1151,12 +1151,9 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		webauthnSession := models.WebauthnSession{
-			ID:               webauthnSessionId,
-			WebauthnUserID:   s.UserID,
-			UserDisplayName:  s.UserDisplayName,
-			Challenge:        s.Challenge,
-			UserVerification: string(s.UserVerification),
-			Row:              row,
+			ID:     webauthnSessionId,
+			UserID: null.NewString(u.ID, true),
+			Row:    row,
 
 			Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
 			Identifier: 3,
@@ -1211,71 +1208,11 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		require.False(t, existSession)
 
 		// passkeyが登録されている
-		existsPasskey, err := models.Passkeys(
-			models.PasskeyWhere.UserID.EQ(u.ID),
+		existsWebauthn, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(u.ID),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
-		require.True(t, existsPasskey)
-
-		// ログインデバイス履歴が追加されている
-		passkeyLoginDevices, err := models.PasskeyLoginDevices(
-			models.PasskeyLoginDeviceWhere.UserID.EQ(u.ID),
-		).All(ctx, DB)
-		require.NoError(t, err)
-		require.Len(t, passkeyLoginDevices, 1, "作ったばっかりなので1つ")
-		require.True(t, passkeyLoginDevices[0].IsRegisterDevice, "登録したデバイスになっている")
-	})
-
-	t.Run("成功: 更新", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		RegisterPasskey(t, ctx, &u)
-
-		oldPasskey, err := models.Passkeys(
-			models.PasskeyWhere.UserID.EQ(u.ID),
-		).One(ctx, DB)
-		require.NoError(t, err)
-
-		cookies := RegisterSession(t, ctx, &u)
-
-		session := registerWebauthnSession(&u)
-		sessionCookie := &http.Cookie{
-			Name:  C.WebAuthnSessionCookie.Name,
-			Value: session,
-		}
-
-		m, err := easy.NewJson("/", http.MethodPost, "")
-		require.NoError(t, err)
-		m.Cookie(cookies)
-		m.Cookie([]*http.Cookie{sessionCookie})
-
-		c := m.Echo()
-
-		err = h.AccountWebauthnHandler(c)
-		require.NoError(t, err)
-
-		// セッションは削除される
-		existSession, err := models.WebauthnSessions(
-			models.WebauthnSessionWhere.ID.EQ(session),
-		).Exists(ctx, DB)
-		require.NoError(t, err)
-		require.False(t, existSession)
-
-		// passkeyが更新されている
-		newPasskey, err := models.Passkeys(
-			models.PasskeyWhere.UserID.EQ(u.ID),
-		).One(ctx, DB)
-		require.NoError(t, err)
-		require.NotEqual(t, oldPasskey.WebauthnUserID, newPasskey.WebauthnUserID)
-
-		// ログインデバイス履歴がリセットされている
-		passkeyLoginDevices, err := models.PasskeyLoginDevices(
-			models.PasskeyLoginDeviceWhere.UserID.EQ(u.ID),
-		).All(ctx, DB)
-		require.NoError(t, err)
-		require.Len(t, passkeyLoginDevices, 1, "作ったばっかりなので1つ")
-		require.True(t, passkeyLoginDevices[0].IsRegisterDevice, "登録したデバイスになっている")
+		require.True(t, existsWebauthn)
 	})
 
 	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {
@@ -1440,7 +1377,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		require.True(t, response.Password)
 		require.True(t, response.OTP)
-		require.True(t, response.Passkey)
+		require.True(t, response.WebAuthn)
 	})
 
 	t.Run("成功: パスワードのみ", func(t *testing.T) {
@@ -1465,7 +1402,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		require.True(t, response.Password)
 		require.False(t, response.OTP)
-		require.False(t, response.Passkey)
+		require.False(t, response.WebAuthn)
 	})
 
 	t.Run("成功: パスワード、OTP", func(t *testing.T) {
@@ -1491,7 +1428,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		require.True(t, response.Password)
 		require.True(t, response.OTP)
-		require.False(t, response.Passkey)
+		require.False(t, response.WebAuthn)
 	})
 
 	t.Run("成功: Passkeyのみ", func(t *testing.T) {
@@ -1516,7 +1453,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		require.False(t, response.Password)
 		require.False(t, response.OTP)
-		require.True(t, response.Passkey)
+		require.True(t, response.WebAuthn)
 	})
 }
 

@@ -518,7 +518,7 @@ func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, creation)
 }
 
-// Passkeyの新規追加・更新
+// Passkeyの新規追加
 // 本当は、更新時にはすでに登録しているPasskeyを求めたいけどフローが複雑になるので後々
 func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -564,7 +564,7 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 
 		IP: net.ParseIP(ip),
 	}
-	if err := auth.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
+	if err := auth.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 

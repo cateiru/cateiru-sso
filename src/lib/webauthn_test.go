@@ -54,10 +54,10 @@ func TestWebAuthn(t *testing.T) {
 	t.Run("Login", func(t *testing.T) {
 		creation, session, err := w.BeginLogin()
 		// WebAuthnCredentialsが空なのでエラーになる
-		require.Error(t, err)
+		require.NoError(t, err)
 
 		// FIXME: どうにかしたい
-		require.Nil(t, creation)
-		require.Nil(t, session)
+		require.NotNil(t, creation)
+		require.NotNil(t, session)
 	})
 }

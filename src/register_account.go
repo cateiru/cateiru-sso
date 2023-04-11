@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
+	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/types"
@@ -414,8 +415,8 @@ func (h *Handler) RegisterBeginWebAuthnHandler(c echo.Context) error {
 	}
 
 	// リトライ回数や送信回数は認証されていたら用済みなので見ない
-
-	user, err := NewWebAuthnUserRegister(registerSession.Email)
+	id := ulid.Make().String()
+	user, err := NewWebAuthnUserRegister(registerSession.Email, []byte(id))
 	if err != nil {
 		return err
 	}
@@ -436,7 +437,7 @@ func (h *Handler) RegisterBeginWebAuthnHandler(c echo.Context) error {
 
 	webauthnSession := models.WebauthnSession{
 		ID:     webauthnSessionId,
-		UserID: null.NewString(string(user.ID), true),
+		UserID: null.NewString(id, true),
 		Row:    row,
 
 		Period:     time.Now().Add(h.C.WebAuthnSessionPeriod),
