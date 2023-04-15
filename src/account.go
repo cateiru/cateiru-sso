@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
@@ -43,6 +44,16 @@ type AccountCertificates struct {
 
 type AccountReRegisterPasswordIsSession struct {
 	Active bool `json:"active"`
+}
+
+type AccountWebauthnDevice struct {
+	ID uint64 `json:"id"`
+
+	Device   null.String `json:"device,omitempty"`
+	Os       null.String `json:"os,omitempty"`
+	Browser  null.String `json:"browser,omitempty"`
+	IsMobile null.Bool   `json:"is_mobile,omitempty"`
+	IP       string      `json:"ip"`
 }
 
 // ログイン可能なアカウントのリストを返すハンドラ
@@ -518,6 +529,38 @@ func (h *Handler) AccountBeginWebauthnHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, creation)
 }
 
+// Webuathnを登録しているデバイスの一覧を返す
+func (h *Handler) AccountWebauthnRegisteredDevicesHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	user, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	devices, err := models.Webauthns(
+		models.WebauthnWhere.UserID.EQ(user.ID),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	d := make([]AccountWebauthnDevice, len(devices))
+	for i, device := range devices {
+		d[i] = AccountWebauthnDevice{
+			ID: device.ID,
+
+			Device:   device.Device,
+			Os:       device.Os,
+			Browser:  device.Browser,
+			IsMobile: device.IsMobile,
+			IP:       net.IP.To16(device.IP).String(),
+		}
+	}
+
+	return c.JSON(http.StatusOK, d)
+}
+
 // Passkeyの新規追加
 // 本当は、更新時にはすでに登録しているPasskeyを求めたいけどフローが複雑になるので後々
 func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
@@ -565,6 +608,34 @@ func (h *Handler) AccountWebauthnHandler(c echo.Context) error {
 		IP: net.ParseIP(ip),
 	}
 	if err := auth.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Handler) AccountDeleteWebauthnHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	webauthnId := c.QueryParam("webauthn_id")
+	if webauthnId == "" {
+		return NewHTTPError(http.StatusBadRequest, "webauthn_id is empty")
+	}
+	parsedWebauthnId, err := strconv.Atoi(webauthnId)
+	if err != nil {
+		return NewHTTPError(http.StatusBadRequest, "webauthn_id is invalid")
+	}
+
+	user, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	_, err = models.Webauthns(
+		models.WebauthnWhere.UserID.EQ(user.ID),
+		models.WebauthnWhere.ID.EQ(uint64(parsedWebauthnId)),
+	).DeleteAll(ctx, h.DB)
+	if err != nil {
 		return err
 	}
 

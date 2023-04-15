@@ -1133,6 +1133,61 @@ func TestAccountBeginWebauthnHandler(t *testing.T) {
 	})
 }
 
+func TestAccountWebauthnRegisteredDevicesHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	SessionTest(t, h.AccountWebauthnRegisteredDevicesHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("成功: 登録していないと空の配列が返る", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnRegisteredDevicesHandler(c)
+		require.NoError(t, err)
+
+		// レスポンス
+		response := []src.AccountWebauthnDevice{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 0)
+	})
+
+	t.Run("成功: 登録したデバイスが返る", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		RegisterPasskey(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountWebauthnRegisteredDevicesHandler(c)
+		require.NoError(t, err)
+
+		// レスポンス
+		response := []src.AccountWebauthnDevice{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 1)
+	})
+}
+
 func TestAccountWebauthnHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
@@ -1337,6 +1392,90 @@ func TestAccountWebauthnHandler(t *testing.T) {
 
 		err = h.AccountWebauthnHandler(c)
 		require.EqualError(t, err, "code=403, message=invalid webauthn token")
+	})
+}
+
+func TestAccountDeleteWebauthnHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	SessionTest(t, h.AccountDeleteWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		RegisterPasskey(t, ctx, u)
+
+		webauthn, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?webauthn_id=%d", webauthn.ID), http.MethodDelete, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("Webauthnを削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPasskey(t, ctx, &u)
+
+		webauthn, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?webauthn_id=%d", webauthn.ID), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountDeleteWebauthnHandler(c)
+		require.NoError(t, err)
+
+		existsWebauthn, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(u.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existsWebauthn)
+	})
+
+	t.Run("失敗: IDが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPasskey(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?webauthn_id=hogehoge", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountDeleteWebauthnHandler(c)
+		require.EqualError(t, err, "code=400, message=webauthn_id is invalid")
+	})
+
+	t.Run("失敗: IDを指定しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPasskey(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountDeleteWebauthnHandler(c)
+		require.EqualError(t, err, "code=400, message=webauthn_id is empty")
 	})
 }
 
