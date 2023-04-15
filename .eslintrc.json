@@ -2,7 +2,6 @@
     "extends": [
         "./node_modules/gts/",
         "next",
-        "plugin:jsdoc/recommended",
         "plugin:import/errors"
     ],
     "plugins": [
