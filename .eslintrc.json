@@ -18,9 +18,6 @@
                 "classPropertiesAllowed": false
             }
         ],
-        "jsdoc/require-jsdoc": [
-            "error"
-        ],
         "sort-imports": 0,
         "import/order": [
             2,

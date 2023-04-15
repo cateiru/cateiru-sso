@@ -32,29 +32,41 @@ export const useSession = (): Returns => {
       }
 
       setLoading(true);
-      fetch(api('/user/me'), {method: 'GET'}).then(async res => {
-        if (res.ok) {
-          const parsedUserMe = UserMeSchema.safeParse(await res.json());
-          if (parsedUserMe.success) {
-            setUser(parsedUserMe.data);
+      fetch(api('/user/me'), {method: 'GET'})
+        .then(async res => {
+          if (res.ok) {
+            const parsedUserMe = UserMeSchema.safeParse(await res.json());
+            if (parsedUserMe.success) {
+              setUser(parsedUserMe.data);
+            }
+          } else {
+            const error = ErrorSchema.safeParse(await res.json());
+            if (error.success) {
+              toast({
+                title: 'ログインに失敗しました',
+                description:
+                  ErrorUniqueMessage[error.data.unique_code] ??
+                  error.data.message,
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+              });
+            }
+            setUser(null);
           }
-        } else {
-          const error = ErrorSchema.safeParse(await res.json());
-          if (error.success) {
+          setLoading(false);
+        })
+        .catch(e => {
+          if (e instanceof Error) {
             toast({
               title: 'ログインに失敗しました',
-              description:
-                ErrorUniqueMessage[error.data.unique_code] ??
-                error.data.message,
+              description: e.message,
               status: 'error',
               duration: 9000,
               isClosable: true,
             });
           }
-          setUser(null);
-        }
-        setLoading(false);
-      });
+        });
     }
   }, []);
 
