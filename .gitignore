@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/go,node,rust,linux,macos,react,windows,visualstudiocode,vim
-# Edit at https://www.toptal.com/developers/gitignore?templates=go,node,rust,linux,macos,react,windows,visualstudiocode,vim
+# Created by https://www.toptal.com/developers/gitignore/api/go,vim,node,rust,linux,macos,react,windows,visualstudiocode,storybookjs
+# Edit at https://www.toptal.com/developers/gitignore?templates=go,vim,node,rust,linux,macos,react,windows,visualstudiocode,storybookjs
 
 ### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
@@ -241,6 +241,12 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
+### StorybookJs ###
+# gitignore template for the Storybook, UI guide for front apps
+# website: https://storybook.js.org/
+
+storybook-static/
+
 ### Vim ###
 # Swap
 [._]*.s[a-v][a-z]
@@ -306,7 +312,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/go,node,rust,linux,macos,react,windows,visualstudiocode,vim
+# End of https://www.toptal.com/developers/gitignore/api/go,vim,node,rust,linux,macos,react,windows,visualstudiocode,storybookjs
 
 certificates/*
 !certificates/.gitkeep
