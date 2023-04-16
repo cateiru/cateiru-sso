@@ -11,13 +11,11 @@ import {UserMe, UserMeSchema} from '../../utils/types/user';
 export interface Returns {
   user: UserMe | null;
   noLogin: boolean;
-  loading: boolean;
 }
 
 export const useSession = (): Returns => {
   const [user, setUser] = useRecoilState(UserState);
   const toast = useToast();
-  const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
     // 未ログイン
@@ -31,7 +29,6 @@ export const useSession = (): Returns => {
         return;
       }
 
-      setLoading(true);
       fetch(api('/user/me'), {method: 'GET'})
         .then(async res => {
           if (res.ok) {
@@ -54,7 +51,6 @@ export const useSession = (): Returns => {
             }
             setUser(null);
           }
-          setLoading(false);
         })
         .catch(e => {
           if (e instanceof Error) {
@@ -72,7 +68,6 @@ export const useSession = (): Returns => {
 
   return {
     user: user ?? null,
-    noLogin: !!user,
-    loading: loading,
+    noLogin: typeof user === 'undefined',
   };
 };

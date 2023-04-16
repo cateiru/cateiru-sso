@@ -2,7 +2,8 @@
     "extends": [
         "./node_modules/gts/",
         "next",
-        "plugin:import/errors"
+        "plugin:import/errors",
+        "plugin:storybook/recommended"
     ],
     "plugins": [
         "prefer-arrow",
@@ -26,6 +27,8 @@
                 }
             }
         ],
-        "react-hooks/exhaustive-deps": "off"
+        "react-hooks/exhaustive-deps": "off",
+        "node/no-unpublished-import": "off",
+        "node/no-unsupported-features/node-builtins": "off"
     }
 }

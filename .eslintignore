@@ -1,3 +1,14 @@
 build/
 server.js
 next.config.js
+.data/
+.github/
+.next/
+.storage/
+.swc/
+certificates/
+src/
+db/
+node_modules/
+scripts/
+public/
