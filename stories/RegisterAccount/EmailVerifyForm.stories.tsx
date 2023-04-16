@@ -29,7 +29,7 @@ export const Default: Story = {
 
 export const NoVerify: Story = {
   args: {
-    onSubmit: async data => {
+    onSubmit: async () => {
       console.log('start');
       await sleep(1000);
 

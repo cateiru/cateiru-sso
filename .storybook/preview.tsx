@@ -1,6 +1,6 @@
+import {ChakraProvider, useColorMode} from '@chakra-ui/react';
 import React from 'react';
 import {theme} from '../utils/theme';
-import {ChakraProvider, layout, useColorMode} from '@chakra-ui/react';
 
 interface ColorModeProps {
   colorMode: 'light' | 'dark';
