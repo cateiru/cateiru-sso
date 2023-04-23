@@ -494,6 +494,706 @@ func testClientsInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testClientOneToOneClientAllowRuleUsingClientAllowRule(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign ClientAllowRule
+	var local Client
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, clientAllowRuleDBTypes, true, clientAllowRuleColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ClientAllowRule struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, clientDBTypes, true, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreign.ClientID = local.ClientID
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.ClientAllowRule().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ClientID != foreign.ClientID {
+		t.Errorf("want: %v, got %v", foreign.ClientID, check.ClientID)
+	}
+
+	ranAfterSelectHook := false
+	AddClientAllowRuleHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *ClientAllowRule) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ClientSlice{&local}
+	if err = local.L.LoadClientAllowRule(ctx, tx, false, (*[]*Client)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.ClientAllowRule == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.ClientAllowRule = nil
+	if err = local.L.LoadClientAllowRule(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.ClientAllowRule == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testClientOneToOneSetOpClientAllowRuleUsingClientAllowRule(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c ClientAllowRule
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, clientAllowRuleDBTypes, false, strmangle.SetComplement(clientAllowRulePrimaryKeyColumns, clientAllowRuleColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, clientAllowRuleDBTypes, false, strmangle.SetComplement(clientAllowRulePrimaryKeyColumns, clientAllowRuleColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*ClientAllowRule{&b, &c} {
+		err = a.SetClientAllowRule(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.ClientAllowRule != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.Client != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if a.ClientID != x.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID)
+		}
+
+		if exists, err := ClientAllowRuleExists(ctx, tx, x.ClientID); err != nil {
+			t.Fatal(err)
+		} else if !exists {
+			t.Error("want 'x' to exist")
+		}
+
+		if a.ClientID != x.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, x.ClientID)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
+
+func testClientToManyClientScopes(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c ClientScope
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, true, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, clientScopeDBTypes, false, clientScopeColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, clientScopeDBTypes, false, clientScopeColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.ClientID = a.ClientID
+	c.ClientID = a.ClientID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.ClientScopes().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.ClientID == b.ClientID {
+			bFound = true
+		}
+		if v.ClientID == c.ClientID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := ClientSlice{&a}
+	if err = a.L.LoadClientScopes(ctx, tx, false, (*[]*Client)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.ClientScopes); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.ClientScopes = nil
+	if err = a.L.LoadClientScopes(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.ClientScopes); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testClientToManyLoginClientHistories(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c LoginClientHistory
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, true, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, loginClientHistoryDBTypes, false, loginClientHistoryColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, loginClientHistoryDBTypes, false, loginClientHistoryColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.ClientID = a.ClientID
+	c.ClientID = a.ClientID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.LoginClientHistories().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.ClientID == b.ClientID {
+			bFound = true
+		}
+		if v.ClientID == c.ClientID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := ClientSlice{&a}
+	if err = a.L.LoadLoginClientHistories(ctx, tx, false, (*[]*Client)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.LoginClientHistories); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.LoginClientHistories = nil
+	if err = a.L.LoadLoginClientHistories(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.LoginClientHistories); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testClientToManyOauthSessions(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c OauthSession
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, true, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, oauthSessionDBTypes, false, oauthSessionColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, oauthSessionDBTypes, false, oauthSessionColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.ClientID = a.ClientID
+	c.ClientID = a.ClientID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.OauthSessions().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.ClientID == b.ClientID {
+			bFound = true
+		}
+		if v.ClientID == c.ClientID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := ClientSlice{&a}
+	if err = a.L.LoadOauthSessions(ctx, tx, false, (*[]*Client)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.OauthSessions); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.OauthSessions = nil
+	if err = a.L.LoadOauthSessions(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.OauthSessions); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testClientToManyAddOpClientScopes(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c, d, e ClientScope
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*ClientScope{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, clientScopeDBTypes, false, strmangle.SetComplement(clientScopePrimaryKeyColumns, clientScopeColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*ClientScope{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddClientScopes(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ClientID != first.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, first.ClientID)
+		}
+		if a.ClientID != second.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, second.ClientID)
+		}
+
+		if first.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.ClientScopes[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.ClientScopes[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.ClientScopes().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testClientToManyAddOpLoginClientHistories(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c, d, e LoginClientHistory
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*LoginClientHistory{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, loginClientHistoryDBTypes, false, strmangle.SetComplement(loginClientHistoryPrimaryKeyColumns, loginClientHistoryColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*LoginClientHistory{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddLoginClientHistories(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ClientID != first.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, first.ClientID)
+		}
+		if a.ClientID != second.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, second.ClientID)
+		}
+
+		if first.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.LoginClientHistories[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.LoginClientHistories[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.LoginClientHistories().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testClientToManyAddOpOauthSessions(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c, d, e OauthSession
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*OauthSession{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, oauthSessionDBTypes, false, strmangle.SetComplement(oauthSessionPrimaryKeyColumns, oauthSessionColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*OauthSession{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddOauthSessions(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ClientID != first.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, first.ClientID)
+		}
+		if a.ClientID != second.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, second.ClientID)
+		}
+
+		if first.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.OauthSessions[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.OauthSessions[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.OauthSessions().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testClientToOneUserUsingOwnerUser(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Client
+	var foreign User
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, clientDBTypes, false, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.OwnerUserID = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.OwnerUser().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ClientSlice{&local}
+	if err = local.L.LoadOwnerUser(ctx, tx, false, (*[]*Client)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.OwnerUser == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.OwnerUser = nil
+	if err = local.L.LoadOwnerUser(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.OwnerUser == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testClientToOneSetOpUserUsingOwnerUser(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*User{&b, &c} {
+		err = a.SetOwnerUser(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.OwnerUser != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.OwnerUserClients[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.OwnerUserID != x.ID {
+			t.Error("foreign key was wrong value", a.OwnerUserID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.OwnerUserID))
+		reflect.Indirect(reflect.ValueOf(&a.OwnerUserID)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.OwnerUserID != x.ID {
+			t.Error("foreign key was wrong value", a.OwnerUserID, x.ID)
+		}
+	}
+}
+
 func testClientsReload(t *testing.T) {
 	t.Parallel()
 

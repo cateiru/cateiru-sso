@@ -494,6 +494,243 @@ func testBroadcastNoticesInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testBroadcastNoticeToOneBroadcastEntryUsingEntry(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local BroadcastNotice
+	var foreign BroadcastEntry
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, broadcastNoticeDBTypes, false, broadcastNoticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize BroadcastNotice struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, broadcastEntryDBTypes, false, broadcastEntryColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize BroadcastEntry struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.EntryID = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.Entry().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddBroadcastEntryHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *BroadcastEntry) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := BroadcastNoticeSlice{&local}
+	if err = local.L.LoadEntry(ctx, tx, false, (*[]*BroadcastNotice)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Entry == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.Entry = nil
+	if err = local.L.LoadEntry(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Entry == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testBroadcastNoticeToOneUserUsingUser(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local BroadcastNotice
+	var foreign User
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, broadcastNoticeDBTypes, false, broadcastNoticeColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize BroadcastNotice struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.UserID = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.User().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := BroadcastNoticeSlice{&local}
+	if err = local.L.LoadUser(ctx, tx, false, (*[]*BroadcastNotice)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.User == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.User = nil
+	if err = local.L.LoadUser(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.User == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testBroadcastNoticeToOneSetOpBroadcastEntryUsingEntry(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a BroadcastNotice
+	var b, c BroadcastEntry
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, broadcastNoticeDBTypes, false, strmangle.SetComplement(broadcastNoticePrimaryKeyColumns, broadcastNoticeColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, broadcastEntryDBTypes, false, strmangle.SetComplement(broadcastEntryPrimaryKeyColumns, broadcastEntryColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, broadcastEntryDBTypes, false, strmangle.SetComplement(broadcastEntryPrimaryKeyColumns, broadcastEntryColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*BroadcastEntry{&b, &c} {
+		err = a.SetEntry(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.Entry != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.EntryBroadcastNotices[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.EntryID != x.ID {
+			t.Error("foreign key was wrong value", a.EntryID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.EntryID))
+		reflect.Indirect(reflect.ValueOf(&a.EntryID)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.EntryID != x.ID {
+			t.Error("foreign key was wrong value", a.EntryID, x.ID)
+		}
+	}
+}
+func testBroadcastNoticeToOneSetOpUserUsingUser(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a BroadcastNotice
+	var b, c User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, broadcastNoticeDBTypes, false, strmangle.SetComplement(broadcastNoticePrimaryKeyColumns, broadcastNoticeColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*User{&b, &c} {
+		err = a.SetUser(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.User != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.BroadcastNotices[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.UserID != x.ID {
+			t.Error("foreign key was wrong value", a.UserID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.UserID))
+		reflect.Indirect(reflect.ValueOf(&a.UserID)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.UserID != x.ID {
+			t.Error("foreign key was wrong value", a.UserID, x.ID)
+		}
+	}
+}
+
 func testBroadcastNoticesReload(t *testing.T) {
 	t.Parallel()
 

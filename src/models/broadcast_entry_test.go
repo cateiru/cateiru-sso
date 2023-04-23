@@ -494,6 +494,160 @@ func testBroadcastEntriesInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testBroadcastEntryToManyEntryBroadcastNotices(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a BroadcastEntry
+	var b, c BroadcastNotice
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, broadcastEntryDBTypes, true, broadcastEntryColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize BroadcastEntry struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, broadcastNoticeDBTypes, false, broadcastNoticeColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, broadcastNoticeDBTypes, false, broadcastNoticeColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.EntryID = a.ID
+	c.EntryID = a.ID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.EntryBroadcastNotices().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.EntryID == b.EntryID {
+			bFound = true
+		}
+		if v.EntryID == c.EntryID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := BroadcastEntrySlice{&a}
+	if err = a.L.LoadEntryBroadcastNotices(ctx, tx, false, (*[]*BroadcastEntry)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.EntryBroadcastNotices); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.EntryBroadcastNotices = nil
+	if err = a.L.LoadEntryBroadcastNotices(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.EntryBroadcastNotices); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testBroadcastEntryToManyAddOpEntryBroadcastNotices(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a BroadcastEntry
+	var b, c, d, e BroadcastNotice
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, broadcastEntryDBTypes, false, strmangle.SetComplement(broadcastEntryPrimaryKeyColumns, broadcastEntryColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*BroadcastNotice{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, broadcastNoticeDBTypes, false, strmangle.SetComplement(broadcastNoticePrimaryKeyColumns, broadcastNoticeColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*BroadcastNotice{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddEntryBroadcastNotices(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.EntryID {
+			t.Error("foreign key was wrong value", a.ID, first.EntryID)
+		}
+		if a.ID != second.EntryID {
+			t.Error("foreign key was wrong value", a.ID, second.EntryID)
+		}
+
+		if first.R.Entry != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Entry != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.EntryBroadcastNotices[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.EntryBroadcastNotices[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.EntryBroadcastNotices().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
 func testBroadcastEntriesReload(t *testing.T) {
 	t.Parallel()
 

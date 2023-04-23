@@ -168,31 +168,6 @@ func TestHistoryClientHandler(t *testing.T) {
 		require.Len(t, response, 1)
 	})
 
-	t.Run("成功: クライアントが存在しなくても返る", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		clientId, err := lib.RandomStr(31)
-		require.NoError(t, err)
-		registerClientLoginHistory(clientId, &u)
-
-		cookies := RegisterSession(t, ctx, &u)
-
-		m, err := easy.NewMock("/", http.MethodGet, "")
-		require.NoError(t, err)
-		m.Cookie(cookies)
-
-		c := m.Echo()
-
-		err = h.HistoryClientHandler(c)
-		require.NoError(t, err)
-
-		response := []src.ClientLoginHistoryResponse{}
-		require.NoError(t, m.Json(&response))
-		require.Len(t, response, 1)
-		require.Nil(t, response[0].Client)
-	})
-
 	t.Run("成功: 最新順に並んでいる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)

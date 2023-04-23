@@ -73,15 +73,26 @@ var ClientAllowRuleWhere = struct {
 
 // ClientAllowRuleRels is where relationship names are stored.
 var ClientAllowRuleRels = struct {
-}{}
+	Client string
+}{
+	Client: "Client",
+}
 
 // clientAllowRuleR is where relationships are stored.
 type clientAllowRuleR struct {
+	Client *Client `boil:"Client" json:"Client" toml:"Client" yaml:"Client"`
 }
 
 // NewStruct creates a new relationship struct
 func (*clientAllowRuleR) NewStruct() *clientAllowRuleR {
 	return &clientAllowRuleR{}
+}
+
+func (r *clientAllowRuleR) GetClient() *Client {
+	if r == nil {
+		return nil
+	}
+	return r.Client
 }
 
 // clientAllowRuleL is where Load methods for each relationship are stored.
@@ -371,6 +382,184 @@ func (q clientAllowRuleQuery) Exists(ctx context.Context, exec boil.ContextExecu
 	}
 
 	return count > 0, nil
+}
+
+// Client pointed to by the foreign key.
+func (o *ClientAllowRule) Client(mods ...qm.QueryMod) clientQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`client_id` = ?", o.ClientID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Clients(queryMods...)
+}
+
+// LoadClient allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (clientAllowRuleL) LoadClient(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClientAllowRule interface{}, mods queries.Applicator) error {
+	var slice []*ClientAllowRule
+	var object *ClientAllowRule
+
+	if singular {
+		var ok bool
+		object, ok = maybeClientAllowRule.(*ClientAllowRule)
+		if !ok {
+			object = new(ClientAllowRule)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClientAllowRule)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClientAllowRule))
+			}
+		}
+	} else {
+		s, ok := maybeClientAllowRule.(*[]*ClientAllowRule)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClientAllowRule)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClientAllowRule))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientAllowRuleR{}
+		}
+		args = append(args, object.ClientID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientAllowRuleR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`client`),
+		qm.WhereIn(`client.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Client")
+	}
+
+	var resultSlice []*Client
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Client")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for client")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for client")
+	}
+
+	if len(clientAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Client = foreign
+		if foreign.R == nil {
+			foreign.R = &clientR{}
+		}
+		foreign.R.ClientAllowRule = object
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ClientID == foreign.ClientID {
+				local.R.Client = foreign
+				if foreign.R == nil {
+					foreign.R = &clientR{}
+				}
+				foreign.R.ClientAllowRule = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetClient of the clientAllowRule to the related item.
+// Sets o.R.Client to related.
+// Adds o to related.R.ClientAllowRule.
+func (o *ClientAllowRule) SetClient(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Client) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `client_allow_rule` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+		strmangle.WhereClause("`", "`", 0, clientAllowRulePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ClientID, o.ClientID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ClientID = related.ClientID
+	if o.R == nil {
+		o.R = &clientAllowRuleR{
+			Client: related,
+		}
+	} else {
+		o.R.Client = related
+	}
+
+	if related.R == nil {
+		related.R = &clientR{
+			ClientAllowRule: o,
+		}
+	} else {
+		related.R.ClientAllowRule = o
+	}
+
+	return nil
 }
 
 // ClientAllowRules retrieves all the records using an executor.

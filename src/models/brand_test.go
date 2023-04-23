@@ -494,6 +494,160 @@ func testBrandsInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testBrandToManyUserBrands(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Brand
+	var b, c UserBrand
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, brandDBTypes, true, brandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Brand struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, userBrandDBTypes, false, userBrandColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, userBrandDBTypes, false, userBrandColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.BrandID = a.ID
+	c.BrandID = a.ID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.UserBrands().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.BrandID == b.BrandID {
+			bFound = true
+		}
+		if v.BrandID == c.BrandID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := BrandSlice{&a}
+	if err = a.L.LoadUserBrands(ctx, tx, false, (*[]*Brand)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UserBrands); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.UserBrands = nil
+	if err = a.L.LoadUserBrands(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.UserBrands); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testBrandToManyAddOpUserBrands(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Brand
+	var b, c, d, e UserBrand
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, brandDBTypes, false, strmangle.SetComplement(brandPrimaryKeyColumns, brandColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*UserBrand{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, userBrandDBTypes, false, strmangle.SetComplement(userBrandPrimaryKeyColumns, userBrandColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*UserBrand{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddUserBrands(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.BrandID {
+			t.Error("foreign key was wrong value", a.ID, first.BrandID)
+		}
+		if a.ID != second.BrandID {
+			t.Error("foreign key was wrong value", a.ID, second.BrandID)
+		}
+
+		if first.R.Brand != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Brand != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.UserBrands[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.UserBrands[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.UserBrands().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
 func testBrandsReload(t *testing.T) {
 	t.Parallel()
 

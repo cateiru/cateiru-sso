@@ -132,15 +132,26 @@ var WebauthnWhere = struct {
 
 // WebauthnRels is where relationship names are stored.
 var WebauthnRels = struct {
-}{}
+	User string
+}{
+	User: "User",
+}
 
 // webauthnR is where relationships are stored.
 type webauthnR struct {
+	User *User `boil:"User" json:"User" toml:"User" yaml:"User"`
 }
 
 // NewStruct creates a new relationship struct
 func (*webauthnR) NewStruct() *webauthnR {
 	return &webauthnR{}
+}
+
+func (r *webauthnR) GetUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.User
 }
 
 // webauthnL is where Load methods for each relationship are stored.
@@ -430,6 +441,184 @@ func (q webauthnQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (b
 	}
 
 	return count > 0, nil
+}
+
+// User pointed to by the foreign key.
+func (o *Webauthn) User(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.UserID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// LoadUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (webauthnL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWebauthn interface{}, mods queries.Applicator) error {
+	var slice []*Webauthn
+	var object *Webauthn
+
+	if singular {
+		var ok bool
+		object, ok = maybeWebauthn.(*Webauthn)
+		if !ok {
+			object = new(Webauthn)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeWebauthn)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeWebauthn))
+			}
+		}
+	} else {
+		s, ok := maybeWebauthn.(*[]*Webauthn)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeWebauthn)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeWebauthn))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &webauthnR{}
+		}
+		args = append(args, object.UserID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &webauthnR{}
+			}
+
+			for _, a := range args {
+				if a == obj.UserID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.UserID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`user`),
+		qm.WhereIn(`user.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for user")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.User = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.Webauthns = append(foreign.R.Webauthns, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.UserID == foreign.ID {
+				local.R.User = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.Webauthns = append(foreign.R.Webauthns, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetUser of the webauthn to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.Webauthns.
+func (o *Webauthn) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `webauthn` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"user_id"}),
+		strmangle.WhereClause("`", "`", 0, webauthnPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.UserID = related.ID
+	if o.R == nil {
+		o.R = &webauthnR{
+			User: related,
+		}
+	} else {
+		o.R.User = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			Webauthns: WebauthnSlice{o},
+		}
+	} else {
+		related.R.Webauthns = append(related.R.Webauthns, o)
+	}
+
+	return nil
 }
 
 // Webauthns retrieves all the records using an executor.

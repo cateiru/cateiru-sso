@@ -72,15 +72,26 @@ var ClientScopeWhere = struct {
 
 // ClientScopeRels is where relationship names are stored.
 var ClientScopeRels = struct {
-}{}
+	Client string
+}{
+	Client: "Client",
+}
 
 // clientScopeR is where relationships are stored.
 type clientScopeR struct {
+	Client *Client `boil:"Client" json:"Client" toml:"Client" yaml:"Client"`
 }
 
 // NewStruct creates a new relationship struct
 func (*clientScopeR) NewStruct() *clientScopeR {
 	return &clientScopeR{}
+}
+
+func (r *clientScopeR) GetClient() *Client {
+	if r == nil {
+		return nil
+	}
+	return r.Client
 }
 
 // clientScopeL is where Load methods for each relationship are stored.
@@ -370,6 +381,184 @@ func (q clientScopeQuery) Exists(ctx context.Context, exec boil.ContextExecutor)
 	}
 
 	return count > 0, nil
+}
+
+// Client pointed to by the foreign key.
+func (o *ClientScope) Client(mods ...qm.QueryMod) clientQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`client_id` = ?", o.ClientID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Clients(queryMods...)
+}
+
+// LoadClient allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (clientScopeL) LoadClient(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClientScope interface{}, mods queries.Applicator) error {
+	var slice []*ClientScope
+	var object *ClientScope
+
+	if singular {
+		var ok bool
+		object, ok = maybeClientScope.(*ClientScope)
+		if !ok {
+			object = new(ClientScope)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClientScope)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClientScope))
+			}
+		}
+	} else {
+		s, ok := maybeClientScope.(*[]*ClientScope)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClientScope)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClientScope))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientScopeR{}
+		}
+		args = append(args, object.ClientID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientScopeR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`client`),
+		qm.WhereIn(`client.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Client")
+	}
+
+	var resultSlice []*Client
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Client")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for client")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for client")
+	}
+
+	if len(clientAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Client = foreign
+		if foreign.R == nil {
+			foreign.R = &clientR{}
+		}
+		foreign.R.ClientScopes = append(foreign.R.ClientScopes, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ClientID == foreign.ClientID {
+				local.R.Client = foreign
+				if foreign.R == nil {
+					foreign.R = &clientR{}
+				}
+				foreign.R.ClientScopes = append(foreign.R.ClientScopes, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetClient of the clientScope to the related item.
+// Sets o.R.Client to related.
+// Adds o to related.R.ClientScopes.
+func (o *ClientScope) SetClient(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Client) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `client_scope` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+		strmangle.WhereClause("`", "`", 0, clientScopePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ClientID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ClientID = related.ClientID
+	if o.R == nil {
+		o.R = &clientScopeR{
+			Client: related,
+		}
+	} else {
+		o.R.Client = related
+	}
+
+	if related.R == nil {
+		related.R = &clientR{
+			ClientScopes: ClientScopeSlice{o},
+		}
+	} else {
+		related.R.ClientScopes = append(related.R.ClientScopes, o)
+	}
+
+	return nil
 }
 
 // ClientScopes retrieves all the records using an executor.

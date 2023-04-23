@@ -56,21 +56,9 @@ CREATE TABLE `setting` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY (`user_id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
-CREATE TABLE `user_brand` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `user_id` VARCHAR(32) NOT NULL,
-
-    -- ブランドID
-    `brand_id` VARCHAR(31) NOT NULL,
-
-    -- 管理用
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (`id`),
-    INDEX `brand_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- ブランドテーブル
@@ -88,6 +76,23 @@ CREATE TABLE `brand` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
+CREATE TABLE `user_brand` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- ブランドID
+    `brand_id` VARCHAR(31) NOT NULL,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`brand_id`) REFERENCES `brand` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `brand_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
 -- スタッフテーブル
 -- ここに存在するユーザはスタッフとなる
 CREATE TABLE `staff` (
@@ -100,6 +105,8 @@ CREATE TABLE `staff` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
@@ -124,6 +131,8 @@ CREATE TABLE `webauthn` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY (`id`),
     INDEX `webauthn_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
@@ -139,6 +148,8 @@ CREATE TABLE `password` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
@@ -152,6 +163,8 @@ CREATE TABLE `otp` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
@@ -164,6 +177,8 @@ CREATE TABLE `otp_backup` (
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`id`),
     INDEX `otp_backup_user_id` (`user_id`)
@@ -214,6 +229,8 @@ CREATE TABLE `register_otp_session` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY(`id`),
     INDEX `register_otp_session_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
@@ -236,6 +253,8 @@ CREATE TABLE `email_verify_session` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY(`id`),
     INDEX `email_verify_user_id` (`user_id`)
@@ -273,6 +292,8 @@ CREATE TABLE `session` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY(`id`),
     INDEX `session_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
@@ -298,6 +319,8 @@ CREATE TABLE `refresh` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY(`id`),
     INDEX `refresh_user_id` (`user_id`),
     UNIQUE INDEX `refresh_history_id` (`history_id`),
@@ -319,6 +342,8 @@ CREATE TABLE `otp_session` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY(`id`),
     INDEX `otp_session_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
@@ -338,6 +363,8 @@ CREATE TABLE `client_session` (
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY(`id`),
     INDEX `client_session_user_id` (`user_id`),
@@ -366,6 +393,8 @@ CREATE TABLE `client_refresh` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY(`id`),
     INDEX `client_refresh_user_id` (`user_id`),
@@ -416,33 +445,10 @@ CREATE TABLE `certificate_session` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY(`id`),
     INDEX `certificate_session_user_id` (`user_id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
--- OAuthで接続したときのセッション
--- nonceとかを保存しておく
-CREATE TABLE `oauth_session` (
-    `code` VARCHAR(63) NOT NULL,
-    `user_id` VARCHAR(32) NOT NULL,
-
-    -- クライアントのID
-    `client_id` VARCHAR(31) NOT NULL,
-
-    -- CSRF, XSRFで使用される`state`を格納するやつ
-    `state` VARCHAR(31) DEFAULT NULL,
-    `nonce` VARCHAR(31) DEFAULT NULL,
-
-    -- 有効期限
-    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    -- 管理用
-    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    PRIMARY KEY(`code`),
-    INDEX `oauth_session_user_id` (`user_id`),
-    INDEX `oauth_session_client_id` (`client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- ODICのクライアント
@@ -471,8 +477,38 @@ CREATE TABLE `client` (
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`owner_user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY (`client_id`),
     INDEX `client_owner_user_id` (`owner_user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- OAuthで接続したときのセッション
+-- nonceとかを保存しておく
+CREATE TABLE `oauth_session` (
+    `code` VARCHAR(63) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    -- CSRF, XSRFで使用される`state`を格納するやつ
+    `state` VARCHAR(31) DEFAULT NULL,
+    `nonce` VARCHAR(31) DEFAULT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`code`),
+    INDEX `oauth_session_user_id` (`user_id`),
+    INDEX `oauth_session_client_id` (`client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- SSOクライアントのスコープを保存するテーブル
@@ -487,6 +523,8 @@ CREATE TABLE `client_scope` (
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`id`),
     INDEX `client_scope_client_id` (`client_id`)
@@ -504,6 +542,8 @@ CREATE TABLE `client_allow_rule` (
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
@@ -525,6 +565,9 @@ CREATE TABLE `login_client_history` (
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`id`),
     INDEX `login_client_history_client_id` (`client_id`),
@@ -552,6 +595,8 @@ CREATE TABLE `login_history` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
     PRIMARY KEY (`id`),
     INDEX `login_history_user_id` (`user_id`),
     INDEX `login_history_refresh_id` (`refresh_id`)
@@ -576,6 +621,8 @@ CREATE TABLE `login_try_history` (
 
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`id`),
     INDEX `login_try_history_user_id` (`user_id`)
@@ -609,6 +656,9 @@ CREATE TABLE `broadcast_notice` (
     -- 管理用
     `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `modified` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`entry_id`) REFERENCES `broadcast_entry` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`id`),
     INDEX `broadcast_notice_entry_id` (`entry_id`),

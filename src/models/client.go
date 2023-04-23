@@ -115,15 +115,66 @@ var ClientWhere = struct {
 
 // ClientRels is where relationship names are stored.
 var ClientRels = struct {
-}{}
+	OwnerUser            string
+	ClientAllowRule      string
+	ClientScopes         string
+	LoginClientHistories string
+	OauthSessions        string
+}{
+	OwnerUser:            "OwnerUser",
+	ClientAllowRule:      "ClientAllowRule",
+	ClientScopes:         "ClientScopes",
+	LoginClientHistories: "LoginClientHistories",
+	OauthSessions:        "OauthSessions",
+}
 
 // clientR is where relationships are stored.
 type clientR struct {
+	OwnerUser            *User                   `boil:"OwnerUser" json:"OwnerUser" toml:"OwnerUser" yaml:"OwnerUser"`
+	ClientAllowRule      *ClientAllowRule        `boil:"ClientAllowRule" json:"ClientAllowRule" toml:"ClientAllowRule" yaml:"ClientAllowRule"`
+	ClientScopes         ClientScopeSlice        `boil:"ClientScopes" json:"ClientScopes" toml:"ClientScopes" yaml:"ClientScopes"`
+	LoginClientHistories LoginClientHistorySlice `boil:"LoginClientHistories" json:"LoginClientHistories" toml:"LoginClientHistories" yaml:"LoginClientHistories"`
+	OauthSessions        OauthSessionSlice       `boil:"OauthSessions" json:"OauthSessions" toml:"OauthSessions" yaml:"OauthSessions"`
 }
 
 // NewStruct creates a new relationship struct
 func (*clientR) NewStruct() *clientR {
 	return &clientR{}
+}
+
+func (r *clientR) GetOwnerUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.OwnerUser
+}
+
+func (r *clientR) GetClientAllowRule() *ClientAllowRule {
+	if r == nil {
+		return nil
+	}
+	return r.ClientAllowRule
+}
+
+func (r *clientR) GetClientScopes() ClientScopeSlice {
+	if r == nil {
+		return nil
+	}
+	return r.ClientScopes
+}
+
+func (r *clientR) GetLoginClientHistories() LoginClientHistorySlice {
+	if r == nil {
+		return nil
+	}
+	return r.LoginClientHistories
+}
+
+func (r *clientR) GetOauthSessions() OauthSessionSlice {
+	if r == nil {
+		return nil
+	}
+	return r.OauthSessions
 }
 
 // clientL is where Load methods for each relationship are stored.
@@ -413,6 +464,905 @@ func (q clientQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (boo
 	}
 
 	return count > 0, nil
+}
+
+// OwnerUser pointed to by the foreign key.
+func (o *Client) OwnerUser(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.OwnerUserID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// ClientAllowRule pointed to by the foreign key.
+func (o *Client) ClientAllowRule(mods ...qm.QueryMod) clientAllowRuleQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`client_id` = ?", o.ClientID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return ClientAllowRules(queryMods...)
+}
+
+// ClientScopes retrieves all the client_scope's ClientScopes with an executor.
+func (o *Client) ClientScopes(mods ...qm.QueryMod) clientScopeQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`client_scope`.`client_id`=?", o.ClientID),
+	)
+
+	return ClientScopes(queryMods...)
+}
+
+// LoginClientHistories retrieves all the login_client_history's LoginClientHistories with an executor.
+func (o *Client) LoginClientHistories(mods ...qm.QueryMod) loginClientHistoryQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`login_client_history`.`client_id`=?", o.ClientID),
+	)
+
+	return LoginClientHistories(queryMods...)
+}
+
+// OauthSessions retrieves all the oauth_session's OauthSessions with an executor.
+func (o *Client) OauthSessions(mods ...qm.QueryMod) oauthSessionQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`oauth_session`.`client_id`=?", o.ClientID),
+	)
+
+	return OauthSessions(queryMods...)
+}
+
+// LoadOwnerUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (clientL) LoadOwnerUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
+	var slice []*Client
+	var object *Client
+
+	if singular {
+		var ok bool
+		object, ok = maybeClient.(*Client)
+		if !ok {
+			object = new(Client)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClient))
+			}
+		}
+	} else {
+		s, ok := maybeClient.(*[]*Client)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClient))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientR{}
+		}
+		args = append(args, object.OwnerUserID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientR{}
+			}
+
+			for _, a := range args {
+				if a == obj.OwnerUserID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.OwnerUserID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`user`),
+		qm.WhereIn(`user.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for user")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.OwnerUser = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.OwnerUserClients = append(foreign.R.OwnerUserClients, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.OwnerUserID == foreign.ID {
+				local.R.OwnerUser = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.OwnerUserClients = append(foreign.R.OwnerUserClients, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadClientAllowRule allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (clientL) LoadClientAllowRule(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
+	var slice []*Client
+	var object *Client
+
+	if singular {
+		var ok bool
+		object, ok = maybeClient.(*Client)
+		if !ok {
+			object = new(Client)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClient))
+			}
+		}
+	} else {
+		s, ok := maybeClient.(*[]*Client)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClient))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientR{}
+		}
+		args = append(args, object.ClientID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`client_allow_rule`),
+		qm.WhereIn(`client_allow_rule.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load ClientAllowRule")
+	}
+
+	var resultSlice []*ClientAllowRule
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice ClientAllowRule")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for client_allow_rule")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for client_allow_rule")
+	}
+
+	if len(clientAllowRuleAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.ClientAllowRule = foreign
+		if foreign.R == nil {
+			foreign.R = &clientAllowRuleR{}
+		}
+		foreign.R.Client = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ClientID == foreign.ClientID {
+				local.R.ClientAllowRule = foreign
+				if foreign.R == nil {
+					foreign.R = &clientAllowRuleR{}
+				}
+				foreign.R.Client = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadClientScopes allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (clientL) LoadClientScopes(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
+	var slice []*Client
+	var object *Client
+
+	if singular {
+		var ok bool
+		object, ok = maybeClient.(*Client)
+		if !ok {
+			object = new(Client)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClient))
+			}
+		}
+	} else {
+		s, ok := maybeClient.(*[]*Client)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClient))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientR{}
+		}
+		args = append(args, object.ClientID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`client_scope`),
+		qm.WhereIn(`client_scope.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load client_scope")
+	}
+
+	var resultSlice []*ClientScope
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice client_scope")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on client_scope")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for client_scope")
+	}
+
+	if len(clientScopeAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.ClientScopes = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clientScopeR{}
+			}
+			foreign.R.Client = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ClientID == foreign.ClientID {
+				local.R.ClientScopes = append(local.R.ClientScopes, foreign)
+				if foreign.R == nil {
+					foreign.R = &clientScopeR{}
+				}
+				foreign.R.Client = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadLoginClientHistories allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (clientL) LoadLoginClientHistories(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
+	var slice []*Client
+	var object *Client
+
+	if singular {
+		var ok bool
+		object, ok = maybeClient.(*Client)
+		if !ok {
+			object = new(Client)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClient))
+			}
+		}
+	} else {
+		s, ok := maybeClient.(*[]*Client)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClient))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientR{}
+		}
+		args = append(args, object.ClientID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`login_client_history`),
+		qm.WhereIn(`login_client_history.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load login_client_history")
+	}
+
+	var resultSlice []*LoginClientHistory
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice login_client_history")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on login_client_history")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for login_client_history")
+	}
+
+	if len(loginClientHistoryAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.LoginClientHistories = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &loginClientHistoryR{}
+			}
+			foreign.R.Client = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ClientID == foreign.ClientID {
+				local.R.LoginClientHistories = append(local.R.LoginClientHistories, foreign)
+				if foreign.R == nil {
+					foreign.R = &loginClientHistoryR{}
+				}
+				foreign.R.Client = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadOauthSessions allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (clientL) LoadOauthSessions(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
+	var slice []*Client
+	var object *Client
+
+	if singular {
+		var ok bool
+		object, ok = maybeClient.(*Client)
+		if !ok {
+			object = new(Client)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClient))
+			}
+		}
+	} else {
+		s, ok := maybeClient.(*[]*Client)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClient))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientR{}
+		}
+		args = append(args, object.ClientID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`oauth_session`),
+		qm.WhereIn(`oauth_session.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load oauth_session")
+	}
+
+	var resultSlice []*OauthSession
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice oauth_session")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on oauth_session")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for oauth_session")
+	}
+
+	if len(oauthSessionAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.OauthSessions = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &oauthSessionR{}
+			}
+			foreign.R.Client = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ClientID == foreign.ClientID {
+				local.R.OauthSessions = append(local.R.OauthSessions, foreign)
+				if foreign.R == nil {
+					foreign.R = &oauthSessionR{}
+				}
+				foreign.R.Client = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetOwnerUser of the client to the related item.
+// Sets o.R.OwnerUser to related.
+// Adds o to related.R.OwnerUserClients.
+func (o *Client) SetOwnerUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `client` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"owner_user_id"}),
+		strmangle.WhereClause("`", "`", 0, clientPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ClientID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.OwnerUserID = related.ID
+	if o.R == nil {
+		o.R = &clientR{
+			OwnerUser: related,
+		}
+	} else {
+		o.R.OwnerUser = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			OwnerUserClients: ClientSlice{o},
+		}
+	} else {
+		related.R.OwnerUserClients = append(related.R.OwnerUserClients, o)
+	}
+
+	return nil
+}
+
+// SetClientAllowRule of the client to the related item.
+// Sets o.R.ClientAllowRule to related.
+// Adds o to related.R.Client.
+func (o *Client) SetClientAllowRule(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ClientAllowRule) error {
+	var err error
+
+	if insert {
+		related.ClientID = o.ClientID
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE `client_allow_rule` SET %s WHERE %s",
+			strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+			strmangle.WhereClause("`", "`", 0, clientAllowRulePrimaryKeyColumns),
+		)
+		values := []interface{}{o.ClientID, related.ClientID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		related.ClientID = o.ClientID
+	}
+
+	if o.R == nil {
+		o.R = &clientR{
+			ClientAllowRule: related,
+		}
+	} else {
+		o.R.ClientAllowRule = related
+	}
+
+	if related.R == nil {
+		related.R = &clientAllowRuleR{
+			Client: o,
+		}
+	} else {
+		related.R.Client = o
+	}
+	return nil
+}
+
+// AddClientScopes adds the given related objects to the existing relationships
+// of the client, optionally inserting them as new records.
+// Appends related to o.R.ClientScopes.
+// Sets related.R.Client appropriately.
+func (o *Client) AddClientScopes(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClientScope) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ClientID = o.ClientID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `client_scope` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+				strmangle.WhereClause("`", "`", 0, clientScopePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClientID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ClientID = o.ClientID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &clientR{
+			ClientScopes: related,
+		}
+	} else {
+		o.R.ClientScopes = append(o.R.ClientScopes, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clientScopeR{
+				Client: o,
+			}
+		} else {
+			rel.R.Client = o
+		}
+	}
+	return nil
+}
+
+// AddLoginClientHistories adds the given related objects to the existing relationships
+// of the client, optionally inserting them as new records.
+// Appends related to o.R.LoginClientHistories.
+// Sets related.R.Client appropriately.
+func (o *Client) AddLoginClientHistories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*LoginClientHistory) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ClientID = o.ClientID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `login_client_history` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+				strmangle.WhereClause("`", "`", 0, loginClientHistoryPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClientID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ClientID = o.ClientID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &clientR{
+			LoginClientHistories: related,
+		}
+	} else {
+		o.R.LoginClientHistories = append(o.R.LoginClientHistories, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &loginClientHistoryR{
+				Client: o,
+			}
+		} else {
+			rel.R.Client = o
+		}
+	}
+	return nil
+}
+
+// AddOauthSessions adds the given related objects to the existing relationships
+// of the client, optionally inserting them as new records.
+// Appends related to o.R.OauthSessions.
+// Sets related.R.Client appropriately.
+func (o *Client) AddOauthSessions(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OauthSession) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ClientID = o.ClientID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `oauth_session` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+				strmangle.WhereClause("`", "`", 0, oauthSessionPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClientID, rel.Code}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ClientID = o.ClientID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &clientR{
+			OauthSessions: related,
+		}
+	} else {
+		o.R.OauthSessions = append(o.R.OauthSessions, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &oauthSessionR{
+				Client: o,
+			}
+		} else {
+			rel.R.Client = o
+		}
+	}
+	return nil
 }
 
 // Clients retrieves all the records using an executor.

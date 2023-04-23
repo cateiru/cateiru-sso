@@ -494,6 +494,121 @@ func testClientAllowRulesInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testClientAllowRuleToOneClientUsingClient(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local ClientAllowRule
+	var foreign Client
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, clientAllowRuleDBTypes, false, clientAllowRuleColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ClientAllowRule struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, clientDBTypes, false, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.ClientID = foreign.ClientID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.Client().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ClientID != foreign.ClientID {
+		t.Errorf("want: %v, got %v", foreign.ClientID, check.ClientID)
+	}
+
+	ranAfterSelectHook := false
+	AddClientHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Client) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ClientAllowRuleSlice{&local}
+	if err = local.L.LoadClient(ctx, tx, false, (*[]*ClientAllowRule)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Client == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.Client = nil
+	if err = local.L.LoadClient(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Client == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testClientAllowRuleToOneSetOpClientUsingClient(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a ClientAllowRule
+	var b, c Client
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientAllowRuleDBTypes, false, strmangle.SetComplement(clientAllowRulePrimaryKeyColumns, clientAllowRuleColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Client{&b, &c} {
+		err = a.SetClient(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.Client != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.ClientAllowRule != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.ClientID != x.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID)
+		}
+
+		if exists, err := ClientAllowRuleExists(ctx, tx, a.ClientID); err != nil {
+			t.Fatal(err)
+		} else if !exists {
+			t.Error("want 'a' to exist")
+		}
+
+	}
+}
+
 func testClientAllowRulesReload(t *testing.T) {
 	t.Parallel()
 

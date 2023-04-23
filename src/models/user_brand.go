@@ -72,15 +72,36 @@ var UserBrandWhere = struct {
 
 // UserBrandRels is where relationship names are stored.
 var UserBrandRels = struct {
-}{}
+	User  string
+	Brand string
+}{
+	User:  "User",
+	Brand: "Brand",
+}
 
 // userBrandR is where relationships are stored.
 type userBrandR struct {
+	User  *User  `boil:"User" json:"User" toml:"User" yaml:"User"`
+	Brand *Brand `boil:"Brand" json:"Brand" toml:"Brand" yaml:"Brand"`
 }
 
 // NewStruct creates a new relationship struct
 func (*userBrandR) NewStruct() *userBrandR {
 	return &userBrandR{}
+}
+
+func (r *userBrandR) GetUser() *User {
+	if r == nil {
+		return nil
+	}
+	return r.User
+}
+
+func (r *userBrandR) GetBrand() *Brand {
+	if r == nil {
+		return nil
+	}
+	return r.Brand
 }
 
 // userBrandL is where Load methods for each relationship are stored.
@@ -370,6 +391,362 @@ func (q userBrandQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (
 	}
 
 	return count > 0, nil
+}
+
+// User pointed to by the foreign key.
+func (o *UserBrand) User(mods ...qm.QueryMod) userQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.UserID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Users(queryMods...)
+}
+
+// Brand pointed to by the foreign key.
+func (o *UserBrand) Brand(mods ...qm.QueryMod) brandQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.BrandID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Brands(queryMods...)
+}
+
+// LoadUser allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (userBrandL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUserBrand interface{}, mods queries.Applicator) error {
+	var slice []*UserBrand
+	var object *UserBrand
+
+	if singular {
+		var ok bool
+		object, ok = maybeUserBrand.(*UserBrand)
+		if !ok {
+			object = new(UserBrand)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUserBrand)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUserBrand))
+			}
+		}
+	} else {
+		s, ok := maybeUserBrand.(*[]*UserBrand)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUserBrand)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUserBrand))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userBrandR{}
+		}
+		args = append(args, object.UserID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userBrandR{}
+			}
+
+			for _, a := range args {
+				if a == obj.UserID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.UserID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`user`),
+		qm.WhereIn(`user.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load User")
+	}
+
+	var resultSlice []*User
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice User")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for user")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.User = foreign
+		if foreign.R == nil {
+			foreign.R = &userR{}
+		}
+		foreign.R.UserBrands = append(foreign.R.UserBrands, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.UserID == foreign.ID {
+				local.R.User = foreign
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.UserBrands = append(foreign.R.UserBrands, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadBrand allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (userBrandL) LoadBrand(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUserBrand interface{}, mods queries.Applicator) error {
+	var slice []*UserBrand
+	var object *UserBrand
+
+	if singular {
+		var ok bool
+		object, ok = maybeUserBrand.(*UserBrand)
+		if !ok {
+			object = new(UserBrand)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUserBrand)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUserBrand))
+			}
+		}
+	} else {
+		s, ok := maybeUserBrand.(*[]*UserBrand)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUserBrand)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUserBrand))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userBrandR{}
+		}
+		args = append(args, object.BrandID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userBrandR{}
+			}
+
+			for _, a := range args {
+				if a == obj.BrandID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.BrandID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`brand`),
+		qm.WhereIn(`brand.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Brand")
+	}
+
+	var resultSlice []*Brand
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Brand")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for brand")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for brand")
+	}
+
+	if len(brandAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Brand = foreign
+		if foreign.R == nil {
+			foreign.R = &brandR{}
+		}
+		foreign.R.UserBrands = append(foreign.R.UserBrands, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.BrandID == foreign.ID {
+				local.R.Brand = foreign
+				if foreign.R == nil {
+					foreign.R = &brandR{}
+				}
+				foreign.R.UserBrands = append(foreign.R.UserBrands, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetUser of the userBrand to the related item.
+// Sets o.R.User to related.
+// Adds o to related.R.UserBrands.
+func (o *UserBrand) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `user_brand` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"user_id"}),
+		strmangle.WhereClause("`", "`", 0, userBrandPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.UserID = related.ID
+	if o.R == nil {
+		o.R = &userBrandR{
+			User: related,
+		}
+	} else {
+		o.R.User = related
+	}
+
+	if related.R == nil {
+		related.R = &userR{
+			UserBrands: UserBrandSlice{o},
+		}
+	} else {
+		related.R.UserBrands = append(related.R.UserBrands, o)
+	}
+
+	return nil
+}
+
+// SetBrand of the userBrand to the related item.
+// Sets o.R.Brand to related.
+// Adds o to related.R.UserBrands.
+func (o *UserBrand) SetBrand(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Brand) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `user_brand` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"brand_id"}),
+		strmangle.WhereClause("`", "`", 0, userBrandPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.BrandID = related.ID
+	if o.R == nil {
+		o.R = &userBrandR{
+			Brand: related,
+		}
+	} else {
+		o.R.Brand = related
+	}
+
+	if related.R == nil {
+		related.R = &brandR{
+			UserBrands: UserBrandSlice{o},
+		}
+	} else {
+		related.R.UserBrands = append(related.R.UserBrands, o)
+	}
+
+	return nil
 }
 
 // UserBrands retrieves all the records using an executor.

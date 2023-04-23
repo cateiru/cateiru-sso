@@ -71,10 +71,18 @@ func resetDBTable(ctx context.Context, db *sql.DB) error {
 			return err
 		}
 
-		// SQLインジェクションの影響は無いためSprintfを使用している
-		if _, err := queries.Raw(fmt.Sprintf("TRUNCATE TABLE %s", table)).Exec(db); err != nil {
+		if _, err := queries.Raw("SET FOREIGN_KEY_CHECKS = 0").ExecContext(ctx, db); err != nil {
 			return err
 		}
+
+		// SQLインジェクションの影響は無いためSprintfを使用している
+		if _, err := queries.Raw(fmt.Sprintf("TRUNCATE TABLE %s", table)).ExecContext(ctx, db); err != nil {
+			return err
+		}
+	}
+
+	if _, err := queries.Raw("SET FOREIGN_KEY_CHECKS = 1").ExecContext(ctx, db); err != nil {
+		return err
 	}
 
 	return nil

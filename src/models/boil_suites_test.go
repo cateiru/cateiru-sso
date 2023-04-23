@@ -426,19 +426,104 @@ func TestInsert(t *testing.T) {
 
 // TestToOne tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToOne(t *testing.T) {}
+func TestToOne(t *testing.T) {
+	t.Run("BroadcastNoticeToBroadcastEntryUsingEntry", testBroadcastNoticeToOneBroadcastEntryUsingEntry)
+	t.Run("BroadcastNoticeToUserUsingUser", testBroadcastNoticeToOneUserUsingUser)
+	t.Run("CertificateSessionToUserUsingUser", testCertificateSessionToOneUserUsingUser)
+	t.Run("ClientToUserUsingOwnerUser", testClientToOneUserUsingOwnerUser)
+	t.Run("ClientAllowRuleToClientUsingClient", testClientAllowRuleToOneClientUsingClient)
+	t.Run("ClientRefreshToUserUsingUser", testClientRefreshToOneUserUsingUser)
+	t.Run("ClientScopeToClientUsingClient", testClientScopeToOneClientUsingClient)
+	t.Run("ClientSessionToUserUsingUser", testClientSessionToOneUserUsingUser)
+	t.Run("EmailVerifySessionToUserUsingUser", testEmailVerifySessionToOneUserUsingUser)
+	t.Run("LoginClientHistoryToClientUsingClient", testLoginClientHistoryToOneClientUsingClient)
+	t.Run("LoginClientHistoryToUserUsingUser", testLoginClientHistoryToOneUserUsingUser)
+	t.Run("LoginHistoryToUserUsingUser", testLoginHistoryToOneUserUsingUser)
+	t.Run("LoginTryHistoryToUserUsingUser", testLoginTryHistoryToOneUserUsingUser)
+	t.Run("OauthSessionToUserUsingUser", testOauthSessionToOneUserUsingUser)
+	t.Run("OauthSessionToClientUsingClient", testOauthSessionToOneClientUsingClient)
+	t.Run("OtpToUserUsingUser", testOtpToOneUserUsingUser)
+	t.Run("OtpBackupToUserUsingUser", testOtpBackupToOneUserUsingUser)
+	t.Run("OtpSessionToUserUsingUser", testOtpSessionToOneUserUsingUser)
+	t.Run("PasswordToUserUsingUser", testPasswordToOneUserUsingUser)
+	t.Run("RefreshToUserUsingUser", testRefreshToOneUserUsingUser)
+	t.Run("RegisterOtpSessionToUserUsingUser", testRegisterOtpSessionToOneUserUsingUser)
+	t.Run("SessionToUserUsingUser", testSessionToOneUserUsingUser)
+	t.Run("SettingToUserUsingUser", testSettingToOneUserUsingUser)
+	t.Run("StaffToUserUsingUser", testStaffToOneUserUsingUser)
+	t.Run("UserBrandToUserUsingUser", testUserBrandToOneUserUsingUser)
+	t.Run("UserBrandToBrandUsingBrand", testUserBrandToOneBrandUsingBrand)
+	t.Run("WebauthnToUserUsingUser", testWebauthnToOneUserUsingUser)
+}
 
 // TestOneToOne tests cannot be run in parallel
 // or deadlocks can occur.
-func TestOneToOne(t *testing.T) {}
+func TestOneToOne(t *testing.T) {
+	t.Run("ClientToClientAllowRuleUsingClientAllowRule", testClientOneToOneClientAllowRuleUsingClientAllowRule)
+	t.Run("UserToOtpUsingOtp", testUserOneToOneOtpUsingOtp)
+	t.Run("UserToPasswordUsingPassword", testUserOneToOnePasswordUsingPassword)
+	t.Run("UserToSettingUsingSetting", testUserOneToOneSettingUsingSetting)
+	t.Run("UserToStaffUsingStaff", testUserOneToOneStaffUsingStaff)
+}
 
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToMany(t *testing.T) {}
+func TestToMany(t *testing.T) {
+	t.Run("BrandToUserBrands", testBrandToManyUserBrands)
+	t.Run("BroadcastEntryToEntryBroadcastNotices", testBroadcastEntryToManyEntryBroadcastNotices)
+	t.Run("ClientToClientScopes", testClientToManyClientScopes)
+	t.Run("ClientToLoginClientHistories", testClientToManyLoginClientHistories)
+	t.Run("ClientToOauthSessions", testClientToManyOauthSessions)
+	t.Run("UserToBroadcastNotices", testUserToManyBroadcastNotices)
+	t.Run("UserToCertificateSessions", testUserToManyCertificateSessions)
+	t.Run("UserToOwnerUserClients", testUserToManyOwnerUserClients)
+	t.Run("UserToClientRefreshes", testUserToManyClientRefreshes)
+	t.Run("UserToClientSessions", testUserToManyClientSessions)
+	t.Run("UserToEmailVerifySessions", testUserToManyEmailVerifySessions)
+	t.Run("UserToLoginClientHistories", testUserToManyLoginClientHistories)
+	t.Run("UserToLoginHistories", testUserToManyLoginHistories)
+	t.Run("UserToLoginTryHistories", testUserToManyLoginTryHistories)
+	t.Run("UserToOauthSessions", testUserToManyOauthSessions)
+	t.Run("UserToOtpBackups", testUserToManyOtpBackups)
+	t.Run("UserToOtpSessions", testUserToManyOtpSessions)
+	t.Run("UserToRefreshes", testUserToManyRefreshes)
+	t.Run("UserToRegisterOtpSessions", testUserToManyRegisterOtpSessions)
+	t.Run("UserToSessions", testUserToManySessions)
+	t.Run("UserToUserBrands", testUserToManyUserBrands)
+	t.Run("UserToWebauthns", testUserToManyWebauthns)
+}
 
 // TestToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToOneSet(t *testing.T) {}
+func TestToOneSet(t *testing.T) {
+	t.Run("BroadcastNoticeToBroadcastEntryUsingEntryBroadcastNotices", testBroadcastNoticeToOneSetOpBroadcastEntryUsingEntry)
+	t.Run("BroadcastNoticeToUserUsingBroadcastNotices", testBroadcastNoticeToOneSetOpUserUsingUser)
+	t.Run("CertificateSessionToUserUsingCertificateSessions", testCertificateSessionToOneSetOpUserUsingUser)
+	t.Run("ClientToUserUsingOwnerUserClients", testClientToOneSetOpUserUsingOwnerUser)
+	t.Run("ClientAllowRuleToClientUsingClientAllowRule", testClientAllowRuleToOneSetOpClientUsingClient)
+	t.Run("ClientRefreshToUserUsingClientRefreshes", testClientRefreshToOneSetOpUserUsingUser)
+	t.Run("ClientScopeToClientUsingClientScopes", testClientScopeToOneSetOpClientUsingClient)
+	t.Run("ClientSessionToUserUsingClientSessions", testClientSessionToOneSetOpUserUsingUser)
+	t.Run("EmailVerifySessionToUserUsingEmailVerifySessions", testEmailVerifySessionToOneSetOpUserUsingUser)
+	t.Run("LoginClientHistoryToClientUsingLoginClientHistories", testLoginClientHistoryToOneSetOpClientUsingClient)
+	t.Run("LoginClientHistoryToUserUsingLoginClientHistories", testLoginClientHistoryToOneSetOpUserUsingUser)
+	t.Run("LoginHistoryToUserUsingLoginHistories", testLoginHistoryToOneSetOpUserUsingUser)
+	t.Run("LoginTryHistoryToUserUsingLoginTryHistories", testLoginTryHistoryToOneSetOpUserUsingUser)
+	t.Run("OauthSessionToUserUsingOauthSessions", testOauthSessionToOneSetOpUserUsingUser)
+	t.Run("OauthSessionToClientUsingOauthSessions", testOauthSessionToOneSetOpClientUsingClient)
+	t.Run("OtpToUserUsingOtp", testOtpToOneSetOpUserUsingUser)
+	t.Run("OtpBackupToUserUsingOtpBackups", testOtpBackupToOneSetOpUserUsingUser)
+	t.Run("OtpSessionToUserUsingOtpSessions", testOtpSessionToOneSetOpUserUsingUser)
+	t.Run("PasswordToUserUsingPassword", testPasswordToOneSetOpUserUsingUser)
+	t.Run("RefreshToUserUsingRefreshes", testRefreshToOneSetOpUserUsingUser)
+	t.Run("RegisterOtpSessionToUserUsingRegisterOtpSessions", testRegisterOtpSessionToOneSetOpUserUsingUser)
+	t.Run("SessionToUserUsingSessions", testSessionToOneSetOpUserUsingUser)
+	t.Run("SettingToUserUsingSetting", testSettingToOneSetOpUserUsingUser)
+	t.Run("StaffToUserUsingStaff", testStaffToOneSetOpUserUsingUser)
+	t.Run("UserBrandToUserUsingUserBrands", testUserBrandToOneSetOpUserUsingUser)
+	t.Run("UserBrandToBrandUsingUserBrands", testUserBrandToOneSetOpBrandUsingBrand)
+	t.Run("WebauthnToUserUsingWebauthns", testWebauthnToOneSetOpUserUsingUser)
+}
 
 // TestToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
@@ -446,7 +531,13 @@ func TestToOneRemove(t *testing.T) {}
 
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
-func TestOneToOneSet(t *testing.T) {}
+func TestOneToOneSet(t *testing.T) {
+	t.Run("ClientToClientAllowRuleUsingClientAllowRule", testClientOneToOneSetOpClientAllowRuleUsingClientAllowRule)
+	t.Run("UserToOtpUsingOtp", testUserOneToOneSetOpOtpUsingOtp)
+	t.Run("UserToPasswordUsingPassword", testUserOneToOneSetOpPasswordUsingPassword)
+	t.Run("UserToSettingUsingSetting", testUserOneToOneSetOpSettingUsingSetting)
+	t.Run("UserToStaffUsingStaff", testUserOneToOneSetOpStaffUsingStaff)
+}
 
 // TestOneToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
@@ -454,7 +545,30 @@ func TestOneToOneRemove(t *testing.T) {}
 
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
-func TestToManyAdd(t *testing.T) {}
+func TestToManyAdd(t *testing.T) {
+	t.Run("BrandToUserBrands", testBrandToManyAddOpUserBrands)
+	t.Run("BroadcastEntryToEntryBroadcastNotices", testBroadcastEntryToManyAddOpEntryBroadcastNotices)
+	t.Run("ClientToClientScopes", testClientToManyAddOpClientScopes)
+	t.Run("ClientToLoginClientHistories", testClientToManyAddOpLoginClientHistories)
+	t.Run("ClientToOauthSessions", testClientToManyAddOpOauthSessions)
+	t.Run("UserToBroadcastNotices", testUserToManyAddOpBroadcastNotices)
+	t.Run("UserToCertificateSessions", testUserToManyAddOpCertificateSessions)
+	t.Run("UserToOwnerUserClients", testUserToManyAddOpOwnerUserClients)
+	t.Run("UserToClientRefreshes", testUserToManyAddOpClientRefreshes)
+	t.Run("UserToClientSessions", testUserToManyAddOpClientSessions)
+	t.Run("UserToEmailVerifySessions", testUserToManyAddOpEmailVerifySessions)
+	t.Run("UserToLoginClientHistories", testUserToManyAddOpLoginClientHistories)
+	t.Run("UserToLoginHistories", testUserToManyAddOpLoginHistories)
+	t.Run("UserToLoginTryHistories", testUserToManyAddOpLoginTryHistories)
+	t.Run("UserToOauthSessions", testUserToManyAddOpOauthSessions)
+	t.Run("UserToOtpBackups", testUserToManyAddOpOtpBackups)
+	t.Run("UserToOtpSessions", testUserToManyAddOpOtpSessions)
+	t.Run("UserToRefreshes", testUserToManyAddOpRefreshes)
+	t.Run("UserToRegisterOtpSessions", testUserToManyAddOpRegisterOtpSessions)
+	t.Run("UserToSessions", testUserToManyAddOpSessions)
+	t.Run("UserToUserBrands", testUserToManyAddOpUserBrands)
+	t.Run("UserToWebauthns", testUserToManyAddOpWebauthns)
+}
 
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.

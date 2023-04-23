@@ -494,6 +494,243 @@ func testUserBrandsInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testUserBrandToOneUserUsingUser(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local UserBrand
+	var foreign User
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, userBrandDBTypes, false, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.UserID = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.User().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddUserHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *User) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := UserBrandSlice{&local}
+	if err = local.L.LoadUser(ctx, tx, false, (*[]*UserBrand)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.User == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.User = nil
+	if err = local.L.LoadUser(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.User == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testUserBrandToOneBrandUsingBrand(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local UserBrand
+	var foreign Brand
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, userBrandDBTypes, false, userBrandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize UserBrand struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, brandDBTypes, false, brandColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Brand struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.BrandID = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.Brand().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
+
+	ranAfterSelectHook := false
+	AddBrandHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *Brand) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := UserBrandSlice{&local}
+	if err = local.L.LoadBrand(ctx, tx, false, (*[]*UserBrand)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Brand == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.Brand = nil
+	if err = local.L.LoadBrand(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Brand == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
+func testUserBrandToOneSetOpUserUsingUser(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a UserBrand
+	var b, c User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userBrandDBTypes, false, strmangle.SetComplement(userBrandPrimaryKeyColumns, userBrandColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*User{&b, &c} {
+		err = a.SetUser(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.User != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.UserBrands[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.UserID != x.ID {
+			t.Error("foreign key was wrong value", a.UserID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.UserID))
+		reflect.Indirect(reflect.ValueOf(&a.UserID)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.UserID != x.ID {
+			t.Error("foreign key was wrong value", a.UserID, x.ID)
+		}
+	}
+}
+func testUserBrandToOneSetOpBrandUsingBrand(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a UserBrand
+	var b, c Brand
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userBrandDBTypes, false, strmangle.SetComplement(userBrandPrimaryKeyColumns, userBrandColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, brandDBTypes, false, strmangle.SetComplement(brandPrimaryKeyColumns, brandColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, brandDBTypes, false, strmangle.SetComplement(brandPrimaryKeyColumns, brandColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Brand{&b, &c} {
+		err = a.SetBrand(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.Brand != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.UserBrands[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.BrandID != x.ID {
+			t.Error("foreign key was wrong value", a.BrandID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.BrandID))
+		reflect.Indirect(reflect.ValueOf(&a.BrandID)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.BrandID != x.ID {
+			t.Error("foreign key was wrong value", a.BrandID, x.ID)
+		}
+	}
+}
+
 func testUserBrandsReload(t *testing.T) {
 	t.Parallel()
 
