@@ -35,7 +35,7 @@ func Server(c *Config) error {
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.HTTPErrorHandler = CustomHTTPErrorHandler
 
-	ServerMiddleWare(e)
+	ServerMiddleWare(e, c)
 
 	db, err := sql.Open("mysql", c.DatabaseConfig.FormatDSN())
 	if err != nil {
@@ -65,7 +65,7 @@ func Server(c *Config) error {
 }
 
 // サーバ設定など
-func ServerMiddleWare(e *echo.Echo) {
+func ServerMiddleWare(e *echo.Echo, c *Config) {
 	// リクエストごとにログを出す
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:      true,
@@ -121,4 +121,7 @@ func ServerMiddleWare(e *echo.Echo) {
 			return nil
 		},
 	}))
+
+	// CORS設定
+	e.Use(middleware.CORSWithConfig(*c.CorsConfig))
 }

@@ -9,6 +9,8 @@ import (
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/go-sql-driver/mysql"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Config struct {
@@ -29,6 +31,9 @@ type Config struct {
 	Host *url.URL
 	// サイトのホスト
 	SiteHost *url.URL
+
+	// CORS設定
+	CorsConfig *middleware.CORSConfig
 
 	// 送信メール設定
 	FromDomain        string
@@ -148,6 +153,11 @@ var LocalConfig = &Config{
 	SiteHost: &url.URL{
 		Host:   "sso.cateiru.test:3000",
 		Scheme: "http",
+	},
+
+	CorsConfig: &middleware.CORSConfig{
+		AllowOrigins: []string{"https://localhost:3000", "https://localhost:6006"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	},
 
 	FromDomain:        "m.cateiru.test",
@@ -284,6 +294,11 @@ var CloudRunConfig = &Config{
 	SiteHost: &url.URL{
 		Host:   "sso.cateiru.com",
 		Scheme: "https",
+	},
+
+	CorsConfig: &middleware.CORSConfig{
+		AllowOrigins: []string{"https://sso.cateiru.com"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	},
 
 	FromDomain:        "m.cateiru.com",
@@ -429,6 +444,8 @@ var TestConfig = &Config{
 		Host:   "localhost:3000",
 		Scheme: "http",
 	},
+
+	CorsConfig: &middleware.CORSConfig{},
 
 	FromDomain:        "m.cateiru.com",
 	MailgunSecret:     "secret",
