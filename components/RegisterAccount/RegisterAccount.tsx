@@ -2,6 +2,7 @@ import {Box, Center} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
 import React from 'react';
 import {EmailInputPage} from './EmailInputPage';
+import {EmailVerifyPage} from './EmailVerifyPage';
 import {type StepStatus, Steps} from './Steps';
 
 export enum RegisterAccountStep {
@@ -50,10 +51,30 @@ export const RegisterAccount = () => {
           />
         );
       case RegisterAccountStep.EmailVerify:
-        return <></>;
+        if (!registerToken) {
+          reset();
+          return null;
+        }
+        return (
+          <EmailVerifyPage
+            nextStep={nextStep}
+            prevStep={prevStep}
+            setStatus={setStatus}
+            reset={reset}
+            registerToken={registerToken}
+          />
+        );
       case RegisterAccountStep.RegisterCertificate:
+        if (!registerToken) {
+          reset();
+          return null;
+        }
         return <></>;
       case RegisterAccountStep.CompleteRegister:
+        if (!registerToken) {
+          reset();
+          return null;
+        }
         return <></>;
     }
     return <></>;

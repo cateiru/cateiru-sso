@@ -9,7 +9,7 @@ interface Props extends DefaultPageProps {
   registerToken: string;
 }
 
-export const EmailInputPage: React.FC<Props> = props => {
+export const EmailVerifyPage: React.FC<Props> = props => {
   const toast = useToast();
   const {request} = useRequest('/v2/register/email/verify', {
     errorCallback: () => {
@@ -58,12 +58,14 @@ export const EmailInputPage: React.FC<Props> = props => {
           description: `あと、${result.data.remaining_count}回試行することができます`,
           status: 'error',
         });
+        props.setStatus('error');
         throw new Error();
       }
 
       props.setStatus(undefined);
       props.nextStep();
     }
+    throw new Error();
   };
 
   return (

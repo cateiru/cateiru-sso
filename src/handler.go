@@ -34,7 +34,7 @@ func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 	reCaptcha := lib.NewReCaptcha(config.ReCaptchaSecret)
 
 	var sender lib.SenderInterface = nil
-	if !config.SendMail {
+	if config.SendMail {
 		s, err := lib.NewSender(`templates/*`, config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
 		if err != nil {
 			return nil, err

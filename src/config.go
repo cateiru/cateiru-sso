@@ -156,8 +156,10 @@ var LocalConfig = &Config{
 	},
 
 	CorsConfig: &middleware.CORSConfig{
-		AllowOrigins: []string{"https://localhost:3000", "https://localhost:6006"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowOrigins:     []string{"https://localhost:3000", "https://localhost:6006"},
+		AllowHeaders:     []string{"*", "X-Register-Token"},
+		AllowMethods:     []string{"*"},
+		AllowCredentials: true,
 	},
 
 	FromDomain:        "m.cateiru.test",

@@ -13,7 +13,7 @@ interface Props extends DefaultPageProps {
 export const EmailInputPage: React.FC<Props> = props => {
   const toast = useToast();
   const {executeRecaptcha} = useGoogleReCaptcha();
-  const {request} = useRequest('/v2/register/email/verify', {
+  const {request} = useRequest('/v2/register/email/send', {
     errorCallback: () => {
       props.setStatus('error');
     },
@@ -32,7 +32,17 @@ export const EmailInputPage: React.FC<Props> = props => {
 
     const form = new FormData();
     form.append('email', data.email);
-    form.append('recaptcha', await executeRecaptcha());
+
+    try {
+      form.append('recaptcha', await executeRecaptcha());
+    } catch {
+      toast({
+        title: 'reCAPTCHAの読み込みに失敗しました',
+        status: 'error',
+      });
+      props.setStatus('error');
+      return;
+    }
 
     const res = await request({
       method: 'POST',
