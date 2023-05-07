@@ -6,14 +6,9 @@ import {api} from '../../utils/api';
 import {config} from '../../utils/config';
 import {UserState} from '../../utils/state/atom';
 import {ErrorSchema, ErrorUniqueMessage} from '../../utils/types/error';
-import {UserMe, UserMeSchema} from '../../utils/types/user';
+import {UserMeSchema} from '../../utils/types/user';
 
-export interface Returns {
-  user: UserMe | null;
-  noLogin: boolean;
-}
-
-export const useSession = (): Returns => {
+export const useSession = () => {
   const [user, setUser] = useRecoilState(UserState);
   const toast = useToast();
 
@@ -21,7 +16,7 @@ export const useSession = (): Returns => {
     // 未ログイン
     if (typeof user === 'undefined') {
       const isLogin =
-        cookie.parse(document.cookie)[config.loginStateCookieName] !== '';
+        cookie.parse(document.cookie)[config.loginStateCookieName] === '1';
 
       // クッキーが存在していない場合はログインしていないのでnullにしてなにもしない
       if (!isLogin) {
@@ -29,7 +24,11 @@ export const useSession = (): Returns => {
         return;
       }
 
-      fetch(api('/user/me'), {method: 'GET'})
+      fetch(api('/v2/user/me'), {
+        method: 'GET',
+        credentials: 'include',
+        mode: 'cors',
+      })
         .then(async res => {
           if (res.ok) {
             const parsedUserMe = UserMeSchema.safeParse(await res.json());
@@ -64,10 +63,5 @@ export const useSession = (): Returns => {
           }
         });
     }
-  }, []);
-
-  return {
-    user: user ?? null,
-    noLogin: typeof user === 'undefined',
-  };
+  }, [user]);
 };

@@ -10,6 +10,7 @@ interface Props {
 export const EmailResend: React.FC<Props> = props => {
   const toast = useToast();
   const {executeRecaptcha} = useGoogleReCaptcha();
+  const [isDisabled, setIsDisabled] = React.useState(false);
   const {request} = useRequest('/v2/register/email/resend', {
     errorCallback: () => {},
   });
@@ -50,12 +51,16 @@ export const EmailResend: React.FC<Props> = props => {
         description: 'メールを確認してください',
         status: 'success',
       });
+      setIsDisabled(true);
+      setTimeout(() => {
+        setIsDisabled(false);
+      }, 5000);
       return;
     }
   };
 
   return (
-    <Button onClick={onClickHandler} variant="link">
+    <Button onClick={onClickHandler} variant="link" isDisabled={isDisabled}>
       メールを再送する
     </Button>
   );

@@ -4,6 +4,7 @@ import {useRouter} from 'next/router';
 import nprogress from 'nprogress';
 import React from 'react';
 import {RecoilRoot} from 'recoil';
+import {Frame} from '../components/Common/Frame';
 import {ReCaptcha} from '../components/Common/ReCaptcha';
 import {pageview} from '../utils/ga/gtag';
 import {theme} from '../utils/theme';
@@ -41,7 +42,9 @@ const App = ({Component, pageProps}: AppProps) => {
     <RecoilRoot>
       <ChakraProvider theme={theme}>
         <ReCaptcha>
-          <Component {...pageProps} />
+          <Frame>
+            <Component {...pageProps} />
+          </Frame>
         </ReCaptcha>
       </ChakraProvider>
     </RecoilRoot>

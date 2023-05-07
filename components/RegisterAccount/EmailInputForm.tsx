@@ -26,7 +26,7 @@ export const EmailInputForm: React.FC<Props> = ({onSubmit}) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <FormControl isInvalid={!!errors.email}>
-        <FormLabel htmlFor="email">登録するメールアドレス</FormLabel>
+        <FormLabel htmlFor="email">メールアドレス</FormLabel>
         <Input
           id="email"
           type="email"

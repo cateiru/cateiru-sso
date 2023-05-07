@@ -7,6 +7,7 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  Skeleton,
 } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
 import React from 'react';
@@ -91,13 +92,18 @@ export const RegisterPasswordForm: React.FC<Props> = props => {
           shortScoreWord=""
           minLength={8}
         />
-        <Box marginTop=".5rem">
+        <Skeleton
+          marginTop=".5rem"
+          minH="150px"
+          isLoaded={!!PasswordChecklist}
+          verticalAlign="middle"
+        >
           <PasswordChecklist
             rules={['minLength', 'specialChar', 'number', 'capital']}
-            minLength={8}
+            minLength={13}
             value={pass}
             messages={{
-              minLength: 'パスワードは8文字以上',
+              minLength: 'パスワードは13文字以上',
               specialChar: 'パスワードに記号が含まれている',
               number: 'パスワードに数字が含まれている',
               capital: 'パスワードに大文字が含まれている',
@@ -113,7 +119,7 @@ export const RegisterPasswordForm: React.FC<Props> = props => {
               };
             }}
           />
-        </Box>
+        </Skeleton>
       </FormControl>
       <Button
         mt="1rem"

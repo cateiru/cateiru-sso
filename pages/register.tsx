@@ -1,7 +1,7 @@
-import {RegisterAccount} from '../components/RegisterAccount/RegisterAccount';
+import {RegisterAccountPage} from '../components/RegisterAccount/RegisterAccountPage';
 
 const Register = () => {
-  return <RegisterAccount />;
+  return <RegisterAccountPage />;
 };
 
 export default Register;

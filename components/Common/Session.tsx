@@ -1,24 +1,37 @@
 import {useRouter} from 'next/router';
 import React from 'react';
-import {UserMe} from '../../utils/types/user';
-import {useSession} from './useSession';
+import {useRecoilValue} from 'recoil';
+import {UserState} from '../../utils/state/atom';
 
 interface Props {
-  children: (user: UserMe) => React.ReactNode;
+  isLoggedIn?: boolean;
+  redirectTo?: string;
+  redirectQuery?: boolean;
+  children: React.ReactNode;
 }
 
 export const Session: React.FC<Props> = props => {
-  const {user, noLogin} = useSession();
+  const user = useRecoilValue(UserState);
   const router = useRouter();
+  const [ok, setOk] = React.useState(false);
 
-  if (noLogin) {
-    return null;
-  }
+  React.useEffect(() => {
+    if (!router.isReady) return;
+    if (ok) return;
+    if (typeof user === 'undefined') return;
 
-  if (!user) {
-    router.replace(`/login?redirect=${router.asPath}`);
-    return null;
-  }
+    let url = props.redirectTo ?? '/';
+    if (props.redirectQuery) {
+      url += `?redirect=${router.asPath}`;
+    }
 
-  return <>{props.children(user)}</>;
+    if (!!props.isLoggedIn === !!user) {
+      router.replace(url);
+      return;
+    }
+
+    setOk(true);
+  }, [router.isReady, ok, user]);
+
+  return <>{ok && props.children}</>;
 };

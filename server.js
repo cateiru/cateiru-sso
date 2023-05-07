@@ -34,9 +34,9 @@ const handle = app.getRequestHandler();
     };
     const server = https.createServer(options, expressApp);
     server.listen(port, host);
-    console.log(`> Ready on https://sso.cateiru.test`);
+    console.log(`> Ready on https://localhost:3000`);
   } else {
     expressApp.listen(port, host);
-    console.log(`> Ready on http://sso.cateiru.test`);
+    console.log(`> Ready on http://localhost:3000`);
   }
 })();
