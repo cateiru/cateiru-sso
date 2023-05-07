@@ -11,7 +11,7 @@
     "fix": "gts fix",
     "certification": "./scripts/certification.sh",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "msw init stories/assets/ -y & storybook build"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.5.5",
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@chakra-ui/storybook-addon": "^4.0.16",
+    "@faker-js/faker": "^7.6.0",
     "@storybook/addon-essentials": "^7.0.5",
     "@storybook/addon-interactions": "^7.0.5",
     "@storybook/addon-links": "^7.0.5",
@@ -57,6 +58,10 @@
     "express": "^4.18.2",
     "gts": "^3.1.1",
     "storybook": "^7.0.5",
+    "storybook-addon-mock": "^4.0.0",
     "typescript": "^5.0.4"
+  },
+  "msw": {
+    "workerDirectory": "public"
   }
 }

@@ -15,14 +15,27 @@ export interface DefaultPageProps {
   nextStep: () => void;
   prevStep: () => void;
   setStatus: (status: StepStatus) => void;
+  reset: () => void;
 }
 
 export const RegisterAccount = () => {
   const [registerToken, setRegisterToken] = React.useState<string | null>(null);
-  const {activeStep, nextStep, prevStep} = useSteps({
+  const {
+    activeStep,
+    nextStep,
+    prevStep,
+    reset: resetStep,
+  } = useSteps({
     initialStep: RegisterAccountStep.EmailInput,
   });
   const [status, setStatus] = React.useState<StepStatus>(undefined);
+
+  const reset = React.useCallback(() => {
+    setRegisterToken(null);
+    setStatus(undefined);
+
+    resetStep();
+  }, []);
 
   const C = () => {
     switch (activeStep) {
@@ -32,6 +45,7 @@ export const RegisterAccount = () => {
             nextStep={nextStep}
             prevStep={prevStep}
             setStatus={setStatus}
+            reset={reset}
             setRegisterToken={setRegisterToken}
           />
         );

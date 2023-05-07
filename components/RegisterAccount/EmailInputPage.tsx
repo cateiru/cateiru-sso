@@ -1,9 +1,8 @@
 import {Box, useToast} from '@chakra-ui/react';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
-import {api} from '../../utils/api';
 import {CreateAccountRegisterEmailResponseSchema} from '../../utils/types/createAccount';
-import {ErrorSchema, ErrorUniqueMessage} from '../../utils/types/error';
+import {useRequest} from '../Common/useRequest';
 import {type EmailForm, EmailInputForm} from './EmailInputForm';
 import {DefaultPageProps} from './RegisterAccount';
 
@@ -14,10 +13,18 @@ interface Props extends DefaultPageProps {
 export const EmailInputPage: React.FC<Props> = props => {
   const toast = useToast();
   const {executeRecaptcha} = useGoogleReCaptcha();
+  const {request} = useRequest('/v2/register/email/verify', {
+    errorCallback: () => {
+      props.setStatus('error');
+    },
+  });
 
   const onSubmit = async (data: EmailForm) => {
     if (!executeRecaptcha) {
-      console.log('Execute recaptcha not yet available');
+      toast({
+        title: 'reCAPTCHAの読み込みに失敗しました',
+        status: 'error',
+      });
       return;
     }
 
@@ -27,44 +34,25 @@ export const EmailInputPage: React.FC<Props> = props => {
     form.append('email', data.email);
     form.append('recaptcha', await executeRecaptcha());
 
-    try {
-      const res = await fetch(api('/v2/register/email/send'), {
-        method: 'POST',
-        credentials: 'include',
-        mode: 'cors',
-        body: form,
-      });
+    const res = await request({
+      method: 'POST',
+      credentials: 'include',
+      mode: 'cors',
+      body: form,
+    });
 
-      if (!res.ok) {
-        const error = ErrorSchema.parse(await res.json());
-        toast({
-          title: ErrorUniqueMessage[error.unique_code] ?? error.message,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
-
-      const data = CreateAccountRegisterEmailResponseSchema.parse(
+    if (res) {
+      const data = CreateAccountRegisterEmailResponseSchema.safeParse(
         await res.json()
       );
-
-      props.setRegisterToken(data.register_token);
-      props.setStatus(undefined);
-      props.nextStep();
-    } catch (e) {
-      if (e instanceof Error) {
-        toast({
-          title: 'エラー',
-          description: e.message,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
+      if (data.success) {
+        props.setRegisterToken(data.data.register_token);
+        props.setStatus(undefined);
+        props.nextStep();
+        return;
       }
-      props.setStatus('error');
     }
+    props.setStatus('error');
   };
 
   return (

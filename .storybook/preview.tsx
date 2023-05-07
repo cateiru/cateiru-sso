@@ -1,6 +1,7 @@
 import {ChakraProvider, useColorMode} from '@chakra-ui/react';
 import React from 'react';
 import {theme} from '../utils/theme';
+import {GoogleReCaptchaProvider} from 'react-google-recaptcha-v3';
 
 interface ColorModeProps {
   colorMode: 'light' | 'dark';
@@ -21,9 +22,11 @@ export const decorators = [
   (Story, context) => {
     return (
       <ChakraProvider theme={theme}>
-        <ColorMode colorMode={context.globals.colorMode}>
-          <Story />
-        </ColorMode>
+        <GoogleReCaptchaProvider reCaptchaKey="empty_recaptcha_key">
+          <ColorMode colorMode={context.globals.colorMode}>
+            <Story />
+          </ColorMode>
+        </GoogleReCaptchaProvider>
       </ChakraProvider>
     );
   },

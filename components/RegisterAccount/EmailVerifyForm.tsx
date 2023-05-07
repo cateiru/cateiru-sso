@@ -2,12 +2,12 @@ import {PinInput, PinInputField} from '@chakra-ui/react';
 import React from 'react';
 import {config} from '../../utils/config';
 
-export interface EmailForm {
+export interface EmailVerifyForm {
   code: string;
 }
 
 interface Props {
-  onSubmit: (data: EmailForm) => Promise<void>;
+  onSubmit: (data: EmailVerifyForm) => Promise<void>;
 }
 
 export const EmailVerifyForm: React.FC<Props> = ({onSubmit}) => {
