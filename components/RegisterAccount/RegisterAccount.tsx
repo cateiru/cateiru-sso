@@ -1,6 +1,7 @@
 import {Box, Center} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
 import React from 'react';
+import {CompleteRegisterPage} from './CompleteRegisterPage';
 import {EmailInputPage} from './EmailInputPage';
 import {EmailVerifyPage} from './EmailVerifyPage';
 import {RegisterCertificatePage} from './RegisterCertificatePage';
@@ -84,7 +85,7 @@ export const RegisterAccount = () => {
           reset();
           return null;
         }
-        return <></>;
+        return <CompleteRegisterPage />;
     }
     return <></>;
   };

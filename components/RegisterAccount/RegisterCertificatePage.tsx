@@ -2,6 +2,9 @@ import {Box, Button, Center, Heading} from '@chakra-ui/react';
 import type {RegistrationPublicKeyCredential} from '@github/webauthn-json/dist/types/browser-ponyfill';
 import React from 'react';
 import {TbFingerprint, TbPassword} from 'react-icons/tb';
+import {useSetRecoilState} from 'recoil';
+import {UserState} from '../../utils/state/atom';
+import {UserSchema} from '../../utils/types/user';
 import {useRequest} from '../Common/useRequest';
 import type {DefaultPageProps} from './RegisterAccount';
 import {RegisterPasskeyForm} from './RegisterPasskeyForm';
@@ -12,6 +15,8 @@ interface Props extends DefaultPageProps {
 }
 
 export const RegisterCertificatePage: React.FC<Props> = props => {
+  const setUser = useSetRecoilState(UserState);
+
   const [certType, setCertType] = React.useState<'passkey' | 'password'>(
     'passkey'
   );
@@ -41,8 +46,7 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
     });
 
     if (res) {
-      props.setStatus(undefined);
-      props.nextStep();
+      await afterRegister(res);
       return;
     }
 
@@ -62,12 +66,27 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
     });
 
     if (res) {
-      props.setStatus(undefined);
-      props.nextStep();
+      await afterRegister(res);
       return;
     }
 
     props.setStatus('error');
+  };
+
+  const afterRegister = async (res: Response) => {
+    const data = UserSchema.safeParse(await res.json());
+    if (!data.success) {
+      console.log(data);
+      props.setStatus('error');
+      return;
+    }
+
+    setUser({
+      user: data.data,
+    });
+
+    props.setStatus(undefined);
+    props.nextStep();
   };
 
   return (
