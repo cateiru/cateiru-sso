@@ -3,7 +3,7 @@ import {api} from '../../utils/api';
 import {ErrorSchema, ErrorUniqueMessage} from '../../utils/types/error';
 
 interface Options {
-  errorCallback?: () => void;
+  errorCallback?: (message: string | undefined) => void;
 }
 
 interface Returns {
@@ -19,13 +19,14 @@ export const useRequest = (path: string, options?: Options): Returns => {
 
       if (!res.ok) {
         const error = ErrorSchema.parse(await res.json());
+        const message = ErrorUniqueMessage[error.unique_code] ?? error.message;
         toast({
-          title: ErrorUniqueMessage[error.unique_code] ?? error.message,
+          title: message,
           status: 'error',
           duration: 5000,
           isClosable: true,
         });
-        options?.errorCallback?.();
+        options?.errorCallback?.(message);
 
         return;
       }
@@ -41,7 +42,7 @@ export const useRequest = (path: string, options?: Options): Returns => {
           isClosable: true,
         });
       }
-      options?.errorCallback?.();
+      options?.errorCallback?.(undefined);
     }
     return;
   };

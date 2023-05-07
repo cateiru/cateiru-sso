@@ -157,7 +157,7 @@ var LocalConfig = &Config{
 
 	CorsConfig: &middleware.CORSConfig{
 		AllowOrigins:     []string{"https://localhost:3000", "https://localhost:6006"},
-		AllowHeaders:     []string{"*", "X-Register-Token"},
+		AllowHeaders:     []string{"*", "X-Register-Token", "Content-Type"},
 		AllowMethods:     []string{"*"},
 		AllowCredentials: true,
 	},
@@ -174,8 +174,8 @@ var LocalConfig = &Config{
 
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO Local",
-		RPID:          "sso.cateiru.test",
-		RPOrigins:     []string{"sso.cateiru.test:8080", "sso.cateiru.test:3000"},
+		RPID:          "localhost",
+		RPOrigins:     []string{"https://localhost:3000"},
 		Timeouts: webauthn.TimeoutsConfig{
 			Login: webauthn.TimeoutConfig{
 				Enforce:    true,

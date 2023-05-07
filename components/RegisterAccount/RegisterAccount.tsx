@@ -3,6 +3,7 @@ import {useSteps} from 'chakra-ui-steps';
 import React from 'react';
 import {EmailInputPage} from './EmailInputPage';
 import {EmailVerifyPage} from './EmailVerifyPage';
+import {RegisterCertificatePage} from './RegisterCertificatePage';
 import {type StepStatus, Steps} from './Steps';
 
 export enum RegisterAccountStep {
@@ -69,7 +70,15 @@ export const RegisterAccount = () => {
           reset();
           return null;
         }
-        return <></>;
+        return (
+          <RegisterCertificatePage
+            nextStep={nextStep}
+            prevStep={prevStep}
+            setStatus={setStatus}
+            reset={reset}
+            registerToken={registerToken}
+          />
+        );
       case RegisterAccountStep.CompleteRegister:
         if (!registerToken) {
           reset();
