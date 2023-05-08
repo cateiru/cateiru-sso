@@ -19,7 +19,9 @@ export const useRequest = (path: string, options?: Options): Returns => {
 
       if (!res.ok) {
         const error = ErrorSchema.parse(await res.json());
-        const message = ErrorUniqueMessage[error.unique_code] ?? error.message;
+        const message = error.unique_code
+          ? ErrorUniqueMessage[error.unique_code] ?? error.message
+          : error.message;
         toast({
           title: message,
           status: 'error',

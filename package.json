@@ -11,7 +11,7 @@
     "fix": "gts fix",
     "certification": "./scripts/certification.sh",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "msw init stories/assets/ -y & storybook build"
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.5.5",
@@ -32,6 +32,7 @@
     "react-password-checklist": "^1.4.3",
     "react-password-strength-bar": "^0.4.1",
     "recoil": "^0.7.7",
+    "swr": "^2.1.5",
     "zod": "^3.21.4"
   },
   "devDependencies": {

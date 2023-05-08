@@ -1,5 +1,6 @@
-import {Box} from '@chakra-ui/react';
+import {Box, Flex} from '@chakra-ui/react';
 import React from 'react';
+import {Footer} from './Footer';
 import {Header} from './Header';
 import {useSession} from './useSession';
 
@@ -11,10 +12,13 @@ export const Frame = React.memo<Props>(props => {
   useSession();
 
   return (
-    <Box w="100%" h="100%">
-      <Header />
-      {props.children}
-    </Box>
+    <Flex flexDirection="column" minHeight="100vh">
+      <Box>
+        <Header />
+        {props.children}
+      </Box>
+      <Footer />
+    </Flex>
   );
 });
 

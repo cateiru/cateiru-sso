@@ -2,7 +2,7 @@ import z from 'zod';
 
 export const ErrorSchema = z.object({
   message: z.string(),
-  unique_code: z.number(),
+  unique_code: z.number().optional(),
 });
 export type ErrorType = z.infer<typeof ErrorSchema>;
 
