@@ -4,7 +4,7 @@ import {AccountUserListSchema} from '../types/account';
 import {ErrorSchema} from '../types/error';
 
 export async function accountUserFeather() {
-  const res = await fetch(api('/v2/account/list'), {
+  const res = await fetch(api('/v2/account/list').toString(), {
     credentials: 'include',
     mode: 'cors',
   });

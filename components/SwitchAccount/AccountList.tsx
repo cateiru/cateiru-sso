@@ -13,7 +13,7 @@ import {AccountUserList} from '../../utils/types/account';
 
 export const AccountList: React.FC<{data: AccountUserList}> = ({data}) => {
   return (
-    <Box overflowY="scroll" maxH="calc(100% - 100px)">
+    <Box overflowY="auto" maxH="calc(100% - 100px)">
       <Table variant="simple">
         <Tbody>
           {data.map(account => {
