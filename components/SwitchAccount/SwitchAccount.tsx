@@ -1,5 +1,5 @@
 import {Box, Divider, Heading} from '@chakra-ui/react';
-import {AccountFeather} from './AccountFeather';
+import {AccountList} from './AccountList';
 
 export const SwitchAccount = () => {
   return (
@@ -19,7 +19,7 @@ export const SwitchAccount = () => {
         </Heading>
         <Divider mt=".5rem" w="90%" mx="auto" />
       </Box>
-      <AccountFeather />
+      <AccountList />
     </Box>
   );
 };

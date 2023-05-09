@@ -5,35 +5,98 @@ import {
   Td,
   Avatar,
   Text,
-  Button,
   Box,
+  useColorModeValue,
+  Tooltip,
 } from '@chakra-ui/react';
 import React from 'react';
+import {TbCheck} from 'react-icons/tb';
+import {useRecoilValue} from 'recoil';
+import useSWR from 'swr';
+import {UserState} from '../../utils/state/atom';
+import {accountUserFeather} from '../../utils/swr/featcher';
 import {AccountUserList} from '../../utils/types/account';
+import {ErrorType} from '../../utils/types/error';
+import {Error} from '../Common/Error/Error';
+import {useSwitchAccount} from './useSwitchAccount';
 
-export const AccountList: React.FC<{data: AccountUserList}> = ({data}) => {
+export const AccountList = () => {
+  const checkMarkColor = useColorModeValue('#68D391', '#38A169');
+
+  const user = useRecoilValue(UserState);
+  const {data, error} = useSWR<AccountUserList, ErrorType>(
+    '/',
+    accountUserFeather
+  );
+
+  const {switch: s} = useSwitchAccount();
+
+  if (error) {
+    return <Error {...error} />;
+  }
+
+  if (!data) {
+    return <>aaa</>;
+  }
+
   return (
     <Box overflowY="auto" maxH="calc(100% - 100px)">
       <Table variant="simple">
         <Tbody>
           {data.map(account => {
+            const isCurrentUser = account.id === user?.user.id;
+
             return (
-              <Button key={account.id} h="100%" variant="unstyled" w="100%">
-                <Tr _hover={{bgColor: 'gray.100'}}>
+              <Tr
+                _hover={isCurrentUser ? {} : {bgColor: 'gray.100'}}
+                w="100%"
+                key={account.id}
+                onClick={() => {
+                  if (!isCurrentUser) {
+                    s(account.id, account.user_name);
+                  }
+                }}
+              >
+                <Td>
+                  <Avatar src={account.avatar ?? ''} />
+                </Td>
+                <Td w="100%">
+                  <Text
+                    fontSize="1.5rem"
+                    fontWeight="bold"
+                    textAlign="center"
+                    maxW={
+                      isCurrentUser
+                        ? {base: '170px', sm: '215px'}
+                        : {base: '230px', sm: '250px'}
+                    }
+                    textOverflow="ellipsis"
+                    overflow="hidden"
+                    whiteSpace="nowrap"
+                  >
+                    {account.user_name}
+                  </Text>
+                </Td>
+                {isCurrentUser ? (
                   <Td>
-                    <Avatar src={account.avatar ?? ''} />
-                  </Td>
-                  <Td w="100%">
-                    <Text
-                      fontSize="1.5rem"
-                      fontWeight="bold"
-                      textAlign="center"
+                    <Tooltip
+                      label="現在ログインしているユーザーです"
+                      hasArrow
+                      borderRadius="7px"
                     >
-                      {account.user_name}
-                    </Text>
+                      <Box>
+                        <TbCheck
+                          size="30px"
+                          color={checkMarkColor}
+                          strokeWidth="3px"
+                        />
+                      </Box>
+                    </Tooltip>
                   </Td>
-                </Tr>
-              </Button>
+                ) : (
+                  <Td></Td>
+                )}
+              </Tr>
             );
           })}
         </Tbody>

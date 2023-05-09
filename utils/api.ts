@@ -6,9 +6,9 @@ import {config} from './config';
  * @param path - API path
  * @returns APIのURL
  */
-export function api(path: string): URL {
+export function api(path: string): string {
   const url = new URL(config.apiHost);
   url.pathname = path;
 
-  return url;
+  return url.toString();
 }

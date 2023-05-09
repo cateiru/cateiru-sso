@@ -1,5 +1,6 @@
 import {useToast} from '@chakra-ui/react';
 import cookie from 'cookie';
+import {useRouter} from 'next/router';
 import React from 'react';
 import {useRecoilState} from 'recoil';
 import {api} from '../../utils/api';
@@ -11,6 +12,7 @@ import {UserMeSchema} from '../../utils/types/user';
 export const useSession = () => {
   const [user, setUser] = useRecoilState(UserState);
   const toast = useToast();
+  const router = useRouter();
 
   React.useEffect(() => {
     // 未ログイン
@@ -38,6 +40,13 @@ export const useSession = () => {
           } else {
             const error = ErrorSchema.safeParse(await res.json());
             if (error.success) {
+              if (error.data.unique_code === 9) {
+                // 別のユーザーでログインできる可能性があるので/switch_accountにリダイレクト
+                await router.replace('/switch_account');
+                setUser(null);
+                return;
+              }
+
               toast({
                 title: 'ログインに失敗しました',
                 description: error.data.unique_code
@@ -62,6 +71,7 @@ export const useSession = () => {
               isClosable: true,
             });
           }
+          setUser(null);
         });
     }
   }, [user]);
