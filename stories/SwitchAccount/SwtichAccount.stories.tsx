@@ -106,3 +106,32 @@ export const ManyUser: Story = {
     ],
   },
 };
+
+export const Loading: Story = {
+  parameters: {
+    layout: 'fullscreen',
+    mockData: [
+      {
+        url: api('/v2/account/list'),
+        method: 'GET',
+        status: 200,
+        delay: 10000,
+        response: [
+          {
+            id: user.id,
+            user_name: user.user_name,
+          },
+          {
+            id: faker.datatype.uuid(),
+            user_name: faker.internet.userName(),
+          },
+          {
+            id: faker.datatype.uuid(),
+            user_name: faker.internet.userName(),
+            avatar: faker.image.avatar(),
+          },
+        ],
+      },
+    ],
+  },
+};

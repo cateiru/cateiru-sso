@@ -8,6 +8,7 @@ import {
   Box,
   useColorModeValue,
   Tooltip,
+  Skeleton,
 } from '@chakra-ui/react';
 import React from 'react';
 import {TbCheck} from 'react-icons/tb';
@@ -36,7 +37,38 @@ export const AccountList = () => {
   }
 
   if (!data) {
-    return <>aaa</>;
+    return (
+      <Box overflowY="auto" maxH="calc(100% - 100px)">
+        <Table variant="simple">
+          <Tbody>
+            <Tr>
+              <Td>
+                <Skeleton w="48px" h="48px" borderRadius="50%" />
+              </Td>
+              <Td>
+                <Skeleton w={{base: '230px', sm: '250px'}} h="20px" />
+              </Td>
+            </Tr>
+            <Tr>
+              <Td>
+                <Skeleton w="48px" h="48px" borderRadius="50%" />
+              </Td>
+              <Td>
+                <Skeleton w={{base: '230px', sm: '250px'}} h="20px" />
+              </Td>
+            </Tr>
+            <Tr>
+              <Td>
+                <Skeleton w="48px" h="48px" borderRadius="50%" />
+              </Td>
+              <Td>
+                <Skeleton w={{base: '230px', sm: '250px'}} h="20px" />
+              </Td>
+            </Tr>
+          </Tbody>
+        </Table>
+      </Box>
+    );
   }
 
   return (
@@ -94,7 +126,7 @@ export const AccountList = () => {
                     </Tooltip>
                   </Td>
                 ) : (
-                  <Td></Td>
+                  <Td p="0"></Td>
                 )}
               </Tr>
             );
