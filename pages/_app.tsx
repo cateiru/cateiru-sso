@@ -4,7 +4,7 @@ import {useRouter} from 'next/router';
 import nprogress from 'nprogress';
 import React from 'react';
 import {RecoilRoot} from 'recoil';
-import {Frame} from '../components/Common/Frame';
+import {Frame} from '../components/Common/Frame/Frame';
 import {ReCaptcha} from '../components/Common/ReCaptcha';
 import {pageview} from '../utils/ga/gtag';
 import {theme} from '../utils/theme';

@@ -1,7 +1,7 @@
 import {Box, Divider, Heading} from '@chakra-ui/react';
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {AccountList} from '../../../components/SwitchAccount/AccountList';
+import {AccountList} from '../../components/SwitchAccount/AccountList';
 
 const meta: Meta<typeof AccountList> = {
   title: 'CateiruSSO/SwitchAccount/AccountList',

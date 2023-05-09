@@ -40,9 +40,10 @@ export const useSession = () => {
             if (error.success) {
               toast({
                 title: 'ログインに失敗しました',
-                description:
-                  ErrorUniqueMessage[error.data.unique_code] ??
-                  error.data.message,
+                description: error.data.unique_code
+                  ? ErrorUniqueMessage[error.data.unique_code] ??
+                    error.data.message
+                  : error.data.message,
                 status: 'error',
                 duration: 9000,
                 isClosable: true,

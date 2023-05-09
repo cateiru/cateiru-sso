@@ -1,8 +1,8 @@
 import {Box, Flex} from '@chakra-ui/react';
 import React from 'react';
+import {useSession} from '../useSession';
 import {Footer} from './Footer';
 import {Header} from './Header';
-import {useSession} from './useSession';
 
 interface Props {
   children: React.ReactNode;

@@ -1,8 +1,8 @@
-import {Avatar, Flex, Link, Skeleton, Spacer, Text} from '@chakra-ui/react';
+import {Avatar, Flex, Skeleton, Spacer, Text} from '@chakra-ui/react';
 import NextLink from 'next/link';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
-import {UserState} from '../../utils/state/atom';
+import {UserState} from '../../../utils/state/atom';
 import {ColorButton} from './ColorButton';
 
 export const Header = React.memo(() => {

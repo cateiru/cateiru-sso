@@ -1,7 +1,7 @@
 import {Heading, VStack, useColorModeValue} from '@chakra-ui/react';
 import {useRouter} from 'next/router';
 import React from 'react';
-import {CheckMark, CheckmarkProps} from './CheckMark';
+import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
 
 export const CompleteRegisterPage = () => {
   const router = useRouter();

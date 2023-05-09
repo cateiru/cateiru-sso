@@ -1,8 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {CheckMark} from '../../components/RegisterAccount/CheckMark';
+import {CheckMark} from '../../../components/Common/Icons/CheckMark';
 
 const meta: Meta<typeof CheckMark> = {
-  title: 'CateiruSSO/RegisterAccount/CheckMark',
+  title: 'CateiruSSO/Common/Icons/CheckMark',
   component: CheckMark,
   tags: ['autodocs'],
   parameters: {
