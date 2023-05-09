@@ -23,6 +23,7 @@ import {useSwitchAccount} from './useSwitchAccount';
 
 export const AccountList = () => {
   const checkMarkColor = useColorModeValue('#68D391', '#38A169');
+  const hoverColor = useColorModeValue('gray.100', 'gray.600');
 
   const user = useRecoilValue(UserState);
   const {data, error} = useSWR<AccountUserList, ErrorType>(
@@ -72,7 +73,7 @@ export const AccountList = () => {
   }
 
   return (
-    <Box overflowY="auto" maxH="calc(100% - 100px)">
+    <Box overflowY="auto" maxH="calc(100% - 150px)">
       <Table variant="simple">
         <Tbody>
           {data.map(account => {
@@ -80,7 +81,7 @@ export const AccountList = () => {
 
             return (
               <Tr
-                _hover={isCurrentUser ? {} : {bgColor: 'gray.100'}}
+                _hover={isCurrentUser ? {} : {bgColor: hoverColor}}
                 w="100%"
                 key={account.id}
                 onClick={() => {
@@ -88,6 +89,7 @@ export const AccountList = () => {
                     s(account.id, account.user_name);
                   }
                 }}
+                cursor="pointer"
               >
                 <Td>
                   <Avatar src={account.avatar ?? ''} />
@@ -97,20 +99,17 @@ export const AccountList = () => {
                     fontSize="1.5rem"
                     fontWeight="bold"
                     textAlign="center"
-                    maxW={
-                      isCurrentUser
-                        ? {base: '170px', sm: '215px'}
-                        : {base: '230px', sm: '250px'}
-                    }
+                    maxW={{base: '200px', sm: '240px'}}
                     textOverflow="ellipsis"
                     overflow="hidden"
                     whiteSpace="nowrap"
+                    h="2rem"
                   >
                     {account.user_name}
                   </Text>
                 </Td>
                 {isCurrentUser ? (
-                  <Td>
+                  <Td p="0" pr="1rem">
                     <Tooltip
                       label="現在ログインしているユーザーです"
                       hasArrow

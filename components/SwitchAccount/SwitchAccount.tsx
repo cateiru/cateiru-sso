@@ -1,7 +1,9 @@
-import {Box, Divider, Heading} from '@chakra-ui/react';
+import {Box, Divider, Heading, useColorModeValue} from '@chakra-ui/react';
 import {AccountList} from './AccountList';
 
 export const SwitchAccount = () => {
+  const borderColor = useColorModeValue('gray.300', 'gray.600');
+
   return (
     <Box
       w={{base: '96%', sm: '450px'}}
@@ -10,14 +12,14 @@ export const SwitchAccount = () => {
       margin="auto"
       mt="3rem"
       borderRadius="10px"
-      borderColor="gray.300"
+      borderColor={borderColor}
       mb={{base: '0', sm: '3rem'}}
     >
-      <Box h="100px">
-        <Heading textAlign="center" pt="2rem">
-          アカウントを選択
+      <Box h="150px">
+        <Heading textAlign="center" pt="2rem" mx=".5rem">
+          ログインするアカウントを選択してください
         </Heading>
-        <Divider mt=".5rem" w="90%" mx="auto" />
+        <Divider mt="1.5rem" w="90%" mx="auto" />
       </Box>
       <AccountList />
     </Box>
