@@ -88,11 +88,6 @@ func (h *Handler) AccountSwitchHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "user_id is empty")
 	}
 
-	_, err := h.Session.SimpleLogin(ctx, c, true)
-	if err != nil {
-		return err
-	}
-
 	setCookies, err := h.Session.SwitchAccount(ctx, c.Cookies(), userId)
 	if err != nil {
 		return err

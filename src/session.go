@@ -17,6 +17,7 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"go.uber.org/zap"
 )
 
 type SessionInterface interface {
@@ -65,7 +66,7 @@ func (s *Session) SimpleLogin(ctx context.Context, c echo.Context, useSessionOnl
 	}
 
 	user, setCookies, err := s.Login(ctx, c.Cookies(), sessionOnlyFlag)
-	if sessionOnlyFlag {
+	if !sessionOnlyFlag {
 		for _, cookie := range setCookies {
 			c.SetCookie(cookie)
 		}
@@ -144,19 +145,14 @@ func (s *Session) Login(ctx context.Context, cookies []*http.Cookie, useSessionO
 	if sessionCookie == nil {
 		// リフレッシュトークンでログインを試みる
 		return s.loginWithRefresh(ctx, cookies, sessionOnlyFlag)
-
 	}
 
 	session, err := models.Sessions(
 		models.SessionWhere.ID.EQ(sessionCookie.Value),
 	).One(ctx, s.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		if sessionOnlyFlag {
-			return nil, []*http.Cookie{}, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
-		} else {
-			// リフレッシュトークンでログインを試みる
-			return s.loginWithRefresh(ctx, cookies, sessionOnlyFlag)
-		}
+		// リフレッシュトークンでログインを試みる
+		return s.loginWithRefresh(ctx, cookies, sessionOnlyFlag)
 	}
 	if err != nil {
 		return nil, []*http.Cookie{}, err
@@ -253,15 +249,27 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 		return nil, []*http.Cookie{}, err
 	}
 
+	// トランザクション貼る
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, []*http.Cookie{}, err
+	}
+
 	// 前のリフレッシュトークンは削除してしまう
-	if _, err := refresh.Delete(ctx, s.DB); err != nil {
+	if _, err := refresh.Delete(ctx, tx); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, []*http.Cookie{}, err
+		}
 		return nil, []*http.Cookie{}, err
 	}
 	// リフレッシュトークンにセッショントークンが紐付けられている場合は、セッショントークンを削除する
 	if refresh.SessionID.Valid {
 		if _, err := models.Sessions(
 			models.SessionWhere.ID.EQ(refresh.SessionID.String),
-		).DeleteAll(ctx, s.DB); err != nil {
+		).DeleteAll(ctx, tx); err != nil {
+			if err := tx.Rollback(); err != nil {
+				return nil, []*http.Cookie{}, err
+			}
 			return nil, []*http.Cookie{}, err
 		}
 	}
@@ -282,7 +290,10 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 
 		Period: time.Now().Add(s.SessionDBPeriod),
 	}
-	if err := newSession.Insert(ctx, s.DB, boil.Infer()); err != nil {
+	if err := newSession.Insert(ctx, tx, boil.Infer()); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, []*http.Cookie{}, err
+		}
 		return nil, []*http.Cookie{}, err
 	}
 	newRefresh := models.Refresh{
@@ -293,7 +304,17 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 
 		Period: time.Now().Add(s.RefreshDBPeriod),
 	}
-	if err := newRefresh.Insert(ctx, s.DB, boil.Infer()); err != nil {
+	if err := newRefresh.Insert(ctx, tx, boil.Infer()); err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, []*http.Cookie{}, err
+		}
+		return nil, []*http.Cookie{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		if err := tx.Rollback(); err != nil {
+			L.Error("tx error", zap.Error(err))
+		}
 		return nil, []*http.Cookie{}, err
 	}
 
@@ -618,12 +639,8 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 	if newRefreshCookie == nil {
 		return []*http.Cookie{}, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
 	}
-	// セッショントークンが無い場合はログインできない
-	if sessionCookie == nil {
-		return []*http.Cookie{}, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
-	}
 	// 変更先のユーザが現在ログインしているユーザと同じ場合は特に何もしない
-	if loggedInUser.Value == userID {
+	if loggedInUser != nil && loggedInUser.Value == userID {
 		return []*http.Cookie{}, nil
 	}
 
@@ -676,10 +693,12 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 		Value: userID,
 	})
 
-	if _, err := models.Sessions(
-		models.SessionWhere.ID.EQ(sessionCookie.Value),
-	).DeleteAll(ctx, s.DB); err != nil {
-		return []*http.Cookie{}, err
+	if sessionCookie != nil {
+		if _, err := models.Sessions(
+			models.SessionWhere.ID.EQ(sessionCookie.Value),
+		).DeleteAll(ctx, s.DB); err != nil {
+			return []*http.Cookie{}, err
+		}
 	}
 
 	newCookie = append(newCookie, &http.Cookie{

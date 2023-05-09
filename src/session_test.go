@@ -753,6 +753,41 @@ func TestSwitchAccount(t *testing.T) {
 		require.Len(t, newCookies, 0)
 	})
 
+	t.Run("成功: セッショントークンは存在しなくても問題ない", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1, &u2)
+
+		noSessionCookies := []*http.Cookie{}
+		for _, c := range cookies {
+			if c.Name != C.SessionCookie.Name {
+				noSessionCookies = append(noSessionCookies, c)
+			}
+		}
+
+		newCookies, err := s.SwitchAccount(ctx, noSessionCookies, string(u2.ID))
+		require.NoError(t, err)
+
+		var switchedLoginUser *http.Cookie = nil
+		var deletedSessionCookie *http.Cookie = nil
+		for _, c := range newCookies {
+			switch c.Name {
+			case C.LoginUserCookie.Name:
+				switchedLoginUser = c
+			case C.SessionCookie.Name:
+				deletedSessionCookie = c
+			}
+		}
+		require.NotNil(t, switchedLoginUser)
+		require.NotNil(t, switchedLoginUser.Value, u2.ID)
+		require.NotNil(t, deletedSessionCookie)
+		require.Equal(t, deletedSessionCookie.MaxAge, -1)
+	})
+
 	// 不正なユーザIDである場合はエラー
 	t.Run("失敗: ユーザIDのユーザが存在しない", func(t *testing.T) {
 		ctx := context.Background()
@@ -774,28 +809,6 @@ func TestSwitchAccount(t *testing.T) {
 		cookies := RegisterSession(t, ctx, &u1)
 
 		newCookies, err := s.SwitchAccount(ctx, cookies, string(u2.ID))
-		require.EqualError(t, err, "code=403, message=login failed, unique=8")
-
-		require.Len(t, newCookies, 0)
-	})
-
-	t.Run("失敗: セッショントークンは存在しない", func(t *testing.T) {
-		ctx := context.Background()
-		email1 := RandomEmail(t)
-		u1 := RegisterUser(t, ctx, email1)
-		email2 := RandomEmail(t)
-		u2 := RegisterUser(t, ctx, email2)
-
-		cookies := RegisterSession(t, ctx, &u1, &u2)
-
-		noSessionCookies := []*http.Cookie{}
-		for _, c := range cookies {
-			if c.Name != C.SessionCookie.Name {
-				noSessionCookies = append(noSessionCookies, c)
-			}
-		}
-
-		newCookies, err := s.SwitchAccount(ctx, noSessionCookies, string(u2.ID))
 		require.EqualError(t, err, "code=403, message=login failed, unique=8")
 
 		require.Len(t, newCookies, 0)

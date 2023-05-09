@@ -453,7 +453,7 @@ var TestConfig = &Config{
 	MailgunSecret:     "secret",
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 
-	SendMail: true,
+	SendMail: false,
 
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,

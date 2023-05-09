@@ -3,6 +3,8 @@ package src
 import (
 	"database/sql"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	goclienthints "github.com/cateiru/go-client-hints/v2"
@@ -35,7 +37,11 @@ func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 
 	var sender lib.SenderInterface = nil
 	if config.SendMail {
-		s, err := lib.NewSender(`templates/*`, config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
+		fullpath, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		s, err := lib.NewSender(filepath.Join(fullpath, `templates/*.html`), config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
 		if err != nil {
 			return nil, err
 		}
