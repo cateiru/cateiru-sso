@@ -140,7 +140,7 @@ var LocalConfig = &Config{
 		DBName:               "cateiru-sso",
 		User:                 "docker",
 		Passwd:               "docker",
-		Addr:                 "localhost:3306", // APIから接続するのでlocalhost
+		Addr:                 "db", // docker-composeで使うのでdbコンテナ
 		Net:                  "tcp",
 		ParseTime:            true,
 		Loc:                  time.FixedZone("Asia/Tokyo", 9*60*60),
@@ -271,7 +271,7 @@ var LocalConfig = &Config{
 		Value   string
 		IsValid bool
 	}{
-		Value:   "localhost:4443",
+		Value:   "gcs:4443",
 		IsValid: true,
 	},
 

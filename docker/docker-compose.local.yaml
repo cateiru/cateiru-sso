@@ -1,0 +1,48 @@
+# ローカルで実行するためのcompose設定ファイル
+# docker compose -f ./docker/docker-compose.db.yaml -f ./docker/docker-compose.local.yaml up
+# で実行してください。
+
+services:
+  backend_app:
+    container_name: backend_app
+    build:
+      context: ..
+      dockerfile_inline: |
+        FROM golang:1.20.4-alpine
+
+        RUN apk update && apk add --no-cache ca-certificates && update-ca-certificates
+        WORKDIR /app
+
+        RUN apk add openssh-client && mkdir /jwt && ssh-keygen -t rsa -f /jwt/jwt_key.rsa -N "" -m pem && ssh-keygen -f /jwt/jwt_key.rsa.pub -e -m pkcs8 > /jwt/jwt_key.rsa.pkcs8
+
+        COPY go.mod go.sum ./
+        RUN go mod download
+    ports:
+      - "8080:8080"
+    volumes:
+      - ..:/app
+    depends_on:
+      - db
+      - gcs
+    command: go run main.go
+  frontend_app:
+    container_name: frontend_app
+    build:
+      context: ..
+      dockerfile_inline: |
+        FROM node:alpine
+
+        WORKDIR /app
+
+        COPY package.json yarn.lock ./
+        RUN yarn --frozen-lockfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-https://localhost:8080}
+    volumes:
+      - ..:/app
+    depends_on:
+      - db
+      - gcs
+    command: yarn dev:ssl

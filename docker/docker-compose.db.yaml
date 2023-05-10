@@ -1,9 +1,6 @@
 # Google Cloud Datastoreをローカルで実行します
 #
-# docker-compose up -f docker-compose.db.yaml -d を使用してコンテナを実行してください
-
-version: "3"
-
+# docker compose -f ./docker/docker-compose.db.yaml up を使用してコンテナを実行してください
 services:
   db:
     image: mysql:8.0
@@ -16,9 +13,9 @@ services:
       TZ: 'Asia/Tokyo'
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ./db/.data:/var/lib/mysql
-      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
-      - ./db/sql:/docker-entrypoint-initdb.d
+      - ../db/.data:/var/lib/mysql
+      - ../db/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ../db/sql:/docker-entrypoint-initdb.d
     ports:
       - "127.0.0.1:3306:3306"
   gcs:
@@ -31,7 +28,7 @@ services:
     ports:
       - 4443:4443
     volumes:
-      - ./.data:/data/cateiru-sso:cached
-      - ./.data:/data/test-cateiru-sso:cached
-      - ./.storage:/storage
+      - ../.data:/data/cateiru-sso:cached
+      - ../.data:/data/test-cateiru-sso:cached
+      - ../.storage:/storage
     command: -scheme http -public-host ${STORAGE_URL:-localhost:4443}

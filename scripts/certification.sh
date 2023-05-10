@@ -5,7 +5,7 @@
 # `openssl`コマンドが必要です。`
 
 if [ -e certificates/*.key ]; then
-    echo "SSL用の鍵は作成済みです"
+    echo "TLS用の鍵は作成済みです"
     echo "新しく作成する場合は rm -rf certificates/tls.* を実行してください"
 else
     # create key

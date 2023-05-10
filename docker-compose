@@ -1,0 +1,7 @@
+#!/bin/bash
+# ローカル環境用
+# 使い方:
+# ./docker-compose up -d
+# -> https://localhost:3000 にアクセス
+
+docker compose -f ./docker/docker-compose.db.yaml -f ./docker/docker-compose.local.yaml $@
