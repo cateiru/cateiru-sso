@@ -11,6 +11,8 @@ services:
         FROM golang:1.20.4-alpine
 
         RUN apk update && apk add --no-cache ca-certificates && update-ca-certificates
+        RUN go install github.com/cosmtrek/air@latest
+
         WORKDIR /app
 
         RUN apk add openssh-client && mkdir /jwt && ssh-keygen -t rsa -f /jwt/jwt_key.rsa -N "" -m pem && ssh-keygen -f /jwt/jwt_key.rsa.pub -e -m pkcs8 > /jwt/jwt_key.rsa.pkcs8
@@ -20,11 +22,15 @@ services:
     ports:
       - "8080:8080"
     volumes:
+      # - ../src/:/app/src/
+      # - ../main.go:/app/main.go
+      # - ../.air.toml:/app/.air.toml
+      # - ../.env:/app/.env
       - ..:/app
     depends_on:
       - db
       - gcs
-    command: go run main.go
+    command: air -c .air.toml
   frontend_app:
     container_name: frontend_app
     build:

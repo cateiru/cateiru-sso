@@ -114,7 +114,7 @@ func (h *Handler) ParseUA(r *http.Request) (*UserData, error) {
 type SenderMock struct{}
 
 func (s *SenderMock) Send(m *lib.MailBody) (string, string, error) {
-	L.Info("send mail",
+	L.Debug("send mail",
 		zap.String("email_address", m.EmailAddress),
 		zap.String("subject", m.Subject),
 		zap.Any("data", m.Data),

@@ -23,6 +23,7 @@ Cateiru's Single Sign On
 ## Storybook, Test and Lint
 
 ```bash
+# DBは起動しておく
 ./script/docker-compose-db.sh up -d
 
 # Go
