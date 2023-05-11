@@ -40,7 +40,7 @@ export const RegisterAccount = () => {
     resetStep();
   }, []);
 
-  const C = () => {
+  const C = React.useCallback(() => {
     switch (activeStep) {
       case RegisterAccountStep.EmailInput:
         return (
@@ -88,7 +88,7 @@ export const RegisterAccount = () => {
         return <CompleteRegisterPage />;
     }
     return <></>;
-  };
+  }, [activeStep]);
 
   return (
     <Box h="80vh">

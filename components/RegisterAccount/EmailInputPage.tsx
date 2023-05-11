@@ -2,6 +2,7 @@ import {Box, useToast} from '@chakra-ui/react';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {CreateAccountRegisterEmailResponseSchema} from '../../utils/types/createAccount';
+import {Margin} from '../Common/Margin';
 import {useRequest} from '../Common/useRequest';
 import {type EmailForm, EmailInputForm} from './EmailInputForm';
 import {DefaultPageProps} from './RegisterAccount';
@@ -66,8 +67,8 @@ export const EmailInputPage: React.FC<Props> = props => {
   };
 
   return (
-    <Box w={{base: '95%', md: '600px'}} m="auto">
+    <Margin>
       <EmailInputForm onSubmit={onSubmit} />
-    </Box>
+    </Margin>
   );
 };

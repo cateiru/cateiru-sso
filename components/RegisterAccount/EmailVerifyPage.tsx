@@ -1,6 +1,7 @@
 import {Box, Text, VStack, useToast} from '@chakra-ui/react';
 import React from 'react';
 import {RegisterVerifyEmailResponseSchema} from '../../utils/types/createAccount';
+import {Margin} from '../Common/Margin';
 import {useRequest} from '../Common/useRequest';
 import {EmailResend} from './EmailResend';
 import {EmailVerifyForm} from './EmailVerifyForm';
@@ -70,9 +71,9 @@ export const EmailVerifyPage: React.FC<Props> = props => {
   };
 
   return (
-    <Box w={{base: '95%', md: '600px'}} m="auto">
+    <Margin>
       <VStack>
-        <Text mb="1rem">
+        <Text mb="1rem" textAlign="center">
           メールアドレスに送信された6桁のコードを入力してください
         </Text>
         <Box>
@@ -80,6 +81,6 @@ export const EmailVerifyPage: React.FC<Props> = props => {
         </Box>
         <EmailResend registerToken={props.registerToken} />
       </VStack>
-    </Box>
+    </Margin>
   );
 };

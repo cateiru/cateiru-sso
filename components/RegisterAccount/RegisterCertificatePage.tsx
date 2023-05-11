@@ -90,7 +90,7 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
   };
 
   return (
-    <Box w={{base: '95%', md: '600px'}} m="auto">
+    <Box w={{base: '95%', md: '600px'}} m="auto" mt="2rem">
       <Box>
         <Heading fontSize="1.5rem" textAlign="center">
           {certType === 'passkey' ? '生体認証' : 'パスワード'}
