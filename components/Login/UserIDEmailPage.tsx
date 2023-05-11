@@ -6,6 +6,7 @@ import {Margin} from '../Common/Margin';
 import {useRequest} from '../Common/useRequest';
 import {type DefaultPageProps, LoginStep} from './Login';
 import {UserIDEmailForm} from './UserIDEmailForm';
+import {useWebAuthn} from './useWebAuthn';
 
 interface Props extends DefaultPageProps {
   setLoginUser: (user: LoginUser) => void;
@@ -16,6 +17,8 @@ export const UserIDEmailPage: React.FC<Props> = props => {
   const {executeRecaptcha} = useGoogleReCaptcha();
   const {request} = useRequest('/v2/login/user');
   const toast = useToast();
+
+  const {isConditionSupported, onClickWebAuthn} = useWebAuthn();
 
   const onSubmit = async (data: UserIDEmailForm) => {
     if (!executeRecaptcha) {
@@ -49,18 +52,18 @@ export const UserIDEmailPage: React.FC<Props> = props => {
     if (res) {
       const data = LoginUserSchema.safeParse(await res.json());
       if (data.success) {
-        props.setLoginUser(data.data);
-
-        // passwordとpasskey両方登録している場合はどちらかを使用するか選択させる
-        // それ以外はそのままその認証方式のページに遷移する
-        if (data.data.available_passkey && data.data.available_password) {
-          props.setStep(LoginStep.SelectCertification);
-        } else if (data.data.available_passkey) {
-          props.setStep(LoginStep.WebAuthn);
-        } else if (data.data.available_password) {
+        if (data.data.available_password) {
+          props.setLoginUser(data.data);
           props.setStep(LoginStep.Password);
+          return;
         }
 
+        toast({
+          title: 'パスワードが設定されていません',
+          description:
+            '生体認証でログインする場合は、入力候補から選択してください',
+          status: 'error',
+        });
         return;
       }
     }
@@ -83,7 +86,11 @@ export const UserIDEmailPage: React.FC<Props> = props => {
         </Text>
         を入力
       </Text>
-      <UserIDEmailForm onSubmit={onSubmit} />
+      <UserIDEmailForm
+        onSubmit={onSubmit}
+        isConditionSupported={isConditionSupported}
+        onClickWebAuthn={onClickWebAuthn}
+      />
     </Margin>
   );
 };

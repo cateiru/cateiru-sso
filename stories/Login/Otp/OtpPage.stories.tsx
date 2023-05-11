@@ -1,10 +1,10 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {PasswordPage} from '../../../components/Login/PasswordPage';
+import {OtpPage} from '../../../components/Login/OtpPage';
 
-const meta: Meta<typeof PasswordPage> = {
-  title: 'CateiruSSO/Login/Password/Page',
-  component: PasswordPage,
+const meta: Meta<typeof OtpPage> = {
+  title: 'CateiruSSO/Login/Otp/Page',
+  component: OtpPage,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
@@ -12,7 +12,7 @@ const meta: Meta<typeof PasswordPage> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof PasswordPage>;
+type Story = StoryObj<typeof OtpPage>;
 
 export const Default: Story = {
   args: {
@@ -22,6 +22,7 @@ export const Default: Story = {
       available_passkey: false,
       available_password: true,
     },
+    otpToken: '123456',
   },
 };
 
@@ -33,5 +34,6 @@ export const Avatar: Story = {
       available_passkey: false,
       available_password: true,
     },
+    otpToken: '123456',
   },
 };

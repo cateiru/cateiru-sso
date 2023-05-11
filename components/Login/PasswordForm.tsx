@@ -33,6 +33,7 @@ export const PasswordForm: React.FC<Props> = ({onSubmit}) => {
         <InputGroup>
           <Input
             id="password"
+            autoComplete="current-password"
             type={show ? 'text' : 'password'}
             {...register('password', {
               required: 'パスワードを入力してください',

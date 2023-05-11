@@ -1,4 +1,10 @@
-import {Text, useToast} from '@chakra-ui/react';
+import {
+  Avatar,
+  Center,
+  Text,
+  useColorModeValue,
+  useToast,
+} from '@chakra-ui/react';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useSetRecoilState} from 'recoil';
@@ -17,6 +23,7 @@ interface Props extends DefaultPageProps {
 
 export const PasswordPage: React.FC<Props> = props => {
   const toast = useToast();
+  const accentColor = useColorModeValue('my.primary', 'my.secondary');
   const setUser = useSetRecoilState(UserState);
   const {executeRecaptcha} = useGoogleReCaptcha();
   const {request} = useRequest('/v2/login/password', {
@@ -92,8 +99,14 @@ export const PasswordPage: React.FC<Props> = props => {
 
   return (
     <Margin>
+      <Center mt="1rem">
+        <Avatar src={props.loginUser.avatar ?? ''} size="lg" />
+      </Center>
       <Text fontSize="1.5rem" fontWeight="bold" mb="1rem" textAlign="center">
-        パスワードを入力
+        <Text as="span" color={accentColor}>
+          パスワード
+        </Text>
+        を入力
       </Text>
       <PasswordForm onSubmit={onSubmit} />
     </Margin>

@@ -15,9 +15,15 @@ export interface UserIDEmailForm {
 
 interface Props {
   onSubmit: (data: UserIDEmailForm) => Promise<void>;
+  onClickWebAuthn: () => Promise<void>;
+  isConditionSupported: boolean;
 }
 
-export const UserIDEmailForm: React.FC<Props> = ({onSubmit}) => {
+export const UserIDEmailForm: React.FC<Props> = ({
+  onSubmit,
+  isConditionSupported,
+  onClickWebAuthn,
+}) => {
   const {
     handleSubmit,
     register,
@@ -30,6 +36,7 @@ export const UserIDEmailForm: React.FC<Props> = ({onSubmit}) => {
         <Input
           id="user_id_email"
           type="email text"
+          autoComplete="username webauthn"
           {...register('user_id_email', {
             required: 'この値は必須です',
             pattern: {
@@ -51,6 +58,11 @@ export const UserIDEmailForm: React.FC<Props> = ({onSubmit}) => {
       >
         ログイン
       </Button>
+      {isConditionSupported || (
+        <Button w="100%" mt="1rem" onClick={onClickWebAuthn}>
+          生体認証でログイン
+        </Button>
+      )}
     </form>
   );
 };

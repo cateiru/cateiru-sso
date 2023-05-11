@@ -69,6 +69,7 @@ export const RegisterPasswordForm: React.FC<Props> = props => {
         <InputGroup>
           <Input
             id="password"
+            autoComplete="new-password"
             type={show ? 'text' : 'password'}
             placeholder="パスワード"
             {...register('password', {
