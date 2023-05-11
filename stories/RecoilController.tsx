@@ -9,7 +9,7 @@ interface Props<T> {
   setValues: {key: string; value: T}[];
 }
 
-export const RecoilController = <T extends any>(props: Props<T>) => {
+export function RecoilController<T>(props: Props<T>) {
   const [state, setState] = useRecoilState(props.recoilState);
 
   const onDefault = () => {
@@ -29,6 +29,7 @@ export const RecoilController = <T extends any>(props: Props<T>) => {
                   setState(value.value);
                 }}
                 ml=".5rem"
+                key={value.key}
               >
                 Set {value.key}
               </Button>
@@ -39,4 +40,4 @@ export const RecoilController = <T extends any>(props: Props<T>) => {
       </Box>
     </>
   );
-};
+}
