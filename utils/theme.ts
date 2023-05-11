@@ -33,6 +33,16 @@ export const theme = extendTheme({
       },
     },
     Steps: StepsTheme,
+    Input: {
+      defaultProps: {
+        focusBorderColor: 'my.secondary',
+      },
+    },
+    PinInput: {
+      defaultProps: {
+        focusBorderColor: 'my.secondary',
+      },
+    },
   },
   colors: {
     cateiru: {
@@ -51,6 +61,11 @@ export const theme = extendTheme({
       300: '#CBD5E0',
       500: '#404663',
       600: '#343952',
+    },
+    my: {
+      primary: '#572bcf',
+      secondary: '#2bc4cf',
+      accent: '#cf2ba1',
     },
   },
   styles: {

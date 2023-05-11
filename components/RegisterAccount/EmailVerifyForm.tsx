@@ -50,12 +50,16 @@ export const EmailVerifyForm: React.FC<Props> = ({onSubmit}) => {
           }}
           value={value}
         >
-          <PinInputField />
-          <PinInputField ml=".5rem" />
-          <PinInputField ml=".5rem" />
-          <PinInputField ml=".5rem" />
-          <PinInputField ml=".5rem" />
-          <PinInputField ml=".5rem" />
+          {new Array(config.registerAccountEmailCodeLength)
+            .fill(0)
+            .map((_, i) => {
+              return (
+                <PinInputField
+                  ml={i !== 0 ? '.5rem' : undefined}
+                  key={`pin_input-${i}`}
+                />
+              );
+            })}
         </PinInput>
       )}
     </>
