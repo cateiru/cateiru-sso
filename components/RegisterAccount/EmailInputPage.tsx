@@ -1,4 +1,4 @@
-import {Box, useToast} from '@chakra-ui/react';
+import {useToast} from '@chakra-ui/react';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {CreateAccountRegisterEmailResponseSchema} from '../../utils/types/createAccount';

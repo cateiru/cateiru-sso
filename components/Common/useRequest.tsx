@@ -1,9 +1,14 @@
 import {useToast} from '@chakra-ui/react';
 import {api} from '../../utils/api';
-import {ErrorSchema, ErrorUniqueMessage} from '../../utils/types/error';
+import {
+  ErrorSchema,
+  ErrorType,
+  ErrorUniqueMessage,
+} from '../../utils/types/error';
 
 interface Options {
   errorCallback?: (message: string | undefined) => void;
+  customError?: (e: ErrorType) => void;
 }
 
 interface Returns {
@@ -19,6 +24,13 @@ export const useRequest = (path: string, options?: Options): Returns => {
 
       if (!res.ok) {
         const error = ErrorSchema.parse(await res.json());
+
+        // カスタムでエラーできる便利機能
+        if (options?.customError) {
+          options.customError(error);
+          return;
+        }
+
         const message = error.unique_code
           ? ErrorUniqueMessage[error.unique_code] ?? error.message
           : error.message;
