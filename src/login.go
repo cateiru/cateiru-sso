@@ -258,7 +258,7 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 
 	if !h.Password.VerifyPassword(password, p.Hash, p.Salt) {
-		return NewHTTPError(http.StatusForbidden, "invalid password")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "invalid password")
 	}
 
 	otpRegistered, err := models.Otps(

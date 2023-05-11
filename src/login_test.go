@@ -596,7 +596,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.LoginPasswordHandler(c)
-		require.EqualError(t, err, "code=403, message=invalid password")
+		require.EqualError(t, err, "code=403, message=invalid password, unique=8")
 	})
 
 	t.Run("失敗: reCAPTCHA失敗", func(t *testing.T) {
