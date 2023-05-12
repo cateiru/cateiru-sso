@@ -9,7 +9,10 @@ import {
   useColorModeValue,
   Tooltip,
   Skeleton,
+  Button,
+  Center,
 } from '@chakra-ui/react';
+import Link from 'next/link';
 import React from 'react';
 import {TbCheck} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
@@ -132,6 +135,11 @@ export const AccountList = () => {
           })}
         </Tbody>
       </Table>
+      <Center mt="1rem" mb="2rem">
+        <Button variant="link" as={Link} href="/login">
+          アカウントを追加
+        </Button>
+      </Center>
     </Box>
   );
 };

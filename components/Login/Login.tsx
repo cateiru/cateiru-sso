@@ -49,7 +49,7 @@ export const Login = () => {
   }, [step]);
 
   return (
-    <Box h="80vh">
+    <Box minH="80vh">
       <Heading textAlign="center" mt="3rem">
         ログイン
       </Heading>

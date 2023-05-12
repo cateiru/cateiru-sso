@@ -6,7 +6,10 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
+  Link,
+  useColorModeValue,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import {type LoginUser, LoginUserSchema} from '../../utils/types/login';
@@ -35,6 +38,8 @@ export const UserIDEmailForm: React.FC<Props> = ({
   isConditionSupported,
   onClickWebAuthn,
 }) => {
+  const buttonColor = useColorModeValue('gray.500', 'gray.400');
+
   const methods = useForm<UserIDEmailForm>();
   const {
     handleSubmit,
@@ -99,6 +104,9 @@ export const UserIDEmailForm: React.FC<Props> = ({
             </FormErrorMessage>
           </FormControl>
           <PasswordForm enableWebauthn />
+          <Link as={NextLink} href="/forget_password" color={buttonColor}>
+            パスワードを忘れましたか？
+          </Link>
           <Button
             mt="1rem"
             isLoading={isSubmitting}

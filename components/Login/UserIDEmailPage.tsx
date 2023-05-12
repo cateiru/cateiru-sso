@@ -1,4 +1,11 @@
-import {useToast} from '@chakra-ui/react';
+import {
+  Button,
+  Center,
+  Divider,
+  useColorModeValue,
+  useToast,
+} from '@chakra-ui/react';
+import Link from 'next/link';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useSetRecoilState} from 'recoil';
@@ -17,6 +24,8 @@ interface Props extends DefaultPageProps {
 }
 
 export const UserIDEmailPage: React.FC<Props> = props => {
+  const buttonColor = useColorModeValue('gray.500', 'gray.400');
+
   const setUser = useSetRecoilState(UserState);
   const {executeRecaptcha} = useGoogleReCaptcha();
   const toast = useToast();
@@ -109,6 +118,12 @@ export const UserIDEmailPage: React.FC<Props> = props => {
         isConditionSupported={isConditionSupported}
         onClickWebAuthn={onClickWebAuthn}
       />
+      <Divider my="1rem" />
+      <Center>
+        <Button variant="link" as={Link} href="/register" color={buttonColor}>
+          アカウントを作成
+        </Button>
+      </Center>
     </Margin>
   );
 };
