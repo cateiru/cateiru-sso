@@ -32,7 +32,6 @@ func TestLoginUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
-		form.Insert("recaptcha", "hogehoge")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
@@ -59,7 +58,6 @@ func TestLoginUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", user.UserName)
-		form.Insert("recaptcha", "hogehoge")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
@@ -90,7 +88,6 @@ func TestLoginUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
-		form.Insert("recaptcha", "hogehoge")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 
@@ -116,7 +113,6 @@ func TestLoginUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
-		form.Insert("recaptcha", "hogehoge")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
@@ -150,7 +146,6 @@ func TestLoginUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
-		form.Insert("recaptcha", "hogehoge")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
@@ -184,7 +179,6 @@ func TestLoginUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", email)
-		form.Insert("recaptcha", "hogehoge")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
@@ -213,7 +207,6 @@ func TestLoginUserHandler(t *testing.T) {
 	t.Run("失敗: username_or_emailが空", func(t *testing.T) {
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", "")
-		form.Insert("recaptcha", "hogehoge")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
@@ -232,7 +225,6 @@ func TestLoginUserHandler(t *testing.T) {
 	t.Run("失敗: username_or_emailの値が不正", func(t *testing.T) {
 		form := easy.NewMultipart()
 		form.Insert("username_or_email", "aaaa")
-		form.Insert("recaptcha", "hogehoge")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		userData := &src.UserData{
@@ -247,39 +239,6 @@ func TestLoginUserHandler(t *testing.T) {
 
 		err = h.LoginUserHandler(c)
 		require.EqualError(t, err, "code=400, message=user not found, unique=10")
-	})
-	t.Run("失敗: recaptchaが空", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
-
-		RegisterPassword(t, ctx, &user)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", user.UserName)
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-
-		c := m.Echo()
-
-		err = h.LoginUserHandler(c)
-		require.EqualError(t, err, "code=400, message=reCAPTCHA token is empty")
-	})
-	t.Run("失敗: reCAPTCHAチャレンジ失敗", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
-
-		RegisterPassword(t, ctx, &user)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", user.UserName)
-		form.Insert("recaptcha", "fail")
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-
-		c := m.Echo()
-
-		err = h.LoginUserHandler(c)
-		require.EqualError(t, err, "code=400, message=reCAPTCHA validation failed, unique=1")
 	})
 }
 
@@ -557,10 +516,15 @@ func TestLoginPasswordHandler(t *testing.T) {
 		require.Nil(t, response.User)
 
 		existOtpSession, err := models.OtpSessions(
-			models.OtpSessionWhere.ID.EQ(response.OTP),
+			models.OtpSessionWhere.ID.EQ(response.OTP.Token),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.True(t, existOtpSession)
+
+		require.Equal(t, response.OTP.LoginUser.Avatar, u.Avatar)
+		require.Equal(t, response.OTP.LoginUser.UserName, u.UserName)
+		require.Equal(t, response.OTP.LoginUser.AvailablePasskey, false)
+		require.Equal(t, response.OTP.LoginUser.AvailablePassword, true)
 	})
 
 	t.Run("失敗: パスワードが空", func(t *testing.T) {
@@ -630,7 +594,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.LoginPasswordHandler(c)
-		require.EqualError(t, err, "code=400, message=password not registered")
+		require.EqualError(t, err, "code=400, message=password not registered, unique=11")
 	})
 
 	t.Run("失敗: ユーザーが存在しない", func(t *testing.T) {
@@ -915,5 +879,40 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		err = h.LoginOTPHandler(c)
 		require.EqualError(t, err, "code=403, message=exceeded retry, unique=4")
+	})
+}
+
+func TestUserToLoginUser(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("LoginUser組み立てられる", func(t *testing.T) {
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &user)
+
+		loginUser, err := src.UserToLoginUser(ctx, DB, &user)
+		require.NoError(t, err)
+
+		require.Equal(t, loginUser.Avatar, user.Avatar)
+		require.Equal(t, loginUser.UserName, user.UserName)
+		require.Equal(t, loginUser.AvailablePasskey, false)
+		require.Equal(t, loginUser.AvailablePassword, true)
+	})
+
+	t.Run("passkey対応しているユーザー", func(t *testing.T) {
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &user)
+		RegisterPasskey(t, ctx, &user)
+
+		loginUser, err := src.UserToLoginUser(ctx, DB, &user)
+		require.NoError(t, err)
+
+		require.Equal(t, loginUser.Avatar, user.Avatar)
+		require.Equal(t, loginUser.UserName, user.UserName)
+		require.Equal(t, loginUser.AvailablePasskey, true)
+		require.Equal(t, loginUser.AvailablePassword, true)
 	})
 }

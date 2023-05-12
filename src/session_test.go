@@ -705,18 +705,23 @@ func TestSwitchAccount(t *testing.T) {
 
 		var switchedLoginUser *http.Cookie = nil
 		var deletedSessionCookie *http.Cookie = nil
+		var loginStateCookie *http.Cookie = nil
 		for _, c := range newCookies {
 			switch c.Name {
 			case C.LoginUserCookie.Name:
 				switchedLoginUser = c
 			case C.SessionCookie.Name:
 				deletedSessionCookie = c
+			case C.LoginStateCookie.Name:
+				loginStateCookie = c
 			}
 		}
 		require.NotNil(t, switchedLoginUser)
 		require.NotNil(t, switchedLoginUser.Value, u2.ID)
 		require.NotNil(t, deletedSessionCookie)
 		require.Equal(t, deletedSessionCookie.MaxAge, -1)
+
+		require.Nil(t, loginStateCookie)
 
 		// 現在のセッションは削除
 		existsSession, err := models.Sessions(
@@ -786,6 +791,54 @@ func TestSwitchAccount(t *testing.T) {
 		require.NotNil(t, switchedLoginUser.Value, u2.ID)
 		require.NotNil(t, deletedSessionCookie)
 		require.Equal(t, deletedSessionCookie.MaxAge, -1)
+	})
+
+	t.Run("成功: LoginStateがない場合はリフレッシュトークンと同じ有効期限で追加する", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+
+		cookies := RegisterSession(t, ctx, &u1)
+
+		noLoginStateCookies := []*http.Cookie{}
+		refreshCookieName := fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u1.ID)
+		for _, c := range cookies {
+			switch c.Name {
+			case refreshCookieName:
+				noLoginStateCookies = append(noLoginStateCookies, c)
+			}
+		}
+
+		newCookies, err := s.SwitchAccount(ctx, noLoginStateCookies, string(u1.ID))
+		require.NoError(t, err)
+
+		var switchedLoginUser *http.Cookie = nil
+		var deletedSessionCookie *http.Cookie = nil
+		var loginStateCookie *http.Cookie = nil
+		for _, c := range newCookies {
+			switch c.Name {
+			case C.LoginUserCookie.Name:
+				switchedLoginUser = c
+			case C.SessionCookie.Name:
+				deletedSessionCookie = c
+			case C.LoginStateCookie.Name:
+				loginStateCookie = c
+			}
+		}
+		require.NotNil(t, switchedLoginUser)
+		require.NotNil(t, switchedLoginUser.Value, u1.ID)
+		require.NotNil(t, loginStateCookie)
+		require.NotNil(t, deletedSessionCookie)
+		require.Equal(t, deletedSessionCookie.MaxAge, -1)
+
+		// LoginStateCookieの有効期限はDBのリフレッシュトークンの有効期限と同じ
+		refresh, err := models.Refreshes(
+			models.RefreshWhere.UserID.EQ(u1.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, loginStateCookie.Expires, refresh.Period)
+		require.Equal(t, loginStateCookie.MaxAge, int(time.Until(refresh.Period).Seconds()))
 	})
 
 	// 不正なユーザIDである場合はエラー

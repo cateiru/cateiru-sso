@@ -1,6 +1,7 @@
 package src
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net"
@@ -22,9 +23,14 @@ type LoginUser struct {
 	AvailablePassword bool        `json:"available_password"`
 }
 
+type OTP struct {
+	Token     string     `json:"token"`
+	LoginUser *LoginUser `json:"login_user"`
+}
+
 type LoginResponse struct {
 	User *models.User `json:"user,omitempty"`
-	OTP  string       `json:"otp,omitempty"`
+	OTP  *OTP         `json:"otp,omitempty"`
 }
 
 // ユーザの情報を返す
@@ -33,26 +39,9 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	userNameOrEmail := c.FormValue("username_or_email")
-	recaptcha := c.FormValue("recaptcha")
-	ip := c.RealIP()
 
 	if userNameOrEmail == "" {
 		return NewHTTPError(http.StatusBadRequest, "username_or_email is empty")
-	}
-	if recaptcha == "" {
-		return NewHTTPError(http.StatusBadRequest, "reCAPTCHA token is empty")
-	}
-
-	// reCAPTCHA
-	if h.C.UseReCaptcha {
-		order, err := h.ReCaptcha.ValidateOrder(recaptcha, ip)
-		if err != nil {
-			return err
-		}
-		// 検証に失敗した or スコアが閾値以下の場合はエラーにする
-		if !order.Success || order.Score < h.C.ReCaptchaAllowScore {
-			return NewHTTPUniqueError(http.StatusBadRequest, ErrReCaptcha, "reCAPTCHA validation failed")
-		}
 	}
 
 	user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
@@ -63,32 +52,11 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 		return err
 	}
 
-	availablePasskey, err := models.Webauthns(
-		models.WebauthnWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
+	loginUser, err := UserToLoginUser(ctx, h.DB, user)
 	if err != nil {
 		return err
 	}
 
-	// パスワードの設定
-	availablePassword, err := models.Passwords(
-		models.PasswordWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-
-	// PasskeyかPasswordかならずどちらかは存在するはず
-	if !availablePasskey && !availablePassword {
-		return NewHTTPError(http.StatusInternalServerError, "no certificate")
-	}
-
-	loginUser := &LoginUser{
-		Avatar:            user.Avatar,
-		UserName:          user.UserName,
-		AvailablePasskey:  availablePasskey,
-		AvailablePassword: availablePassword,
-	}
 	return c.JSON(http.StatusOK, loginUser)
 }
 
@@ -186,6 +154,7 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, LoginResponse{
 		User: user,
+		OTP:  nil,
 	})
 }
 
@@ -251,7 +220,7 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		models.PasswordWhere.UserID.EQ(user.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusBadRequest, "password not registered")
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "password not registered")
 	}
 	if err != nil {
 		return err
@@ -285,8 +254,17 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 			return err
 		}
 
+		loginUser, err := UserToLoginUser(ctx, h.DB, user)
+		if err != nil {
+			return err
+		}
+
 		return c.JSON(http.StatusOK, LoginResponse{
-			OTP: otpSessionToken,
+			OTP: &OTP{
+				Token:     otpSessionToken,
+				LoginUser: loginUser,
+			},
+			User: nil,
 		})
 	}
 
@@ -301,6 +279,7 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, LoginResponse{
 		User: user,
+		OTP:  nil,
 	})
 }
 
@@ -411,5 +390,37 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, LoginResponse{
 		User: user,
+		OTP:  nil,
 	})
+}
+
+// ユーザーからLoginUserを組み立てる
+func UserToLoginUser(ctx context.Context, db *sql.DB, user *models.User) (*LoginUser, error) {
+
+	availablePasskey, err := models.Webauthns(
+		models.WebauthnWhere.UserID.EQ(user.ID),
+	).Exists(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+
+	// パスワードの設定
+	availablePassword, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).Exists(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+
+	// PasskeyかPasswordかならずどちらかは存在するはず
+	if !availablePasskey && !availablePassword {
+		return nil, NewHTTPError(http.StatusInternalServerError, "no certificate")
+	}
+
+	return &LoginUser{
+		Avatar:            user.Avatar,
+		UserName:          user.UserName,
+		AvailablePasskey:  availablePasskey,
+		AvailablePassword: availablePassword,
+	}, nil
 }

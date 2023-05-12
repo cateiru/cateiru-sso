@@ -625,6 +625,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 	var newRefreshCookie *http.Cookie = nil
 	var sessionCookie *http.Cookie = nil
 	var loggedInUser *http.Cookie = nil
+	var loginStateCookie *http.Cookie = nil
 	for _, cookie := range cookies {
 		switch cookie.Name {
 		case newUserRefreshTokenName:
@@ -633,6 +634,8 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 			sessionCookie = cookie
 		case s.LoginUserCookie.Name:
 			loggedInUser = cookie
+		case s.LoginStateCookie.Name:
+			loginStateCookie = cookie
 		}
 	}
 	// 新規にログインするリフレッシュCookieが存在しないのでそもそもログインできない
@@ -692,6 +695,25 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 
 		Value: userID,
 	})
+
+	if loginStateCookie == nil {
+		S.Info(newRefreshCookie)
+		// LoginStateCookieがない場合はリフレッシュトークンと同じ有効期限で作成する
+		// DBの有効期限を使用する
+
+		maxAge := int(time.Until(refresh.Period).Seconds())
+		newCookie = append(newCookie, &http.Cookie{
+			Name:     s.LoginStateCookie.Name,
+			Secure:   s.LoginStateCookie.Secure,
+			HttpOnly: s.LoginStateCookie.HttpOnly,
+			Path:     s.LoginStateCookie.Path,
+			MaxAge:   maxAge,
+			Expires:  refresh.Period,
+			SameSite: s.LoginStateCookie.SameSite,
+
+			Value: "1", // 1 or null
+		})
+	}
 
 	if sessionCookie != nil {
 		if _, err := models.Sessions(
