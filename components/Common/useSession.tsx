@@ -15,6 +15,11 @@ export const useSession = () => {
   const router = useRouter();
 
   React.useEffect(() => {
+    // 検証用
+    if (config.mode === 'development') {
+      console.log('Session: ', user ? user.user.id : user);
+    }
+
     // 未ログイン
     if (typeof user === 'undefined') {
       const isLogin =

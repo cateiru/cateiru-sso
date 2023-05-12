@@ -11,6 +11,11 @@ export type LoginUser = z.infer<typeof LoginUserSchema>;
 
 export const LoginResponseSchema = z.object({
   user: UserSchema.optional(),
-  otp: z.string().optional(),
+  otp: z
+    .object({
+      token: z.string(),
+      login_user: LoginUserSchema,
+    })
+    .optional(),
 });
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;

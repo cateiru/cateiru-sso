@@ -1,15 +1,13 @@
 import {Box, Center, Heading} from '@chakra-ui/react';
 import React from 'react';
 import {LoginUser} from '../../utils/types/login';
+import {LoginSuccess} from './LoginSuccess';
 import {OtpPage} from './OtpPage';
-import {PasswordPage} from './PasswordPage';
 import {UserIDEmailPage} from './UserIDEmailPage';
 
 export enum LoginStep {
   UserIDEmail,
-  Password,
   OTP,
-  WebAuthn,
   CompleteLogin,
 }
 
@@ -33,20 +31,10 @@ export const Login = () => {
             setStep={setStep}
             setLoginUser={setLoginUser}
             reset={reset}
-          />
-        );
-      case LoginStep.Password:
-        if (!loginUser) throw new Error('loginUser is null');
-        return (
-          <PasswordPage
-            setStep={setStep}
-            reset={reset}
-            loginUser={loginUser}
             setOTPToken={setOtpToken}
           />
         );
       case LoginStep.OTP:
-        if (!loginUser) throw new Error('loginUser is null');
         return (
           <OtpPage
             setStep={setStep}
@@ -55,12 +43,8 @@ export const Login = () => {
             otpToken={otpToken}
           />
         );
-      case LoginStep.WebAuthn:
-        if (!loginUser) throw new Error('loginUser is null');
-        return <></>;
       case LoginStep.CompleteLogin:
-        if (!loginUser) throw new Error('loginUser is null');
-        return <></>;
+        return <LoginSuccess />;
     }
   }, [step]);
 

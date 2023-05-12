@@ -7,7 +7,7 @@ export interface OtpFormData {
 }
 
 interface Props {
-  onSubmit: (data: OtpFormData) => Promise<void>;
+  onSubmit: (data: OtpFormData, reset: () => void) => Promise<void>;
 }
 
 export const OtpForm: React.FC<Props> = props => {
@@ -17,6 +17,7 @@ export const OtpForm: React.FC<Props> = props => {
   const {
     handleSubmit,
     register,
+    reset,
     formState: {errors, isSubmitting},
   } = useForm<OtpFormData>();
 
@@ -28,8 +29,12 @@ export const OtpForm: React.FC<Props> = props => {
     }
   }, [otpForm]);
 
+  const onSubmitWrapper = async (data: OtpFormData) => {
+    await props.onSubmit(data, reset);
+  };
+
   return (
-    <form onSubmit={handleSubmit(props.onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmitWrapper)}>
       <FormControl isInvalid={!!errors.otp}>
         <Input
           id="otp"

@@ -6,17 +6,15 @@ import React from 'react';
 import {useRequest} from '../Common/useRequest';
 import {useToast} from '@chakra-ui/react';
 import {LoginResponseSchema} from '../../utils/types/login';
-import {useSetRecoilState} from 'recoil';
-import {UserState} from '../../utils/state/atom';
 import {useRouter} from 'next/router';
+import {User} from '../../utils/types/user';
 
 interface Returns {
   isConditionSupported: boolean;
   onClickWebAuthn: () => Promise<void>;
 }
 
-export const useWebAuthn = (): Returns => {
-  const setUser = useSetRecoilState(UserState);
+export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
   const router = useRouter();
   const toast = useToast();
 
@@ -76,10 +74,7 @@ export const useWebAuthn = (): Returns => {
 
       const data = LoginResponseSchema.safeParse(await resCredential.json());
       if (data.success && data.data.user) {
-        setUser({
-          user: data.data.user,
-        });
-        await router.push('/');
+        loginSuccess(data.data.user);
         return;
       }
 
@@ -129,10 +124,7 @@ export const useWebAuthn = (): Returns => {
 
     const data = LoginResponseSchema.safeParse(await resCredential.json());
     if (data.success && data.data.user) {
-      setUser({
-        user: data.data.user,
-      });
-      await router.push('/');
+      loginSuccess(data.data.user);
       return;
     }
 

@@ -17,7 +17,6 @@ export const Session: React.FC<Props> = props => {
 
   React.useEffect(() => {
     if (!router.isReady) return;
-    if (ok) return;
     if (typeof user === 'undefined') return;
 
     let url = props.redirectTo ?? '/';
@@ -31,7 +30,7 @@ export const Session: React.FC<Props> = props => {
     }
 
     setOk(true);
-  }, [router.isReady, ok, user]);
+  }, [router.isReady, user]);
 
   return <>{ok && props.children}</>;
 };

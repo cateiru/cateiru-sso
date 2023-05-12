@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:ssl": "HTTPS=true $(which node) ./server.js",
+    "dev:ssl": "NODE_ENV=development HTTPS=true $(which node) ./server.js",
     "build": "next build",
     "start": "next start",
     "lint": "gts lint",

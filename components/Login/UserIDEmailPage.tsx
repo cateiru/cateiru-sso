@@ -1,7 +1,10 @@
-import {Text, useColorModeValue, useToast} from '@chakra-ui/react';
+import {useToast} from '@chakra-ui/react';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
-import {LoginUser, LoginUserSchema} from '../../utils/types/login';
+import {useSetRecoilState} from 'recoil';
+import {UserState} from '../../utils/state/atom';
+import {ErrorUniqueMessage} from '../../utils/types/error';
+import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
 import {Margin} from '../Common/Margin';
 import {useRequest} from '../Common/useRequest';
 import {type DefaultPageProps, LoginStep} from './Login';
@@ -10,15 +13,44 @@ import {useWebAuthn} from './useWebAuthn';
 
 interface Props extends DefaultPageProps {
   setLoginUser: (user: LoginUser) => void;
+  setOTPToken: (token: string) => void;
 }
 
 export const UserIDEmailPage: React.FC<Props> = props => {
-  const accentColor = useColorModeValue('my.primary', 'my.secondary');
+  const setUser = useSetRecoilState(UserState);
   const {executeRecaptcha} = useGoogleReCaptcha();
-  const {request} = useRequest('/v2/login/user');
   const toast = useToast();
 
-  const {isConditionSupported, onClickWebAuthn} = useWebAuthn();
+  const {request} = useRequest('/v2/login/password', {
+    customError: e => {
+      const message = e.unique_code
+        ? ErrorUniqueMessage[e.unique_code] ?? e.message
+        : e.message;
+
+      toast({
+        title: message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+
+      if (e.unique_code !== 8) {
+        // パスワードが間違っている場合以外はリセット
+        props.reset();
+      }
+    },
+    errorCallback: () => {
+      props.reset();
+    },
+  });
+
+  const {isConditionSupported, onClickWebAuthn} = useWebAuthn(user => {
+    // ログインする
+    setUser({
+      user: user,
+    });
+    props.setStep(LoginStep.CompleteLogin);
+  });
 
   const onSubmit = async (data: UserIDEmailForm) => {
     if (!executeRecaptcha) {
@@ -31,6 +63,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
 
     const form = new FormData();
     form.append('username_or_email', data.user_id_email);
+    form.append('password', data.password);
 
     try {
       form.append('recaptcha', await executeRecaptcha());
@@ -50,42 +83,27 @@ export const UserIDEmailPage: React.FC<Props> = props => {
     });
 
     if (res) {
-      const data = LoginUserSchema.safeParse(await res.json());
-      if (data.success) {
-        if (data.data.available_password) {
-          props.setLoginUser(data.data);
-          props.setStep(LoginStep.Password);
-          return;
-        }
+      const data = LoginResponseSchema.safeParse(await res.json());
 
-        toast({
-          title: 'パスワードが設定されていません',
-          description:
-            '生体認証でログインする場合は、入力候補から選択してください',
-          status: 'error',
-        });
-        return;
+      if (data.success) {
+        if (data.data.user) {
+          // ログインする
+          setUser({
+            user: data.data.user,
+          });
+          props.setStep(LoginStep.CompleteLogin);
+        } else if (data.data.otp) {
+          // OTPの認証が必要な場合はOTPのページに遷移
+          props.setOTPToken(data.data.otp.token);
+          props.setLoginUser(data.data.otp.login_user);
+          props.setStep(LoginStep.OTP);
+        }
       }
     }
-
-    toast({
-      title: 'ログインに失敗しました',
-      status: 'error',
-    });
   };
 
   return (
     <Margin>
-      <Text fontSize="1.5rem" fontWeight="bold" mb="1rem" textAlign="center">
-        <Text as="span" color={accentColor}>
-          Email
-        </Text>
-        または、
-        <Text as="span" color={accentColor}>
-          ユーザーID
-        </Text>
-        を入力
-      </Text>
       <UserIDEmailForm
         onSubmit={onSubmit}
         isConditionSupported={isConditionSupported}
