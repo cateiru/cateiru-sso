@@ -37,3 +37,9 @@ export const UserAvatarSchema = z.object({
   avatar: z.string(),
 });
 export type UserAvatar = z.infer<typeof UserAvatarSchema>;
+
+export const UserUserName = z.object({
+  user_name: z.string(),
+  ok: z.boolean(),
+});
+export type UserUserName = z.infer<typeof UserUserName>;

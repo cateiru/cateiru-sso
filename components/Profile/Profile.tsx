@@ -1,7 +1,14 @@
-import {Center, Heading, Text, useColorModeValue} from '@chakra-ui/react';
+import {
+  Center,
+  Divider,
+  Heading,
+  Text,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {Margin} from '../Common/Margin';
+import {ProfileForm} from './ProfileForm';
 import {UpdateAvatar} from './UpdateAvatar';
 
 export const Profile = () => {
@@ -50,6 +57,8 @@ export const Profile = () => {
           &#064;{user?.user.user_name || '???'}
         </Text>
       )}
+      <Divider my="2rem" />
+      <ProfileForm />
     </Margin>
   );
 };

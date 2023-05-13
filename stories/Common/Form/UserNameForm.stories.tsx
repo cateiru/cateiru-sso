@@ -2,22 +2,22 @@ import type {Meta, StoryObj} from '@storybook/react';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import {
-  PasswordForm,
-  type PasswordFormData,
-} from '../../../components/Common/Form/PasswordForm';
+  UserNameForm,
+  UserNameFormData,
+} from '../../../components/Common/Form/UserNameForm';
 
-const Form: typeof PasswordForm = props => {
-  const methods = useForm<PasswordFormData>();
+const Form = () => {
+  const methods = useForm<UserNameFormData>();
 
   return (
     <FormProvider {...methods}>
-      <PasswordForm {...props} />
+      <UserNameForm />
     </FormProvider>
   );
 };
 
-const meta: Meta<typeof PasswordForm> = {
-  title: 'CateiruSSO/Common/Form/PasswordForm',
+const meta: Meta<typeof UserNameForm> = {
+  title: 'CateiruSSO/Common/Form/UserNameForm',
   component: Form,
   tags: ['autodocs'],
   parameters: {
@@ -26,6 +26,6 @@ const meta: Meta<typeof PasswordForm> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof PasswordForm>;
+type Story = StoryObj<typeof UserNameForm>;
 
 export const Default: Story = {};
