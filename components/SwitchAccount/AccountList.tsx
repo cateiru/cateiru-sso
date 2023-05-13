@@ -3,7 +3,6 @@ import {
   Tbody,
   Tr,
   Td,
-  Avatar,
   Text,
   Box,
   useColorModeValue,
@@ -21,6 +20,7 @@ import {UserState} from '../../utils/state/atom';
 import {accountUserFeather} from '../../utils/swr/featcher';
 import {AccountUserList} from '../../utils/types/account';
 import {ErrorType} from '../../utils/types/error';
+import {Avatar} from '../Common/Avatar';
 import {Error} from '../Common/Error/Error';
 import {useSwitchAccount} from './useSwitchAccount';
 
@@ -125,7 +125,7 @@ export const AccountList = () => {
                     whiteSpace="nowrap"
                     h="2rem"
                   >
-                    {account.user_name}
+                    @{account.user_name}
                   </Text>
                 </Td>
                 {isCurrentUser ? (

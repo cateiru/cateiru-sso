@@ -1,4 +1,4 @@
-import {Center, Text, useColorModeValue} from '@chakra-ui/react';
+import {Center, Heading, Text, useColorModeValue} from '@chakra-ui/react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {Margin} from '../Common/Margin';
@@ -10,6 +10,9 @@ export const Profile = () => {
 
   return (
     <Margin>
+      <Heading textAlign="center" mt="3rem">
+        My プロフィール
+      </Heading>
       <Center mt="3rem">
         <UpdateAvatar />
       </Center>

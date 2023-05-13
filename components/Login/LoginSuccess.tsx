@@ -33,7 +33,7 @@ export const LoginSuccess: React.FC = () => {
           router.replace(router.query.redirect_to);
         }
       } else {
-        router.replace('/');
+        router.push('/profile');
       }
     }, 2000);
 

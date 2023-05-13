@@ -159,7 +159,7 @@ var LocalConfig = &Config{
 	CorsConfig: &middleware.CORSConfig{
 		AllowOrigins:     []string{"https://localhost:3000", "https://localhost:6006"},
 		AllowHeaders:     []string{"*", "X-Register-Token", "Content-Type"},
-		AllowMethods:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowCredentials: true,
 	},
 

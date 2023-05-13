@@ -40,7 +40,7 @@ export const useSwitchAccount = (): Returns => {
             title: `ユーザー ${name} にログインしました`,
             status: 'success',
           });
-          await router.push('/');
+          await router.push('/profile');
         }, 500);
         return;
       }

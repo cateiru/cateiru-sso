@@ -30,7 +30,7 @@ export const CompleteRegisterPage = () => {
           router.replace(router.query.redirect_to);
         }
       } else {
-        router.replace('/');
+        router.push('/profile');
       }
     }, 2000);
 

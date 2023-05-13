@@ -1,14 +1,11 @@
-import {
-  Avatar,
-  Center,
-  Text,
-  useColorModeValue,
-  useToast,
-} from '@chakra-ui/react';
+import {Center, Text, useColorModeValue, useToast} from '@chakra-ui/react';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
+import {useSetRecoilState} from 'recoil';
+import {UserState} from '../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
+import {Avatar} from '../Common/Avatar';
 import {Margin} from '../Common/Margin';
 import {useRequest} from '../Common/useRequest';
 import {LoginStep, type DefaultPageProps} from './Login';
@@ -23,6 +20,7 @@ export const OtpPage: React.FC<Props> = props => {
   const descriptionTextColor = useColorModeValue('gray.500', 'gray.400');
   const accentColor = useColorModeValue('my.primary', 'my.secondary');
 
+  const setUser = useSetRecoilState(UserState);
   const {executeRecaptcha} = useGoogleReCaptcha();
   const toast = useToast();
 
@@ -85,7 +83,9 @@ export const OtpPage: React.FC<Props> = props => {
       if (data.success) {
         if (data.data.user) {
           // ログインする
-          props.setLoggedInUser(data.data.user);
+          setUser({
+            user: data.data.user,
+          });
           props.setStep(LoginStep.CompleteLogin);
           return;
         }

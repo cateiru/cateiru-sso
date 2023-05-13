@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Button,
   Flex,
   MenuButton,
@@ -11,6 +10,7 @@ import NextLink from 'next/link';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
+import {Avatar} from '../Avatar';
 import {ColorButton} from './ColorButton';
 import {Menu} from './Menu';
 
