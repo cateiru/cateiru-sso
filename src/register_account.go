@@ -67,14 +67,20 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	// セッションテーブルにEmailが存在しているか
 	// 有効期限が切れるまで同じメールアドレスでセッションを作れないようにする
 	// スパム防止のため
-	existsEmailInRegisterSession, err := models.RegisterSessions(
+	registerSession, err := models.RegisterSessions(
 		models.RegisterSessionWhere.Email.EQ(email),
-	).Exists(ctx, h.DB)
-	if err != nil {
+	).One(ctx, h.DB)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
-	if existsEmailInRegisterSession {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrSessionExists, "session exists")
+	if registerSession != nil {
+		if registerSession.Period.After(time.Now()) {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrSessionExists, "session exists")
+		}
+		// 有効期限が切れているので削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
 	}
 
 	// すでに登録されているメールアドレスの場合は登録できない（Emailがユニークなため）
