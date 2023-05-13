@@ -55,6 +55,51 @@ func TestSendEmailVerifyHandler(t *testing.T) {
 		require.NotNil(t, s.VerifyCode)
 	})
 
+	t.Run("すでにセッションテーブルにEmailが存在していても有効期限が切れている場合は成功する", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		// Emailのセッションを格納する
+		sessionDB := models.RegisterSession{
+			ID:         session,
+			Email:      email,
+			VerifyCode: "123456",
+
+			Period: time.Now().Add(-10 * time.Hour),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		// アクセスする
+		form := easy.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "123abc")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.SendEmailVerifyHandler(c)
+		require.NoError(t, err)
+
+		m.Ok(t)
+
+		resp := &src.RegisterEmailResponse{}
+		require.NoError(t, m.Json(resp))
+		require.NotNil(t, resp.Token)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.Email.EQ(email),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, s.ID, resp.Token)
+		require.Equal(t, s.RetryCount, uint8(0))
+		require.False(t, s.EmailVerified)
+		require.NotNil(t, s.VerifyCode)
+	})
+
 	t.Run("Emailが不正な形式の場合エラー", func(t *testing.T) {
 		email := "hogehoge124"
 
