@@ -1,9 +1,18 @@
-import {Avatar, Flex, Skeleton, Spacer, Text} from '@chakra-ui/react';
+import {
+  Avatar,
+  Button,
+  Flex,
+  MenuButton,
+  Skeleton,
+  Spacer,
+  Text,
+} from '@chakra-ui/react';
 import NextLink from 'next/link';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
 import {ColorButton} from './ColorButton';
+import {Menu} from './Menu';
 
 export const Header = React.memo(() => {
   const user = useRecoilValue(UserState);
@@ -17,7 +26,17 @@ export const Header = React.memo(() => {
       return (
         <>
           <ColorButton />
-          <Avatar src={user.user.avatar ?? ''} ml=".5rem" />
+          <Menu>
+            <MenuButton
+              as={Button}
+              variant="unstyled"
+              ml=".5rem"
+              h="48px"
+              borderRadius="50%"
+            >
+              <Avatar src={user.user.avatar ?? ''} />
+            </MenuButton>
+          </Menu>
         </>
       );
     }

@@ -1,7 +1,6 @@
 package src
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"net"
@@ -17,10 +16,7 @@ import (
 )
 
 type LoginUser struct {
-	Avatar            null.String `json:"avatar"`
-	UserName          string      `json:"user_name"`
-	AvailablePasskey  bool        `json:"available_passkey"`
-	AvailablePassword bool        `json:"available_password"`
+	Avatar null.String `json:"avatar"`
 }
 
 type OTP struct {
@@ -52,12 +48,9 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 		return err
 	}
 
-	loginUser, err := UserToLoginUser(ctx, h.DB, user)
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(http.StatusOK, loginUser)
+	return c.JSON(http.StatusOK, &LoginUser{
+		Avatar: user.Avatar,
+	})
 }
 
 // Passkeyでログインするために、Challengeなどを返す
@@ -220,7 +213,7 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		models.PasswordWhere.UserID.EQ(user.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "password not registered")
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrLoginFailed, "password not registered")
 	}
 	if err != nil {
 		return err
@@ -254,15 +247,12 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 			return err
 		}
 
-		loginUser, err := UserToLoginUser(ctx, h.DB, user)
-		if err != nil {
-			return err
-		}
-
 		return c.JSON(http.StatusOK, LoginResponse{
 			OTP: &OTP{
-				Token:     otpSessionToken,
-				LoginUser: loginUser,
+				Token: otpSessionToken,
+				LoginUser: &LoginUser{
+					Avatar: user.Avatar,
+				},
 			},
 			User: nil,
 		})
@@ -392,35 +382,4 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 		User: user,
 		OTP:  nil,
 	})
-}
-
-// ユーザーからLoginUserを組み立てる
-func UserToLoginUser(ctx context.Context, db *sql.DB, user *models.User) (*LoginUser, error) {
-
-	availablePasskey, err := models.Webauthns(
-		models.WebauthnWhere.UserID.EQ(user.ID),
-	).Exists(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-
-	// パスワードの設定
-	availablePassword, err := models.Passwords(
-		models.PasswordWhere.UserID.EQ(user.ID),
-	).Exists(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-
-	// PasskeyかPasswordかならずどちらかは存在するはず
-	if !availablePasskey && !availablePassword {
-		return nil, NewHTTPError(http.StatusInternalServerError, "no certificate")
-	}
-
-	return &LoginUser{
-		Avatar:            user.Avatar,
-		UserName:          user.UserName,
-		AvailablePasskey:  availablePasskey,
-		AvailablePassword: availablePassword,
-	}, nil
 }

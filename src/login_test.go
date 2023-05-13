@@ -44,11 +44,7 @@ func TestLoginUserHandler(t *testing.T) {
 		err = m.Json(&response)
 		require.NoError(t, err)
 
-		require.Equal(t, response.UserName, user.UserName)
 		require.False(t, response.Avatar.Valid)
-		require.Equal(t, response.UserName, user.UserName)
-		require.False(t, response.AvailablePasskey)
-		require.True(t, response.AvailablePassword)
 	})
 	t.Run("成功: ユーザ名", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -70,11 +66,7 @@ func TestLoginUserHandler(t *testing.T) {
 		err = m.Json(&response)
 		require.NoError(t, err)
 
-		require.Equal(t, response.UserName, user.UserName)
 		require.False(t, response.Avatar.Valid)
-		require.Equal(t, response.UserName, user.UserName)
-		require.False(t, response.AvailablePasskey)
-		require.True(t, response.AvailablePassword)
 	})
 	t.Run("成功: アバターあり", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -101,107 +93,6 @@ func TestLoginUserHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Equal(t, response.Avatar.String, "https://example.com/avatar")
-		require.Equal(t, response.UserName, user.UserName)
-		require.False(t, response.AvailablePasskey)
-		require.True(t, response.AvailablePassword)
-	})
-	t.Run("成功: passkey登録している", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
-
-		RegisterPasskey(t, ctx, &user)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", email)
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-		userData := &src.UserData{
-			Device:   "",
-			OS:       "Windows",
-			Browser:  "Brave", // 登録時はChrome
-			IsMobile: false,
-		}
-		SetUserData(t, m, userData)
-
-		c := m.Echo()
-
-		err = h.LoginUserHandler(c)
-		require.NoError(t, err)
-
-		response := src.LoginUser{}
-		err = m.Json(&response)
-		require.NoError(t, err)
-
-		require.False(t, response.Avatar.Valid)
-		require.Equal(t, response.UserName, user.UserName)
-		require.True(t, response.AvailablePasskey)
-		require.False(t, response.AvailablePassword)
-	})
-
-	t.Run("成功: passkey登録しているけどログインしたことないデバイス", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
-
-		RegisterPasskey(t, ctx, &user)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", email)
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-		userData := &src.UserData{
-			Browser:  "Safari",
-			OS:       "iOS",
-			Device:   "iPhone",
-			IsMobile: true,
-		}
-		SetUserData(t, m, userData)
-
-		c := m.Echo()
-
-		err = h.LoginUserHandler(c)
-		require.NoError(t, err)
-
-		response := src.LoginUser{}
-		err = m.Json(&response)
-		require.NoError(t, err)
-
-		require.False(t, response.Avatar.Valid)
-		require.Equal(t, response.UserName, user.UserName)
-		require.True(t, response.AvailablePasskey)
-		require.False(t, response.AvailablePassword)
-	})
-	t.Run("成功: passkeyとパスワードどっちも登録している", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
-
-		RegisterPasskey(t, ctx, &user)
-		RegisterPassword(t, ctx, &user)
-
-		form := easy.NewMultipart()
-		form.Insert("username_or_email", email)
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-		userData := &src.UserData{
-			Device:   "",
-			OS:       "Windows",
-			Browser:  "Brave", // 登録時はChrome
-			IsMobile: false,
-		}
-		SetUserData(t, m, userData)
-
-		c := m.Echo()
-
-		err = h.LoginUserHandler(c)
-		require.NoError(t, err)
-
-		response := src.LoginUser{}
-		err = m.Json(&response)
-		require.NoError(t, err)
-
-		require.False(t, response.Avatar.Valid)
-		require.Equal(t, response.UserName, user.UserName)
-		require.True(t, response.AvailablePasskey)
-		require.True(t, response.AvailablePassword)
 	})
 
 	t.Run("失敗: username_or_emailが空", func(t *testing.T) {
@@ -522,9 +413,6 @@ func TestLoginPasswordHandler(t *testing.T) {
 		require.True(t, existOtpSession)
 
 		require.Equal(t, response.OTP.LoginUser.Avatar, u.Avatar)
-		require.Equal(t, response.OTP.LoginUser.UserName, u.UserName)
-		require.Equal(t, response.OTP.LoginUser.AvailablePasskey, false)
-		require.Equal(t, response.OTP.LoginUser.AvailablePassword, true)
 	})
 
 	t.Run("失敗: パスワードが空", func(t *testing.T) {
@@ -594,7 +482,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.LoginPasswordHandler(c)
-		require.EqualError(t, err, "code=400, message=password not registered, unique=11")
+		require.EqualError(t, err, "code=400, message=password not registered, unique=8")
 	})
 
 	t.Run("失敗: ユーザーが存在しない", func(t *testing.T) {
@@ -879,40 +767,5 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		err = h.LoginOTPHandler(c)
 		require.EqualError(t, err, "code=403, message=exceeded retry, unique=4")
-	})
-}
-
-func TestUserToLoginUser(t *testing.T) {
-	ctx := context.Background()
-
-	t.Run("LoginUser組み立てられる", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
-
-		RegisterPassword(t, ctx, &user)
-
-		loginUser, err := src.UserToLoginUser(ctx, DB, &user)
-		require.NoError(t, err)
-
-		require.Equal(t, loginUser.Avatar, user.Avatar)
-		require.Equal(t, loginUser.UserName, user.UserName)
-		require.Equal(t, loginUser.AvailablePasskey, false)
-		require.Equal(t, loginUser.AvailablePassword, true)
-	})
-
-	t.Run("passkey対応しているユーザー", func(t *testing.T) {
-		email := RandomEmail(t)
-		user := RegisterUser(t, ctx, email)
-
-		RegisterPassword(t, ctx, &user)
-		RegisterPasskey(t, ctx, &user)
-
-		loginUser, err := src.UserToLoginUser(ctx, DB, &user)
-		require.NoError(t, err)
-
-		require.Equal(t, loginUser.Avatar, user.Avatar)
-		require.Equal(t, loginUser.UserName, user.UserName)
-		require.Equal(t, loginUser.AvailablePasskey, true)
-		require.Equal(t, loginUser.AvailablePassword, true)
 	})
 }

@@ -1,13 +1,12 @@
+import {useToast} from '@chakra-ui/react';
 import {
   get,
   parseRequestOptionsFromJSON,
 } from '@github/webauthn-json/browser-ponyfill';
 import React from 'react';
-import {useRequest} from '../Common/useRequest';
-import {useToast} from '@chakra-ui/react';
 import {LoginResponseSchema} from '../../utils/types/login';
-import {useRouter} from 'next/router';
 import {User} from '../../utils/types/user';
+import {useRequest} from '../Common/useRequest';
 
 interface Returns {
   isConditionSupported: boolean;
@@ -15,7 +14,6 @@ interface Returns {
 }
 
 export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
-  const router = useRouter();
   const toast = useToast();
 
   const [isConditionSupported, setIsConditionSupported] = React.useState(true);

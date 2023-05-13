@@ -14,9 +14,9 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import React from 'react';
-import {TbCheck} from 'react-icons/tb';
+import {TbCheck, TbUserPlus} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
-import useSWR from 'swr';
+import useSWR, {useSWRConfig} from 'swr';
 import {UserState} from '../../utils/state/atom';
 import {accountUserFeather} from '../../utils/swr/featcher';
 import {AccountUserList} from '../../utils/types/account';
@@ -29,10 +29,27 @@ export const AccountList = () => {
   const hoverColor = useColorModeValue('gray.100', 'gray.600');
 
   const user = useRecoilValue(UserState);
+  const [userState, setUserState] = React.useState(false);
+  const {mutate} = useSWRConfig();
   const {data, error} = useSWR<AccountUserList, ErrorType>(
-    '/',
+    '/v2/account/list',
     accountUserFeather
   );
+
+  React.useEffect(() => {
+    // ログイン状態 -> ログアウトしたときのみデータをパージする
+    if (user === null) {
+      if (userState) {
+        mutate(
+          key => typeof key === 'string' && key.startsWith('/v2/account/list'),
+          undefined,
+          {revalidate: true}
+        );
+      }
+    } else if (user) {
+      setUserState(true);
+    }
+  }, [user]);
 
   const {switch: s} = useSwitchAccount();
 
@@ -136,7 +153,12 @@ export const AccountList = () => {
         </Tbody>
       </Table>
       <Center mt="1rem" mb="2rem">
-        <Button variant="link" as={Link} href="/login">
+        <Button
+          variant="link"
+          as={Link}
+          href="/login"
+          leftIcon={<TbUserPlus size="24px" />}
+        >
           アカウントを追加
         </Button>
       </Center>
