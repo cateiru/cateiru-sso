@@ -94,6 +94,7 @@ type Config struct {
 	InternalBasicAuthPassword string
 
 	// CDNのホスト
+	UseCDN         bool
 	CDNHost        *url.URL
 	FastlyApiToken string
 
@@ -259,8 +260,10 @@ var LocalConfig = &Config{
 	InternalBasicAuthUserName: "user",
 	InternalBasicAuthPassword: "password",
 
+	UseCDN: false,
 	CDNHost: &url.URL{
-		Host:   "sso.cateiru.test:4443",
+		Host:   "localhost:4443",
+		Path:   "/cateiru-sso",
 		Scheme: "http",
 	},
 	FastlyApiToken: "token",
@@ -400,6 +403,7 @@ var CloudRunConfig = &Config{
 	InternalBasicAuthUserName: "user",
 	InternalBasicAuthPassword: "password",
 
+	UseCDN: true,
 	CDNHost: &url.URL{
 		Host:   "cdn.sso.cateiru.com",
 		Scheme: "https",
@@ -534,6 +538,7 @@ var TestConfig = &Config{
 	InternalBasicAuthUserName: "user",
 	InternalBasicAuthPassword: "password",
 
+	UseCDN: false,
 	CDNHost: &url.URL{
 		Host:   "localhost:4000",
 		Scheme: "http",

@@ -31,4 +31,4 @@ services:
       - ../.data:/data/cateiru-sso:cached
       - ../.data:/data/test-cateiru-sso:cached
       - ../.storage:/storage
-    command: -scheme http -public-host ${STORAGE_URL:-localhost:4443}
+    command: -scheme http -public-host localhost:4443

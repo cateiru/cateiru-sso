@@ -443,11 +443,17 @@ func (h *Handler) UserAvatarHandler(c echo.Context) error {
 		return err
 	}
 
+	// ローカル環境では /[bucket-name]/avatar/[image] となるので
+	p, err := url.JoinPath(h.C.CDNHost.Path, path)
+	if err != nil {
+		return err
+	}
+
 	// 画像URLはCDNをかますのでCDNのホストにする
 	url := &url.URL{
 		Scheme: h.C.CDNHost.Scheme,
 		Host:   h.C.CDNHost.Host,
-		Path:   path,
+		Path:   p,
 	}
 	// user更新（設定していない場合）
 	if !user.Avatar.Valid {
@@ -490,11 +496,17 @@ func (h *Handler) UserDeleteAvatarHandler(c echo.Context) error {
 		return err
 	}
 
+	// ローカル環境では /[bucket-name]/avatar/[image] となるので
+	p, err := url.JoinPath(h.C.CDNHost.Path, path)
+	if err != nil {
+		return err
+	}
+
 	// CDNをパージ
 	url := &url.URL{
 		Scheme: h.C.CDNHost.Scheme,
 		Host:   h.C.CDNHost.Host,
-		Path:   path,
+		Path:   p,
 	}
 	if err := h.CDN.Purge(url.String()); err != nil {
 		return err

@@ -58,9 +58,16 @@ func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 	session := NewSession(config, db)
 
 	storage := lib.NewCloudStorage(config.StorageBucketName)
-	cdn, err := lib.NewCDN(config.FastlyApiToken)
-	if err != nil {
-		return nil, err
+
+	var cdn lib.CDNInterface = nil
+	if config.UseCDN {
+		_cdn, err := lib.NewCDN(config.FastlyApiToken)
+		if err != nil {
+			return nil, err
+		}
+		cdn = _cdn
+	} else {
+		cdn = &CDNMock{}
 	}
 
 	return &Handler{
@@ -121,4 +128,21 @@ func (s *SenderMock) Send(m *lib.MailBody) (string, string, error) {
 	)
 
 	return "", "", nil
+}
+
+type CDNMock struct{}
+
+func (c *CDNMock) Purge(url string) error {
+	L.Debug("purge cdn",
+		zap.String("url", url),
+	)
+
+	return nil
+}
+func (c *CDNMock) SoftPurge(url string) error {
+	L.Debug("soft purge cdn",
+		zap.String("url", url),
+	)
+
+	return nil
 }

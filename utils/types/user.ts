@@ -32,3 +32,8 @@ export const UserMeSchema = z.object({
   setting: UserSettingSchema.optional(),
 });
 export type UserMe = z.infer<typeof UserMeSchema>;
+
+export const UserAvatarSchema = z.object({
+  avatar: z.string(),
+});
+export type UserAvatar = z.infer<typeof UserAvatarSchema>;
