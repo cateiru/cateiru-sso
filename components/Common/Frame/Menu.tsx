@@ -7,7 +7,7 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import React from 'react';
-import {TbLogout, TbSettings, TbUser, TbUsers} from 'react-icons/tb';
+import {TbHistory, TbLogout, TbSettings, TbUser, TbUsers} from 'react-icons/tb';
 import {useLogout} from '../useLogout';
 
 const fontSize = {base: '1.5rem', sm: '1rem'};
@@ -29,6 +29,15 @@ export const Menu: React.FC<{children: React.ReactNode}> = ({children}) => {
             h={height}
           >
             My プロフィール
+          </MenuItem>
+          <MenuItem
+            as={Link}
+            href="/histories"
+            icon={<TbHistory size="20px" />}
+            fontSize={fontSize}
+            h={height}
+          >
+            履歴
           </MenuItem>
           <MenuItem
             as={Link}

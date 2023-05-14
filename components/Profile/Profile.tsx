@@ -1,10 +1,14 @@
 import {
+  Box,
   Center,
   Divider,
   Heading,
+  IconButton,
   Text,
   useColorModeValue,
 } from '@chakra-ui/react';
+import Link from 'next/link';
+import {TbHistory, TbSettings} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {Margin} from '../Common/Margin';
@@ -57,8 +61,27 @@ export const Profile = () => {
           &#064;{user?.user.user_name || '???'}
         </Text>
       )}
-      <Divider my="2rem" />
-      <ProfileForm />
+      <Center mt="1rem">
+        <IconButton
+          aria-label="設定"
+          icon={<TbSettings size="25px" />}
+          borderRadius="50%"
+          as={Link}
+          href="/settings"
+          mr=".5rem"
+        />
+        <IconButton
+          aria-label="履歴"
+          icon={<TbHistory size="25px" />}
+          borderRadius="50%"
+          as={Link}
+          href="/histories"
+        />
+      </Center>
+      <Divider mb="2rem" mt="1rem" />
+      <Box mb="3rem">
+        <ProfileForm />
+      </Box>
     </Margin>
   );
 };
