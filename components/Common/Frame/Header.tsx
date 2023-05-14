@@ -31,10 +31,13 @@ export const Header = React.memo(() => {
               as={Button}
               variant="unstyled"
               ml=".5rem"
-              h="48px"
+              w="32px"
+              h="32px"
+              minW="32px"
+              minH="32px"
               borderRadius="50%"
             >
-              <Avatar src={user.user.avatar ?? ''} />
+              <Avatar src={user.user.avatar ?? ''} size="sm" />
             </MenuButton>
           </Menu>
         </>
@@ -43,8 +46,8 @@ export const Header = React.memo(() => {
 
     return (
       <>
-        <Skeleton w="40px" h="40px" borderRadius="15%" />
-        <Skeleton w="48px" h="48px" borderRadius="50%" ml=".5rem" />
+        <Skeleton w="25px" h="25px" borderRadius="15%" mr="1rem" />
+        <Skeleton w="32px" h="32px" borderRadius="50%" />
       </>
     );
   }, [user]);
