@@ -43,6 +43,11 @@ export const theme = extendTheme({
         focusBorderColor: 'my.secondary',
       },
     },
+    Select: {
+      defaultProps: {
+        focusBorderColor: 'my.secondary',
+      },
+    },
   },
   colors: {
     cateiru: {

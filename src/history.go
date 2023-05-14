@@ -286,8 +286,6 @@ func (h *Handler) HistoryLoginDeviceHandler(c echo.Context) error {
 		return err
 	}
 
-	S.Info(loginDevices)
-
 	formattedLoginDevices := []LoginDeviceResponse{}
 	for _, l := range loginDevices {
 		formattedLoginDevices = append(formattedLoginDevices, LoginDeviceResponse{
