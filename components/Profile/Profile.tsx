@@ -5,6 +5,7 @@ import {
   Heading,
   IconButton,
   Text,
+  Tooltip,
   useColorModeValue,
 } from '@chakra-ui/react';
 import Link from 'next/link';
@@ -63,21 +64,25 @@ export const Profile = () => {
         </Text>
       )}
       <Center mt="1rem">
-        <IconButton
-          aria-label="設定"
-          icon={<TbSettings size="25px" />}
-          borderRadius="50%"
-          as={Link}
-          href="/settings"
-          mr=".5rem"
-        />
-        <IconButton
-          aria-label="履歴"
-          icon={<TbHistory size="25px" />}
-          borderRadius="50%"
-          as={Link}
-          href="/histories"
-        />
+        <Tooltip label="設定" hasArrow borderRadius="7px">
+          <IconButton
+            aria-label="設定"
+            icon={<TbSettings size="25px" />}
+            borderRadius="50%"
+            as={Link}
+            href="/settings"
+            mr=".5rem"
+          />
+        </Tooltip>
+        <Tooltip label="履歴" hasArrow borderRadius="7px">
+          <IconButton
+            aria-label="履歴"
+            icon={<TbHistory size="25px" />}
+            borderRadius="50%"
+            as={Link}
+            href="/histories"
+          />
+        </Tooltip>
       </Center>
       <ProfileForm />
       <Divider my="2rem" />
