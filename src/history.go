@@ -3,6 +3,7 @@ package src
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -51,7 +52,9 @@ type LoginDeviceResponse struct {
 	IsMobile null.Bool   `json:"is_mobile"`
 	Ip       string      `json:"ip"`
 
-	Created time.Time `json:"time"`
+	IsCurrent bool `json:"is_current"`
+
+	Created time.Time `json:"created"`
 }
 
 type LoginTryHistoryResponse struct {
@@ -66,6 +69,11 @@ type LoginTryHistoryResponse struct {
 	Identifier int8 `json:"identifier"`
 
 	Created time.Time `json:"time"`
+}
+
+type LoginHistoriesSlice struct {
+	models.LoginHistory `boil:",bind"`
+	models.Refresh      `boil:",bind"`
 }
 
 // ログインしているSSOクライアント
@@ -231,37 +239,69 @@ func (h *Handler) HistoryLoginDeviceHandler(c echo.Context) error {
 		return err
 	}
 
-	// SELECT login_history.* FROM login_history
+	var refreshToken *http.Cookie
+	refreshTokenName := fmt.Sprintf("%s-%s", h.C.RefreshCookie.Name, u.ID)
+	for _, cookie := range c.Cookies() {
+		if cookie.Name == refreshTokenName {
+			refreshToken = cookie
+		}
+	}
+
+	var loginDevices []LoginHistoriesSlice
+	// SELECT login_history.*, refresh.* FROM login_history
 	// INNER JOIN refresh
 	//     on refresh.id = login_history.refresh_id
 	// WHERE login_history.user_id = ?
 	// AND refresh.period > NOW()
 	// ORDER BY login_history.created DESC
 	// LIMIT 50;
-	loginDevices, err := models.LoginHistories(
-		qm.Select("login_history.*"),
+	err = models.NewQuery(
+		qm.Select(
+			"login_history.id",
+			"login_history.user_id",
+			"login_history.refresh_id",
+			"login_history.device",
+			"login_history.os",
+			"login_history.browser",
+			"login_history.is_mobile",
+			"login_history.ip",
+			"login_history.created",
+
+			"refresh.id",
+			"refresh.user_id",
+			"refresh.history_id",
+			"refresh.session_id",
+			"refresh.period",
+			"refresh.created",
+			"refresh.modified",
+		),
+		qm.From("login_history"),
 		qm.InnerJoin("refresh ON refresh.history_id = login_history.refresh_id"),
 		qm.Where("login_history.user_id = ?", u.ID),
 		qm.And("refresh.period > NOW()"),
 		qm.OrderBy("login_history.created DESC"),
 		qm.Limit(50),
-	).All(ctx, h.DB)
+	).Bind(ctx, h.DB, &loginDevices)
 	if err != nil {
 		return err
 	}
 
+	S.Info(loginDevices)
+
 	formattedLoginDevices := []LoginDeviceResponse{}
 	for _, l := range loginDevices {
 		formattedLoginDevices = append(formattedLoginDevices, LoginDeviceResponse{
-			ID: l.ID,
+			ID: l.LoginHistory.ID,
 
-			Device:   l.Device,
-			OS:       l.Os,
-			Browser:  l.Browser,
-			IsMobile: l.IsMobile,
-			Ip:       net.IP.To16(l.IP).String(),
+			Device:   l.LoginHistory.Device,
+			OS:       l.LoginHistory.Os,
+			Browser:  l.LoginHistory.Browser,
+			IsMobile: l.LoginHistory.IsMobile,
+			Ip:       net.IP.To16(l.LoginHistory.IP).String(),
 
-			Created: l.Created,
+			IsCurrent: l.Refresh.ID == refreshToken.Value,
+
+			Created: l.LoginHistory.Created,
 		})
 	}
 
@@ -300,6 +340,8 @@ func (h *Handler) HistoryLoginHistoryHandler(c echo.Context) error {
 			Browser:  l.Browser,
 			IsMobile: l.IsMobile,
 			Ip:       net.IP.To16(l.IP).String(),
+
+			IsCurrent: false,
 
 			Created: l.Created,
 		})

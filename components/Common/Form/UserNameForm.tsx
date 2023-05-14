@@ -8,6 +8,7 @@ import {
   InputRightElement,
   Spinner,
   Tooltip,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {useFormContext} from 'react-hook-form';
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export const UserNameForm: React.FC<Props> = ({userName}) => {
+  const checkMarkColor = useColorModeValue('#68D391', '#38A169');
   const {
     register,
     clearErrors,
@@ -101,7 +103,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
           borderRadius="7px"
         >
           <InputRightElement>
-            <TbCheck size="30px" color="#38A169" />
+            <TbCheck size="30px" strokeWidth="3px" color={checkMarkColor} />
           </InputRightElement>
         </Tooltip>
       );
@@ -113,7 +115,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
         borderRadius="7px"
       >
         <InputRightElement>
-          <TbX size="30px" color="#E53E3E" />{' '}
+          <TbX size="30px" strokeWidth="3px" color="#E53E3E" />{' '}
         </InputRightElement>
       </Tooltip>
     );

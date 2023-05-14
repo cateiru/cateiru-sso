@@ -12,6 +12,7 @@ import {TbHistory, TbSettings} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {Margin} from '../Common/Margin';
+import {LoginDevice} from '../Histories/LoginDevice';
 import {ProfileForm} from './ProfileForm';
 import {UpdateAvatar} from './UpdateAvatar';
 
@@ -78,9 +79,13 @@ export const Profile = () => {
           href="/histories"
         />
       </Center>
-      <Divider mb="2rem" mt="1rem" />
+      <ProfileForm />
+      <Divider my="2rem" />
       <Box mb="3rem">
-        <ProfileForm />
+        <Text textAlign="center" mb="1rem" fontSize="1.2rem" fontWeight="bold">
+          ログインしているデバイス
+        </Text>
+        <LoginDevice />
       </Box>
     </Margin>
   );
