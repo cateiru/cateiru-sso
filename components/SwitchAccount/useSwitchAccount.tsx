@@ -20,6 +20,8 @@ export const useSwitchAccount = (): Returns => {
   const toast = useToast();
 
   const switchAccount = (id: string, name: string) => {
+    if (!router.isReady) return;
+
     const f = async () => {
       nProgress.start();
 
@@ -40,7 +42,17 @@ export const useSwitchAccount = (): Returns => {
             title: `ユーザー ${name} にログインしました`,
             status: 'success',
           });
-          await router.push('/profile');
+          const {redirect_to} = router.query;
+          if (typeof redirect_to === 'string') {
+            try {
+              const url = new URL(redirect_to);
+              router.push(url.pathname);
+            } catch {
+              router.push(redirect_to);
+            }
+          } else {
+            await router.push('/profile');
+          }
         }, 500);
         return;
       }
