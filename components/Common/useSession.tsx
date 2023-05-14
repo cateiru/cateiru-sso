@@ -41,6 +41,8 @@ export const useSession = () => {
             const parsedUserMe = UserMeSchema.safeParse(await res.json());
             if (parsedUserMe.success) {
               setUser(parsedUserMe.data);
+            } else {
+              console.error(parsedUserMe.error);
             }
           } else {
             const error = ErrorSchema.safeParse(await res.json());
@@ -62,6 +64,8 @@ export const useSession = () => {
                 duration: 9000,
                 isClosable: true,
               });
+            } else {
+              console.error(error.error);
             }
             setUser(null);
           }

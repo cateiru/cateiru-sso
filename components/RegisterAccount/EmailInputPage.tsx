@@ -62,6 +62,7 @@ export const EmailInputPage: React.FC<Props> = props => {
         props.nextStep();
         return;
       }
+      console.error(data.error);
     }
     props.setStatus('error');
   };

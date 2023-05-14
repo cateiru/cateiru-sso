@@ -71,10 +71,13 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
       if (!resCredential) return;
 
       const data = LoginResponseSchema.safeParse(await resCredential.json());
-      if (data.success && data.data.user) {
-        loginSuccess(data.data.user);
+      if (data.success) {
+        if (data.data.user) {
+          loginSuccess(data.data.user);
+        }
         return;
       }
+      console.error(data.error);
 
       toast({
         title: 'パースエラー',
@@ -121,10 +124,13 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
     if (!resCredential) return;
 
     const data = LoginResponseSchema.safeParse(await resCredential.json());
-    if (data.success && data.data.user) {
-      loginSuccess(data.data.user);
+    if (data.success) {
+      if (data.data.user) {
+        loginSuccess(data.data.user);
+      }
       return;
     }
+    console.error(data.error);
 
     toast({
       title: 'パースエラー',

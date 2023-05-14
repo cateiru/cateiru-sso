@@ -137,7 +137,10 @@ export const UpdateAvatar = () => {
                     return u;
                   });
                 }, 100);
+              } else {
+                console.error(data.error);
               }
+
               closeModal();
             }
           };

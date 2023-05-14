@@ -107,6 +107,8 @@ export const UserIDEmailPage: React.FC<Props> = props => {
           props.setLoginUser(data.data.otp.login_user);
           props.setStep(LoginStep.OTP);
         }
+      } else {
+        console.error(data.error);
       }
     }
   };

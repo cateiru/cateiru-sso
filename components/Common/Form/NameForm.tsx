@@ -23,9 +23,23 @@ export const NameForm: React.FC<Props> = props => {
   const {
     register,
     formState: {errors},
+    setValue,
   } = useFormContext<NameFormData>();
 
+  const [middleName, setMiddleName] = React.useState('');
   const [isMiddleName, setIsMiddleName] = React.useState(props.isMiddleName);
+
+  const onChange = (v: boolean) => {
+    if (v) {
+      if (middleName !== '') {
+        setValue('middle_name', middleName);
+      }
+    } else {
+      setValue('middle_name', undefined);
+    }
+
+    setIsMiddleName(v);
+  };
 
   return (
     <>
@@ -45,7 +59,9 @@ export const NameForm: React.FC<Props> = props => {
             <Input
               id="middle_name"
               autoComplete="additional-name"
-              {...register('middle_name')}
+              {...register('middle_name', {
+                onChange: v => setMiddleName(v.target.value),
+              })}
             />
           </FormControl>
         )}
@@ -70,7 +86,8 @@ export const NameForm: React.FC<Props> = props => {
         <Switch
           id="is_middle_name"
           colorScheme="cateiru"
-          onChange={v => setIsMiddleName(v.target.checked)}
+          isChecked={isMiddleName}
+          onChange={v => onChange(v.target.checked)}
         />
       </FormControl>
     </>

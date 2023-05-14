@@ -83,7 +83,7 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
   const afterRegister = async (res: Response) => {
     const data = UserSchema.safeParse(await res.json());
     if (!data.success) {
-      console.log(data);
+      console.error(data.error);
       props.setStatus('error');
       return;
     }

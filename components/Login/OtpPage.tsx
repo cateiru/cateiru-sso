@@ -89,6 +89,8 @@ export const OtpPage: React.FC<Props> = props => {
           props.setStep(LoginStep.CompleteLogin);
           return;
         }
+      } else {
+        console.error(data.error);
       }
 
       toast({

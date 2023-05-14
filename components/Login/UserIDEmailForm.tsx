@@ -69,6 +69,8 @@ export const UserIDEmailForm: React.FC<Props> = ({
       const data = LoginUserSchema.safeParse(await res.json());
       if (data.success) {
         setUser(data.data);
+      } else {
+        console.error(data.error);
       }
     };
     f();

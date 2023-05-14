@@ -74,6 +74,8 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
             message: 'このユーザー名は既に使用されています',
           });
         }
+      } else {
+        console.error(data.error);
       }
     }
 

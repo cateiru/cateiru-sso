@@ -40,6 +40,7 @@ export const EmailVerifyPage: React.FC<Props> = props => {
       );
 
       if (!result.success) {
+        console.error(result.error);
         return;
       }
 
