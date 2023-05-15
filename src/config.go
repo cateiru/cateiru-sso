@@ -567,7 +567,7 @@ var CloudRunStagingConfig = &Config{
 		Host:   "cdn.sso-staging.cateiru.com", // TODO
 		Scheme: "https",
 	},
-	FastlyApiToken: os.Getenv("FASTLY_API_TOKEN"),
+	FastlyApiToken: "token", // TODO: 本番は環境変数から取得する
 
 	StorageBucketName: "cateiru-sso",
 
