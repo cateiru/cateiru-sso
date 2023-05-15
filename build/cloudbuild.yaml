@@ -10,9 +10,9 @@ steps:
         '.',
         '-f',
         '${_DOCKERFILE_PATH}',
+        '--build-arg',
+        'MODE=${_MODE}',
       ]
-    env:
-      - 'MODE=${_MODE}'
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-docker-image'
     args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}']
