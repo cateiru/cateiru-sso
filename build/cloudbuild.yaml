@@ -11,6 +11,8 @@ steps:
         '-f',
         '${_DOCKERFILE_PATH}',
       ]
+    env:
+      - 'MODE=${_MODE}'
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-docker-image'
     args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}']
