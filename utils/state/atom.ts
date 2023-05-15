@@ -20,14 +20,19 @@ import {UserMe} from '../types/user';
 //     }
 //   };
 
+interface BroadcastMessage<T> {
+  id: string;
+  value: T;
+}
 const tabId = Math.random().toString(32).substring(2);
 const broadcastEffect =
   <T>(key: string): AtomEffect<T> =>
   ({setSelf, onSet}) => {
     const bc = new BroadcastChannel(key);
     bc.addEventListener('message', event => {
-      if (event.data.id !== tabId) {
-        setSelf(event.data.value);
+      const data: BroadcastMessage<T> = event.data;
+      if (data.id !== tabId) {
+        setSelf(data.value);
       }
     });
 
@@ -35,12 +40,12 @@ const broadcastEffect =
       bc.postMessage({
         id: tabId,
         value: newValue,
-      });
+      } as BroadcastMessage<T>);
     });
   };
 
 export const UserState = atom<UserMe | null | undefined>({
   key: 'User',
   default: undefined,
-  effects: [broadcastEffect('user')],
+  effects: [broadcastEffect<UserMe | null | undefined>('user')],
 });

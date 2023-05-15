@@ -1,4 +1,3 @@
-
 # based on: https://www.apps-gcp.com/deploy-go-app-to-cloud-run-by-cloud-build/
 steps:
   - name: 'gcr.io/cloud-builders/docker'
@@ -9,10 +8,33 @@ steps:
     args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}']
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'deploy-cloud-run'
-    args: ['beta', 'run', 'deploy', '${_SERVICE_NAME}', '--image', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}', '--region', '${_REGION}']
+    args:
+      [
+        'beta',
+        'run',
+        'deploy',
+        '${_SERVICE_NAME}',
+        '--image',
+        'gcr.io/$PROJECT_ID/${_SERVICE_NAME}',
+        '--region',
+        '${_REGION}',
+      ]
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'apply-member-role-cloud-run'
-    args: ['beta', 'run', 'services', 'add-iam-policy-binding', '${_SERVICE_NAME}', '--region', '${_REGION}', '--member', 'allUsers', '--role', 'roles/run.invoker']
+    args:
+      [
+        'beta',
+        'run',
+        'services',
+        'add-iam-policy-binding',
+        '${_SERVICE_NAME}',
+        '--region',
+        '${_REGION}',
+        '--member',
+        'allUsers',
+        '--role',
+        'roles/run.invoker',
+      ]
 substitutions:
   _REGION: asia-northeast1
   _SERVICE_NAME: cateiru-sso
