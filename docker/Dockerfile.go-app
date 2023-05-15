@@ -1,6 +1,8 @@
 FROM golang:alpine as builder
 
-RUN apk update && apk add --no-cache ca-certificates && update-ca-certificates
+ENV TZ=Asia/Tokyo
+RUN apk update && apk add --no-cache ca-certificates tzdata && update-ca-certificates
+
 WORKDIR /go/src
 
 # OIDCのJWTに使用する公開鍵と秘密鍵を作成する
@@ -25,8 +27,6 @@ COPY --from=builder /go/bin/main /app/main
 COPY --from=builder /jwt /jwt/
 
 COPY templates /templates/
-
-ENV TZ Asia/Tokyo
 
 EXPOSE 8080:8080
 
