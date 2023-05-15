@@ -19,6 +19,12 @@ func Init(mode string) {
 func Main(mode string) {
 	config := InitConfig(mode)
 
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		panic(err)
+	}
+	time.Local = jst
+
 	// CloudStorageのために環境変数を設定する
 	if config.StorageEmulatorHost.IsValid {
 		os.Setenv("STORAGE_EMULATOR_HOST", config.StorageEmulatorHost.Value)

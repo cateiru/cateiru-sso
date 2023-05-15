@@ -26,6 +26,8 @@ COPY --from=builder /jwt /jwt/
 
 COPY templates /templates/
 
+ENV TZ Asia/Tokyo
+
 EXPOSE 8080:8080
 
 ENTRYPOINT ["/app/main"]
