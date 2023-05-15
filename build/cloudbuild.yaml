@@ -7,6 +7,7 @@ steps:
         'build',
         '-t',
         'gcr.io/$PROJECT_ID/${_SERVICE_NAME}',
+        '-f',
         '${_DOCKERFILE_PATH}',
       ]
   - name: 'gcr.io/cloud-builders/docker'
