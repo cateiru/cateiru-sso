@@ -8,3 +8,9 @@ stories/
 
 # other
 scripts/
+
+.storage/
+db/
+.next/
+.swc/
+.data/

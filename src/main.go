@@ -10,6 +10,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 	"golang.org/x/net/http2"
+
+	_ "time/tzdata"
 )
 
 func Init(mode string) {
