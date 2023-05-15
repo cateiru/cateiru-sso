@@ -4,6 +4,7 @@ const withInterceptStdout = require('next-intercept-stdout');
 module.exports = withInterceptStdout(
   {
     reactStrictMode: true,
+    output: 'standalone',
   },
   text => (text.includes('Duplicate atom key') ? '' : text)
 );

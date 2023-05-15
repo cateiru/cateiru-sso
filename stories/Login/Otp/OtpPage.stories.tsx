@@ -17,10 +17,7 @@ type Story = StoryObj<typeof OtpPage>;
 export const Default: Story = {
   args: {
     loginUser: {
-      user_name: 'test',
       avatar: null,
-      available_passkey: false,
-      available_password: true,
     },
     otpToken: '123456',
   },
@@ -29,10 +26,7 @@ export const Default: Story = {
 export const Avatar: Story = {
   args: {
     loginUser: {
-      user_name: 'test',
       avatar: faker.image.avatar(),
-      available_passkey: false,
-      available_password: true,
     },
     otpToken: '123456',
   },
