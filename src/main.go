@@ -14,9 +14,11 @@ import (
 	_ "time/tzdata"
 )
 
-func Main(mode string) {
+func Init(mode string) {
 	InitLogging(mode)
+}
 
+func Main(mode string) {
 	config := InitConfig(mode)
 
 	jst, err := time.LoadLocation("Asia/Tokyo")

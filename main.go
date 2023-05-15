@@ -9,6 +9,10 @@ import "github.com/cateiru/cateiru-sso/src"
 //	go build  -ldflags="-X main.mode=prod"
 var mode string = "local"
 
+func init() {
+	src.Init(mode)
+}
+
 func main() {
 	// Run backend server
 	src.Main(mode)

@@ -49,8 +49,12 @@ func InitLogging(mode string) {
 		logConfig = zap.NewProductionConfig()
 		// Cloud Loggerに対応するための設定
 		logConfig.EncoderConfig = newProductionEncoderConfig()
+	case "cloudrun-staging":
+		logConfig = zap.NewProductionConfig()
+		// Cloud Loggerに対応するための設定
+		logConfig.EncoderConfig = newProductionEncoderConfig()
 	default:
-		return
+		break
 	}
 
 	logger, err := logConfig.Build()
