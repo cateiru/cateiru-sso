@@ -47,5 +47,6 @@ steps:
       ]
 substitutions:
   _REGION: asia-northeast1
+  _MODE: production
 images:
   - gcr.io/$PROJECT_ID/${_SERVICE_NAME}
