@@ -1,4 +1,4 @@
-import {atom} from 'recoil';
+import {type AtomEffect, atom} from 'recoil';
 import {UserMe} from '../types/user';
 
 // const localStorageEffect =
@@ -20,7 +20,27 @@ import {UserMe} from '../types/user';
 //     }
 //   };
 
+const tabId = Math.random().toString(32).substring(2);
+const broadcastEffect =
+  <T>(key: string): AtomEffect<T> =>
+  ({setSelf, onSet}) => {
+    const bc = new BroadcastChannel(key);
+    bc.addEventListener('message', event => {
+      if (event.data.id !== tabId) {
+        setSelf(event.data.value);
+      }
+    });
+
+    onSet(newValue => {
+      bc.postMessage({
+        id: tabId,
+        value: newValue,
+      });
+    });
+  };
+
 export const UserState = atom<UserMe | null | undefined>({
   key: 'User',
   default: undefined,
+  effects: [broadcastEffect('user')],
 });

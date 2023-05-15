@@ -33,8 +33,25 @@ export const ProfileForm = () => {
   const {
     handleSubmit,
     register,
+    setValue,
     formState: {errors, isSubmitting},
   } = methods;
+
+  React.useEffect(() => {
+    if (user) {
+      setValue('user_name', user.user.user_name);
+      setValue('family_name', user.user.family_name ?? undefined);
+      setValue('middle_name', user.user.middle_name ?? undefined);
+      setValue('given_name', user.user.given_name ?? undefined);
+      setValue('gender', user.user.gender);
+      setValue(
+        'birthdate',
+        user?.user.birthdate
+          ? format(new Date(user.user.birthdate), 'yyyy-MM-dd')
+          : undefined
+      );
+    }
+  }, [user]);
 
   return (
     <FormProvider {...methods}>
