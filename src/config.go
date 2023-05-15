@@ -1,6 +1,7 @@
 package src
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -290,7 +291,15 @@ var CloudRunConfig = &Config{
 	ReCaptchaSecret:     os.Getenv("RECAPTCHA_SECRET"),
 	ReCaptchaAllowScore: 50,
 
-	DatabaseConfig: &mysql.Config{},
+	DatabaseConfig: &mysql.Config{
+		DBName:               "cateirucom",
+		User:                 os.Getenv("DB_USER"),
+		Passwd:               os.Getenv("DB_PASSWORD"),
+		Addr:                 fmt.Sprintf("/cloudsql/%s", os.Getenv("INSTANCE_CONNECTION_NAME")),
+		Net:                  "unix",
+		ParseTime:            true,
+		AllowNativePasswords: true,
+	},
 
 	Host: &url.URL{
 		Host:   "api.sso.cateiru.com",
@@ -432,7 +441,15 @@ var CloudRunStagingConfig = &Config{
 	ReCaptchaSecret:     "secret",
 	ReCaptchaAllowScore: 50,
 
-	DatabaseConfig: &mysql.Config{},
+	DatabaseConfig: &mysql.Config{
+		DBName:               "cateirucom-staging",
+		User:                 os.Getenv("DB_USER"),
+		Passwd:               os.Getenv("DB_PASSWORD"),
+		Addr:                 fmt.Sprintf("/cloudsql/%s", os.Getenv("INSTANCE_CONNECTION_NAME")),
+		Net:                  "unix",
+		ParseTime:            true,
+		AllowNativePasswords: true,
+	},
 
 	Host: &url.URL{
 		Host:   "api.sso-staging.cateiru.com",
