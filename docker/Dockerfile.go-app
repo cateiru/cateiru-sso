@@ -13,7 +13,7 @@ RUN go mod download
 
 COPY . ./
 
-ENV MODE ${MODE}
+ARG MODE=${MODE}
 
 ARG CGO_ENABLED=0
 ARG GOOS=linux

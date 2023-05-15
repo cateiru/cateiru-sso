@@ -12,6 +12,7 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -719,6 +720,8 @@ var TestConfig = &Config{
 }
 
 func InitConfig(mode string) *Config {
+	L.Info("mode", zap.String("mode", mode))
+
 	switch mode {
 	case "test":
 		return TestConfig
