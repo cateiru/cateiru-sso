@@ -6,12 +6,12 @@ import {
   UserNameFormData,
 } from '../../../components/Common/Form/UserNameForm';
 
-const Form = () => {
+const Form: typeof UserNameForm = props => {
   const methods = useForm<UserNameFormData>();
 
   return (
     <FormProvider {...methods}>
-      <UserNameForm />
+      <UserNameForm {...props} />
     </FormProvider>
   );
 };
