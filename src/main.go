@@ -25,7 +25,7 @@ func Main(mode string) {
 	}
 
 	if err := Server(config); err != nil {
-		S.Fatal(err)
+		panic(err)
 	}
 }
 
