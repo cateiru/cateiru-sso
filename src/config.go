@@ -424,6 +424,148 @@ var CloudRunConfig = &Config{
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
 }
 
+var CloudRunStagingConfig = &Config{
+	Mode: "cloudrun-staging",
+
+	SelfSignedCert:      false,
+	UseReCaptcha:        false, // TODO: 本番はtrueにする
+	ReCaptchaSecret:     "secret",
+	ReCaptchaAllowScore: 50,
+
+	DatabaseConfig: &mysql.Config{},
+
+	Host: &url.URL{
+		Host:   "api.sso-staging.cateiru.com",
+		Scheme: "https",
+	},
+	SiteHost: &url.URL{
+		Host:   "sso-staging.cateiru.com",
+		Scheme: "https",
+	},
+
+	CorsConfig: &middleware.CORSConfig{
+		AllowOrigins: []string{"https://sso-staging.cateiru.com"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	},
+
+	FromDomain:        "m.cateiru.com",
+	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
+	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+
+	SendMail: false, // TODO: 本番はtrueにする
+
+	RegisterSessionPeriod:     10 * time.Minute,
+	RegisterSessionRetryLimit: 5,
+	RegisterEmailSendLimit:    3,
+
+	WebAuthnConfig: &webauthn.Config{
+		RPDisplayName: "Cateiru SSO",
+		RPID:          "sso-staging.cateiru.com",
+		RPOrigins:     []string{"sso-staging.cateiru.com", "api.sso-staging.cateiru.com"},
+		Timeouts: webauthn.TimeoutsConfig{
+			Login: webauthn.TimeoutConfig{
+				Enforce:    true,
+				Timeout:    time.Second * 60,
+				TimeoutUVD: time.Second * 60,
+			},
+			Registration: webauthn.TimeoutConfig{
+				Enforce:    true,
+				Timeout:    time.Second * 60,
+				TimeoutUVD: time.Second * 60,
+			},
+		},
+	},
+	WebAuthnSessionPeriod: 5 * time.Minute,
+	WebAuthnSessionCookie: CookieConfig{
+		Name:     "cateiru-sso-webauthn-session",
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   0,
+		SameSite: http.SameSiteDefaultMode,
+	},
+
+	SessionDBPeriod: 168 * time.Hour, // 7days
+	SessionCookie: CookieConfig{
+		Name:     "cateiru-sso-session",
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   604800, // 7days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	RefreshDBPeriod: 720 * time.Hour, // 30days
+	RefreshCookie: CookieConfig{
+		Name:     "cateiru-sso-refresh",
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	// 現在ログインしているセッション
+	LoginUserCookie: CookieConfig{
+		Name:     "cateiru-sso-users",
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+	// ログイン状態をJSで見れるようにするCookie
+	LoginStateCookie: CookieConfig{
+		Name:     "cateiru-sso-login-state",
+		Secure:   true,
+		HttpOnly: false,
+		Path:     "/",
+		MaxAge:   2592000, // 30days
+		SameSite: http.SameSiteDefaultMode,
+	},
+
+	Password: &lib.Password{
+		Time:    1,
+		Memory:  64 * 1024,
+		Threads: 4,
+		KeyLen:  32,
+	},
+
+	OTPSessionPeriod:         5 * time.Minute,
+	OTPRegisterSessionPeriod: 5 * time.Minute,
+	OTPRetryLimit:            5,
+	OTPRegisterLimit:         3,
+	OTPIssuer:                "CateiruSSO",
+	OTPBackupCount:           10,
+
+	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
+	ReregistrationPasswordSessionClearPeriod: 1 * time.Hour,
+
+	UpdateEmailSessionPeriod: 5 * time.Minute,
+	UpdateEmailRetryCount:    5,
+
+	InternalBasicAuthUserName: "user",
+	InternalBasicAuthPassword: "password",
+
+	UseCDN: false,
+	CDNHost: &url.URL{
+		Host:   "cdn.sso-staging.cateiru.com", // TODO
+		Scheme: "https",
+	},
+	FastlyApiToken: os.Getenv("FASTLY_API_TOKEN"),
+
+	StorageBucketName: "cateiru-sso",
+
+	StorageEmulatorHost: struct {
+		Value   string
+		IsValid bool
+	}{
+		Value:   "",
+		IsValid: false,
+	},
+
+	ClientSessionPeriod: 1 * time.Hour,  // 1hour
+	ClientRefreshPeriod: 24 * time.Hour, // 1days
+}
+
 var TestConfig = &Config{
 	Mode: "test",
 
@@ -567,6 +709,8 @@ func InitConfig(mode string) *Config {
 		return LocalConfig
 	case "cloudrun":
 		return CloudRunConfig
+	case "cloudrun-staging":
+		return CloudRunStagingConfig
 	default:
 		return TestConfig
 	}

@@ -11,9 +11,10 @@ import (
 
 func TestInitConfig(t *testing.T) {
 	modes := map[string]string{
-		"test":     "test",
-		"local":    "local",
-		"cloudrun": "cloudrun",
+		"test":             "test",
+		"local":            "local",
+		"cloudrun":         "cloudrun",
+		"cloudrun-staging": "cloudrun-staging",
 
 		// other
 		"hogehoge": "test",
@@ -32,6 +33,7 @@ func TestConfig(t *testing.T) {
 		src.LocalConfig,
 		src.TestConfig,
 		src.CloudRunConfig,
+		src.CloudRunStagingConfig,
 	}
 
 	for _, c := range configs {
