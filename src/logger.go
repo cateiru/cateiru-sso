@@ -1,6 +1,8 @@
 package src
 
 import (
+	"fmt"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -54,7 +56,7 @@ func InitLogging(mode string) {
 		// Cloud Loggerに対応するための設定
 		logConfig.EncoderConfig = newProductionEncoderConfig()
 	default:
-		break
+		panic(fmt.Sprintf("Unknown mode: %s", mode))
 	}
 
 	logger, err := logConfig.Build()
