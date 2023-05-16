@@ -52,7 +52,8 @@ func InitLogging(mode string) {
 		// Cloud Loggerに対応するための設定
 		logConfig.EncoderConfig = newProductionEncoderConfig()
 	case "cloudrun-staging":
-		logConfig = zap.NewProductionConfig()
+		// debugログも出したいので、DevelopmentConfigを使う
+		logConfig = zap.NewDevelopmentConfig()
 		// Cloud Loggerに対応するための設定
 		logConfig.EncoderConfig = newProductionEncoderConfig()
 	default:
