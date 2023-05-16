@@ -52,6 +52,10 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
       try {
         credential = await get(beginData);
       } catch (e) {
+        // シグナルがAbortされたらエラー出さないでReturn
+        if (abort.signal.aborted) return;
+
+        console.error(e);
         toast({
           title: 'WebAuthnエラー',
           status: 'error',
