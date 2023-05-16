@@ -440,7 +440,7 @@ var CloudRunStagingConfig = &Config{
 	Mode: "cloudrun-staging",
 
 	SelfSignedCert:      false,
-	UseReCaptcha:        false, // TODO: 本番はtrueにする
+	UseReCaptcha:        false, // NOTE: ステージングなのでfalse
 	ReCaptchaSecret:     "secret",
 	ReCaptchaAllowScore: 50,
 
@@ -474,14 +474,14 @@ var CloudRunStagingConfig = &Config{
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
 
-	SendMail: false, // TODO: 本番はtrueにする
+	SendMail: false, // NOTE: ステージングなのでfalse
 
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
 
 	WebAuthnConfig: &webauthn.Config{
-		RPDisplayName: "Cateiru SSO",
+		RPDisplayName: "Cateiru SSO Staging",
 		RPID:          "sso-staging.cateiru.com",
 		RPOrigins:     []string{"sso-staging.cateiru.com", "api.sso-staging.cateiru.com"},
 		Timeouts: webauthn.TimeoutsConfig{
@@ -555,7 +555,7 @@ var CloudRunStagingConfig = &Config{
 	OTPRegisterSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:            5,
 	OTPRegisterLimit:         3,
-	OTPIssuer:                "CateiruSSO",
+	OTPIssuer:                "CateiruSSO Staging",
 	OTPBackupCount:           10,
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
@@ -567,13 +567,13 @@ var CloudRunStagingConfig = &Config{
 	InternalBasicAuthUserName: "user",
 	InternalBasicAuthPassword: "password",
 
-	UseCDN: false,
+	UseCDN: false, // NOTE: ステージング環境はCloudStorageから直接
 	CDNHost: &url.URL{
 		Host:   "storage.googleapis.com",
 		Path:   "/cateiru-sso-staging",
 		Scheme: "https",
 	},
-	FastlyApiToken: "token", // ステージング環境はCloudStorageから直接
+	FastlyApiToken: "token", // NOTE: ステージング環境はCloudStorageから直接
 
 	StorageBucketName: "cateiru-sso-staging",
 
