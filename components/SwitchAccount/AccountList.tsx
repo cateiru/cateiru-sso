@@ -59,7 +59,7 @@ export const AccountList = () => {
 
   if (!data) {
     return (
-      <Box overflowY="auto" maxH="calc(100% - 100px)">
+      <Box overflowY="auto" maxH="calc(100% - 150px)">
         <Table variant="simple">
           <Tbody>
             <Tr>

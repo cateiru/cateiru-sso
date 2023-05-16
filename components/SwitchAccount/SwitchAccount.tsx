@@ -16,7 +16,12 @@ export const SwitchAccount = () => {
       mb={{base: '0', sm: '3rem'}}
     >
       <Box h="150px">
-        <Heading textAlign="center" pt="2rem" mx=".5rem">
+        <Heading
+          textAlign="center"
+          pt="40px"
+          mx=".5rem"
+          fontSize={{base: '1.5rem', sm: '1.8rem'}}
+        >
           ログインするアカウントを選択してください
         </Heading>
         <Divider mt="1.5rem" w="90%" mx="auto" />
