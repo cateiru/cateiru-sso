@@ -34,6 +34,7 @@ type RegisterSession struct {
 	SessionToken string
 	RefreshToken string
 	UserID       string
+	SiteHost     string
 }
 
 type Session struct {
@@ -43,6 +44,8 @@ type Session struct {
 	LoginStateCookie CookieConfig
 	SessionDBPeriod  time.Duration
 	RefreshDBPeriod  time.Duration
+
+	SiteHost string
 
 	DB *sql.DB
 }
@@ -56,6 +59,7 @@ func NewSession(c *Config, db *sql.DB) *Session {
 		SessionDBPeriod:  c.SessionDBPeriod,
 		RefreshDBPeriod:  c.RefreshDBPeriod,
 		DB:               db,
+		SiteHost:         c.SiteHost.Host,
 	}
 }
 
@@ -321,6 +325,7 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 	// 新しいCookie設定
 	newSessionCookie := &http.Cookie{
 		Name:     s.SessionCookie.Name,
+		Domain:   s.SiteHost,
 		Secure:   s.SessionCookie.Secure,
 		HttpOnly: s.SessionCookie.HttpOnly,
 		Path:     s.SessionCookie.Path,
@@ -332,6 +337,7 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 	}
 	newRefreshCookie := &http.Cookie{
 		Name:     refreshTokenName,
+		Domain:   s.SiteHost,
 		Secure:   s.RefreshCookie.Secure,
 		HttpOnly: s.RefreshCookie.HttpOnly,
 		Path:     s.RefreshCookie.Path,
@@ -343,6 +349,7 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 	}
 	newLoginUserCookie := &http.Cookie{
 		Name:     s.LoginUserCookie.Name,
+		Domain:   s.SiteHost,
 		Secure:   s.LoginUserCookie.Secure,
 		HttpOnly: s.LoginUserCookie.HttpOnly,
 		Path:     s.LoginUserCookie.Path,
@@ -354,6 +361,7 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 	}
 	newLoginStateCookie := &http.Cookie{
 		Name:     s.LoginStateCookie.Name,
+		Domain:   s.SiteHost,
 		Secure:   s.LoginStateCookie.Secure,
 		HttpOnly: s.LoginStateCookie.HttpOnly,
 		Path:     s.LoginStateCookie.Path,
@@ -421,6 +429,7 @@ func (s *Session) logoutC(ctx context.Context, cookies []*http.Cookie, refreshCo
 
 		deleteSetCookie = append(deleteSetCookie, &http.Cookie{
 			Name:     s.SessionCookie.Name,
+			Domain:   s.SiteHost,
 			Secure:   s.SessionCookie.Secure,
 			HttpOnly: s.SessionCookie.HttpOnly,
 			Path:     s.SessionCookie.Path,
@@ -441,6 +450,7 @@ func (s *Session) logoutC(ctx context.Context, cookies []*http.Cookie, refreshCo
 
 		deleteSetCookie = append(deleteSetCookie, &http.Cookie{
 			Name:     refreshCookieName,
+			Domain:   s.SiteHost,
 			Secure:   s.RefreshCookie.Secure,
 			HttpOnly: s.RefreshCookie.HttpOnly,
 			Path:     s.RefreshCookie.Path,
@@ -454,6 +464,7 @@ func (s *Session) logoutC(ctx context.Context, cookies []*http.Cookie, refreshCo
 	if loginUserCookie != nil {
 		deleteSetCookie = append(deleteSetCookie, &http.Cookie{
 			Name:     s.LoginUserCookie.Name,
+			Domain:   s.SiteHost,
 			Secure:   s.LoginUserCookie.Secure,
 			HttpOnly: s.LoginUserCookie.HttpOnly,
 			Path:     s.LoginUserCookie.Path,
@@ -467,6 +478,7 @@ func (s *Session) logoutC(ctx context.Context, cookies []*http.Cookie, refreshCo
 	if loginStateCookie != nil {
 		deleteSetCookie = append(deleteSetCookie, &http.Cookie{
 			Name:     s.LoginStateCookie.Name,
+			Domain:   s.SiteHost,
 			Secure:   s.LoginStateCookie.Secure,
 			HttpOnly: s.LoginStateCookie.HttpOnly,
 			Path:     s.LoginStateCookie.Path,
@@ -540,6 +552,7 @@ func (s *Session) NewRegisterSession(ctx context.Context, user *models.User, ua 
 		SessionToken: sessionToken,
 		RefreshToken: refreshToken,
 		UserID:       user.ID,
+		SiteHost:     s.SiteHost,
 	}, nil
 }
 
@@ -550,6 +563,7 @@ func (s *RegisterSession) InsertCookie(c *Config) []*http.Cookie {
 	// セッショントークン
 	sessionCookie := &http.Cookie{
 		Name:     c.SessionCookie.Name,
+		Domain:   s.SiteHost,
 		Secure:   c.SessionCookie.Secure,
 		HttpOnly: c.SessionCookie.HttpOnly,
 		Path:     c.SessionCookie.Path,
@@ -562,6 +576,7 @@ func (s *RegisterSession) InsertCookie(c *Config) []*http.Cookie {
 	// リフレッシュトークン
 	refreshCookie := &http.Cookie{
 		Name:     refreshCookieName,
+		Domain:   s.SiteHost,
 		Secure:   c.RefreshCookie.Secure,
 		HttpOnly: c.RefreshCookie.HttpOnly,
 		Path:     c.RefreshCookie.Path,
@@ -574,6 +589,7 @@ func (s *RegisterSession) InsertCookie(c *Config) []*http.Cookie {
 	// ログインしているユーザ
 	loginUserCookie := &http.Cookie{
 		Name:     c.LoginUserCookie.Name,
+		Domain:   s.SiteHost,
 		Secure:   c.LoginUserCookie.Secure,
 		HttpOnly: c.LoginUserCookie.HttpOnly,
 		Path:     c.LoginUserCookie.Path,
@@ -586,6 +602,7 @@ func (s *RegisterSession) InsertCookie(c *Config) []*http.Cookie {
 	// ログイン状態（JSで見るよう）
 	loginStateCookie := &http.Cookie{
 		Name:     c.LoginStateCookie.Name,
+		Domain:   s.SiteHost,
 		Secure:   c.LoginStateCookie.Secure,
 		HttpOnly: c.LoginStateCookie.HttpOnly,
 		Path:     c.LoginStateCookie.Path,
@@ -654,6 +671,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 	if errors.Is(err, sql.ErrNoRows) {
 		refreshCookie := &http.Cookie{
 			Name:     newUserRefreshTokenName,
+			Domain:   s.SiteHost,
 			Secure:   s.RefreshCookie.Secure,
 			HttpOnly: s.RefreshCookie.HttpOnly,
 			Path:     s.RefreshCookie.Path,
@@ -672,6 +690,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 	if string(refresh.UserID) != userID {
 		refreshCookie := &http.Cookie{
 			Name:     newUserRefreshTokenName,
+			Domain:   s.SiteHost,
 			Secure:   s.RefreshCookie.Secure,
 			HttpOnly: s.RefreshCookie.HttpOnly,
 			Path:     s.RefreshCookie.Path,
@@ -686,6 +705,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 
 	newCookie = append(newCookie, &http.Cookie{
 		Name:     s.LoginUserCookie.Name,
+		Domain:   s.SiteHost,
 		Secure:   s.LoginUserCookie.Secure,
 		HttpOnly: s.LoginUserCookie.HttpOnly,
 		Path:     s.LoginUserCookie.Path,
@@ -704,6 +724,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 		maxAge := int(time.Until(refresh.Period).Seconds())
 		newCookie = append(newCookie, &http.Cookie{
 			Name:     s.LoginStateCookie.Name,
+			Domain:   s.SiteHost,
 			Secure:   s.LoginStateCookie.Secure,
 			HttpOnly: s.LoginStateCookie.HttpOnly,
 			Path:     s.LoginStateCookie.Path,
@@ -725,6 +746,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 
 	newCookie = append(newCookie, &http.Cookie{
 		Name:     s.SessionCookie.Name,
+		Domain:   s.SiteHost,
 		Secure:   s.SessionCookie.Secure,
 		HttpOnly: s.SessionCookie.HttpOnly,
 		Path:     s.SessionCookie.Path,

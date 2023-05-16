@@ -457,7 +457,7 @@ func (h *Handler) RegisterBeginWebAuthnHandler(c echo.Context) error {
 		Name:     h.C.WebAuthnSessionCookie.Name,
 		Value:    webauthnSessionId,
 		Path:     h.C.WebAuthnSessionCookie.Path,
-		Domain:   h.C.Host.Host,
+		Domain:   h.C.SiteHost.Host,
 		Secure:   h.C.WebAuthnSessionCookie.Secure,
 		HttpOnly: h.C.WebAuthnSessionCookie.HttpOnly,
 		MaxAge:   h.C.WebAuthnSessionCookie.MaxAge,
