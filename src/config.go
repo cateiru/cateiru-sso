@@ -160,7 +160,7 @@ var LocalConfig = &Config{
 
 	CorsConfig: &middleware.CORSConfig{
 		AllowOrigins:     []string{"https://localhost:3000", "https://localhost:6006"},
-		AllowHeaders:     []string{"*", "X-Register-Token", "Content-Type"},
+		AllowHeaders:     []string{"*", "X-Register-Token", echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowCredentials: true,
 	},
@@ -312,8 +312,10 @@ var CloudRunConfig = &Config{
 	},
 
 	CorsConfig: &middleware.CORSConfig{
-		AllowOrigins: []string{"https://sso.cateiru.com"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowOrigins:     []string{"https://sso.cateiru.com"},
+		AllowHeaders:     []string{"*", "X-Register-Token", echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowCredentials: true,
 	},
 
 	FromDomain:        "m.cateiru.com",
@@ -462,8 +464,10 @@ var CloudRunStagingConfig = &Config{
 	},
 
 	CorsConfig: &middleware.CORSConfig{
-		AllowOrigins: []string{"https://sso-staging.cateiru.com"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowOrigins:     []string{"https://sso-staging.cateiru.com"},
+		AllowHeaders:     []string{"*", "X-Register-Token", echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowCredentials: true,
 	},
 
 	FromDomain:        "m.cateiru.com",
