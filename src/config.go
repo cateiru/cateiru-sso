@@ -18,9 +18,6 @@ import (
 type Config struct {
 	Mode string
 
-	// オレオレ証明書設定
-	SelfSignedCert bool
-
 	// reCAPTCHAを使用するかどうか
 	UseReCaptcha        bool
 	ReCaptchaSecret     string
@@ -133,7 +130,6 @@ type CookieConfig struct {
 var LocalConfig = &Config{
 	Mode: "local",
 
-	SelfSignedCert: true,
 	// ローカル環境はreCAPTCHA使わない
 	UseReCaptcha:        false,
 	ReCaptchaSecret:     "secret",
@@ -159,7 +155,7 @@ var LocalConfig = &Config{
 	},
 
 	CorsConfig: &middleware.CORSConfig{
-		AllowOrigins:     []string{"https://localhost:3000", "https://localhost:6006"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:6006"},
 		AllowHeaders:     []string{"*", "X-Register-Token", echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowCredentials: true,
@@ -178,7 +174,7 @@ var LocalConfig = &Config{
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO Local",
 		RPID:          "localhost",
-		RPOrigins:     []string{"https://localhost:3000"},
+		RPOrigins:     []string{"http://localhost:3000"},
 		Timeouts: webauthn.TimeoutsConfig{
 			Login: webauthn.TimeoutConfig{
 				Enforce:    true,
@@ -287,7 +283,6 @@ var LocalConfig = &Config{
 var CloudRunConfig = &Config{
 	Mode: "cloudrun",
 
-	SelfSignedCert:      false,
 	UseReCaptcha:        true,
 	ReCaptchaSecret:     os.Getenv("RECAPTCHA_SECRET"),
 	ReCaptchaAllowScore: 50,
@@ -439,7 +434,6 @@ var CloudRunConfig = &Config{
 var CloudRunStagingConfig = &Config{
 	Mode: "cloudrun-staging",
 
-	SelfSignedCert:      false,
 	UseReCaptcha:        false, // NOTE: ステージングなのでfalse
 	ReCaptchaSecret:     "secret",
 	ReCaptchaAllowScore: 50,
@@ -592,7 +586,6 @@ var CloudRunStagingConfig = &Config{
 var TestConfig = &Config{
 	Mode: "test",
 
-	SelfSignedCert:      false,
 	UseReCaptcha:        true, // mockするので問題なし
 	ReCaptchaSecret:     "secret",
 	ReCaptchaAllowScore: 50,

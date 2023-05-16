@@ -57,12 +57,6 @@ func Server(c *Config) error {
 	// APIのルート設定
 	Routes(e, handler, c)
 
-	// オレオレ証明書で実行する
-	// ローカル環境用
-	if c.SelfSignedCert {
-		return e.StartTLS(":8080", "./certificates/tls.crt", "./certificates/tls.key")
-	}
-
 	s := http2.Server{}
 
 	// Start a server

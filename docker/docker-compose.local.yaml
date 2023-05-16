@@ -45,10 +45,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-https://localhost:8080}
+      - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-http://localhost:8080}
     volumes:
       - ..:/app
     depends_on:
       - db
       - gcs
-    command: yarn dev:ssl
+    command: yarn dev

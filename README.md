@@ -11,13 +11,10 @@ Cateiru's Single Sign On
   - `NEXT_PUBLIC_RE_CAPTCHA`を設定しないとアカウント作成などができないことに注意してください。
 
 ```bash
-# TLS用の鍵を作成する
-./script/certification.sh
-
 ./docker-compose up
 
-# https://localhost:3000
-# （APIは https://localhost:8080 ）
+# http://localhost:3000
+# （APIは http://localhost:8080 ）
 ```
 
 ## Storybook, Test and Lint
