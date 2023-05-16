@@ -565,12 +565,13 @@ var CloudRunStagingConfig = &Config{
 
 	UseCDN: false,
 	CDNHost: &url.URL{
-		Host:   "cdn.sso-staging.cateiru.com", // TODO
+		Host:   "storage.googleapis.com",
+		Path:   "/cateiru-sso-staging",
 		Scheme: "https",
 	},
-	FastlyApiToken: "token", // TODO: 本番は環境変数から取得する
+	FastlyApiToken: "token", // ステージング環境はCloudStorageから直接
 
-	StorageBucketName: "cateiru-sso",
+	StorageBucketName: "cateiru-sso-staging",
 
 	StorageEmulatorHost: struct {
 		Value   string
