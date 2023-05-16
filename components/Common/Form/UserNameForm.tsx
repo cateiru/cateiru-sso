@@ -44,8 +44,6 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
     },
   });
 
-  const onSubmit = async () => {};
-
   const onBlur = async () => {
     if (name === '' || name === userName) {
       setOk(null);
@@ -132,6 +130,10 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
           autoComplete="username"
           {...register('user_name', {
             required: 'ユーザー名は必須です',
+            pattern: {
+              value: /^[a-zA-Z0-9_]+$/,
+              message: "ユーザー名は半角英数字と'_'のみ使用できます",
+            },
             onChange: e => {
               setName(e.target.value);
               clearErrors('user_name');
