@@ -11,7 +11,7 @@ steps:
         '-f',
         '${_DOCKERFILE_PATH}',
         '--build-arg',
-        'MODE=${_MODE}',
+        '${_ARGS}',
       ]
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-docker-image'
@@ -47,6 +47,5 @@ steps:
       ]
 substitutions:
   _REGION: asia-northeast1
-  _MODE: production
 images:
   - gcr.io/$PROJECT_ID/${_SERVICE_NAME}
