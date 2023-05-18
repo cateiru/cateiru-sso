@@ -9,6 +9,7 @@ import {
 import NextLink from 'next/link';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
+import {config} from '../../../utils/config';
 import {UserState} from '../../../utils/state/atom';
 import {Avatar} from '../Avatar';
 import {Logo} from '../Icons/Logo';
@@ -64,7 +65,7 @@ export const Header = React.memo(() => {
     >
       <NextLink href="/">
         <Flex alignItems="center">
-          <Logo size={40} />
+          <Logo size="40px" />
           <Text
             fontWeight="bold"
             ml=".5rem"
@@ -72,7 +73,7 @@ export const Header = React.memo(() => {
             background="linear-gradient(124deg, #2bc4cf, #572bcf, #cf2ba1)"
             backgroundClip="text"
           >
-            CateiruSSO
+            {config.title}
           </Text>
         </Flex>
       </NextLink>

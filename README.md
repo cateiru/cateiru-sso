@@ -53,6 +53,9 @@ NEXT_PUBLIC_RE_CAPTCHA=[token]
 # GAのトークン
 NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=[token]
 
+# ステージング環境などの場合に設定します
+NEXT_PUBLIC_PUBLICATION_TYPE=[publication type]
+
 # reCAPTCHAのシークレット
 # ローカル、テストではreCAPTCHAは使用しないので空でOK
 RECAPTCHA_SECRET=[secret]

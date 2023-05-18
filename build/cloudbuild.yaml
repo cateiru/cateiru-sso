@@ -18,6 +18,8 @@ steps:
         'NEXT_PUBLIC_RE_CAPTCHA=${_NEXT_PUBLIC_RE_CAPTCHA}',
         '--build-arg',
         'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${_NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}',
+        '--build-arg',
+        'NEXT_PUBLIC_PUBLICATION_TYPE=${_NEXT_PUBLIC_PUBLICATION_TYPE}',
       ]
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-docker-image'

@@ -7,18 +7,6 @@ import React from 'react';
 //  * W. https://svgartista.net
 //  **************************************************/
 
-// @keyframes animate-svg-stroke-1 {
-//   0% {
-//     stroke-dashoffset: 2810.565673828125px;
-//     stroke-dasharray: 2810.565673828125px;
-//   }
-
-//   100% {
-//     stroke-dashoffset: 0;
-//     stroke-dasharray: 2810.565673828125px;
-//   }
-// }
-
 const animateSvgStroke1 = keyframes`
   0% {
     stroke-dashoffset: 2810.565673828125px;
@@ -30,23 +18,6 @@ const animateSvgStroke1 = keyframes`
     stroke-dasharray: 2810.565673828125px;
   }
 `;
-
-// .svg-elem-1 {
-//   -webkit-animation: animate-svg-stroke-1 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0s both;
-//           animation: animate-svg-stroke-1 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0s both;
-// }
-
-// @keyframes animate-svg-stroke-2 {
-//   0% {
-//     stroke-dashoffset: 1404.71923828125px;
-//     stroke-dasharray: 1404.71923828125px;
-//   }
-
-//   100% {
-//     stroke-dashoffset: 0;
-//     stroke-dasharray: 1404.71923828125px;
-//   }
-// }
 
 const animateSvgStroke2 = keyframes`
   0% {
@@ -60,23 +31,6 @@ const animateSvgStroke2 = keyframes`
   }
 `;
 
-// .svg-elem-2 {
-//   -webkit-animation: animate-svg-stroke-2 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0.12s both;
-//           animation: animate-svg-stroke-2 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0.12s both;
-// }
-
-// @keyframes animate-svg-stroke-3 {
-//   0% {
-//     stroke-dashoffset: 1404.7193603515625px;
-//     stroke-dasharray: 1404.7193603515625px;
-//   }
-
-//   100% {
-//     stroke-dashoffset: 0;
-//     stroke-dasharray: 1404.7193603515625px;
-//   }
-// }
-
 const animateSvgStroke3 = keyframes`
   0% {
     stroke-dashoffset: 1404.7193603515625px;
@@ -88,23 +42,6 @@ const animateSvgStroke3 = keyframes`
     stroke-dasharray: 1404.7193603515625px;
   }
 `;
-
-// .svg-elem-3 {
-//   -webkit-animation: animate-svg-stroke-3 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0.24s both;
-//           animation: animate-svg-stroke-3 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0.24s both;
-// }
-
-// @keyframes animate-svg-stroke-4 {
-//   0% {
-//     stroke-dashoffset: 1056.8255615234375px;
-//     stroke-dasharray: 1056.8255615234375px;
-//   }
-
-//   100% {
-//     stroke-dashoffset: 0;
-//     stroke-dasharray: 1056.8255615234375px;
-//   }
-// }
 
 const animateSvgStroke4 = keyframes`
   0% {
@@ -118,23 +55,6 @@ const animateSvgStroke4 = keyframes`
   }
 `;
 
-// .svg-elem-4 {
-//   -webkit-animation: animate-svg-stroke-4 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0.36s both;
-//           animation: animate-svg-stroke-4 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0.36s both;
-// }
-
-// @keyframes animate-svg-stroke-5 {
-//   0% {
-//     stroke-dashoffset: 134.4873809814453px;
-//     stroke-dasharray: 134.4873809814453px;
-//   }
-
-//   100% {
-//     stroke-dashoffset: 0;
-//     stroke-dasharray: 134.4873809814453px;
-//   }
-// }
-
 const animateSvgStroke5 = keyframes`
   0% {
     stroke-dashoffset: 134.4873809814453px;
@@ -147,7 +67,7 @@ const animateSvgStroke5 = keyframes`
   }
 `;
 
-export const Logo: React.FC<{size: number}> = ({size = 300}) => {
+export const Logo: React.FC<{size: string}> = ({size = '300px'}) => {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
@@ -183,7 +103,6 @@ export const Logo: React.FC<{size: number}> = ({size = 300}) => {
         strokeOpacity=".9"
         strokeWidth="50"
         d="M68 80h340c18 0 33 15 33 34v256c0 19-15 34-33 34H68c-19 0-34-15-34-34V114c0-19 15-34 34-34zm36 28h340c19 0 34 15 34 34v256c0 19-15 34-34 34H104c-18 0-33-15-33-34V142c0-19 15-34 33-34z"
-        className="svg-elem-1"
         animation={
           prefersReducedMotion
             ? undefined
@@ -198,7 +117,6 @@ export const Logo: React.FC<{size: number}> = ({size = 300}) => {
         y="108"
         fill="#e8e8e8"
         ry="33.4"
-        className="svg-elem-2"
         animation={
           prefersReducedMotion
             ? undefined
@@ -213,7 +131,6 @@ export const Logo: React.FC<{size: number}> = ({size = 300}) => {
         y="80"
         fill="url(#b)"
         ry="33.4"
-        className="svg-elem-3"
         animation={
           prefersReducedMotion
             ? undefined
@@ -224,7 +141,6 @@ export const Logo: React.FC<{size: number}> = ({size = 300}) => {
         as="path"
         fill="#e8e8e8"
         d="M218 218h37l57 206H163Zm90 16a70 70 0 0 1-70 70 70 70 0 0 1-71-70 70 70 0 0 1 71-70 70 70 0 0 1 70 70z"
-        className="svg-elem-4"
         animation={
           prefersReducedMotion
             ? undefined
@@ -238,7 +154,6 @@ export const Logo: React.FC<{size: number}> = ({size = 300}) => {
         strokeDashoffset="1"
         strokeWidth="20"
         d="m299 105-21 39m59-9-34 28m59 17-43 10"
-        className="svg-elem-5"
         animation={
           prefersReducedMotion
             ? undefined
