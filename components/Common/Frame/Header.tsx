@@ -11,6 +11,7 @@ import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
 import {Avatar} from '../Avatar';
+import {Logo} from '../Icons/Logo';
 import {ColorButton} from './ColorButton';
 import {Menu} from './Menu';
 
@@ -53,11 +54,27 @@ export const Header = React.memo(() => {
   }, [user]);
 
   return (
-    <Flex as="header" w="100%" h="60px" alignItems="center" pr=".5rem">
+    <Flex
+      as="header"
+      w="100%"
+      h="60px"
+      alignItems="center"
+      pr=".5rem"
+      pl=".5rem"
+    >
       <NextLink href="/">
-        <Text pl="1rem" fontSize="1.5rem" fontWeight="bold">
-          たいとる
-        </Text>
+        <Flex alignItems="center">
+          <Logo size={40} />
+          <Text
+            fontWeight="bold"
+            ml=".5rem"
+            fontSize="1.3rem"
+            background="linear-gradient(124deg, #2bc4cf, #572bcf, #cf2ba1)"
+            backgroundClip="text"
+          >
+            CateiruSSO
+          </Text>
+        </Flex>
       </NextLink>
       <Spacer />
       <HeaderTools />
