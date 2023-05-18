@@ -6,7 +6,9 @@ export const Top = () => {
   return (
     <Center h="100vh">
       <Box>
-        <Logo size="600px" />
+        <Center>
+          <Logo size="50%" />
+        </Center>
         <Heading
           textAlign="center"
           background="linear-gradient(124deg, #2bc4cf, #572bcf, #cf2ba1)"

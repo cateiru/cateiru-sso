@@ -71,7 +71,8 @@ export const Logo: React.FC<{size: string}> = ({size = '300px'}) => {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
-    <svg
+    <Box
+      as="svg"
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 512 512"
@@ -160,6 +161,6 @@ export const Logo: React.FC<{size: string}> = ({size = '300px'}) => {
             : `${animateSvgStroke5} 1s cubic-bezier(0.55, 0.055, 0.675, 0.19) 0.48s both`
         }
       ></Box>
-    </svg>
+    </Box>
   );
 };

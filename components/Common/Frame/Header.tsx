@@ -1,19 +1,10 @@
-import {
-  Button,
-  Flex,
-  MenuButton,
-  Skeleton,
-  Spacer,
-  Text,
-} from '@chakra-ui/react';
-import NextLink from 'next/link';
+import {Button, Flex, MenuButton, Skeleton, Spacer} from '@chakra-ui/react';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
-import {config} from '../../../utils/config';
 import {UserState} from '../../../utils/state/atom';
 import {Avatar} from '../Avatar';
-import {Logo} from '../Icons/Logo';
 import {ColorButton} from './ColorButton';
+import {HeaderTitle} from './HeaderTitle';
 import {Menu} from './Menu';
 
 export const Header = React.memo(() => {
@@ -63,20 +54,7 @@ export const Header = React.memo(() => {
       pr=".5rem"
       pl=".5rem"
     >
-      <NextLink href="/">
-        <Flex alignItems="center">
-          <Logo size="40px" />
-          <Text
-            fontWeight="bold"
-            ml=".5rem"
-            fontSize="1.3rem"
-            background="linear-gradient(124deg, #2bc4cf, #572bcf, #cf2ba1)"
-            backgroundClip="text"
-          >
-            {config.title}
-          </Text>
-        </Flex>
-      </NextLink>
+      <HeaderTitle />
       <Spacer />
       <HeaderTools />
     </Flex>

@@ -1,5 +1,4 @@
 import {Box, Divider, Link, Text} from '@chakra-ui/react';
-import NextLink from 'next/link';
 
 export const Footer = () => {
   return (
@@ -9,11 +8,9 @@ export const Footer = () => {
       </Box>
       <Text textAlign="center" mb="1.5rem">
         &copy; {new Date().getFullYear()}{' '}
-        <NextLink href="/">
-          <Text as="span" _hover={{borderBottom: '1px'}}>
-            cateiru
-          </Text>
-        </NextLink>{' '}
+        <Link href="https://cateiru.com" isExternal>
+          cateiru
+        </Link>{' '}
         -{' '}
         <Link href="https://github.com/cateiru/cateiru-sso" isExternal>
           GitHub
