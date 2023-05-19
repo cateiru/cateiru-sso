@@ -326,7 +326,7 @@ var CloudRunConfig = &Config{
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO",
 		RPID:          "sso.cateiru.com",
-		RPOrigins:     []string{"sso.cateiru.com", "api.sso.cateiru.com"},
+		RPOrigins:     []string{"https://sso.cateiru.com", "https://api.sso.cateiru.com"},
 		Timeouts: webauthn.TimeoutsConfig{
 			Login: webauthn.TimeoutConfig{
 				Enforce:    true,
@@ -477,7 +477,7 @@ var CloudRunStagingConfig = &Config{
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO Staging",
 		RPID:          "sso-staging.cateiru.com",
-		RPOrigins:     []string{"sso-staging.cateiru.com", "api.sso-staging.cateiru.com"},
+		RPOrigins:     []string{"https://sso-staging.cateiru.com", "https://api.sso-staging.cateiru.com"},
 		Timeouts: webauthn.TimeoutsConfig{
 			Login: webauthn.TimeoutConfig{
 				Enforce:    true,
