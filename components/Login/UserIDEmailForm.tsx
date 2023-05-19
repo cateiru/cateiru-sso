@@ -47,9 +47,14 @@ export const UserIDEmailForm: React.FC<Props> = ({
     formState: {errors, isSubmitting},
   } = methods;
 
-  const {request} = useRequest('/v2/login/user');
   const [user, setUser] = React.useState<LoginUser | null>(null);
   const [userName, setUserName] = React.useState<string>('');
+
+  const {request} = useRequest('/v2/login/user', {
+    errorCallback: () => {
+      setUser(null);
+    },
+  });
 
   const handleRequestUserInfo = React.useCallback(() => {
     const f = async () => {

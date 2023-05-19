@@ -51,8 +51,8 @@ export const Header = React.memo(() => {
       w="100%"
       h="60px"
       alignItems="center"
-      pr=".5rem"
-      pl=".5rem"
+      pr=".8rem"
+      pl=".8rem"
     >
       <HeaderTitle />
       <Spacer />

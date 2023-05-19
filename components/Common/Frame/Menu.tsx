@@ -8,7 +8,15 @@ import {
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import React from 'react';
-import {TbHistory, TbLogout, TbSettings, TbUser, TbUsers} from 'react-icons/tb';
+import {
+  TbHistory,
+  TbLogin,
+  TbLogout,
+  TbSettings,
+  TbUser,
+  TbUserPlus,
+  TbUsers,
+} from 'react-icons/tb';
 import {useLogout} from '../useLogout';
 
 const fontSize = {base: '1.5rem', sm: '1rem'};
@@ -63,6 +71,15 @@ export const Menu: React.FC<{children: React.ReactNode}> = ({children}) => {
             h={height}
           >
             アカウントを切り替える
+          </MenuItem>
+          <MenuItem
+            as={Link}
+            href={`/login?redirect_to=${encodeURIComponent(router.asPath)}`}
+            icon={<TbUserPlus size="20px" />}
+            fontSize={fontSize}
+            h={height}
+          >
+            新しいアカウントにログイン
           </MenuItem>
           <MenuItem
             icon={<TbLogout size="20px" />}
