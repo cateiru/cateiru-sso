@@ -849,6 +849,13 @@ func (h *Handler) AccountReRegisterAvailableTokenHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	// PeriodClear時間超えていたらDBのほうは消す
+	if time.Now().After(session.PeriodClear) {
+		if _, err := session.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+	}
+
 	// セッションが有効期限切れの場合
 	if time.Now().After(session.Period) {
 		return c.JSON(http.StatusOK, &AccountReRegisterPasswordIsSession{

@@ -1867,6 +1867,54 @@ func TestAccountReRegisterAvailableTokenHandler(t *testing.T) {
 		response := src.AccountReRegisterPasswordIsSession{}
 		require.NoError(t, m.Json(&response))
 		require.False(t, response.Active)
+
+		// セッションは削除されない
+		dbSession, err := models.ReregistrationPasswordSessions(
+			models.ReregistrationPasswordSessionWhere.ID.EQ(token),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, dbSession)
+	})
+
+	t.Run("period_clearの有効期限が切れてしまっている場合、DBから削除される", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u)
+
+		// 有効期限切れのセッションを作成する
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.ReregistrationPasswordSession{
+			ID:          token,
+			Email:       email,
+			Period:      time.Now().Add(-100 * time.Hour),
+			PeriodClear: time.Now().Add(-10 * time.Hour),
+		}
+		err = session.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("reregister_token", token)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterAvailableTokenHandler(c)
+		require.NoError(t, err)
+
+		response := src.AccountReRegisterPasswordIsSession{}
+		require.NoError(t, m.Json(&response))
+		require.False(t, response.Active)
+
+		// セッションは削除されている
+		dbSession, err := models.ReregistrationPasswordSessions(
+			models.ReregistrationPasswordSessionWhere.ID.EQ(token),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, dbSession)
 	})
 
 	t.Run("セッションは使用済み", func(t *testing.T) {

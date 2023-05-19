@@ -11,10 +11,11 @@ import {TbFingerprint, TbPassword} from 'react-icons/tb';
 import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {UserSchema} from '../../utils/types/user';
+import type {RegisterPasswordFormData} from '../Common/Form/RegisterPasswordForm';
 import {useRequest} from '../Common/useRequest';
 import type {DefaultPageProps} from './RegisterAccount';
 import {RegisterPasskeyForm} from './RegisterPasskeyForm';
-import {PasswordForm, RegisterPasswordForm} from './RegisterPasswordForm';
+import {RegisterPasswordForm} from './RegisterPasswordForm';
 
 interface Props extends DefaultPageProps {
   registerToken: string;
@@ -38,9 +39,9 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
     },
   });
 
-  const onSubmitPassword = async (data: PasswordForm) => {
+  const onSubmitPassword = async (data: RegisterPasswordFormData) => {
     const form = new FormData();
-    form.append('password', data.password);
+    form.append('password', data.new_password);
 
     const res = await requestPassword({
       method: 'POST',

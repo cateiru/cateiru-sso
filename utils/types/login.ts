@@ -16,3 +16,10 @@ export const LoginResponseSchema = z.object({
     .optional(),
 });
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
+
+export const AccountReRegisterPasswordIsSessionSchema = z.object({
+  active: z.boolean(),
+});
+export type AccountReRegisterPasswordIsSession = z.infer<
+  typeof AccountReRegisterPasswordIsSessionSchema
+>;

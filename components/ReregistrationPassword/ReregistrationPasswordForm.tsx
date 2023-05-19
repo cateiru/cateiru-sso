@@ -2,7 +2,7 @@ import {Button} from '@chakra-ui/react';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import {
-  RegisterPasswordForm as RegisterPasswordFormBase,
+  RegisterPasswordForm,
   type RegisterPasswordFormData,
 } from '../../components/Common/Form/RegisterPasswordForm';
 
@@ -10,7 +10,7 @@ interface Props {
   onSubmit: (data: RegisterPasswordFormData) => Promise<void>;
 }
 
-export const RegisterPasswordForm: React.FC<Props> = props => {
+export const ReregistrationPasswordForm: React.FC<Props> = props => {
   const methods = useForm<RegisterPasswordFormData>();
   const {
     handleSubmit,
@@ -33,7 +33,7 @@ export const RegisterPasswordForm: React.FC<Props> = props => {
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <RegisterPasswordFormBase ok={ok} setOk={setOk} />
+        <RegisterPasswordForm ok={ok} setOk={setOk} />
         <Button
           mt="1rem"
           isLoading={isSubmitting}
@@ -41,7 +41,7 @@ export const RegisterPasswordForm: React.FC<Props> = props => {
           type="submit"
           w="100%"
         >
-          パスワードを登録する
+          パスワードを再設定する
         </Button>
       </form>
     </FormProvider>

@@ -11,17 +11,11 @@ import {
 import NextLink from 'next/link';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
+import {userIdEmailRegex} from '../../utils/regex';
 import {type LoginUser, LoginUserSchema} from '../../utils/types/login';
 import {Avatar} from '../Common/Avatar';
 import {PasswordForm, type PasswordFormData} from '../Common/Form/PasswordForm';
 import {useRequest} from '../Common/useRequest';
-
-const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/;
-const userIDRegex = /[A-Z0-9_]{3,15}/;
-const userIdEmailRegex = new RegExp(
-  `^(${userIDRegex.source})|(${emailRegex.source})$`,
-  'i'
-);
 
 export interface UserIDEmailForm extends PasswordFormData {
   user_id_email: string;
