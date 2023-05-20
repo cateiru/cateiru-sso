@@ -5,7 +5,6 @@ Cateiru's Single Sign On
 ## Quick Start
 
 - require
-  - openssl
   - docker
 - 注意点
   - `NEXT_PUBLIC_RE_CAPTCHA`を設定しないとアカウント作成などができないことに注意してください。
