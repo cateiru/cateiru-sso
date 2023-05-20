@@ -35,6 +35,7 @@ export const AccountList = () => {
     '/v2/account/list',
     accountUserFeather
   );
+  const {switch: s} = useSwitchAccount();
 
   React.useEffect(() => {
     // ログイン状態 -> ログアウトしたときのみデータをパージする
@@ -50,8 +51,6 @@ export const AccountList = () => {
       setUserState(true);
     }
   }, [user]);
-
-  const {switch: s} = useSwitchAccount();
 
   if (error) {
     return <Error {...error} />;

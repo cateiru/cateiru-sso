@@ -108,7 +108,7 @@ export const ReregistrationPassword = () => {
 
     if (res) {
       // パスワード再設定に成功したらログインページにリダイレクトする
-      await router.replace('/login');
+      router.replace('/login');
     }
   };
 

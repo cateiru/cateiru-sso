@@ -49,7 +49,7 @@ export const useSession = () => {
             if (error.success) {
               if (error.data.unique_code === 9) {
                 // 別のユーザーでログインできる可能性があるので/switch_accountにリダイレクト
-                await router.replace('/switch_account');
+                router.replace('/switch_account');
                 setUser(null);
                 return;
               }

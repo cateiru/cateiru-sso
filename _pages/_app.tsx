@@ -1,6 +1,6 @@
 import {ChakraProvider} from '@chakra-ui/react';
 import {AppProps} from 'next/app';
-import {useRouter} from 'next/navigation';
+import {useRouter} from 'next/router';
 import nprogress from 'nprogress';
 import React from 'react';
 import {RecoilRoot} from 'recoil';

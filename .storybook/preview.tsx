@@ -48,3 +48,9 @@ export const globalTypes = {
     },
   },
 };
+
+export const parameters = {
+  nextjs: {
+    appDirectory: true,
+  },
+};

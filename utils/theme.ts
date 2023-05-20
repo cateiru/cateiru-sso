@@ -1,4 +1,5 @@
 import {ThemeConfig, extendTheme} from '@chakra-ui/react';
+import {mode} from '@chakra-ui/theme-tools';
 import {StepsTheme} from 'chakra-ui-steps';
 
 const config: ThemeConfig = {
@@ -98,11 +99,10 @@ export const theme = extendTheme({
         overflow: 'overlay',
       },
       body: {
-        width: '100vw',
-        background:
-          props.colorMode === 'dark'
-            ? colorTheme.darkBackground
-            : colorTheme.lightBackground,
+        background: mode(
+          colorTheme.lightBackground,
+          colorTheme.darkBackground
+        )(props),
         color:
           props.colorMode === 'dark'
             ? colorTheme.darkText

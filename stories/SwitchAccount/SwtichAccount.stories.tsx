@@ -76,6 +76,9 @@ export const Default: Story = {
         ],
       },
     ],
+    nextjs: {
+      appDirectory: true,
+    },
   },
 };
 

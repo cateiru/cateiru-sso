@@ -1,10 +1,11 @@
 import {Heading, VStack, useColorModeValue} from '@chakra-ui/react';
-import {useRouter} from 'next/navigation';
+import {useParams, useRouter} from 'next/navigation';
 import React from 'react';
 import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
 
 export const CompleteRegisterPage = () => {
   const router = useRouter();
+  const params = useParams();
   const checkmarkProps = useColorModeValue<CheckmarkProps, CheckmarkProps>(
     {
       size: 100,
@@ -19,15 +20,13 @@ export const CompleteRegisterPage = () => {
   );
 
   React.useEffect(() => {
-    if (!router.isReady) return;
-
     const t = setTimeout(() => {
-      if (typeof router.query.redirect_to === 'string') {
+      if (typeof params.redirect_to === 'string') {
         try {
-          const url = new URL(router.query.redirect_to);
+          const url = new URL(params.redirect_to);
           router.replace(url.pathname);
         } catch {
-          router.replace(router.query.redirect_to);
+          router.replace(params.redirect_to);
         }
       } else {
         router.push('/profile');
@@ -37,7 +36,7 @@ export const CompleteRegisterPage = () => {
     return () => {
       clearTimeout(t);
     };
-  }, [router.isReady]);
+  }, []);
 
   return (
     <VStack mt="3rem">

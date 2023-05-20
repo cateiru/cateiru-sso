@@ -5,6 +5,8 @@ import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {useRequest} from '../Common/useRequest';
 
+nProgress.configure({showSpinner: false, speed: 400, minimum: 0.25});
+
 interface Returns {
   switch: (id: string, name: string) => void;
 }
@@ -50,7 +52,7 @@ export const useSwitchAccount = (): Returns => {
               router.push(redirect_to);
             }
           } else {
-            await router.push('/profile');
+            router.push('/profile');
           }
         }, 500);
         return;
