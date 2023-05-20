@@ -1,5 +1,5 @@
 import {useToast} from '@chakra-ui/react';
-import {useRouter} from 'next/router';
+import {useParams, useRouter} from 'next/navigation';
 import nProgress from 'nprogress';
 import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
@@ -17,11 +17,10 @@ export const useSwitchAccount = (): Returns => {
     },
   });
   const router = useRouter();
+  const params = useParams();
   const toast = useToast();
 
   const switchAccount = (id: string, name: string) => {
-    if (!router.isReady) return;
-
     const f = async () => {
       nProgress.start();
 
@@ -42,7 +41,7 @@ export const useSwitchAccount = (): Returns => {
             title: `ユーザー ${name} にログインしました`,
             status: 'success',
           });
-          const {redirect_to} = router.query;
+          const {redirect_to} = params;
           if (typeof redirect_to === 'string') {
             try {
               const url = new URL(redirect_to);

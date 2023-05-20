@@ -1,5 +1,5 @@
 import {Heading, VStack, useColorModeValue} from '@chakra-ui/react';
-import {useRouter} from 'next/router';
+import {useRouter} from 'next/navigation';
 import React from 'react';
 import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
 

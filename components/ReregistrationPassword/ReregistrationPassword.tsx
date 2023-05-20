@@ -1,5 +1,7 @@
+'use client';
+
 import {Center, Heading, useToast} from '@chakra-ui/react';
-import {useRouter} from 'next/router';
+import {useParams, useRouter} from 'next/navigation';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {AccountReRegisterPasswordIsSessionSchema} from '../../utils/types/login';
@@ -11,6 +13,7 @@ import {ReregistrationPasswordForm} from './ReregistrationPasswordForm';
 
 export const ReregistrationPassword = () => {
   const router = useRouter();
+  const params = useParams();
   const {request: availableToken} = useRequest(
     '/v2/account/reregistration/available_token'
   );
@@ -26,10 +29,8 @@ export const ReregistrationPassword = () => {
   const [email, setEmail] = React.useState<string>('');
 
   React.useEffect(() => {
-    if (!router.isReady) return;
-
-    const token = router.query.token;
-    const email = router.query.email;
+    const token = params.token;
+    const email = params.email;
 
     if (typeof token === 'string' && typeof email === 'string') {
       // 一度tokenを送信して、正しいか検証する
@@ -70,7 +71,7 @@ export const ReregistrationPassword = () => {
       // クエリが正しくないときは無効化
       setToken(null);
     }
-  }, [router.isReady, router.query]);
+  }, []);
 
   const onSubmit = async (data: RegisterPasswordFormData) => {
     if (typeof token !== 'string') return;

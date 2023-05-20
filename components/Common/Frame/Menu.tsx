@@ -6,11 +6,10 @@ import {
   MenuList,
 } from '@chakra-ui/react';
 import Link from 'next/link';
-import {useRouter} from 'next/router';
+import {usePathname, useRouter} from 'next/navigation';
 import React from 'react';
 import {
   TbHistory,
-  TbLogin,
   TbLogout,
   TbSettings,
   TbUser,
@@ -25,6 +24,7 @@ const height = {base: '55px', sm: '32px'};
 export const Menu: React.FC<{children: React.ReactNode}> = ({children}) => {
   const {logout} = useLogout();
   const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <ChakraMenu>
@@ -63,9 +63,7 @@ export const Menu: React.FC<{children: React.ReactNode}> = ({children}) => {
         <MenuGroup title="アカウント設定" fontSize={fontSize}>
           <MenuItem
             as={Link}
-            href={`/switch_account?redirect_to=${encodeURIComponent(
-              router.asPath
-            )}`}
+            href={`/switch_account?redirect_to=${encodeURIComponent(pathname)}`}
             icon={<TbUsers size="20px" />}
             fontSize={fontSize}
             h={height}
@@ -74,7 +72,7 @@ export const Menu: React.FC<{children: React.ReactNode}> = ({children}) => {
           </MenuItem>
           <MenuItem
             as={Link}
-            href={`/login?redirect_to=${encodeURIComponent(router.asPath)}`}
+            href={`/login?redirect_to=${encodeURIComponent(pathname)}`}
             icon={<TbUserPlus size="20px" />}
             fontSize={fontSize}
             h={height}

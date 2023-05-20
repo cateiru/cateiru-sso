@@ -1,3 +1,5 @@
+'use client';
+
 import {Box, Center, Heading} from '@chakra-ui/react';
 import React from 'react';
 import {LoginUser} from '../../utils/types/login';

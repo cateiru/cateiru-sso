@@ -1,4 +1,6 @@
-import {useRouter} from 'next/router';
+'use client';
+
+import {usePathname, useRouter} from 'next/navigation';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
@@ -13,15 +15,15 @@ interface Props {
 export const Session: React.FC<Props> = props => {
   const user = useRecoilValue(UserState);
   const router = useRouter();
+  const pathname = usePathname();
   const [ok, setOk] = React.useState(false);
 
   React.useEffect(() => {
-    if (!router.isReady) return;
     if (typeof user === 'undefined') return;
 
     let url = props.redirectTo ?? '/';
     if (props.redirectQuery) {
-      url += `?redirect=${router.asPath}`;
+      url += `?redirect=${pathname}`;
     }
 
     if (!!props.isLoggedIn === !!user) {
@@ -30,7 +32,7 @@ export const Session: React.FC<Props> = props => {
     }
 
     setOk(true);
-  }, [router.isReady, user]);
+  }, [user]);
 
   return <>{ok && props.children}</>;
 };

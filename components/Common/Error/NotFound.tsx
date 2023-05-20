@@ -1,3 +1,5 @@
+'use client';
+
 import {Box, Center, Heading} from '@chakra-ui/react';
 import {KeyGen} from '../Animation/KeyGen';
 

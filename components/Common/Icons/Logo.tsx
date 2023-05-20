@@ -1,3 +1,5 @@
+'use client';
+
 import {Box, keyframes, usePrefersReducedMotion} from '@chakra-ui/react';
 import React from 'react';
 

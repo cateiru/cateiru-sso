@@ -1355,6 +1355,13 @@
     aria-hidden "^1.2.2"
     react-remove-scroll "^2.5.5"
 
+"@chakra-ui/next-js@^2.1.3":
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/next-js/-/next-js-2.1.3.tgz#d68d0382e34cb0e173fd1eb5ac30e0e628bbc4b9"
+  integrity sha512-HD0t5mtZMWL/5RvB/NuWKkszNcn2AQ4gjWk0G9gRCnGZhMnriIrDAn4ilYK/WzrjfzB5hxuez8l6ac82MnG8Rg==
+  dependencies:
+    "@emotion/cache" "^11.10.5"
+
 "@chakra-ui/number-input@2.0.19":
   version "2.0.19"
   resolved "https://registry.yarnpkg.com/@chakra-ui/number-input/-/number-input-2.0.19.tgz#82d4522036904c04d07e7050822fc522f9b32233"
@@ -1901,7 +1908,7 @@
     source-map "^0.5.7"
     stylis "4.2.0"
 
-"@emotion/cache@^11.11.0":
+"@emotion/cache@^11.10.5", "@emotion/cache@^11.11.0":
   version "11.11.0"
   resolved "https://registry.yarnpkg.com/@emotion/cache/-/cache-11.11.0.tgz#809b33ee6b1cb1a625fef7a45bc568ccd9b8f3ff"
   integrity sha512-P34z9ssTCBi3e9EI1ZsWpNHcfY1r09ZO0rZbRO2ob3ZQMnFI35jB536qoXbkdesr5EUhYi22anuEJuyxifaqAQ==

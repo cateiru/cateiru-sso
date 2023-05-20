@@ -1,3 +1,5 @@
+'use client';
+
 import {Heading} from '@chakra-ui/react';
 import React from 'react';
 import {Margin} from '../Common/Margin';

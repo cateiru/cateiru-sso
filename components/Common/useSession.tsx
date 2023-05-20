@@ -1,6 +1,6 @@
 import {useToast} from '@chakra-ui/react';
 import cookie from 'cookie';
-import {useRouter} from 'next/router';
+import {useRouter} from 'next/navigation';
 import React from 'react';
 import {useRecoilState} from 'recoil';
 import {api} from '../../utils/api';

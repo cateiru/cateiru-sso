@@ -1,3 +1,5 @@
+'use client';
+
 import {Box, Divider, Heading, useColorModeValue} from '@chakra-ui/react';
 import {AccountList} from './AccountList';
 
