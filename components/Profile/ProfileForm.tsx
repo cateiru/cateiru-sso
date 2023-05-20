@@ -61,7 +61,7 @@ export const ProfileForm = () => {
         <Flex mt="1rem">
           <FormControl isInvalid={!!errors.gender} mr=".5rem">
             <FormLabel htmlFor="gender">性別</FormLabel>
-            <Select {...register('gender')}>
+            <Select autoComplete="sex" {...register('gender')}>
               <option value="0">未設定</option>
               <option value="1">男性</option>
               <option value="2">女性</option>
@@ -70,7 +70,12 @@ export const ProfileForm = () => {
           </FormControl>
           <FormControl isInvalid={!!errors.birthdate}>
             <FormLabel htmlFor="birthdate">誕生日</FormLabel>
-            <Input id="birthdate" type="date" {...register('birthdate')} />
+            <Input
+              id="birthdate"
+              type="date"
+              autoComplete="bday"
+              {...register('birthdate')}
+            />
           </FormControl>
         </Flex>
 
