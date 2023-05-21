@@ -2,7 +2,7 @@
 
 import {usePathname, useSearchParams} from 'next/navigation';
 import nprogress from 'nprogress';
-import React from 'react';
+import React, {Suspense} from 'react';
 import {pageview} from '../utils/ga/gtag';
 
 import '../public/nprogress.css';
@@ -44,7 +44,7 @@ nprogress.configure({showSpinner: false, speed: 400, minimum: 0.25});
 //   // }, [router.events]);
 // };
 
-export const PageEvents: React.FC = () => {
+export const PageEventsImplementation: React.FC = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // TODO: 一時的対応。router.eventsが復活したら削除
@@ -59,3 +59,9 @@ export const PageEvents: React.FC = () => {
 
   return null;
 };
+
+export const PageEvents = () => (
+  <Suspense fallback={null}>
+    <PageEventsImplementation />
+  </Suspense>
+);

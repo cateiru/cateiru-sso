@@ -1,8 +1,7 @@
 import {
-  Center,
+  Box,
   Skeleton,
   Table,
-  TableContainer,
   Tbody,
   Td,
   Th,
@@ -11,19 +10,24 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
-import {TbCheck} from 'react-icons/tb';
+import React from 'react';
 import useSWR from 'swr';
 import {hawManyDaysAgo} from '../../utils/date';
 import {loginDeviceFeather} from '../../utils/swr/featcher';
+import {colorTheme} from '../../utils/theme';
 import {ErrorType} from '../../utils/types/error';
 import {LoginDeviceList} from '../../utils/types/history';
 import {Error} from '../Common/Error/Error';
 import {Device} from './Device';
 
-export const LoginDevice = () => {
-  const checkMarkColor = useColorModeValue('#68D391', '#38A169');
+export const LoginHistoriesTable = () => {
+  const tableHeadBgColor = useColorModeValue(
+    colorTheme.lightBackground,
+    colorTheme.darkBackground
+  );
+
   const {data, error} = useSWR<LoginDeviceList, ErrorType>(
-    '/v2/history/login_devices',
+    '/v2/history/login',
     loginDeviceFeather
   );
 
@@ -32,11 +36,15 @@ export const LoginDevice = () => {
   }
 
   return (
-    <TableContainer>
-      <Table variant="simple">
+    <Box overflow={{base: 'auto', md: 'visible'}}>
+      <Table variant="simple" minW="600px">
         <Thead>
-          <Tr>
-            <Th></Th>
+          <Tr
+            position={['sticky', '-webkit-sticky']}
+            zIndex="0"
+            top="0"
+            bgColor={tableHeadBgColor}
+          >
             <Th>ログイン日時</Th>
             <Th textAlign="center">IPアドレス</Th>
             <Th textAlign="center">端末</Th>
@@ -48,24 +56,6 @@ export const LoginDevice = () => {
                 const created = new Date(v.created);
                 return (
                   <Tr key={v.id}>
-                    <Td p="0">
-                      {v.is_current && (
-                        <Tooltip
-                          label="このデバイス"
-                          hasArrow
-                          borderRadius="7px"
-                          placement="top"
-                        >
-                          <Center>
-                            <TbCheck
-                              size="25px"
-                              color={checkMarkColor}
-                              strokeWidth="3px"
-                            />
-                          </Center>
-                        </Tooltip>
-                      )}
-                    </Td>
                     <Td>
                       <Tooltip
                         hasArrow
@@ -88,12 +78,11 @@ export const LoginDevice = () => {
                   </Tr>
                 );
               })
-            : Array(2)
+            : Array(5)
                 .fill(0)
                 .map((_, i) => {
                   return (
                     <Tr key={`load-history-item-${i}`}>
-                      <Td></Td>
                       <Td>
                         <Skeleton height="1rem" w="10rem" />
                       </Td>
@@ -108,6 +97,6 @@ export const LoginDevice = () => {
                 })}
         </Tbody>
       </Table>
-    </TableContainer>
+    </Box>
   );
 };

@@ -27,8 +27,8 @@ export async function accountUserFeather() {
   throw new HTTPError(data.error.message);
 }
 
-export async function loginDeviceFeather() {
-  const res = await fetch(api('/v2/history/login_devices'), {
+export async function loginDeviceFeather(path: string) {
+  const res = await fetch(api(path), {
     credentials: 'include',
     mode: 'cors',
   });

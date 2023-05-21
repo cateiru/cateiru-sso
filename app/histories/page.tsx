@@ -1,7 +1,12 @@
+import {Session} from '../../components/Common/Session';
 import {LoginHistory} from '../../components/Histories/LoginHistory';
 
 const Page = () => {
-  return <LoginHistory />;
+  return (
+    <Session>
+      <LoginHistory />
+    </Session>
+  );
 };
 
 export default Page;
