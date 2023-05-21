@@ -814,6 +814,10 @@ func TestUserUpdateEmailRegisterHandler(t *testing.T) {
 		err = h.UserUpdateEmailRegisterHandler(c)
 		require.NoError(t, err)
 
+		response := src.UserUpdateEmailRegisterResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Equal(t, response.Email, newEmail)
+
 		newUser, err := models.Users(
 			models.UserWhere.ID.EQ(u.ID),
 		).One(ctx, DB)

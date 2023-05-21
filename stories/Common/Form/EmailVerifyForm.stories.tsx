@@ -1,11 +1,11 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {EmailVerifyForm} from '../../../components/RegisterAccount/EmailVerifyForm';
+import {EmailVerifyForm} from '../../../components/Common/Form/EmailVerifyForm';
 
 const sleep = (msec: number) =>
   new Promise(resolve => setTimeout(resolve, msec));
 
 const meta: Meta<typeof EmailVerifyForm> = {
-  title: 'CateiruSSO/RegisterAccount/EmailVerify/Form',
+  title: 'CateiruSSO/Common/Form/EmailVerifyForm',
   component: EmailVerifyForm,
   tags: ['autodocs'],
   parameters: {
@@ -24,6 +24,7 @@ export const Default: Story = {
 
       window.alert(JSON.stringify(data));
     },
+    emailCodeLength: 6,
   },
 };
 
@@ -35,5 +36,6 @@ export const NoVerify: Story = {
 
       throw new Error('error');
     },
+    emailCodeLength: 6,
   },
 };

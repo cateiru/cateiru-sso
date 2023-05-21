@@ -44,6 +44,10 @@ type UserUpdateEmailResponse struct {
 	Session string `json:"session"`
 }
 
+type UserUpdateEmailRegisterResponse struct {
+	Email string `json:"email"`
+}
+
 type UserAvatarResponse struct {
 	Avatar string `json:"avatar"`
 }
@@ -399,7 +403,7 @@ func (h *Handler) UserUpdateEmailRegisterHandler(c echo.Context) error {
 		if _, err := session.Update(ctx, h.DB, boil.Infer()); err != nil {
 			return err
 		}
-		return NewHTTPError(http.StatusForbidden, "invalid code")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrAuthenticationFailed, "invalid code")
 	}
 
 	// Emailを更新する
@@ -413,7 +417,9 @@ func (h *Handler) UserUpdateEmailRegisterHandler(c echo.Context) error {
 		return err
 	}
 
-	return nil
+	return c.JSON(http.StatusOK, &UserUpdateEmailRegisterResponse{
+		Email: user.Email,
+	})
 }
 
 // アバターの更新

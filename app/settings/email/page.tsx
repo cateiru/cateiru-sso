@@ -1,5 +1,7 @@
+import {EmailSetting} from '../../../components/Settings/EmailSetting';
+
 const Page = () => {
-  return <>email</>;
+  return <EmailSetting />;
 };
 
 export default Page;

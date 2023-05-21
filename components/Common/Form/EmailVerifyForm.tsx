@@ -1,22 +1,25 @@
 import {PinInput, PinInputField} from '@chakra-ui/react';
 import React from 'react';
-import {config} from '../../utils/config';
 
 export interface EmailVerifyForm {
   code: string;
 }
 
 interface Props {
+  emailCodeLength: number;
   onSubmit: (data: EmailVerifyForm) => Promise<void>;
 }
 
-export const EmailVerifyForm: React.FC<Props> = ({onSubmit}) => {
+export const EmailVerifyForm: React.FC<Props> = ({
+  onSubmit,
+  emailCodeLength,
+}) => {
   const [value, setValue] = React.useState('');
   const [isDisabled, setIsDisabled] = React.useState(false);
   const [rerender, setRerender] = React.useState(false);
 
   React.useEffect(() => {
-    if (value.length >= config.registerAccountEmailCodeLength) {
+    if (value.length >= emailCodeLength) {
       setIsDisabled(true);
       onSubmit({code: value})
         .then(() => {
@@ -50,16 +53,14 @@ export const EmailVerifyForm: React.FC<Props> = ({onSubmit}) => {
           }}
           value={value}
         >
-          {new Array(config.registerAccountEmailCodeLength)
-            .fill(0)
-            .map((_, i) => {
-              return (
-                <PinInputField
-                  ml={i !== 0 ? '.5rem' : undefined}
-                  key={`pin_input-${i}`}
-                />
-              );
-            })}
+          {new Array(emailCodeLength).fill(0).map((_, i) => {
+            return (
+              <PinInputField
+                ml={i !== 0 ? '.5rem' : undefined}
+                key={`pin_input-${i}`}
+              />
+            );
+          })}
         </PinInput>
       )}
     </>

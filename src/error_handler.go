@@ -34,6 +34,8 @@ const (
 	ErrNoRegisteredPassword = 11
 	// ユーザがすでに存在している
 	ErrAlreadyExistUser = 12
+	// 認証失敗
+	ErrAuthenticationFailed = 13
 )
 
 type HTTPError struct {

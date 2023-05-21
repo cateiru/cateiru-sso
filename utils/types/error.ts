@@ -20,4 +20,5 @@ export const ErrorUniqueMessage: {[key: number]: string | undefined} = {
   10: 'このユーザーは存在しません',
   11: 'このユーザーはパスワードを設定していません',
   12: 'このユーザーはすでに存在しています',
+  13: '認証に失敗しました',
 };

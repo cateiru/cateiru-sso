@@ -1,10 +1,11 @@
 import {Box, Text, VStack, useToast} from '@chakra-ui/react';
 import React from 'react';
+import {config} from '../../utils/config';
 import {RegisterVerifyEmailResponseSchema} from '../../utils/types/createAccount';
+import {EmailVerifyForm} from '../Common/Form/EmailVerifyForm';
 import {Margin} from '../Common/Margin';
 import {useRequest} from '../Common/useRequest';
 import {EmailResend} from './EmailResend';
-import {EmailVerifyForm} from './EmailVerifyForm';
 import {DefaultPageProps} from './RegisterAccount';
 
 interface Props extends DefaultPageProps {
@@ -75,10 +76,14 @@ export const EmailVerifyPage: React.FC<Props> = props => {
     <Margin>
       <VStack>
         <Text mb="1rem" textAlign="center">
-          メールアドレスに送信された6桁のコードを入力してください
+          メールアドレスに送信された{config.emailCodeLength}
+          桁のコードを入力してください
         </Text>
         <Box>
-          <EmailVerifyForm onSubmit={onSubmit} />
+          <EmailVerifyForm
+            onSubmit={onSubmit}
+            emailCodeLength={config.emailCodeLength}
+          />
         </Box>
         <EmailResend registerToken={props.registerToken} />
       </VStack>
