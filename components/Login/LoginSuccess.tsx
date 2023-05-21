@@ -1,5 +1,5 @@
 import {Heading, VStack, useColorModeValue} from '@chakra-ui/react';
-import {useParams, useRouter} from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
@@ -8,7 +8,7 @@ import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
 export const LoginSuccess: React.FC = () => {
   const user = useRecoilValue(UserState);
   const router = useRouter();
-  const params = useParams();
+  const params = useSearchParams();
   const checkmarkProps = useColorModeValue<CheckmarkProps, CheckmarkProps>(
     {
       size: 100,
@@ -24,12 +24,13 @@ export const LoginSuccess: React.FC = () => {
 
   React.useEffect(() => {
     const t = setTimeout(() => {
-      if (typeof params.redirect_to === 'string') {
+      const redirectTo = params.get('redirect_to');
+      if (typeof redirectTo === 'string') {
         try {
-          const url = new URL(params.redirect_to);
+          const url = new URL(redirectTo);
           router.replace(url.pathname);
         } catch {
-          router.replace(params.redirect_to);
+          router.replace(redirectTo);
         }
       } else {
         router.push('/profile');
