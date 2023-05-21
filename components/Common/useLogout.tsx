@@ -12,7 +12,7 @@ export const useLogout = (): Returns => {
 
   const logout = async () => {
     const res = await request({
-      method: 'HEAD',
+      method: 'POST',
       mode: 'cors',
       credentials: 'include',
     });

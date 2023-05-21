@@ -49,7 +49,7 @@ export const UpdateAvatar = () => {
     '0 5px 20px 0 #171923'
   );
   const sliderThumbColor = useColorModeValue('gray.500', 'white');
-  const errorBgColor = useColorModeValue('red.500', 'red.300');
+  const errorBgColor = useColorModeValue('red.400', 'red.600');
   const errorTextColor = useColorModeValue(
     colorTheme.darkText,
     colorTheme.lightText

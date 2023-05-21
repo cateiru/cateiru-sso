@@ -19,6 +19,7 @@ import {ErrorType} from '../../utils/types/error';
 import {LoginDeviceList} from '../../utils/types/history';
 import {Error} from '../Common/Error/Error';
 import {Device} from './Device';
+import {LogoutDevice} from './LogoutDevice';
 
 export const LoginDevice = () => {
   const checkMarkColor = useColorModeValue('#68D391', '#38A169');
@@ -49,7 +50,7 @@ export const LoginDevice = () => {
                 return (
                   <Tr key={v.id}>
                     <Td p="0">
-                      {v.is_current && (
+                      {v.is_current ? (
                         <Tooltip
                           label="このデバイス"
                           hasArrow
@@ -64,6 +65,8 @@ export const LoginDevice = () => {
                             />
                           </Center>
                         </Tooltip>
+                      ) : (
+                        <LogoutDevice loginHistoryId={v.id} />
                       )}
                     </Td>
                     <Td>

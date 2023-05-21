@@ -35,8 +35,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	account := version.Group("/account")
 	account.GET("/list", h.AccountListHandler)
 	account.POST("/switch", h.AccountSwitchHandler) // ログインアカウントの変更
-	account.HEAD("/logout", h.AccountLogoutHandler)
-	account.HEAD("/delete", h.AccountDeleteHandler)
+	account.POST("/logout", h.AccountLogoutHandler)
+	account.POST("/delete", h.AccountDeleteHandler)
 	account.GET("/otp", h.AccountOTPPublicKeyHandler)               // OTPのpublic keyを返す
 	account.POST("/otp", h.AccountOTPHandler)                       // OTP設定
 	account.POST("/otp/delete", h.AccountDeleteOTPHandler)          // OTP削除

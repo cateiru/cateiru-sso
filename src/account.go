@@ -3,6 +3,7 @@ package src
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"strconv"
@@ -100,12 +101,76 @@ func (h *Handler) AccountSwitchHandler(c echo.Context) error {
 }
 
 // アカウントからログアウトする
+// `login_history_id`を指定するとそのHistory IDと繋がっているセッションを遠隔で削除する
 func (h *Handler) AccountLogoutHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	user, err := h.Session.SimpleLogin(ctx, c, true)
 	if err != nil {
 		return err
+	}
+
+	// `login_history_id`がある場合は、そのログイン履歴を削除する
+	loginHistoryId := c.FormValue("login_history_id")
+	if loginHistoryId != "" {
+		loginHistoryIdInt, err := strconv.ParseUint(loginHistoryId, 10, 64)
+		if err != nil {
+			return NewHTTPError(http.StatusBadRequest, "invalid type login_history_id")
+		}
+
+		loginHistory, err := models.LoginHistories(
+			models.LoginHistoryWhere.ID.EQ(uint(loginHistoryIdInt)),
+		).One(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			return NewHTTPError(http.StatusBadRequest, "invalid login_history_id")
+		}
+		if err != nil {
+			return err
+		}
+
+		// 自分のリフレッシュトークンを取得する
+		myRefreshCookieName := fmt.Sprintf("%s-%s", h.C.RefreshCookie.Name, user.ID)
+		var myRefreshCookie http.Cookie
+		for _, cookie := range c.Cookies() {
+			if cookie.Name == myRefreshCookieName {
+				myRefreshCookie = *cookie
+			}
+		}
+
+		refresh, err := models.Refreshes(
+			models.RefreshWhere.HistoryID.EQ(loginHistory.RefreshID),
+		).One(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			return NewHTTPError(http.StatusBadRequest, "invalid login_history_id")
+		}
+		if err != nil {
+			return err
+		}
+
+		// 自分のリフレッシュトークンは削除できない
+		if refresh.ID == myRefreshCookie.Value {
+			return NewHTTPError(http.StatusBadRequest, "cannot logout myself")
+		}
+
+		if refresh.SessionID.Valid {
+			// リフレッシュトークンに紐づくセッショントークンを削除（ある場合）
+			_, err = models.Sessions(
+				models.SessionWhere.ID.EQ(refresh.SessionID.String),
+			).DeleteAll(ctx, h.DB)
+			if err != nil {
+				return err
+			}
+		}
+
+		// リフレッシュトークンを削除
+		_, err = models.Refreshes(
+			models.RefreshWhere.HistoryID.EQ(loginHistory.RefreshID),
+		).DeleteAll(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	setCookies, err := h.Session.Logout(ctx, c.Cookies(), user)

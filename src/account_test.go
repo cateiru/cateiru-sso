@@ -222,7 +222,7 @@ func TestAccountLogoutHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.AccountLogoutHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		m, err := easy.NewMock("/", http.MethodHead, "")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		return m
 	})
@@ -232,7 +232,7 @@ func TestAccountLogoutHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 		session := RegisterSession(t, ctx, &u)
 
-		m, err := easy.NewMock("/", http.MethodHead, "")
+		m, err := easy.NewMock("/", http.MethodPost, "")
 		require.NoError(t, err)
 		m.Cookie(session)
 		c := m.Echo()
@@ -245,6 +245,71 @@ func TestAccountLogoutHandler(t *testing.T) {
 		for _, cookie := range cookies {
 			require.Equal(t, cookie.MaxAge, -1)
 		}
+	})
+
+	t.Run("login_history_idを指定して該当セッションを削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		session := RegisterSession(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		RegisterSession(t, ctx, &u2)
+
+		// user2のログイン履歴
+		loginHistory, err := models.LoginHistories(
+			models.LoginHistoryWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("login_history_id", fmt.Sprint(loginHistory.ID))
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(session)
+		c := m.Echo()
+
+		err = h.AccountLogoutHandler(c)
+		require.NoError(t, err)
+
+		// このCookieは削除しない
+		cookies := m.Response().Cookies()
+		require.Len(t, cookies, 0)
+
+		// u2のセッションが全て削除されている
+		existU2Session, err := models.Sessions(
+			models.SessionWhere.UserID.EQ(u2.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existU2Session)
+
+		// u2のリフレッシュトークンが全て削除されている
+		existU2Refresh, err := models.Refreshes(
+			models.RefreshWhere.UserID.EQ(u2.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existU2Refresh)
+	})
+
+	t.Run("失敗: 自分のセッションのlogin_history_idを指定しして削除はできない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		session := RegisterSession(t, ctx, &u)
+
+		loginHistory, err := models.LoginHistories(
+			models.LoginHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("login_history_id", fmt.Sprint(loginHistory.ID))
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(session)
+		c := m.Echo()
+
+		err = h.AccountLogoutHandler(c)
+		require.EqualError(t, err, "code=400, message=cannot logout myself")
 	})
 }
 
