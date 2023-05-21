@@ -851,7 +851,7 @@ func TestUserUpdateEmailRegisterHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.UserUpdateEmailRegisterHandler(c)
-		require.EqualError(t, err, "code=403, message=invalid code")
+		require.EqualError(t, err, "code=403, message=invalid code, unique=13")
 
 		// リトライカウント++されている
 		se, err := models.EmailVerifySessions(
