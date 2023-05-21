@@ -6,7 +6,7 @@ import {
   MenuList,
 } from '@chakra-ui/react';
 import Link from 'next/link';
-import {usePathname, useRouter} from 'next/navigation';
+import {usePathname} from 'next/navigation';
 import React from 'react';
 import {
   TbHistory,
@@ -21,9 +21,8 @@ import {useLogout} from '../useLogout';
 const fontSize = {base: '1.5rem', sm: '1rem'};
 const height = {base: '55px', sm: '32px'};
 
-export const Menu: React.FC<{children: React.ReactNode}> = ({children}) => {
+export const Menu = React.memo<{children: React.ReactNode}>(({children}) => {
   const {logout} = useLogout();
-  const router = useRouter();
   const pathname = usePathname();
 
   return (
@@ -91,4 +90,6 @@ export const Menu: React.FC<{children: React.ReactNode}> = ({children}) => {
       </MenuList>
     </ChakraMenu>
   );
-};
+});
+
+Menu.displayName = 'Menu';

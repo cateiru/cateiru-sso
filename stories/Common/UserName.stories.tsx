@@ -1,11 +1,11 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {Header} from '../../../components/Common/Frame/Header';
-import {UserState} from '../../../utils/state/atom';
-import {RecoilController} from '../../RecoilController';
+import {UserName} from '../../components/Common/UserName';
+import {UserState} from '../../utils/state/atom';
+import {RecoilController} from '../RecoilController';
 
-const meta: Meta<typeof Header> = {
-  title: 'CateiruSSO/Common/Frame/Header',
+const meta: Meta<typeof UserName> = {
+  title: 'CateiruSSO/Common/UserName',
   component: () => {
     return (
       <RecoilController
@@ -58,7 +58,7 @@ const meta: Meta<typeof Header> = {
           },
         ]}
       >
-        <Header />
+        <UserName />
       </RecoilController>
     );
   },
@@ -69,6 +69,6 @@ const meta: Meta<typeof Header> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Header>;
+type Story = StoryObj<typeof UserName>;
 
 export const Default: Story = {};

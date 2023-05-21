@@ -1,6 +1,7 @@
 import {Box, Divider, Link, Text} from '@chakra-ui/react';
+import React from 'react';
 
-export const Footer = () => {
+export const Footer = React.memo(() => {
   return (
     <Box marginTop="auto" as="footer">
       <Box width="95%" margin="1rem auto 1rem auto">
@@ -18,4 +19,6 @@ export const Footer = () => {
       </Text>
     </Box>
   );
-};
+});
+
+Footer.displayName = 'Footer';

@@ -1,17 +1,13 @@
 'use client';
 
-import {Heading, Select, Text, useColorModeValue} from '@chakra-ui/react';
+import {Heading, Select} from '@chakra-ui/react';
 import React from 'react';
-import {useRecoilValue} from 'recoil';
-import {UserState} from '../../utils/state/atom';
 import {Margin} from '../Common/Margin';
+import {UserName} from '../Common/UserName';
 import {LoginHistoriesTable} from './LoginHistoriesTable';
 import {LoginTryTable} from './LoginTryTable';
 
 export const LoginHistory = () => {
-  const user = useRecoilValue(UserState);
-  const userNameColor = useColorModeValue('gray.500', 'gray.400');
-
   const [select, setSelect] = React.useState('1');
 
   const C = React.useCallback(() => {
@@ -30,14 +26,7 @@ export const LoginHistory = () => {
       <Heading mt="3rem" mb="1rem" textAlign="center">
         ログイン履歴
       </Heading>
-      <Text
-        textAlign="center"
-        mb="1rem"
-        fontWeight="bold"
-        color={userNameColor}
-      >
-        @{user?.user.user_name ?? '???'}
-      </Text>
+      <UserName />
       <Select
         w={{base: '100%', md: '300px'}}
         mb="1rem"

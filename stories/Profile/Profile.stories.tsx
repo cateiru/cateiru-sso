@@ -20,12 +20,12 @@ const meta: Meta<typeof Profile> = {
             key: 'login',
             value: {
               user: {
-                id: faker.datatype.uuid(),
+                id: faker.string.uuid(),
                 user_name: faker.internet.userName(),
                 email: faker.internet.email(),
-                family_name: faker.name.lastName(),
+                family_name: faker.person.lastName(),
                 middle_name: null,
-                given_name: faker.name.firstName(),
+                given_name: faker.person.firstName(),
                 gender: '1',
                 birthdate: null,
                 avatar: faker.image.avatar(),
@@ -40,12 +40,12 @@ const meta: Meta<typeof Profile> = {
             key: 'login no avatar',
             value: {
               user: {
-                id: faker.datatype.uuid(),
+                id: faker.string.uuid(),
                 user_name: faker.internet.userName(),
                 email: faker.internet.email(),
-                family_name: faker.name.lastName(),
-                middle_name: faker.name.middleName(),
-                given_name: faker.name.firstName(),
+                family_name: faker.person.lastName(),
+                middle_name: faker.person.middleName(),
+                given_name: faker.person.firstName(),
                 gender: '1',
                 birthdate: null,
                 avatar: null,

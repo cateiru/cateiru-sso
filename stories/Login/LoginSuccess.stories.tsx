@@ -17,12 +17,12 @@ type Story = StoryObj<typeof LoginSuccess>;
 export const Default: Story = {
   args: {
     loggedInUser: {
-      id: faker.datatype.uuid(),
+      id: faker.string.uuid(),
       user_name: faker.internet.userName(),
       email: faker.internet.email(),
-      family_name: faker.name.lastName(),
+      family_name: faker.person.lastName(),
       middle_name: null,
-      given_name: faker.name.firstName(),
+      given_name: faker.person.firstName(),
       gender: '1',
       birthdate: null,
       avatar: faker.image.avatar(),
