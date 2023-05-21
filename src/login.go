@@ -132,6 +132,8 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		Browser:  null.NewString(ua.Browser, true),
 		IsMobile: null.NewBool(ua.IsMobile, true),
 		IP:       net.ParseIP(ip),
+
+		Identifier: 0,
 	}
 	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
@@ -204,6 +206,8 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		Browser:  null.NewString(ua.Browser, true),
 		IsMobile: null.NewBool(ua.IsMobile, true),
 		IP:       net.ParseIP(ip),
+
+		Identifier: 0,
 	}
 	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err

@@ -1,5 +1,4 @@
 import {
-  Box,
   Skeleton,
   Table,
   TableContainer,
@@ -11,25 +10,27 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
-import React from 'react';
 import useSWR from 'swr';
 import {hawManyDaysAgo} from '../../utils/date';
-import {loginDeviceFeather} from '../../utils/swr/featcher';
+import {loginTryHistoryFeather} from '../../utils/swr/featcher';
 import {colorTheme} from '../../utils/theme';
 import {ErrorType} from '../../utils/types/error';
-import {LoginDeviceList} from '../../utils/types/history';
+import {
+  LOGIN_TRY_IDENTIFIER,
+  LoginTryHistoryList,
+} from '../../utils/types/history';
 import {Error} from '../Common/Error/Error';
 import {Device} from './Device';
 
-export const LoginHistoriesTable = () => {
+export const LoginTryTable = () => {
   const tableHeadBgColor = useColorModeValue(
     colorTheme.lightBackground,
     colorTheme.darkBackground
   );
 
-  const {data, error} = useSWR<LoginDeviceList, ErrorType>(
-    '/v2/history/login',
-    loginDeviceFeather
+  const {data, error} = useSWR<LoginTryHistoryList, ErrorType>(
+    '/v2/history/try_login',
+    loginTryHistoryFeather
   );
 
   if (error) {
@@ -47,6 +48,7 @@ export const LoginHistoriesTable = () => {
             bgColor={tableHeadBgColor}
           >
             <Th>ログイン日時</Th>
+            <Td>種類</Td>
             <Th textAlign="center">IPアドレス</Th>
             <Th textAlign="center">端末</Th>
           </Tr>
@@ -67,6 +69,7 @@ export const LoginHistoriesTable = () => {
                         {hawManyDaysAgo(created)}
                       </Tooltip>
                     </Td>
+                    <Td>{LOGIN_TRY_IDENTIFIER[v.identifier] ?? '不明'}</Td>
                     <Td textAlign="center">{v.ip}</Td>
                     <Td>
                       <Device
@@ -84,6 +87,9 @@ export const LoginHistoriesTable = () => {
                 .map((_, i) => {
                   return (
                     <Tr key={`load-history-item-${i}`}>
+                      <Td>
+                        <Skeleton height="1rem" w="10rem" />
+                      </Td>
                       <Td>
                         <Skeleton height="1rem" w="10rem" />
                       </Td>

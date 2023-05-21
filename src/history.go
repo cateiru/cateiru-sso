@@ -68,7 +68,7 @@ type LoginTryHistoryResponse struct {
 
 	Identifier int8 `json:"identifier"`
 
-	Created time.Time `json:"time"`
+	Created time.Time `json:"created"`
 }
 
 type LoginHistoriesSlice struct {
