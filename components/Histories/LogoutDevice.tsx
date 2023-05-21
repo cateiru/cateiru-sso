@@ -53,6 +53,7 @@ export const LogoutDevice: React.FC<Props> = props => {
           onMouseOver={() => setHover(true)}
           onMouseOut={() => setHover(false)}
           onClick={onLogout}
+          style={{cursor: 'pointer'}}
         />
       </Center>
     </Tooltip>
