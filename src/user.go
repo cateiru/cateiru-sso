@@ -33,6 +33,11 @@ type UserBrandResponse struct {
 	BrandNames []string `json:"brand,omitempty"`
 }
 
+type UserOtpResponse struct {
+	Enable   bool      `json:"enable"`
+	Modified null.Time `json:"modified,omitempty"`
+}
+
 type UpdateEmailTemplate struct {
 	User     *models.User
 	NewEmail string
@@ -229,6 +234,34 @@ func (h *Handler) UserBrandHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, &UserBrandResponse{
 		BrandNames: brandNames,
+	})
+}
+
+func (h *Handler) UserOtpHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	user, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	otp, err := models.Otps(
+		models.OtpWhere.UserID.EQ(user.ID),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		// 有効じゃない
+		return c.JSON(http.StatusOK, &UserOtpResponse{
+			Enable: false,
+		})
+	}
+	if err != nil {
+		return err
+	}
+
+	// 有効
+	return c.JSON(http.StatusOK, &UserOtpResponse{
+		Enable:   true,
+		Modified: null.TimeFrom(otp.Modified),
 	})
 }
 
