@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Skeleton,
   Table,
@@ -48,7 +50,7 @@ export const LoginTryTable = () => {
             bgColor={tableHeadBgColor}
           >
             <Th>ログイン日時</Th>
-            <Td>種類</Td>
+            <Th>種類</Th>
             <Th textAlign="center">IPアドレス</Th>
             <Th textAlign="center">端末</Th>
           </Tr>
