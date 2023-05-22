@@ -7,6 +7,7 @@ import {
   LoginTryHistoryListScheme,
   LoginTryHistoryScheme,
 } from '../types/history';
+import {UserOtpScheme} from '../types/user';
 
 export async function accountUserFeather() {
   const res = await fetch(api('/v2/account/list'), {
@@ -70,6 +71,29 @@ export async function loginTryHistoryFeather() {
   }
 
   const data = LoginTryHistoryListScheme.safeParse(await res.json());
+  if (data.success) {
+    return data.data;
+  }
+  console.error(data.error.message);
+  throw new HTTPError(data.error.message);
+}
+
+export async function userOtpFeather() {
+  const res = await fetch(api('/v2/user/otp'), {
+    credentials: 'include',
+    mode: 'cors',
+  });
+
+  if (!res.ok) {
+    const data = ErrorSchema.safeParse(await res.json());
+    if (data.success) {
+      throw data.data;
+    }
+    console.error(data.error.message);
+    throw new HTTPError(data.error.message);
+  }
+
+  const data = UserOtpScheme.safeParse(await res.json());
   if (data.success) {
     return data.data;
   }

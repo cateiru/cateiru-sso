@@ -43,3 +43,9 @@ export const UserUserName = z.object({
   ok: z.boolean(),
 });
 export type UserUserName = z.infer<typeof UserUserName>;
+
+export const UserOtpScheme = z.object({
+  enable: z.boolean(),
+  modified: z.string().datetime({offset: true}).nullable(),
+});
+export type UserOtp = z.infer<typeof UserOtpScheme>;

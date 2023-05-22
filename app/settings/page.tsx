@@ -1,7 +1,7 @@
-import {Settings} from '../../components/Settings/Settings';
+import {AccountSetting} from '../../components/Settings/AccountSetting/AccountSetting';
 
 const Page = () => {
-  return <Settings />;
+  return <AccountSetting />;
 };
 
 export default Page;
