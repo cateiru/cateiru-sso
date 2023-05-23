@@ -15,7 +15,7 @@ type Story = StoryObj<typeof OtpRegisterStart>;
 
 export const Default: Story = {
   args: {
-    onRegisterStart: () => {
+    onRegisterStart: async () => {
       window.alert('onRegisterStart');
     },
   },
