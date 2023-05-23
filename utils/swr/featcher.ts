@@ -1,13 +1,14 @@
 import {api} from '../api';
 import {HTTPError} from '../error';
-import {AccountUserListSchema} from '../types/account';
+import {
+  AccountCertificatesSchema,
+  AccountUserListSchema,
+} from '../types/account';
 import {ErrorSchema} from '../types/error';
 import {
   LoginDeviceListScheme,
   LoginTryHistoryListScheme,
-  LoginTryHistoryScheme,
 } from '../types/history';
-import {UserOtpScheme} from '../types/user';
 
 export async function accountUserFeather() {
   const res = await fetch(api('/v2/account/list'), {
@@ -78,8 +79,8 @@ export async function loginTryHistoryFeather() {
   throw new HTTPError(data.error.message);
 }
 
-export async function userOtpFeather() {
-  const res = await fetch(api('/v2/user/otp'), {
+export async function userAccountCertificatesFeather() {
+  const res = await fetch(api('/v2/account/certificates'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -93,7 +94,7 @@ export async function userOtpFeather() {
     throw new HTTPError(data.error.message);
   }
 
-  const data = UserOtpScheme.safeParse(await res.json());
+  const data = AccountCertificatesSchema.safeParse(await res.json());
   if (data.success) {
     return data.data;
   }

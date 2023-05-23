@@ -39,8 +39,9 @@ type AccountReRegisterPasswordTemplate struct {
 
 type AccountCertificates struct {
 	Password bool `json:"password"`
-	OTP      bool `json:"otp"`
-	WebAuthn bool `json:"webauthn"`
+
+	OTP         bool      `json:"otp"`
+	OtpModified null.Time `json:"otp_modified"`
 }
 
 type AccountReRegisterPasswordIsSession struct {
@@ -720,21 +721,20 @@ func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
 	}
 	otp, err := models.Otps(
 		models.OtpWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	webauthn, err := models.Webauthns(
-		models.WebauthnWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
+	).One(ctx, h.DB)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
 
+	otpModified := null.NewTime(time.Time{}, false)
+	if otp != nil {
+		otpModified = null.TimeFrom(otp.Modified)
+	}
+
 	return c.JSON(http.StatusOK, AccountCertificates{
-		Password: password,
-		OTP:      otp,
-		WebAuthn: webauthn,
+		Password:    password,
+		OTP:         otp != nil,
+		OtpModified: otpModified,
 	})
 }
 

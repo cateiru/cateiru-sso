@@ -60,7 +60,6 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	user.POST("/user_name", h.UserUserNameHandler)   // ユーザー名のチェック
 	user.PUT("/setting", h.UserUpdateSettingHandler) // 設定の更新
 	user.GET("/brand", h.UserBrandHandler)
-	user.GET("/otp", h.UserOtpHandler)                             // OTPの設定状況
 	user.POST("/email", h.UserUpdateEmailHandler)                  // Email変更
 	user.POST("/email/register", h.UserUpdateEmailRegisterHandler) // Email変更確認コード打つ
 	user.POST("/avatar", h.UserAvatarHandler)                      // アバター画像の設定

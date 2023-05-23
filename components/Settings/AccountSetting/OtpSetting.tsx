@@ -1,23 +1,23 @@
-import {Skeleton} from '@chakra-ui/react';
-import useSWR from 'swr';
-import {userOtpFeather} from '../../../utils/swr/featcher';
-import {Error} from '../../Common/Error/Error';
+import React from 'react';
 import {OtpDisableText} from './OtpDisableText';
 import {OtpEnableText} from './OtpEnableText';
+import {OtpImpossible} from './OtpImpossible';
 
-export const OtpSetting = () => {
-  const {data, error} = useSWR('/v2/user/otp', userOtpFeather);
+interface Props {
+  settingPassword: boolean;
+  settingOtp: boolean;
+  otpModified: string | null;
+}
 
-  if (error) {
-    return <Error {...error} />;
+export const OtpSetting: React.FC<Props> = props => {
+  // パスワード設定していない場合
+  if (!props.settingPassword) {
+    return <OtpImpossible />;
   }
 
-  if (!data) {
-    return <Skeleton w="100%" h="40px" />;
-  }
-
-  if (data.enable && data.modified) {
-    return <OtpEnableText modified={new Date(data.modified)} />;
+  // OTP設定済み
+  if (props.settingOtp && props.otpModified) {
+    return <OtpEnableText modified={new Date(props.otpModified)} />;
   }
 
   // OTP無効化

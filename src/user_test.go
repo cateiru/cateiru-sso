@@ -607,64 +607,6 @@ func TestUserBrandHandler(t *testing.T) {
 	})
 }
 
-func TestUserOtpHandler(t *testing.T) {
-	ctx := context.Background()
-	h := NewTestHandler(t)
-
-	SessionTest(t, h.UserOtpHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		m, err := easy.NewMock("/", http.MethodGet, "")
-		require.NoError(t, err)
-		return m
-	})
-
-	t.Run("成功: OTPが有効", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		RegisterPassword(t, ctx, &u)
-		RegisterOTP(t, ctx, &u)
-
-		cookies := RegisterSession(t, ctx, &u)
-
-		m, err := easy.NewMock("/", http.MethodGet, "")
-		require.NoError(t, err)
-		m.Cookie(cookies)
-
-		c := m.Echo()
-
-		err = h.UserOtpHandler(c)
-		require.NoError(t, err)
-
-		response := src.UserOtpResponse{}
-		require.NoError(t, m.Json(&response))
-		require.Equal(t, response.Enable, true)
-		require.Equal(t, response.Modified.Valid, true)
-	})
-
-	t.Run("成功: OTP設定していない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		RegisterPassword(t, ctx, &u)
-
-		cookies := RegisterSession(t, ctx, &u)
-
-		m, err := easy.NewMock("/", http.MethodGet, "")
-		require.NoError(t, err)
-		m.Cookie(cookies)
-
-		c := m.Echo()
-
-		err = h.UserOtpHandler(c)
-		require.NoError(t, err)
-
-		response := src.UserOtpResponse{}
-		require.NoError(t, m.Json(&response))
-		require.Equal(t, response.Enable, false)
-		require.Equal(t, response.Modified.Valid, false)
-	})
-}
-
 func TestUserUpdateEmailHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)

@@ -47,20 +47,20 @@ export const SettingHeader: React.FC<{children: React.ReactNode}> = ({
       <Box overflowX="auto" pb=".1rem">
         <Tabs
           isFitted
-          defaultIndex={settingIndex()}
+          index={settingIndex()}
           mt="1rem"
           w="650px"
           colorScheme="cateiru"
           fontWeight="bold"
         >
           <TabList>
-            <Tab as={Link} href="/settings">
+            <Tab as={Link} href="/settings" replace={true}>
               アカウント設定
             </Tab>
-            <Tab as={Link} href="/settings/email">
+            <Tab as={Link} href="/settings/email" replace={true}>
               メールアドレス設定
             </Tab>
-            <Tab as={Link} href="/settings/password">
+            <Tab as={Link} href="/settings/password" replace={true}>
               パスワード設定
             </Tab>
           </TabList>

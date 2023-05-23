@@ -1557,33 +1557,6 @@ func TestAccountCertificatesHandler(t *testing.T) {
 		return m
 	})
 
-	t.Run("成功: パスワード、OTP、Passkeyすべて設定している", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		RegisterPassword(t, ctx, &u)
-		RegisterOTP(t, ctx, &u)
-		RegisterPasskey(t, ctx, &u)
-
-		cookies := RegisterSession(t, ctx, &u)
-
-		m, err := easy.NewMock("/", http.MethodGet, "")
-		require.NoError(t, err)
-		m.Cookie(cookies)
-
-		c := m.Echo()
-
-		err = h.AccountCertificatesHandler(c)
-		require.NoError(t, err)
-
-		response := src.AccountCertificates{}
-		require.NoError(t, m.Json(&response))
-
-		require.True(t, response.Password)
-		require.True(t, response.OTP)
-		require.True(t, response.WebAuthn)
-	})
-
 	t.Run("成功: パスワードのみ", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1606,7 +1579,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		require.True(t, response.Password)
 		require.False(t, response.OTP)
-		require.False(t, response.WebAuthn)
+		require.False(t, response.OtpModified.Valid)
 	})
 
 	t.Run("成功: パスワード、OTP", func(t *testing.T) {
@@ -1632,32 +1605,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		require.True(t, response.Password)
 		require.True(t, response.OTP)
-		require.False(t, response.WebAuthn)
-	})
-
-	t.Run("成功: Passkeyのみ", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		RegisterPasskey(t, ctx, &u)
-
-		cookies := RegisterSession(t, ctx, &u)
-
-		m, err := easy.NewMock("/", http.MethodGet, "")
-		require.NoError(t, err)
-		m.Cookie(cookies)
-
-		c := m.Echo()
-
-		err = h.AccountCertificatesHandler(c)
-		require.NoError(t, err)
-
-		response := src.AccountCertificates{}
-		require.NoError(t, m.Json(&response))
-
-		require.False(t, response.Password)
-		require.False(t, response.OTP)
-		require.True(t, response.WebAuthn)
+		require.True(t, response.OtpModified.Valid)
 	})
 }
 

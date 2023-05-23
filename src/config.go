@@ -246,7 +246,7 @@ var LocalConfig = &Config{
 	OTPRegisterSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:            5,
 	OTPRegisterLimit:         3,
-	OTPIssuer:                "CateiruSSO",
+	OTPIssuer:                "CateiruSSO Local",
 	OTPBackupCount:           10,
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
