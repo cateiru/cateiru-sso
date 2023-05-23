@@ -611,7 +611,7 @@ func TestUserOtpHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.UserUpdateEmailHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+	SessionTest(t, h.UserOtpHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		return m
