@@ -2,7 +2,7 @@ import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
 import {OtpSetting} from '../../../components/Settings/AccountSetting/OtpSetting';
 import {api} from '../../../utils/api';
-import {UserOtp} from '../../../utils/types/user';
+import {AccountCertificates} from '../../../utils/types/account';
 
 const meta: Meta<typeof OtpSetting> = {
   title: 'CateiruSSO/Settings/AccountSetting/OtpSetting',
@@ -20,13 +20,14 @@ export const Enable: Story = {
   parameters: {
     mockData: [
       {
-        url: api('/v2/user/otp'),
+        url: api('/v2/account/certificates'),
         method: 'GET',
         status: 200,
         response: {
-          enable: true,
-          modified: faker.date.recent().toISOString(),
-        } as UserOtp,
+          password: true,
+          otp: true,
+          otp_modified: faker.date.recent().toISOString(),
+        } as AccountCertificates,
       },
     ],
   },
@@ -40,9 +41,27 @@ export const Disable: Story = {
         method: 'GET',
         status: 200,
         response: {
-          enable: false,
-          modified: null,
-        } as UserOtp,
+          password: true,
+          otp: false,
+          otp_modified: null,
+        } as AccountCertificates,
+      },
+    ],
+  },
+};
+
+export const Impossible: Story = {
+  parameters: {
+    mockData: [
+      {
+        url: api('/v2/user/otp'),
+        method: 'GET',
+        status: 200,
+        response: {
+          password: false,
+          otp: false,
+          otp_modified: null,
+        } as AccountCertificates,
       },
     ],
   },
@@ -57,9 +76,10 @@ export const Loading: Story = {
         status: 200,
         delay: 10000,
         response: {
-          enable: true,
-          modified: faker.date.recent().toISOString(),
-        } as UserOtp,
+          password: true,
+          otp: true,
+          otp_modified: faker.date.recent().toISOString(),
+        } as AccountCertificates,
       },
     ],
   },
