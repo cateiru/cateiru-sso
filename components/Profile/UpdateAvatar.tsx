@@ -25,7 +25,7 @@ import {useRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {colorTheme} from '../../utils/theme';
 import {UserAvatarSchema} from '../../utils/types/user';
-import {Avatar} from '../Common/Avatar';
+import {Avatar} from '../Common/Chakra/Avatar';
 import {useRequest} from '../Common/useRequest';
 
 export const UpdateAvatar = () => {

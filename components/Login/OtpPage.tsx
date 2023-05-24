@@ -5,7 +5,7 @@ import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
-import {Avatar} from '../Common/Avatar';
+import {Avatar} from '../Common/Chakra/Avatar';
 import {Margin} from '../Common/Margin';
 import {useRequest} from '../Common/useRequest';
 import {LoginStep, type DefaultPageProps} from './Login';

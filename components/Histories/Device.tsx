@@ -1,6 +1,7 @@
-import {Box, Flex, Text, Tooltip} from '@chakra-ui/react';
+import {Box, Flex, Text} from '@chakra-ui/react';
 import React from 'react';
 import {IoPhonePortraitOutline, IoLaptopOutline} from 'react-icons/io5';
+import {Tooltip} from '../Common/Chakra/Tooltip';
 
 interface Props {
   device: string | null;
@@ -13,7 +14,7 @@ export const Device: React.FC<Props> = props => {
   const DeviceIcon = () => {
     if (props.isMobile) {
       return (
-        <Tooltip label="モバイル" hasArrow borderRadius="7px" placement="top">
+        <Tooltip label="モバイル" placement="top">
           <Box>
             <IoPhonePortraitOutline size="25px" />
           </Box>
@@ -21,7 +22,7 @@ export const Device: React.FC<Props> = props => {
       );
     }
     return (
-      <Tooltip label="デスクトップ" hasArrow borderRadius="7px" placement="top">
+      <Tooltip label="デスクトップ" placement="top">
         <Box>
           <IoLaptopOutline size="25px" />
         </Box>

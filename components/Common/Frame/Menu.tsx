@@ -18,8 +18,8 @@ import {
 } from 'react-icons/tb';
 import {useLogout} from '../useLogout';
 
-const fontSize = {base: '1.5rem', sm: '1rem'};
-const height = {base: '55px', sm: '32px'};
+const fontSize = {base: '1.2rem', sm: '1rem'};
+const height = {base: '40px', sm: '32px'};
 
 export const Menu = React.memo<{children: React.ReactNode}>(({children}) => {
   const {logout} = useLogout();

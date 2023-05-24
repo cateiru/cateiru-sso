@@ -2,7 +2,7 @@ import {Button, Flex, MenuButton, Skeleton, Spacer} from '@chakra-ui/react';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
-import {Avatar} from '../Avatar';
+import {Avatar} from '../Chakra/Avatar';
 import {ColorButton} from './ColorButton';
 import {HeaderTitle} from './HeaderTitle';
 import {Menu} from './Menu';

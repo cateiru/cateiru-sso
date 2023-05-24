@@ -1,18 +1,14 @@
-import {IconButton, Tooltip, useColorMode} from '@chakra-ui/react';
+import {IconButton, useColorMode} from '@chakra-ui/react';
 import React from 'react';
 import {TbMoon, TbSun} from 'react-icons/tb';
+import {Tooltip} from '../Chakra/Tooltip';
 
 export const ColorButton = () => {
   const {colorMode, toggleColorMode} = useColorMode();
 
   if (colorMode === 'light') {
     return (
-      <Tooltip
-        label="ダークテーマに変更"
-        hasArrow
-        placement="bottom-end"
-        borderRadius="7px"
-      >
+      <Tooltip label="ダークテーマに変更" placement="bottom-end">
         <IconButton
           onClick={toggleColorMode}
           aria-label="to dark"
@@ -24,12 +20,7 @@ export const ColorButton = () => {
   }
 
   return (
-    <Tooltip
-      label="ライトテーマに変更"
-      hasArrow
-      placement="bottom-end"
-      borderRadius="7px"
-    >
+    <Tooltip label="ライトテーマに変更" placement="bottom-end">
       <IconButton
         onClick={toggleColorMode}
         aria-label="to light"

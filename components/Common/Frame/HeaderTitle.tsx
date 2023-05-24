@@ -15,7 +15,7 @@ export const HeaderTitle = () => {
         <Text
           fontWeight="bold"
           ml=".5rem"
-          fontSize="1.3rem"
+          fontSize={{base: '1.1rem', md: '1.3rem'}}
           background="linear-gradient(124deg, #2bc4cf, #572bcf, #cf2ba1)"
           backgroundClip="text"
         >

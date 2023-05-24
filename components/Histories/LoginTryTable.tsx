@@ -8,7 +8,6 @@ import {
   Td,
   Th,
   Thead,
-  Tooltip,
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
@@ -21,6 +20,7 @@ import {
   LOGIN_TRY_IDENTIFIER,
   LoginTryHistoryList,
 } from '../../utils/types/history';
+import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
 import {Device} from './Device';
 
@@ -62,12 +62,7 @@ export const LoginTryTable = () => {
                 return (
                   <Tr key={v.id}>
                     <Td>
-                      <Tooltip
-                        hasArrow
-                        borderRadius="7px"
-                        placement="top"
-                        label={created.toLocaleString()}
-                      >
+                      <Tooltip placement="top" label={created.toLocaleString()}>
                         {hawManyDaysAgo(created)}
                       </Tooltip>
                     </Td>

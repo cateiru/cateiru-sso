@@ -1,7 +1,8 @@
-import {Center, Tooltip, useColorModeValue} from '@chakra-ui/react';
+import {Center, useColorModeValue} from '@chakra-ui/react';
 import React from 'react';
 import {TbTrashX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
+import {Tooltip} from '../Common/Chakra/Tooltip';
 import {useRequest} from '../Common/useRequest';
 
 interface Props {
@@ -40,12 +41,7 @@ export const LogoutDevice: React.FC<Props> = props => {
   };
 
   return (
-    <Tooltip
-      label="このデバイスからログアウト"
-      hasArrow
-      borderRadius="7px"
-      placement="top"
-    >
+    <Tooltip label="このデバイスからログアウト" placement="top">
       <Center>
         <TbTrashX
           size="25px"

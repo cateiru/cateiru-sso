@@ -13,7 +13,7 @@ import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import {userIdEmailRegex} from '../../utils/regex';
 import {type LoginUser, LoginUserSchema} from '../../utils/types/login';
-import {Avatar} from '../Common/Avatar';
+import {Avatar} from '../Common/Chakra/Avatar';
 import {PasswordForm, type PasswordFormData} from '../Common/Form/PasswordForm';
 import {useRequest} from '../Common/useRequest';
 

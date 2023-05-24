@@ -7,13 +7,13 @@ import {
   Heading,
   IconButton,
   Text,
-  Tooltip,
   useColorModeValue,
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import {TbHistory, TbSettings} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
+import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Margin} from '../Common/Margin';
 import {LoginDevice} from '../Histories/LoginDevice';
 import {ProfileForm} from './ProfileForm';
@@ -66,7 +66,7 @@ export const Profile = () => {
         </Text>
       )}
       <Center mt="1rem">
-        <Tooltip label="設定" hasArrow borderRadius="7px">
+        <Tooltip label="設定">
           <IconButton
             aria-label="設定"
             icon={<TbSettings size="25px" />}
@@ -76,7 +76,7 @@ export const Profile = () => {
             mr=".5rem"
           />
         </Tooltip>
-        <Tooltip label="履歴" hasArrow borderRadius="7px">
+        <Tooltip label="履歴">
           <IconButton
             aria-label="履歴"
             icon={<TbHistory size="25px" />}

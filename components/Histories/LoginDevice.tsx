@@ -7,7 +7,6 @@ import {
   Td,
   Th,
   Thead,
-  Tooltip,
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
@@ -17,6 +16,7 @@ import {hawManyDaysAgo} from '../../utils/date';
 import {loginDeviceFeather} from '../../utils/swr/featcher';
 import {ErrorType} from '../../utils/types/error';
 import {LoginDeviceList} from '../../utils/types/history';
+import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
 import {Device} from './Device';
 import {LogoutDevice} from './LogoutDevice';
@@ -51,12 +51,7 @@ export const LoginDevice = () => {
                   <Tr key={v.id}>
                     <Td p="0">
                       {v.is_current ? (
-                        <Tooltip
-                          label="このデバイス"
-                          hasArrow
-                          borderRadius="7px"
-                          placement="top"
-                        >
+                        <Tooltip label="このデバイス" placement="top">
                           <Center>
                             <TbCheck
                               size="25px"
@@ -70,12 +65,7 @@ export const LoginDevice = () => {
                       )}
                     </Td>
                     <Td>
-                      <Tooltip
-                        hasArrow
-                        borderRadius="7px"
-                        placement="top"
-                        label={created.toLocaleString()}
-                      >
+                      <Tooltip placement="top" label={created.toLocaleString()}>
                         {hawManyDaysAgo(created)}
                       </Tooltip>
                     </Td>

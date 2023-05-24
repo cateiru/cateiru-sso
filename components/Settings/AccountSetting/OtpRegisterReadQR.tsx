@@ -6,7 +6,6 @@ import {
   InputGroup,
   InputRightElement,
   Text,
-  Tooltip,
   useClipboard,
   useColorModeValue,
 } from '@chakra-ui/react';
@@ -14,6 +13,7 @@ import QRcode from 'qrcode.react';
 import React from 'react';
 import {TbCheck, TbCopy} from 'react-icons/tb';
 import {colorTheme} from '../../../utils/theme';
+import {Tooltip} from '../../Common/Chakra/Tooltip';
 
 interface Props {
   token: string;
@@ -47,7 +47,7 @@ export const OtpRegisterReadQR: React.FC<Props> = props => {
         <Text mt="1rem">もしくは、セットアップキーを直接入力してください</Text>
         <InputGroup mt=".2rem">
           <Input defaultValue={props.token} onFocus={e => e.target.select()} />
-          <Tooltip label="コピー" hasArrow borderRadius="7px">
+          <Tooltip label="コピー">
             <InputRightElement>
               <IconButton
                 aria-label="copy"

@@ -7,13 +7,13 @@ import {
   InputLeftAddon,
   InputRightElement,
   Spinner,
-  Tooltip,
   useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {useFormContext} from 'react-hook-form';
 import {TbCheck, TbX} from 'react-icons/tb';
 import {UserUserName} from '../../../utils/types/user';
+import {Tooltip} from '../Chakra/Tooltip';
 import {useRequest} from '../useRequest';
 
 export interface UserNameFormData {
@@ -97,11 +97,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
 
     if (ok) {
       return (
-        <Tooltip
-          label="このユーザー名は使用可能です"
-          hasArrow
-          borderRadius="7px"
-        >
+        <Tooltip label="このユーザー名は使用可能です">
           <InputRightElement>
             <TbCheck
               size="30px"
@@ -113,11 +109,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
       );
     }
     return (
-      <Tooltip
-        label="このユーザー名はすでに使用されています"
-        hasArrow
-        borderRadius="7px"
-      >
+      <Tooltip label="このユーザー名はすでに使用されています">
         <InputRightElement>
           <TbX size="30px" strokeWidth="3px" color={checkMarkNoSuccessColor} />
         </InputRightElement>

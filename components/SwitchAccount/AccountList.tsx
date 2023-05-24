@@ -6,7 +6,6 @@ import {
   Text,
   Box,
   useColorModeValue,
-  Tooltip,
   Skeleton,
   Button,
   Center,
@@ -20,7 +19,8 @@ import {UserState} from '../../utils/state/atom';
 import {accountUserFeather} from '../../utils/swr/featcher';
 import {AccountUserList} from '../../utils/types/account';
 import {ErrorType} from '../../utils/types/error';
-import {Avatar} from '../Common/Avatar';
+import {Avatar} from '../Common/Chakra/Avatar';
+import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
 import {useSwitchAccount} from './useSwitchAccount';
 
@@ -129,11 +129,7 @@ export const AccountList = () => {
                 </Td>
                 {isCurrentUser ? (
                   <Td p="0" pr="1rem">
-                    <Tooltip
-                      label="現在ログインしているユーザーです"
-                      hasArrow
-                      borderRadius="7px"
-                    >
+                    <Tooltip label="現在ログインしているユーザーです">
                       <Box>
                         <TbCheck
                           size="30px"
