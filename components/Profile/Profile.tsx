@@ -16,6 +16,7 @@ import {UserState} from '../../utils/state/atom';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Margin} from '../Common/Margin';
 import {LoginDevice} from '../Histories/LoginDevice';
+import {EmailView} from './EmailView';
 import {ProfileForm} from './ProfileForm';
 import {UpdateAvatar} from './UpdateAvatar';
 
@@ -65,6 +66,9 @@ export const Profile = () => {
           &#064;{user?.user.user_name || '???'}
         </Text>
       )}
+      <Center mt=".5rem">
+        <EmailView email={user?.user.email ?? ''} />
+      </Center>
       <Center mt="1rem">
         <Tooltip label="設定">
           <IconButton

@@ -1,5 +1,6 @@
 import {Box, Heading, Text, VStack, useColorModeValue} from '@chakra-ui/react';
 import React from 'react';
+import {hideEmail} from '../../utils/hide';
 import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
 
 interface Props {
@@ -22,18 +23,7 @@ export const SendMainSuccess: React.FC<Props> = ({email}) => {
   );
 
   const hide = React.useCallback(() => {
-    const matched = email.match(
-      /^(?<prefix>[A-Z0-9._%+-])(?<host>[A-Z0-9._%+-]+)@(?<tdomain>[A-Z0-9.-]+)\.(?<domain>[A-Z]{2,})/i
-    );
-    if (!matched) return 'メールアドレス';
-
-    const {prefix, host, tdomain, domain} = matched.groups!;
-
-    return `${prefix}${Array(host.length).fill('*').join('')}@${Array(
-      tdomain.length
-    )
-      .fill('*')
-      .join('')}.${domain}`;
+    return hideEmail(email);
   }, [email]);
 
   return (
