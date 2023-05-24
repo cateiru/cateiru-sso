@@ -1,8 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {OtpDeleteModal} from '../../../components/Settings/AccountSetting/OtpDeleteModal';
+import {OtpDeleteModal} from '../../../../components/Settings/AccountSetting/OtpSetting/OtpDeleteModal';
 
 const meta: Meta<typeof OtpDeleteModal> = {
-  title: 'CateiruSSO/Settings/AccountSetting/OtpDeleteModal',
+  title: 'CateiruSSO/Settings/AccountSetting/OtpSetting/OtpDeleteModal',
   component: OtpDeleteModal,
   tags: ['autodocs'],
   parameters: {

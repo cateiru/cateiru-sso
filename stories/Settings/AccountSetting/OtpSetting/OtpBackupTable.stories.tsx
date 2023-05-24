@@ -1,9 +1,9 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {OtpBackupTable} from '../../../components/Settings/AccountSetting/OtpBackupTable';
+import {OtpBackupTable} from '../../../../components/Settings/AccountSetting/OtpSetting/OtpBackupTable';
 
 const meta: Meta<typeof OtpBackupTable> = {
-  title: 'CateiruSSO/Settings/AccountSetting/OtpBackupTable',
+  title: 'CateiruSSO/Settings/AccountSetting/OtpSetting/OtpBackupTable',
   component: OtpBackupTable,
   tags: ['autodocs'],
   parameters: {

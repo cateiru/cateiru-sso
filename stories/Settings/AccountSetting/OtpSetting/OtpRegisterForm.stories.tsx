@@ -1,8 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {OtpRegisterForm} from '../../../components/Settings/AccountSetting/OtpRegisterForm';
+import {OtpRegisterForm} from '../../../../components/Settings/AccountSetting/OtpSetting/OtpRegisterForm';
 
 const meta: Meta<typeof OtpRegisterForm> = {
-  title: 'CateiruSSO/Settings/AccountSetting/OtpRegisterForm',
+  title: 'CateiruSSO/Settings/AccountSetting/OtpSetting/OtpRegisterForm',
   component: OtpRegisterForm,
   tags: ['autodocs'],
   parameters: {

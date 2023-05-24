@@ -1,9 +1,9 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {OtpRegisterReadQR} from '../../../components/Settings/AccountSetting/OtpRegisterReadQR';
+import {OtpRegisterReadQR} from '../../../../components/Settings/AccountSetting/OtpSetting/OtpRegisterReadQR';
 
 const meta: Meta<typeof OtpRegisterReadQR> = {
-  title: 'CateiruSSO/Settings/AccountSetting/OtpRegisterReadQR',
+  title: 'CateiruSSO/Settings/AccountSetting/OtpSetting/OtpRegisterReadQR',
   component: OtpRegisterReadQR,
   tags: ['autodocs'],
   parameters: {

@@ -1,11 +1,11 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {OtpSetting} from '../../../components/Settings/AccountSetting/OtpSetting';
-import {api} from '../../../utils/api';
-import {AccountCertificates} from '../../../utils/types/account';
+import {OtpSetting} from '../../../../components/Settings/AccountSetting/OtpSetting/OtpSetting';
+import {api} from '../../../../utils/api';
+import {AccountCertificates} from '../../../../utils/types/account';
 
 const meta: Meta<typeof OtpSetting> = {
-  title: 'CateiruSSO/Settings/AccountSetting/OtpSetting',
+  title: 'CateiruSSO/Settings/AccountSetting/OtpSetting/OtpSetting',
   component: OtpSetting,
   tags: ['autodocs'],
   parameters: {

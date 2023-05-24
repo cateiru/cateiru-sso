@@ -13,9 +13,12 @@ import {
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import {z} from 'zod';
-import {ErrorUniqueMessage} from '../../../utils/types/error';
-import {PasswordForm, PasswordFormData} from '../../Common/Form/PasswordForm';
-import {useRequest} from '../../Common/useRequest';
+import {ErrorUniqueMessage} from '../../../../utils/types/error';
+import {
+  PasswordForm,
+  PasswordFormData,
+} from '../../../Common/Form/PasswordForm';
+import {useRequest} from '../../../Common/useRequest';
 import {OtpBackups} from './OtpBackups';
 
 interface Props {

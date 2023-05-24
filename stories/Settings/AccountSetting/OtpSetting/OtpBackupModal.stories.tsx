@@ -1,8 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {OtpBackupModal} from '../../../components/Settings/AccountSetting/OtpBackupModal';
+import {OtpBackupModal} from '../../../../components/Settings/AccountSetting/OtpSetting/OtpBackupModal';
 
 const meta: Meta<typeof OtpBackupModal> = {
-  title: 'CateiruSSO/Settings/AccountSetting/OtpBackupModal',
+  title: 'CateiruSSO/Settings/AccountSetting/OtpSetting/OtpBackupModal',
   component: OtpBackupModal,
   tags: ['autodocs'],
   parameters: {
