@@ -114,6 +114,14 @@ export const OtpRegister = React.memo<Props>(props => {
       if (data.success) {
         setBackups(data.data);
         setStep(2);
+
+        mutate(
+          key =>
+            typeof key === 'string' &&
+            key.startsWith('/v2/account/certificates'),
+          undefined,
+          {revalidate: true}
+        );
       } else {
         console.error(data.error);
       }
@@ -121,16 +129,6 @@ export const OtpRegister = React.memo<Props>(props => {
   };
 
   const modalClose = () => {
-    if (step === 2) {
-      // パージする
-      mutate(
-        key =>
-          typeof key === 'string' && key.startsWith('/v2/account/certificates'),
-        undefined,
-        {revalidate: true}
-      );
-    }
-
     setStep(0);
     setToken(null);
     setBackups([]);

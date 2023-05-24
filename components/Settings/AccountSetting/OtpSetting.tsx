@@ -1,25 +1,58 @@
+import {useDisclosure} from '@chakra-ui/react';
 import React from 'react';
+import useSWR from 'swr';
+import {userAccountCertificatesFeather} from '../../../utils/swr/featcher';
+import {Error} from '../../Common/Error/Error';
+import {SettingCard} from '../SettingCard';
+import {SettingCardSkelton} from '../SettingCardSkelton';
 import {OtpDisableText} from './OtpDisableText';
 import {OtpEnableText} from './OtpEnableText';
 import {OtpImpossible} from './OtpImpossible';
+import {OtpRegister} from './OtpRegister';
 
-interface Props {
-  settingPassword: boolean;
-  settingOtp: boolean;
-  otpModified: string | null;
-}
+export const OtpSetting = () => {
+  const {isOpen, onOpen, onClose} = useDisclosure();
 
-export const OtpSetting: React.FC<Props> = props => {
-  // パスワード設定していない場合
-  if (!props.settingPassword) {
-    return <OtpImpossible />;
-  }
+  const Main = () => {
+    const {data, error} = useSWR(
+      '/v2/account/certificates',
+      userAccountCertificatesFeather
+    );
 
-  // OTP設定済み
-  if (props.settingOtp && props.otpModified) {
-    return <OtpEnableText modified={new Date(props.otpModified)} />;
-  }
+    if (error) {
+      return <Error {...error} />;
+    }
 
-  // OTP無効化
-  return <OtpDisableText />;
+    if (!data) {
+      return <SettingCardSkelton />;
+    }
+
+    const C = () => {
+      // パスワード設定していない場合
+      if (!data.password) {
+        return <OtpImpossible />;
+      }
+
+      // OTP設定済み
+      if (data.otp && data.otp_modified) {
+        return <OtpEnableText modified={new Date(data.otp_modified)} />;
+      }
+
+      // OTP無効化
+      return <OtpDisableText onOpen={onOpen} />;
+    };
+
+    return (
+      <SettingCard title="二段階認証">
+        <C />
+      </SettingCard>
+    );
+  };
+
+  return (
+    <>
+      <Main />
+      <OtpRegister isOpen={isOpen} onClose={onClose} />
+    </>
+  );
 };

@@ -80,7 +80,6 @@ export const OtpBackupModal: React.FC<Props> = props => {
   } = methods;
 
   const closeModal = () => {
-    setBackups([]);
     reset();
     props.onClose();
   };

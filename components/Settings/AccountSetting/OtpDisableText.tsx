@@ -1,17 +1,7 @@
-import {
-  Button,
-  Spacer,
-  Stack,
-  Text,
-  useColorModeValue,
-  useDisclosure,
-} from '@chakra-ui/react';
-import {OtpRegister} from './OtpRegister';
+import {Button, Spacer, Stack, Text, useColorModeValue} from '@chakra-ui/react';
 
-export const OtpDisableText = () => {
+export const OtpDisableText: React.FC<{onOpen: () => void}> = ({onOpen}) => {
   const textColor = useColorModeValue('gray.500', 'gray.400');
-
-  const {isOpen, onOpen, onClose} = useDisclosure();
 
   return (
     <>
@@ -25,7 +15,6 @@ export const OtpDisableText = () => {
           二段階認証を設定する
         </Button>
       </Stack>
-      <OtpRegister isOpen={isOpen} onClose={onClose} />
     </>
   );
 };
