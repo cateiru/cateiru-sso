@@ -14,9 +14,9 @@ import {z} from 'zod';
 import {
   AccountOTPPublic,
   AccountOTPPublicSchema,
-} from '../../../utils/types/account';
-import {ErrorUniqueMessage} from '../../../utils/types/error';
-import {useRequest} from '../../Common/useRequest';
+} from '../../../../utils/types/account';
+import {ErrorUniqueMessage} from '../../../../utils/types/error';
+import {useRequest} from '../../../Common/useRequest';
 import {OtpBackups} from './OtpBackups';
 import {OtpRegisterForm, OtpRegisterFormData} from './OtpRegisterForm';
 import {OtpRegisterReadQR} from './OtpRegisterReadQR';

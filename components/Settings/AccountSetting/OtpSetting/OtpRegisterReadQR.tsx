@@ -12,8 +12,8 @@ import {
 import QRcode from 'qrcode.react';
 import React from 'react';
 import {TbCheck, TbCopy} from 'react-icons/tb';
-import {colorTheme} from '../../../utils/theme';
-import {Tooltip} from '../../Common/Chakra/Tooltip';
+import {colorTheme} from '../../../../utils/theme';
+import {Tooltip} from '../../../Common/Chakra/Tooltip';
 
 interface Props {
   token: string;
