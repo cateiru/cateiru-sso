@@ -15,7 +15,7 @@ export const SettingHeader: React.FC<{children: React.ReactNode}> = ({
   const settingTitle = React.useCallback(() => {
     switch (pathname) {
       case '/settings':
-        return 'アカウント設定';
+        return '設定';
       case '/settings/email':
         return 'メールアドレス設定';
       case '/settings/password':
@@ -44,18 +44,18 @@ export const SettingHeader: React.FC<{children: React.ReactNode}> = ({
         {settingTitle()}
       </Heading>
       <UserName />
-      <Box overflowX="auto" pb=".1rem">
+      <Box overflowX={{base: 'auto', md: 'visible'}} pb=".1rem" px=".5rem">
         <Tabs
           isFitted
           index={settingIndex()}
           mt="1rem"
-          w="650px"
+          minW={{base: '650px', md: '100%'}}
           colorScheme="cateiru"
           fontWeight="bold"
         >
           <TabList>
             <Tab as={Link} href="/settings" replace={true}>
-              アカウント設定
+              設定
             </Tab>
             <Tab as={Link} href="/settings/email" replace={true}>
               メールアドレス設定

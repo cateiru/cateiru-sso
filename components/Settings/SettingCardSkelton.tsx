@@ -4,7 +4,7 @@ export const SettingCardSkelton = () => {
   const borderColor = useColorModeValue('gray.300', 'gray.600');
 
   return (
-    <Box w="100%" margin="auto" mb="2rem" mt="1rem">
+    <Box w="100%" margin="auto" my="2.5rem">
       <Box
         borderBottom="1px"
         pb=".5rem"
