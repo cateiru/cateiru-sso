@@ -4,7 +4,7 @@ export function hideEmail(email: string) {
   );
   if (!matched) return 'メールアドレス';
 
-  const {prefix, host, tdomain, domain} = matched.groups!;
+  const {prefix, host, domain} = matched.groups!;
 
   return `${prefix}${Array(host.length).fill('*').join('')}@****.${domain}`;
 }
