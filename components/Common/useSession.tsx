@@ -61,8 +61,6 @@ export const useSession = () => {
                     error.data.message
                   : error.data.message,
                 status: 'error',
-                duration: 9000,
-                isClosable: true,
               });
             } else {
               console.error(error.error);
@@ -76,8 +74,6 @@ export const useSession = () => {
               title: 'ログインに失敗しました',
               description: e.message,
               status: 'error',
-              duration: 9000,
-              isClosable: true,
             });
           }
           setUser(null);

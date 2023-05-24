@@ -33,8 +33,6 @@ export const OtpPage: React.FC<Props> = props => {
       toast({
         title: message,
         status: 'error',
-        duration: 5000,
-        isClosable: true,
       });
 
       if (e.unique_code !== 8) {

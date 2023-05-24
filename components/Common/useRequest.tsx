@@ -37,8 +37,6 @@ export const useRequest = (path: string, options?: Options): Returns => {
         toast({
           title: message,
           status: 'error',
-          duration: 5000,
-          isClosable: true,
         });
         options?.errorCallback?.(message);
 
@@ -52,8 +50,6 @@ export const useRequest = (path: string, options?: Options): Returns => {
           title: 'エラー',
           description: e.message,
           status: 'error',
-          duration: 5000,
-          isClosable: true,
         });
       }
       options?.errorCallback?.(undefined);

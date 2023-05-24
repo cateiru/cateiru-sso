@@ -106,8 +106,6 @@ export const UpdateAvatar = () => {
                 toast({
                   title: 'アバターを変更しました',
                   status: 'success',
-                  duration: 3000,
-                  isClosable: true,
                 });
 
                 // 一旦avatarをnullにしてから、画像を追加する

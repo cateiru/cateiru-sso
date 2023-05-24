@@ -6,12 +6,15 @@ import {ChakraProvider} from '@chakra-ui/react';
 import {RecoilRoot} from 'recoil';
 import {Frame} from '../components/Common/Frame/Frame';
 import {ReCaptcha} from '../components/Common/ReCaptcha';
-import {theme} from '../utils/theme';
+import {theme, toastOptions} from '../utils/theme';
 
 export const Providers = ({children}: {children: React.ReactNode}) => (
   <RecoilRoot>
     <CacheProvider>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider
+        theme={theme}
+        toastOptions={{defaultOptions: toastOptions}}
+      >
         <ReCaptcha>
           <Frame>{children}</Frame>
         </ReCaptcha>

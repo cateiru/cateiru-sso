@@ -57,8 +57,6 @@ export const useUpdateProfile = (): Returns => {
         toast({
           title: 'プロフィールを更新しました',
           status: 'success',
-          duration: 2000,
-          isClosable: true,
         });
       } else {
         console.log(data.error);

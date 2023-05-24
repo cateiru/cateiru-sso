@@ -1,4 +1,4 @@
-import {ThemeConfig, extendTheme} from '@chakra-ui/react';
+import {ThemeConfig, UseToastOptions, extendTheme} from '@chakra-ui/react';
 import {mode} from '@chakra-ui/theme-tools';
 import {StepsTheme} from 'chakra-ui-steps';
 
@@ -18,6 +18,11 @@ export const colorTheme: ColorThemes = {
   lightBackground: '#ffffff',
   darkText: '#e8e8e8',
   lightText: '#1f1f1f',
+};
+
+export const toastOptions: UseToastOptions = {
+  duration: 5000,
+  isClosable: true,
 };
 
 export const theme = extendTheme({
