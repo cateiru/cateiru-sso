@@ -1,8 +1,8 @@
 import {SettingCard} from '../../SettingCard';
 
-export const UserSetting = () => {
+export const NoticeSetting = () => {
   return (
-    <SettingCard title="ユーザー設定">
+    <SettingCard title="通知">
       <></>
     </SettingCard>
   );

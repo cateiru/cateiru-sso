@@ -2,14 +2,14 @@
 
 import {Box} from '@chakra-ui/react';
 import {DeleteAccount} from './DeleteAccount';
+import {NoticeSetting} from './NoticeSetting';
 import {OtpSetting} from './OtpSetting';
 import {PasskeySetting} from './PasskeySetting';
-import {UserSetting} from './UserSetting';
 
 export const AccountSetting = () => {
   return (
     <Box>
-      <UserSetting />
+      <NoticeSetting />
       <OtpSetting />
       <PasskeySetting />
       <DeleteAccount />
