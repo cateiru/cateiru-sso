@@ -24,6 +24,8 @@ export interface RegisterPasswordFormContextData {
 interface Props {
   setOk: (ok: boolean) => void;
   ok: boolean;
+  label?: string;
+  mt?: string;
 }
 
 export const RegisterPasswordFormContext: React.FC<Props> = props => {
@@ -47,14 +49,15 @@ export const RegisterPasswordFormContext: React.FC<Props> = props => {
   }, [props.ok, pass]);
 
   return (
-    <FormControl isInvalid={!!errors.new_password}>
-      <FormLabel htmlFor="new_password">パスワード</FormLabel>
+    <FormControl isInvalid={!!errors.new_password} mt={props.mt}>
+      <FormLabel htmlFor="new_password">
+        {props.label ?? 'パスワード'}
+      </FormLabel>
       <InputGroup>
         <Input
           id="new_password"
           autoComplete="new-password"
           type={show ? 'text' : 'password'}
-          placeholder="パスワード"
           {...register('new_password', {
             required: true,
             onChange: e => setPass(e.target.value || ''),
@@ -78,7 +81,7 @@ export const RegisterPasswordFormContext: React.FC<Props> = props => {
       />
       <Skeleton
         marginTop=".5rem"
-        minH="150px"
+        minH="130px"
         isLoaded={!!PasswordChecklist}
         verticalAlign="middle"
       >

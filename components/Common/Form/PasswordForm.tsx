@@ -17,6 +17,7 @@ export interface PasswordFormData {
 
 interface Props {
   enableWebauthn: boolean;
+  label?: string;
 }
 
 export const PasswordForm: React.FC<Props> = props => {
@@ -28,7 +29,7 @@ export const PasswordForm: React.FC<Props> = props => {
 
   return (
     <FormControl isInvalid={!!errors.password} mt=".5rem">
-      <FormLabel htmlFor="password">パスワード</FormLabel>
+      <FormLabel htmlFor="password">{props.label ?? 'パスワード'}</FormLabel>
       <InputGroup>
         <Input
           id="password"
@@ -39,7 +40,7 @@ export const PasswordForm: React.FC<Props> = props => {
           }
           type={show ? 'text' : 'password'}
           {...register('password', {
-            required: 'パスワードを入力してください',
+            required: `${props.label ?? 'パスワード'}を入力してください`,
           })}
         />
         <InputRightElement>
