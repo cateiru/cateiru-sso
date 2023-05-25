@@ -1,4 +1,4 @@
-import {EmailSetting} from '../../../components/Settings/EmailSetting';
+import {EmailSetting} from '../../../components/Settings/EmailSetting/EmailSetting';
 
 const Page = () => {
   return <EmailSetting />;

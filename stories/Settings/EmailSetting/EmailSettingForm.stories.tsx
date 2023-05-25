@@ -1,6 +1,6 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {EmailSettingForm} from '../../components/Settings/EmailSettingForm';
+import {EmailSettingForm} from '../../../components/Settings/EmailSetting/EmailSettingForm';
 
 const meta: Meta<typeof EmailSettingForm> = {
   title: 'CateiruSSO/Settings/EmailSettingForm',

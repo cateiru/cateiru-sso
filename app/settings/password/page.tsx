@@ -1,5 +1,7 @@
+import {PasswordSetting} from '../../../components/Settings/PasswordSetting/PasswordSetting';
+
 const Page = () => {
-  return <>password</>;
+  return <PasswordSetting />;
 };
 
 export default Page;

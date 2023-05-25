@@ -4,14 +4,14 @@ import {Box, useToast} from '@chakra-ui/react';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useRecoilState} from 'recoil';
-import {UserState} from '../../utils/state/atom';
-import {ErrorUniqueMessage} from '../../utils/types/error';
+import {UserState} from '../../../utils/state/atom';
+import {ErrorUniqueMessage} from '../../../utils/types/error';
 import {
   UserUpdateEmailRegisterScheme,
   UserUpdateEmailScheme,
-} from '../../utils/types/settings';
-import {EmailVerifyForm} from '../Common/Form/EmailVerifyForm';
-import {useRequest} from '../Common/useRequest';
+} from '../../../utils/types/settings';
+import {EmailVerifyForm} from '../../Common/Form/EmailVerifyForm';
+import {useRequest} from '../../Common/useRequest';
 import {EmailFormData, EmailSettingForm} from './EmailSettingForm';
 import {EmailSettingVerifyForm} from './EmailSettingVerifyForm';
 

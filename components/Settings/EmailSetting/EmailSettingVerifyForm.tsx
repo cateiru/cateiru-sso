@@ -1,8 +1,8 @@
 import {Center, Text, useColorModeValue} from '@chakra-ui/react';
 import React from 'react';
 import {TbArrowBigDown} from 'react-icons/tb';
-import {config} from '../../utils/config';
-import {EmailVerifyForm} from '../Common/Form/EmailVerifyForm';
+import {config} from '../../../utils/config';
+import {EmailVerifyForm} from '../../Common/Form/EmailVerifyForm';
 
 interface Props {
   onSubmit: (data: EmailVerifyForm) => Promise<void>;

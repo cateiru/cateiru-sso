@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {EmailSettingVerifyForm} from '../../components/Settings/EmailSettingVerifyForm';
+import {EmailSettingVerifyForm} from '../../../components/Settings/EmailSetting/EmailSettingVerifyForm';
 
 const meta: Meta<typeof EmailSettingVerifyForm> = {
   title: 'CateiruSSO/Settings/EmailSettingVerifyForm',

@@ -11,7 +11,7 @@ import {
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import {TbArrowBigDown} from 'react-icons/tb';
-import {emailRegex} from '../../utils/regex';
+import {emailRegex} from '../../../utils/regex';
 
 export interface EmailFormData {
   new_email: string;
