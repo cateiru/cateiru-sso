@@ -1,109 +1,50 @@
-import {
-  FormControl,
-  FormLabel,
-  IconButton,
-  Input,
-  InputGroup,
-  InputRightElement,
-  Skeleton,
-} from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
+import {Button} from '@chakra-ui/react';
 import React from 'react';
-import {useFormContext} from 'react-hook-form';
-import {TbEye, TbEyeOff} from 'react-icons/tb';
-import PasswordStrengthBar from 'react-password-strength-bar';
-
-const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
-  ssr: false,
-});
-
-export interface RegisterPasswordFormData {
-  new_password: string;
-}
+import {FormProvider, useForm} from 'react-hook-form';
+import {
+  type RegisterPasswordFormContextData,
+  RegisterPasswordFormContext,
+} from './RegisterPasswordFormContext';
 
 interface Props {
-  setOk: (ok: boolean) => void;
-  ok: boolean;
+  buttonText: string;
+  onSubmit: (data: RegisterPasswordFormContextData) => Promise<void>;
 }
 
 export const RegisterPasswordForm: React.FC<Props> = props => {
+  const methods = useForm<RegisterPasswordFormContextData>();
   const {
-    register,
-    setError,
+    handleSubmit,
     clearErrors,
-    formState: {errors},
-  } = useFormContext<RegisterPasswordFormData>();
-  const [show, setShow] = React.useState(false);
-  const [pass, setPass] = React.useState('');
+    formState: {isSubmitting},
+  } = methods;
 
-  React.useEffect(() => {
-    if (pass.length !== 0) {
-      if (!props.ok) {
-        setError('new_password', {});
-      } else {
-        clearErrors('new_password');
-      }
+  const [ok, setOk] = React.useState(false);
+
+  const onSubmit = async (data: RegisterPasswordFormContextData) => {
+    if (!ok) {
+      return;
+    } else {
+      clearErrors('new_password');
     }
-  }, [props.ok, pass]);
+
+    await props.onSubmit(data);
+  };
 
   return (
-    <FormControl isInvalid={!!errors.new_password}>
-      <FormLabel htmlFor="new_password">パスワード</FormLabel>
-      <InputGroup>
-        <Input
-          id="new_password"
-          autoComplete="new-password"
-          type={show ? 'text' : 'password'}
-          placeholder="パスワード"
-          {...register('new_password', {
-            required: true,
-            onChange: e => setPass(e.target.value || ''),
-          })}
-        />
-        <InputRightElement>
-          <IconButton
-            variant="ghost"
-            aria-label="show password"
-            icon={show ? <TbEye size="25px" /> : <TbEyeOff size="25px" />}
-            size="sm"
-            onClick={() => setShow(!show)}
-          />
-        </InputRightElement>
-      </InputGroup>
-      <PasswordStrengthBar
-        password={pass}
-        scoreWords={[]}
-        shortScoreWord=""
-        minLength={8}
-      />
-      <Skeleton
-        marginTop=".5rem"
-        minH="150px"
-        isLoaded={!!PasswordChecklist}
-        verticalAlign="middle"
-      >
-        <PasswordChecklist
-          rules={['minLength', 'specialChar', 'number', 'capital']}
-          minLength={13}
-          value={pass}
-          messages={{
-            minLength: 'パスワードは13文字以上',
-            specialChar: 'パスワードに記号が含まれている',
-            number: 'パスワードに数字が含まれている',
-            capital: 'パスワードに大文字が含まれている',
-          }}
-          onChange={isValid => {
-            let unmounted = false;
-            if (isValid !== props.ok && !unmounted) {
-              props.setOk(isValid);
-            }
-
-            return () => {
-              unmounted = true;
-            };
-          }}
-        />
-      </Skeleton>
-    </FormControl>
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <RegisterPasswordFormContext ok={ok} setOk={setOk} />
+        <Button
+          mt="1rem"
+          isLoading={isSubmitting}
+          colorScheme="cateiru"
+          type="submit"
+          w="100%"
+        >
+          {props.buttonText}
+        </Button>
+      </form>
+    </FormProvider>
   );
 };

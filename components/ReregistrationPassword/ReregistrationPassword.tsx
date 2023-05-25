@@ -5,11 +5,11 @@ import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
 import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {AccountReRegisterPasswordIsSessionSchema} from '../../utils/types/login';
-import type {RegisterPasswordFormData} from '../Common/Form/RegisterPasswordForm';
+import {RegisterPasswordForm} from '../Common/Form/RegisterPasswordForm';
+import type {RegisterPasswordFormContextData} from '../Common/Form/RegisterPasswordFormContext';
 import {Spinner} from '../Common/Icons/Spinner';
 import {Margin} from '../Common/Margin';
 import {useRequest} from '../Common/useRequest';
-import {ReregistrationPasswordForm} from './ReregistrationPasswordForm';
 
 export const ReregistrationPassword = () => {
   const router = useRouter();
@@ -73,7 +73,7 @@ export const ReregistrationPassword = () => {
     }
   }, []);
 
-  const onSubmit = async (data: RegisterPasswordFormData) => {
+  const onSubmit = async (data: RegisterPasswordFormContextData) => {
     if (typeof token !== 'string') return;
     if (email === '') return;
     if (!executeRecaptcha) {
@@ -128,7 +128,10 @@ export const ReregistrationPassword = () => {
         <Heading textAlign="center" mt="3rem" mb="1rem">
           新しいパスワードを設定してください
         </Heading>
-        <ReregistrationPasswordForm onSubmit={onSubmit} />
+        <RegisterPasswordForm
+          onSubmit={onSubmit}
+          buttonText="パスワード再設定"
+        />
       </Margin>
     );
   }

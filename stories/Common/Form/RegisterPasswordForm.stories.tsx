@@ -1,25 +1,12 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import React from 'react';
-import {FormProvider, useForm} from 'react-hook-form';
-import {
-  RegisterPasswordForm,
-  type RegisterPasswordFormData,
-} from '../../../components/Common/Form/RegisterPasswordForm';
+import {RegisterPasswordForm} from '../../../components/Common/Form/RegisterPasswordForm';
 
-const Form = () => {
-  const methods = useForm<RegisterPasswordFormData>();
-  const [ok, setOk] = React.useState(false);
-
-  return (
-    <FormProvider {...methods}>
-      <RegisterPasswordForm ok={ok} setOk={setOk} />
-    </FormProvider>
-  );
-};
+const sleep = (msec: number) =>
+  new Promise(resolve => setTimeout(resolve, msec));
 
 const meta: Meta<typeof RegisterPasswordForm> = {
   title: 'CateiruSSO/Common/Form/RegisterPasswordForm',
-  component: Form,
+  component: RegisterPasswordForm,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
@@ -29,4 +16,12 @@ const meta: Meta<typeof RegisterPasswordForm> = {
 export default meta;
 type Story = StoryObj<typeof RegisterPasswordForm>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  args: {
+    onSubmit: async () => {
+      await sleep(1000);
+      console.log('submit');
+    },
+    buttonText: 'ああああ',
+  },
+};

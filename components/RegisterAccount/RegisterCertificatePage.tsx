@@ -11,11 +11,14 @@ import {TbFingerprint, TbPassword} from 'react-icons/tb';
 import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {UserSchema} from '../../utils/types/user';
-import type {RegisterPasswordFormData} from '../Common/Form/RegisterPasswordForm';
+import {RegisterPasswordForm} from '../Common/Form/RegisterPasswordForm';
+import {
+  RegisterPasswordFormContext,
+  RegisterPasswordFormContextData,
+} from '../Common/Form/RegisterPasswordFormContext';
 import {useRequest} from '../Common/useRequest';
 import type {DefaultPageProps} from './RegisterAccount';
 import {RegisterPasskeyForm} from './RegisterPasskeyForm';
-import {RegisterPasswordForm} from './RegisterPasswordForm';
 
 interface Props extends DefaultPageProps {
   registerToken: string;
@@ -39,7 +42,7 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
     },
   });
 
-  const onSubmitPassword = async (data: RegisterPasswordFormData) => {
+  const onSubmitPassword = async (data: RegisterPasswordFormContextData) => {
     const form = new FormData();
     form.append('password', data.new_password);
 
@@ -131,7 +134,10 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
             registerToken={props.registerToken}
           />
         ) : (
-          <RegisterPasswordForm onSubmit={onSubmitPassword} />
+          <RegisterPasswordForm
+            onSubmit={onSubmitPassword}
+            buttonText="パスワードを設定"
+          />
         )}
       </Box>
     </Box>
