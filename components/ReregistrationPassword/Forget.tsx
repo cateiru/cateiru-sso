@@ -68,7 +68,7 @@ export const Forget = () => {
 
   return (
     <Margin>
-      <Heading textAlign="center" mt="3rem">
+      <Heading textAlign="center" mt="15vh">
         パスワードを再登録します
       </Heading>
       <Text mt="1rem" textAlign="center" mb="2rem" color={descriptionColor}>

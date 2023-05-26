@@ -8,7 +8,7 @@ import {RegisterAccount} from './RegisterAccount';
 export const RegisterAccountPage = () => {
   return (
     <Margin>
-      <Heading textAlign="center" mb="1rem" mt="3rem">
+      <Heading textAlign="center" mb="1rem" mt="15vh">
         アカウント登録
       </Heading>
       <RegisterAccount />

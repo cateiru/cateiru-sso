@@ -91,7 +91,7 @@ export const RegisterAccount = () => {
   }, [activeStep]);
 
   return (
-    <Box minH="80vh">
+    <Box>
       <Steps activeStep={activeStep} state={status} />
       <Center mt="1rem" h="50%">
         <C />

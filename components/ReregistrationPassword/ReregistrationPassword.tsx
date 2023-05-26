@@ -125,7 +125,7 @@ export const ReregistrationPassword = () => {
   if (token) {
     return (
       <Margin>
-        <Heading textAlign="center" mt="3rem" mb="1rem">
+        <Heading textAlign="center" mt="15vh" mb="1rem">
           新しいパスワードを設定してください
         </Heading>
         <RegisterPasswordForm

@@ -1,8 +1,9 @@
 'use client';
 
-import {Box, Center, Heading} from '@chakra-ui/react';
+import {Center, Heading} from '@chakra-ui/react';
 import React from 'react';
 import {LoginUser} from '../../utils/types/login';
+import {Margin} from '../Common/Margin';
 import {LoginSuccess} from './LoginSuccess';
 import {OtpPage} from './OtpPage';
 import {UserIDEmailPage} from './UserIDEmailPage';
@@ -51,13 +52,13 @@ export const Login = () => {
   }, [step]);
 
   return (
-    <Box minH="80vh">
-      <Heading textAlign="center" mt="3rem">
+    <Margin>
+      <Heading textAlign="center" mt="15vh">
         ログイン
       </Heading>
       <Center mt="1rem" h="50%">
         <C />
       </Center>
-    </Box>
+    </Margin>
   );
 };
