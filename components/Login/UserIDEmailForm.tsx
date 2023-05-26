@@ -104,7 +104,7 @@ export const UserIDEmailForm: React.FC<Props> = ({
               {errors.user_id_email && errors.user_id_email.message}
             </FormErrorMessage>
           </FormControl>
-          <PasswordForm enableWebauthn />
+          <PasswordForm enableWebauthn={false} />
           <Link as={NextLink} href="/forget_password" color={buttonColor}>
             パスワードを忘れましたか？
           </Link>
