@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import {EmailSettingForm} from '../../../components/Settings/EmailSetting/EmailSettingForm';
 
 const meta: Meta<typeof EmailSettingForm> = {
-  title: 'CateiruSSO/Settings/EmailSettingForm',
+  title: 'CateiruSSO/Settings/EmailSetting/EmailSettingForm',
   component: EmailSettingForm,
   tags: ['autodocs'],
   parameters: {

@@ -56,6 +56,8 @@ type AccountWebauthnDevice struct {
 	Browser  null.String `json:"browser,omitempty"`
 	IsMobile null.Bool   `json:"is_mobile,omitempty"`
 	IP       string      `json:"ip"`
+
+	Created time.Time `json:"created"`
 }
 
 // ログイン可能なアカウントのリストを返すハンドラ
@@ -616,6 +618,8 @@ func (h *Handler) AccountWebauthnRegisteredDevicesHandler(c echo.Context) error 
 			Browser:  device.Browser,
 			IsMobile: device.IsMobile,
 			IP:       net.IP.To16(device.IP).String(),
+
+			Created: device.Created,
 		}
 	}
 

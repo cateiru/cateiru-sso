@@ -22,3 +22,23 @@ export const AccountOTPPublicSchema = z.object({
   public_key: z.string(),
 });
 export type AccountOTPPublic = z.infer<typeof AccountOTPPublicSchema>;
+
+export const AccountWebAuthnDeviceSchema = z.object({
+  id: z.number(),
+
+  device: z.string().nullable(),
+  os: z.string().nullable(),
+  browser: z.string().nullable(),
+  is_mobile: z.boolean().nullable(),
+  ip: z.string().nullable(),
+
+  created: z.string().datetime({offset: true}),
+});
+export type AccountWebAuthnDevice = z.infer<typeof AccountWebAuthnDeviceSchema>;
+
+export const AccountWebAuthnDevicesSchema = z.array(
+  AccountWebAuthnDeviceSchema
+);
+export type AccountWebAuthnDevices = z.infer<
+  typeof AccountWebAuthnDevicesSchema
+>;

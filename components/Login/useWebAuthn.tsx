@@ -17,11 +17,15 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
   const toast = useToast();
 
   const [isConditionSupported, setIsConditionSupported] = React.useState(true);
+  const abortRef = React.useRef<AbortController>();
 
   const {request: getBeginKey} = useRequest('/v2/login/begin_webauthn');
   const {request: pushCredential} = useRequest('/v2/login/webathn');
 
   React.useEffect(() => {
+    const abort = new AbortController();
+    abortRef.current = abort;
+
     // ブラウザが対応していない場合は実施しない
     if (
       !PublicKeyCredential.isConditionalMediationAvailable ||
@@ -30,8 +34,6 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
       setIsConditionSupported(false);
       return;
     }
-
-    const abort = new AbortController();
 
     const f = async () => {
       const res = await getBeginKey({
@@ -42,6 +44,7 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
       if (!res) return;
 
       const beginData = parseRequestOptionsFromJSON(await res.json());
+
       beginData.signal = abort.signal;
 
       // See also: https://github.com/w3c/webauthn/wiki/Explainer:-WebAuthn-Conditional-UI
@@ -91,7 +94,9 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
     f();
 
     return () => {
-      abort.abort();
+      if (abortRef.current) {
+        abortRef.current.abort();
+      }
     };
   }, []);
 
@@ -105,10 +110,17 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
 
     const beginData = parseRequestOptionsFromJSON(await res.json());
 
+    if (abortRef.current) {
+      beginData.signal = abortRef.current.signal;
+    }
+
     let credential: Credential;
     try {
       credential = await get(beginData);
     } catch (e) {
+      // シグナルがAbortされたらエラー出さないでReturn
+      if (abortRef.current && abortRef.current.signal.aborted) return;
+
       toast({
         title: 'WebAuthnエラー',
         status: 'error',
