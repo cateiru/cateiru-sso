@@ -61,7 +61,7 @@ export const ProfileForm = () => {
         <Flex mt="1rem">
           <FormControl isInvalid={!!errors.gender} mr=".5rem">
             <FormLabel htmlFor="gender">性別</FormLabel>
-            <Select autoComplete="sex" {...register('gender')}>
+            <Select autoComplete="sex" id="gender" {...register('gender')}>
               <option value="0">未設定</option>
               <option value="1">男性</option>
               <option value="2">女性</option>
