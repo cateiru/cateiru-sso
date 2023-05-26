@@ -25,7 +25,7 @@ export const OtpEnableText: React.FC<Props> = props => {
       <Text color={textColor}>二段階認証は設定されています。</Text>
       <Text color={textColor} mb=".5rem">
         設定日時:
-        <Text as="span" fontWeight="bold">
+        <Text as="span" fontWeight="bold" ml=".3rem">
           {props.modified.toLocaleString()}
         </Text>
       </Text>
