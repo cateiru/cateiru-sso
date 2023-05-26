@@ -1465,6 +1465,7 @@ func TestAccountDeleteWebauthnHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.AccountDeleteWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		RegisterPassword(t, ctx, u)
 		RegisterPasskey(t, ctx, u)
 
 		webauthn, err := models.Webauthns(
@@ -1482,6 +1483,7 @@ func TestAccountDeleteWebauthnHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
+		RegisterPassword(t, ctx, &u)
 		RegisterPasskey(t, ctx, &u)
 
 		webauthn, err := models.Webauthns(
@@ -1511,6 +1513,7 @@ func TestAccountDeleteWebauthnHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
+		RegisterPassword(t, ctx, &u)
 		RegisterPasskey(t, ctx, &u)
 
 		cookies := RegisterSession(t, ctx, &u)
@@ -1529,6 +1532,7 @@ func TestAccountDeleteWebauthnHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
+		RegisterPassword(t, ctx, &u)
 		RegisterPasskey(t, ctx, &u)
 
 		cookies := RegisterSession(t, ctx, &u)
@@ -1541,6 +1545,61 @@ func TestAccountDeleteWebauthnHandler(t *testing.T) {
 
 		err = h.AccountDeleteWebauthnHandler(c)
 		require.EqualError(t, err, "code=400, message=webauthn_id is empty")
+	})
+
+	t.Run("失敗: パスワードを設定していない場合、すべて削除することはできない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		// passkeyを1つ作成する
+		RegisterPasskey(t, ctx, &u)
+
+		webauthn, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?webauthn_id=%d", webauthn.ID), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountDeleteWebauthnHandler(c)
+		require.EqualError(t, err, "code=400, message=webauthn must be set at least one, unique=14")
+	})
+
+	t.Run("成功: WebAuthnが複数ある場合はパスワードを設定してくなくても削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		// passkeyを2つ作成する
+		RegisterPasskey(t, ctx, &u)
+		RegisterPasskey(t, ctx, &u)
+
+		webauthn, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?webauthn_id=%d", webauthn.ID), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.AccountDeleteWebauthnHandler(c)
+		require.NoError(t, err)
+
+		webauthnCount, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(u.ID),
+		).Count(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, webauthnCount, int64(1))
 	})
 }
 

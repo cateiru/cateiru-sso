@@ -692,6 +692,26 @@ func (h *Handler) AccountDeleteWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
+	// パスワードが設定されていない場合、WebAuthnはすべて削除することができない
+	hasSetPassword, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !hasSetPassword {
+		webauthnCount, err := models.Webauthns(
+			models.WebauthnWhere.UserID.EQ(user.ID),
+		).Count(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+
+		if webauthnCount <= 1 {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrNoMoreAuthentication, "webauthn must be set at least one")
+		}
+	}
+
 	_, err = models.Webauthns(
 		models.WebauthnWhere.UserID.EQ(user.ID),
 		models.WebauthnWhere.ID.EQ(uint64(parsedWebauthnId)),

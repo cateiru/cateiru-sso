@@ -36,6 +36,9 @@ const (
 	ErrAlreadyExistUser = 12
 	// 認証失敗
 	ErrAuthenticationFailed = 13
+	// 認証情報が無くなるため削除できない
+	// 主にWebAuthnの削除で使用される
+	ErrNoMoreAuthentication = 14
 )
 
 type HTTPError struct {
