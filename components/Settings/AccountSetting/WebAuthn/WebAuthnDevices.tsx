@@ -16,6 +16,7 @@ import {ErrorType} from '../../../../utils/types/error';
 import {Tooltip} from '../../../Common/Chakra/Tooltip';
 import {Error} from '../../../Common/Error/Error';
 import {Device} from '../../../Histories/Device';
+import {DeleteWebAuthn} from './DeleteWebauthn';
 
 export const WebAuthnDevices = () => {
   const {data, error} = useSWR<AccountWebAuthnDevices, ErrorType>(
@@ -55,7 +56,9 @@ export const WebAuthnDevices = () => {
           const created = new Date(v.created);
           return (
             <Tr key={`webauthn-${v.id}`}>
-              <Td></Td>
+              <Td>
+                <DeleteWebAuthn id={v.id} />
+              </Td>
               <Td>
                 <Tooltip placement="top" label={created.toLocaleString()}>
                   {hawManyDaysAgo(created)}

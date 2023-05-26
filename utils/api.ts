@@ -6,9 +6,15 @@ import {config} from './config';
  * @param path - API path
  * @returns APIのURL
  */
-export function api(path: string): string {
+export function api(path: string, searchParams?: URLSearchParams): string {
   const url = new URL(config.apiHost);
   url.pathname = path;
+
+  if (searchParams) {
+    searchParams.forEach((value, key) => {
+      url.searchParams.append(key, value);
+    });
+  }
 
   return url.toString();
 }

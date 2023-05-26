@@ -12,15 +12,18 @@ interface Options {
 }
 
 interface Returns {
-  request: (data: RequestInit) => Promise<Response | undefined>;
+  request: (
+    data: RequestInit,
+    urlParams?: URLSearchParams
+  ) => Promise<Response | undefined>;
 }
 
 export const useRequest = (path: string, options?: Options): Returns => {
   const toast = useToast();
 
-  const request = async (data: RequestInit) => {
+  const request = async (data: RequestInit, urlParams?: URLSearchParams) => {
     try {
-      const res = await fetch(api(path), data);
+      const res = await fetch(api(path, urlParams), data);
 
       if (!res.ok) {
         const error = ErrorSchema.parse(await res.json());
