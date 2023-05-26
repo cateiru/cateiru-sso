@@ -9,6 +9,7 @@ import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import React from 'react';
 import {
+  TbAddressBook,
   TbHistory,
   TbLogout,
   TbSettings,
@@ -38,6 +39,15 @@ export const Menu = React.memo<{children: React.ReactNode}>(({children}) => {
             h={height}
           >
             My プロフィール
+          </MenuItem>
+          <MenuItem
+            as={Link}
+            href="/clients"
+            icon={<TbAddressBook size="20px" />}
+            fontSize={fontSize}
+            h={height}
+          >
+            クライアント
           </MenuItem>
           <MenuItem
             as={Link}

@@ -39,8 +39,8 @@ export const LoginDevice = () => {
           <Tr>
             <Th></Th>
             <Th>ログイン日時</Th>
-            <Th textAlign="center">IPアドレス</Th>
             <Th textAlign="center">端末</Th>
+            <Th textAlign="center">IPアドレス</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -69,7 +69,6 @@ export const LoginDevice = () => {
                         {hawManyDaysAgo(created)}
                       </Tooltip>
                     </Td>
-                    <Td textAlign="center">{v.ip}</Td>
                     <Td>
                       <Device
                         device={v.device}
@@ -78,6 +77,7 @@ export const LoginDevice = () => {
                         isMobile={v.is_mobile}
                       />
                     </Td>
+                    <Td textAlign="center">{v.ip}</Td>
                   </Tr>
                 );
               })
@@ -90,11 +90,11 @@ export const LoginDevice = () => {
                       <Td>
                         <Skeleton height="1rem" w="10rem" />
                       </Td>
-                      <Td textAlign="center">
-                        <Skeleton height="1rem" w="10rem" mx="auto" />
-                      </Td>
                       <Td>
                         <Skeleton height="1rem" w="10rem" />
+                      </Td>
+                      <Td textAlign="center">
+                        <Skeleton height="1rem" w="10rem" mx="auto" />
                       </Td>
                     </Tr>
                   );
