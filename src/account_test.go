@@ -1705,6 +1705,37 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 		require.True(t, existsReregistrationPasswordSession)
 	})
 
+	t.Run("成功: パスワード設定していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		form := easy.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountForgetPasswordHandler(c)
+		require.NoError(t, err)
+
+		// ログイントライ履歴が保存されている
+		existLoginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u.ID),
+			qm.And("identifier = 1"),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.True(t, existLoginTryHistory)
+
+		// パスワード再設定セッションが保存されている
+		existsReregistrationPasswordSession, err := models.ReregistrationPasswordSessions(
+			models.ReregistrationPasswordSessionWhere.Email.EQ(email),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existsReregistrationPasswordSession)
+	})
+
 	t.Run("成功: period_clearの有効期限が切れてしまっている場合、DBから削除される", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1798,22 +1829,6 @@ func TestAccountForgetPasswordHandler(t *testing.T) {
 
 		err = h.AccountForgetPasswordHandler(c)
 		require.EqualError(t, err, "code=400, message=reCAPTCHA validation failed, unique=1")
-	})
-
-	t.Run("失敗: パスワード設定していない", func(t *testing.T) {
-		email := RandomEmail(t)
-		RegisterUser(t, ctx, email)
-
-		form := easy.NewMultipart()
-		form.Insert("email", email)
-		form.Insert("recaptcha", "hogehoge")
-		m, err := easy.NewFormData("/", http.MethodPost, form)
-		require.NoError(t, err)
-
-		c := m.Echo()
-
-		err = h.AccountForgetPasswordHandler(c)
-		require.EqualError(t, err, "code=400, message=no registered password, unique=11")
 	})
 
 	t.Run("失敗: すでにセッションが存在している", func(t *testing.T) {
@@ -2069,6 +2084,7 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
+		// パスワードは存在している
 		RegisterPassword(t, ctx, &u)
 
 		token := registerSession(
@@ -2100,6 +2116,48 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 		require.True(t, session.Completed)
 
 		// パスワードが更新されている
+		password, err := models.Passwords(
+			models.PasswordWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		isVerify := C.Password.VerifyPassword(newPassword, password.Hash, password.Salt)
+		require.True(t, isVerify)
+	})
+
+	t.Run("成功: パスワードを新規に作成できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		token := registerSession(
+			&u,
+			time.Now().Add(C.ReregistrationPasswordSessionPeriod),
+			false,
+		)
+
+		newPassword := "password_1234567"
+
+		form := easy.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("reregister_token", token)
+		form.Insert("new_password", newPassword)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.AccountReRegisterPasswordHandler(c)
+		require.NoError(t, err)
+
+		// セッションは使用済みフラグが立ち、削除されない
+		session, err := models.ReregistrationPasswordSessions(
+			models.ReregistrationPasswordSessionWhere.ID.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, session.Completed)
+
+		// パスワードが新規に作成されている
 		password, err := models.Passwords(
 			models.PasswordWhere.UserID.EQ(u.ID),
 		).One(ctx, DB)

@@ -803,17 +803,6 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	// ユーザーがPasswordを登録しているか
-	existPassword, err := models.Passwords(
-		models.PasswordWhere.UserID.EQ(user.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	if !existPassword {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrNoRegisteredPassword, "no registered password")
-	}
-
 	// すでにセッションが存在している
 	reRegisterSession, err := models.ReregistrationPasswordSessions(
 		models.ReregistrationPasswordSessionWhere.Email.EQ(email),
@@ -1021,18 +1010,40 @@ func (h *Handler) AccountReRegisterPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	// パスワードを更新する
-	passwordDB, err := models.Passwords(
-		qm.InnerJoin("user on user.id = password.user_id"),
-		qm.Where("user.email = ?", session.Email),
+	// ユーザーを引く
+	user, err := models.Users(
+		models.UserWhere.Email.EQ(email),
 	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "invalid email")
+	}
 	if err != nil {
 		return err
 	}
-	passwordDB.Hash = hash
-	passwordDB.Salt = salt
-	if _, err := passwordDB.Update(ctx, h.DB, boil.Infer()); err != nil {
+
+	passwordDB, err := models.Passwords(
+		models.PasswordWhere.UserID.EQ(user.ID),
+	).One(ctx, h.DB)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
+	}
+	if passwordDB == nil {
+		// 新たにパスワードを作成する
+		passwordDB = &models.Password{
+			UserID: user.ID,
+			Hash:   hash,
+			Salt:   salt,
+		}
+		if err := passwordDB.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+	} else {
+		// パスワードを更新する
+		passwordDB.Hash = hash
+		passwordDB.Salt = salt
+		if _, err := passwordDB.Update(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
 	}
 
 	// 使用済みフラグを立てる
