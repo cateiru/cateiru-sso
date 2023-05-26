@@ -17,7 +17,7 @@ export const UpdatePassword = () => {
     form.append('old_password', data.password);
 
     const res = await request({
-      method: 'POST',
+      method: 'PUT',
       body: form,
       mode: 'cors',
       credentials: 'include',
