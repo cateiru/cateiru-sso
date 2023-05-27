@@ -17,11 +17,12 @@ import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Margin} from '../Common/Margin';
 import {LoginDevice} from '../Histories/LoginDevice';
 import {EmailView} from './EmailView';
+import {ProfileDatetime} from './ProfileDatetime';
 import {ProfileForm} from './ProfileForm';
 import {UpdateAvatar} from './UpdateAvatar';
 
 export const Profile = () => {
-  const userNameColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useColorModeValue('gray.500', 'gray.400');
   const user = useRecoilValue(UserState);
 
   return (
@@ -50,7 +51,7 @@ export const Profile = () => {
             textAlign="center"
             fontSize="1rem"
             fontWeight="bold"
-            color={userNameColor}
+            color={textColor}
           >
             &#064;{user?.user.user_name}
           </Text>
@@ -61,7 +62,7 @@ export const Profile = () => {
           mt="1rem"
           fontSize="1.5rem"
           fontWeight="bold"
-          color={userNameColor}
+          color={textColor}
         >
           &#064;{user?.user.user_name || '???'}
         </Text>
@@ -108,6 +109,7 @@ export const Profile = () => {
         </Text>
         <LoginDevice />
       </Box>
+      <ProfileDatetime />
     </Margin>
   );
 };

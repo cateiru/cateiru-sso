@@ -1,11 +1,11 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {Profile} from '../../components/Profile/Profile';
+import {ProfileDatetime} from '../../components/Profile/ProfileDatetime';
 import {UserState} from '../../utils/state/atom';
 import {RecoilController} from '../RecoilController';
 
-const meta: Meta<typeof Profile> = {
-  title: 'CateiruSSO/Profile/Profile',
+const meta: Meta<typeof ProfileDatetime> = {
+  title: 'CateiruSSO/Profile/ProfileDatetime',
   component: () => {
     return (
       <RecoilController
@@ -38,7 +38,7 @@ const meta: Meta<typeof Profile> = {
             },
           },
           {
-            key: 'login no avatar',
+            key: 'staff',
             value: {
               user: {
                 id: faker.string.uuid(),
@@ -55,12 +55,12 @@ const meta: Meta<typeof Profile> = {
                 created: faker.date.past().toString(),
                 modified: faker.date.past().toString(),
               },
-              is_staff: false,
+              is_staff: true,
             },
           },
         ]}
       >
-        <Profile />
+        <ProfileDatetime />
       </RecoilController>
     );
   },
@@ -71,6 +71,6 @@ const meta: Meta<typeof Profile> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Profile>;
+type Story = StoryObj<typeof ProfileDatetime>;
 
 export const Default: Story = {};

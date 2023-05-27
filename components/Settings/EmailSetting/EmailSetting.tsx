@@ -125,7 +125,7 @@ export const EmailSetting = () => {
   };
 
   return (
-    <Box mt="2rem" minH="80vh">
+    <Box mt="2rem">
       <EmailSettingForm
         onSubmit={onSubmit}
         disabled={disabled}

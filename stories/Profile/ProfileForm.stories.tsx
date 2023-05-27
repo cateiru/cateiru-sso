@@ -34,6 +34,7 @@ const meta: Meta<typeof ProfileForm> = {
                 created: faker.date.past().toString(),
                 modified: faker.date.past().toString(),
               },
+              is_staff: false,
             },
           },
           {
@@ -54,6 +55,7 @@ const meta: Meta<typeof ProfileForm> = {
                 created: faker.date.past().toString(),
                 modified: faker.date.past().toString(),
               },
+              is_staff: false,
             },
           },
         ]}
