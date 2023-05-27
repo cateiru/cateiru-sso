@@ -12,7 +12,6 @@ export const OtpImpossible = () => {
       <Button
         mt="1rem"
         w="100%"
-        size="sm"
         colorScheme="cateiru"
         as={Link}
         href="/settings/password"
