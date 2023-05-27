@@ -3,6 +3,7 @@ import React from 'react';
 import {TbTrashX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
 import {Tooltip} from '../../../Common/Chakra/Tooltip';
+import {Spinner} from '../../../Common/Icons/Spinner';
 import {useRequest} from '../../../Common/useRequest';
 
 export const DeleteWebAuthn: React.FC<{id: number}> = ({id}) => {
@@ -15,8 +16,11 @@ export const DeleteWebAuthn: React.FC<{id: number}> = ({id}) => {
   const {mutate} = useSWRConfig();
 
   const [hover, setHover] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   const onDeleteWebAuthn = async () => {
+    setLoading(true);
+
     const param = new URLSearchParams();
     param.append('webauthn_id', id.toString());
 
@@ -42,19 +46,24 @@ export const DeleteWebAuthn: React.FC<{id: number}> = ({id}) => {
         {revalidate: true}
       );
     }
+    setLoading(false);
   };
 
   return (
     <Tooltip label="この生体認証を削除" placement="top">
       <Center>
-        <TbTrashX
-          size="25px"
-          color={hover ? hoverTrashColor : defaultTrashColor}
-          onMouseOver={() => setHover(true)}
-          onMouseOut={() => setHover(false)}
-          onClick={onDeleteWebAuthn}
-          style={{cursor: 'pointer'}}
-        />
+        {loading ? (
+          <Spinner />
+        ) : (
+          <TbTrashX
+            size="25px"
+            color={hover ? hoverTrashColor : defaultTrashColor}
+            onMouseOver={() => setHover(true)}
+            onMouseOut={() => setHover(false)}
+            onClick={onDeleteWebAuthn}
+            style={{cursor: 'pointer'}}
+          />
+        )}
       </Center>
     </Tooltip>
   );

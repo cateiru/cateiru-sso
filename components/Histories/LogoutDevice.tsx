@@ -3,6 +3,7 @@ import React from 'react';
 import {TbTrashX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
 import {Tooltip} from '../Common/Chakra/Tooltip';
+import {Spinner} from '../Common/Icons/Spinner';
 import {useRequest} from '../Common/useRequest';
 
 interface Props {
@@ -17,8 +18,10 @@ export const LogoutDevice: React.FC<Props> = props => {
   const {mutate} = useSWRConfig();
 
   const [hover, setHover] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   const onLogout = async () => {
+    setLoading(true);
     const form = new FormData();
     form.append('login_history_id', String(props.loginHistoryId));
 
@@ -38,19 +41,24 @@ export const LogoutDevice: React.FC<Props> = props => {
         {revalidate: true}
       );
     }
+    setLoading(false);
   };
 
   return (
     <Tooltip label="このデバイスからログアウト" placement="top">
       <Center>
-        <TbTrashX
-          size="25px"
-          color={hover ? hoverTrashColor : defaultTrashColor}
-          onMouseOver={() => setHover(true)}
-          onMouseOut={() => setHover(false)}
-          onClick={onLogout}
-          style={{cursor: 'pointer'}}
-        />
+        {loading ? (
+          <Spinner />
+        ) : (
+          <TbTrashX
+            size="25px"
+            color={hover ? hoverTrashColor : defaultTrashColor}
+            onMouseOver={() => setHover(true)}
+            onMouseOut={() => setHover(false)}
+            onClick={onLogout}
+            style={{cursor: 'pointer'}}
+          />
+        )}
       </Center>
     </Tooltip>
   );
