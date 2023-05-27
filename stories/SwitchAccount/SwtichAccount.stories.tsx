@@ -37,6 +37,7 @@ const meta: Meta<typeof SwitchAccount> = {
             key: 'login',
             value: {
               user: user,
+              is_staff: false,
             },
           },
         ]}
