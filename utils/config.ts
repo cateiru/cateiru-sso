@@ -5,7 +5,7 @@ interface Config {
   mode: 'development' | 'production' | 'test';
   title: string;
   revision: string;
-  branchName: string;
+  branchName?: string;
 }
 
 export const config: Config = {
@@ -19,5 +19,5 @@ export const config: Config = {
       : ''
   }`,
   revision: process.env.NEXT_PUBLIC_REVISION ?? 'unknown',
-  branchName: process.env.NEXT_PUBLIC_BRANCH_NAME ?? 'unknown',
+  branchName: process.env.NEXT_PUBLIC_BRANCH_NAME,
 };

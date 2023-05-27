@@ -94,6 +94,7 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
 
     setUser({
       user: data.data,
+      is_staff: false,
     });
 
     props.setStatus(undefined);
