@@ -19,6 +19,7 @@ export const useSession = () => {
     if (config.mode === 'development') {
       console.log('Session: ', user ? user.user.id : user);
     }
+    console.info('Revision: ', config.revision);
 
     // 未ログイン
     if (typeof user === 'undefined') {
