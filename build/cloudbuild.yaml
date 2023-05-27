@@ -20,6 +20,10 @@ steps:
         'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${_NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}',
         '--build-arg',
         'NEXT_PUBLIC_PUBLICATION_TYPE=${_NEXT_PUBLIC_PUBLICATION_TYPE}',
+        '--build-arg',
+        'NEXT_PUBLIC_REVISION=${REVISION_ID}',
+        '--build-arg',
+        'NEXT_PUBLIC_BRANCH_NAME=${BRANCH_NAME}',
       ]
   - name: 'gcr.io/cloud-builders/docker'
     id: 'push-docker-image'

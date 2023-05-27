@@ -55,6 +55,14 @@ NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=[token]
 # ステージング環境などの場合に設定します
 NEXT_PUBLIC_PUBLICATION_TYPE=[publication type]
 
+# コミットハッシュ
+# Cloud Buildで自動的に埋めています
+NEXT_PUBLIC_REVISION=[hash]
+
+# ブランチ名
+# Cloud Buildで自動的に埋めています
+NEXT_PUBLIC_BRANCH_NAME=[branch name]
+
 # reCAPTCHAのシークレット
 # ローカル、テストではreCAPTCHAは使用しないので空でOK
 RECAPTCHA_SECRET=[secret]

@@ -4,6 +4,8 @@ interface Config {
   emailCodeLength: number;
   mode: 'development' | 'production' | 'test';
   title: string;
+  revision: string;
+  branchName: string;
 }
 
 export const config: Config = {
@@ -16,4 +18,6 @@ export const config: Config = {
       ? ` - ${process.env.NEXT_PUBLIC_PUBLICATION_TYPE}`
       : ''
   }`,
+  revision: process.env.NEXT_PUBLIC_REVISION ?? 'unknown',
+  branchName: process.env.NEXT_PUBLIC_BRANCH_NAME ?? 'unknown',
 };
