@@ -146,7 +146,7 @@ export async function staffUsersFeather() {
   if (data.success) {
     return data.data;
   }
-  console.error(data.error.message);
+  console.error(data.error);
   throw new HTTPError(data.error.message);
 }
 
