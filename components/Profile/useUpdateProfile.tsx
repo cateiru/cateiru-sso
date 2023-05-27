@@ -59,7 +59,7 @@ export const useUpdateProfile = (): Returns => {
           status: 'success',
         });
       } else {
-        console.log(data.error);
+        console.error(data.error);
       }
     }
   };

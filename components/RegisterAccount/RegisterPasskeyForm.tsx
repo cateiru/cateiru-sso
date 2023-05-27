@@ -53,7 +53,6 @@ export const RegisterPasskeyForm: React.FC<Props> = props => {
     try {
       c = await create(credential);
     } catch (e) {
-      console.log(e);
       toast({
         title: '生体認証の登録に失敗しました',
         status: 'error',
