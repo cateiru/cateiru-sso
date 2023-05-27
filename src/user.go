@@ -22,6 +22,7 @@ import (
 type UserMeResponse struct {
 	UserInfo *models.User    `json:"user"`
 	Setting  *models.Setting `json:"setting,omitempty"`
+	IsStaff  bool            `json:"is_staff"`
 }
 
 type UserUserNameResponse struct {
@@ -72,9 +73,17 @@ func (h *Handler) UserMeHandler(c echo.Context) error {
 		return err
 	}
 
+	isStaff, err := models.Staffs(
+		models.StaffWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
 	return c.JSON(http.StatusOK, &UserMeResponse{
 		UserInfo: user,
 		Setting:  setting,
+		IsStaff:  isStaff,
 	})
 }
 

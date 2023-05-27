@@ -30,6 +30,7 @@ export type UserSetting = z.infer<typeof UserSettingSchema>;
 export const UserMeSchema = z.object({
   user: UserSchema,
   setting: UserSettingSchema.optional(),
+  is_staff: z.boolean(),
 });
 export type UserMe = z.infer<typeof UserMeSchema>;
 

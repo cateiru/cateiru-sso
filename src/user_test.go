@@ -64,6 +64,8 @@ func TestUserMeHandler(t *testing.T) {
 		require.NotNil(t, response.Setting)
 		require.Equal(t, response.Setting.UserID, u.ID)
 		require.Equal(t, response.Setting.NoticeEmail, false)
+
+		require.False(t, response.IsStaff)
 	})
 
 	t.Run("成功: 設定がない場合は空", func(t *testing.T) {
@@ -90,6 +92,42 @@ func TestUserMeHandler(t *testing.T) {
 		require.Equal(t, response.UserInfo.Email, email)
 
 		require.Nil(t, response.Setting)
+
+		require.False(t, response.IsStaff)
+	})
+
+	t.Run("スタッフの場合", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		staff := models.Staff{
+			UserID: u.ID,
+		}
+		err := staff.Insert(ctx, h.DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserMeHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserMeResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.NotNil(t, response.UserInfo)
+		require.Equal(t, response.UserInfo.ID, u.ID)
+		require.Equal(t, response.UserInfo.UserName, u.UserName)
+		require.Equal(t, response.UserInfo.Email, email)
+
+		require.Nil(t, response.Setting)
+
+		require.True(t, response.IsStaff)
 	})
 }
 
