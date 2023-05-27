@@ -1,5 +1,7 @@
+import {Users} from '../../../components/Staff/Users';
+
 const Page = () => {
-  return <></>;
+  return <Users />;
 };
 
 export default Page;

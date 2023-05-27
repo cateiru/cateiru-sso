@@ -10,6 +10,7 @@ import {
   LoginDeviceListScheme,
   LoginTryHistoryListScheme,
 } from '../types/history';
+import {StaffUsers} from '../types/staff';
 
 export async function accountUserFeather() {
   const res = await fetch(api('/v2/account/list'), {
@@ -119,6 +120,29 @@ export async function webAuthnDevicesFeather() {
   }
 
   const data = AccountWebAuthnDevicesSchema.safeParse(await res.json());
+  if (data.success) {
+    return data.data;
+  }
+  console.error(data.error.message);
+  throw new HTTPError(data.error.message);
+}
+
+export async function staffUsersFeather() {
+  const res = await fetch(api('/v2/admin/users'), {
+    credentials: 'include',
+    mode: 'cors',
+  });
+
+  if (!res.ok) {
+    const data = ErrorSchema.safeParse(await res.json());
+    if (data.success) {
+      throw data.data;
+    }
+    console.error(data.error.message);
+    throw new HTTPError(data.error.message);
+  }
+
+  const data = StaffUsers.safeParse(await res.json());
   if (data.success) {
     return data.data;
   }

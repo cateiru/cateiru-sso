@@ -603,6 +603,7 @@ func (h *Handler) AccountWebauthnRegisteredDevicesHandler(c echo.Context) error 
 
 	devices, err := models.Webauthns(
 		models.WebauthnWhere.UserID.EQ(user.ID),
+		qm.OrderBy("created DESC"),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
