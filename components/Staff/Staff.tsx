@@ -1,6 +1,7 @@
 'use client';
 
 import {Button, Heading, Text, useColorModeValue} from '@chakra-ui/react';
+import Link from 'next/link';
 import {config} from '../../utils/config';
 import {Margin} from '../Common/Margin';
 import {StaffCard} from './StaffCard';
@@ -17,9 +18,15 @@ export const Staff = () => {
         Revision: {config.revision}{' '}
         {config.branchName && `/ Branch: ${config.branchName}`}
       </Text>
-      <StaffCard title="全ユーザー参照">
-        <Button variant="outline" colorScheme="cateiru" w="100%">
-          全ユーザー参照
+      <StaffCard title="ユーザー一覧">
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          href="/staff/users"
+        >
+          ユーザー一覧
         </Button>
       </StaffCard>
     </Margin>
