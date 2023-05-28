@@ -13,7 +13,7 @@ export type AccountUserList = z.infer<typeof AccountUserListSchema>;
 export const AccountCertificatesSchema = z.object({
   password: z.boolean(),
   otp: z.boolean(),
-  otp_modified_at: z.string().datetime({offset: true}).nullable(),
+  otp_updated_at: z.string().datetime({offset: true}).nullable(),
 });
 export type AccountCertificates = z.infer<typeof AccountCertificatesSchema>;
 

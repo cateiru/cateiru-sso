@@ -32,7 +32,7 @@ const meta: Meta<typeof UserName> = {
                 locale_id: 'ja_JP',
 
                 created_at: faker.date.past().toString(),
-                modified_at: faker.date.past().toString(),
+                updated_at: faker.date.past().toString(),
               },
               is_staff: false,
             },
@@ -53,7 +53,7 @@ const meta: Meta<typeof UserName> = {
                 locale_id: 'ja_JP',
 
                 created_at: faker.date.past().toString(),
-                modified_at: faker.date.past().toString(),
+                updated_at: faker.date.past().toString(),
               },
               is_staff: false,
             },

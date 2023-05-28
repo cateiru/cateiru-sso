@@ -568,7 +568,7 @@ func testRegisterSessionsSelect(t *testing.T) {
 }
 
 var (
-	registerSessionDBTypes = map[string]string{`ID`: `varchar`, `Email`: `varchar`, `EmailVerified`: `tinyint`, `SendCount`: `tinyint`, `VerifyCode`: `char`, `RetryCount`: `tinyint`, `Period`: `datetime`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
+	registerSessionDBTypes = map[string]string{`ID`: `varchar`, `Email`: `varchar`, `EmailVerified`: `tinyint`, `SendCount`: `tinyint`, `VerifyCode`: `char`, `RetryCount`: `tinyint`, `Period`: `datetime`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_                      = bytes.MinRead
 )
 

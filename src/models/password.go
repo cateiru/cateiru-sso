@@ -23,58 +23,58 @@ import (
 
 // Password is an object representing the database table.
 type Password struct {
-	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Salt       []byte    `boil:"salt" json:"salt" toml:"salt" yaml:"salt"`
-	Hash       []byte    `boil:"hash" json:"hash" toml:"hash" yaml:"hash"`
-	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Salt      []byte    `boil:"salt" json:"salt" toml:"salt" yaml:"salt"`
+	Hash      []byte    `boil:"hash" json:"hash" toml:"hash" yaml:"hash"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *passwordR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L passwordL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PasswordColumns = struct {
-	UserID     string
-	Salt       string
-	Hash       string
-	CreatedAt  string
-	ModifiedAt string
+	UserID    string
+	Salt      string
+	Hash      string
+	CreatedAt string
+	UpdatedAt string
 }{
-	UserID:     "user_id",
-	Salt:       "salt",
-	Hash:       "hash",
-	CreatedAt:  "created_at",
-	ModifiedAt: "modified_at",
+	UserID:    "user_id",
+	Salt:      "salt",
+	Hash:      "hash",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 var PasswordTableColumns = struct {
-	UserID     string
-	Salt       string
-	Hash       string
-	CreatedAt  string
-	ModifiedAt string
+	UserID    string
+	Salt      string
+	Hash      string
+	CreatedAt string
+	UpdatedAt string
 }{
-	UserID:     "password.user_id",
-	Salt:       "password.salt",
-	Hash:       "password.hash",
-	CreatedAt:  "password.created_at",
-	ModifiedAt: "password.modified_at",
+	UserID:    "password.user_id",
+	Salt:      "password.salt",
+	Hash:      "password.hash",
+	CreatedAt: "password.created_at",
+	UpdatedAt: "password.updated_at",
 }
 
 // Generated where
 
 var PasswordWhere = struct {
-	UserID     whereHelperstring
-	Salt       whereHelper__byte
-	Hash       whereHelper__byte
-	CreatedAt  whereHelpertime_Time
-	ModifiedAt whereHelpertime_Time
+	UserID    whereHelperstring
+	Salt      whereHelper__byte
+	Hash      whereHelper__byte
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
 }{
-	UserID:     whereHelperstring{field: "`password`.`user_id`"},
-	Salt:       whereHelper__byte{field: "`password`.`salt`"},
-	Hash:       whereHelper__byte{field: "`password`.`hash`"},
-	CreatedAt:  whereHelpertime_Time{field: "`password`.`created_at`"},
-	ModifiedAt: whereHelpertime_Time{field: "`password`.`modified_at`"},
+	UserID:    whereHelperstring{field: "`password`.`user_id`"},
+	Salt:      whereHelper__byte{field: "`password`.`salt`"},
+	Hash:      whereHelper__byte{field: "`password`.`hash`"},
+	CreatedAt: whereHelpertime_Time{field: "`password`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`password`.`updated_at`"},
 }
 
 // PasswordRels is where relationship names are stored.
@@ -105,9 +105,9 @@ func (r *passwordR) GetUser() *User {
 type passwordL struct{}
 
 var (
-	passwordAllColumns            = []string{"user_id", "salt", "hash", "created_at", "modified_at"}
+	passwordAllColumns            = []string{"user_id", "salt", "hash", "created_at", "updated_at"}
 	passwordColumnsWithoutDefault = []string{"user_id", "salt", "hash"}
-	passwordColumnsWithDefault    = []string{"created_at", "modified_at"}
+	passwordColumnsWithDefault    = []string{"created_at", "updated_at"}
 	passwordPrimaryKeyColumns     = []string{"user_id"}
 	passwordGeneratedColumns      = []string{}
 )
@@ -623,6 +623,9 @@ func (o *Password) Insert(ctx context.Context, exec boil.ContextExecutor, column
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -715,6 +718,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Password) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -855,6 +864,7 @@ func (o *Password) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -687,7 +687,7 @@ func testRefreshesSelect(t *testing.T) {
 }
 
 var (
-	refreshDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `HistoryID`: `varbinary`, `SessionID`: `varchar`, `Period`: `datetime`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
+	refreshDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `HistoryID`: `varbinary`, `SessionID`: `varchar`, `Period`: `datetime`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_              = bytes.MinRead
 )
 

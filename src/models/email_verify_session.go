@@ -30,7 +30,7 @@ type EmailVerifySession struct {
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
 	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UpdatedAt  time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *emailVerifySessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L emailVerifySessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,7 +44,7 @@ var EmailVerifySessionColumns = struct {
 	Period     string
 	RetryCount string
 	CreatedAt  string
-	ModifiedAt string
+	UpdatedAt  string
 }{
 	ID:         "id",
 	UserID:     "user_id",
@@ -53,7 +53,7 @@ var EmailVerifySessionColumns = struct {
 	Period:     "period",
 	RetryCount: "retry_count",
 	CreatedAt:  "created_at",
-	ModifiedAt: "modified_at",
+	UpdatedAt:  "updated_at",
 }
 
 var EmailVerifySessionTableColumns = struct {
@@ -64,7 +64,7 @@ var EmailVerifySessionTableColumns = struct {
 	Period     string
 	RetryCount string
 	CreatedAt  string
-	ModifiedAt string
+	UpdatedAt  string
 }{
 	ID:         "email_verify_session.id",
 	UserID:     "email_verify_session.user_id",
@@ -73,7 +73,7 @@ var EmailVerifySessionTableColumns = struct {
 	Period:     "email_verify_session.period",
 	RetryCount: "email_verify_session.retry_count",
 	CreatedAt:  "email_verify_session.created_at",
-	ModifiedAt: "email_verify_session.modified_at",
+	UpdatedAt:  "email_verify_session.updated_at",
 }
 
 // Generated where
@@ -109,7 +109,7 @@ var EmailVerifySessionWhere = struct {
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
 	CreatedAt  whereHelpertime_Time
-	ModifiedAt whereHelpertime_Time
+	UpdatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`email_verify_session`.`id`"},
 	UserID:     whereHelperstring{field: "`email_verify_session`.`user_id`"},
@@ -118,7 +118,7 @@ var EmailVerifySessionWhere = struct {
 	Period:     whereHelpertime_Time{field: "`email_verify_session`.`period`"},
 	RetryCount: whereHelperuint8{field: "`email_verify_session`.`retry_count`"},
 	CreatedAt:  whereHelpertime_Time{field: "`email_verify_session`.`created_at`"},
-	ModifiedAt: whereHelpertime_Time{field: "`email_verify_session`.`modified_at`"},
+	UpdatedAt:  whereHelpertime_Time{field: "`email_verify_session`.`updated_at`"},
 }
 
 // EmailVerifySessionRels is where relationship names are stored.
@@ -149,9 +149,9 @@ func (r *emailVerifySessionR) GetUser() *User {
 type emailVerifySessionL struct{}
 
 var (
-	emailVerifySessionAllColumns            = []string{"id", "user_id", "new_email", "verify_code", "period", "retry_count", "created_at", "modified_at"}
+	emailVerifySessionAllColumns            = []string{"id", "user_id", "new_email", "verify_code", "period", "retry_count", "created_at", "updated_at"}
 	emailVerifySessionColumnsWithoutDefault = []string{"id", "user_id", "new_email", "verify_code"}
-	emailVerifySessionColumnsWithDefault    = []string{"period", "retry_count", "created_at", "modified_at"}
+	emailVerifySessionColumnsWithDefault    = []string{"period", "retry_count", "created_at", "updated_at"}
 	emailVerifySessionPrimaryKeyColumns     = []string{"id"}
 	emailVerifySessionGeneratedColumns      = []string{}
 )
@@ -667,6 +667,9 @@ func (o *EmailVerifySession) Insert(ctx context.Context, exec boil.ContextExecut
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -759,6 +762,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *EmailVerifySession) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -899,6 +908,7 @@ func (o *EmailVerifySession) Upsert(ctx context.Context, exec boil.ContextExecut
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

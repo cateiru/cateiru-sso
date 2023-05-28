@@ -31,7 +31,7 @@ type RegisterSession struct {
 	RetryCount    uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
 	Period        time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt    time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UpdatedAt     time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *registerSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L registerSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -46,7 +46,7 @@ var RegisterSessionColumns = struct {
 	RetryCount    string
 	Period        string
 	CreatedAt     string
-	ModifiedAt    string
+	UpdatedAt     string
 }{
 	ID:            "id",
 	Email:         "email",
@@ -56,7 +56,7 @@ var RegisterSessionColumns = struct {
 	RetryCount:    "retry_count",
 	Period:        "period",
 	CreatedAt:     "created_at",
-	ModifiedAt:    "modified_at",
+	UpdatedAt:     "updated_at",
 }
 
 var RegisterSessionTableColumns = struct {
@@ -68,7 +68,7 @@ var RegisterSessionTableColumns = struct {
 	RetryCount    string
 	Period        string
 	CreatedAt     string
-	ModifiedAt    string
+	UpdatedAt     string
 }{
 	ID:            "register_session.id",
 	Email:         "register_session.email",
@@ -78,7 +78,7 @@ var RegisterSessionTableColumns = struct {
 	RetryCount:    "register_session.retry_count",
 	Period:        "register_session.period",
 	CreatedAt:     "register_session.created_at",
-	ModifiedAt:    "register_session.modified_at",
+	UpdatedAt:     "register_session.updated_at",
 }
 
 // Generated where
@@ -92,7 +92,7 @@ var RegisterSessionWhere = struct {
 	RetryCount    whereHelperuint8
 	Period        whereHelpertime_Time
 	CreatedAt     whereHelpertime_Time
-	ModifiedAt    whereHelpertime_Time
+	UpdatedAt     whereHelpertime_Time
 }{
 	ID:            whereHelperstring{field: "`register_session`.`id`"},
 	Email:         whereHelperstring{field: "`register_session`.`email`"},
@@ -102,7 +102,7 @@ var RegisterSessionWhere = struct {
 	RetryCount:    whereHelperuint8{field: "`register_session`.`retry_count`"},
 	Period:        whereHelpertime_Time{field: "`register_session`.`period`"},
 	CreatedAt:     whereHelpertime_Time{field: "`register_session`.`created_at`"},
-	ModifiedAt:    whereHelpertime_Time{field: "`register_session`.`modified_at`"},
+	UpdatedAt:     whereHelpertime_Time{field: "`register_session`.`updated_at`"},
 }
 
 // RegisterSessionRels is where relationship names are stored.
@@ -122,9 +122,9 @@ func (*registerSessionR) NewStruct() *registerSessionR {
 type registerSessionL struct{}
 
 var (
-	registerSessionAllColumns            = []string{"id", "email", "email_verified", "send_count", "verify_code", "retry_count", "period", "created_at", "modified_at"}
+	registerSessionAllColumns            = []string{"id", "email", "email_verified", "send_count", "verify_code", "retry_count", "period", "created_at", "updated_at"}
 	registerSessionColumnsWithoutDefault = []string{"id", "email", "verify_code"}
-	registerSessionColumnsWithDefault    = []string{"email_verified", "send_count", "retry_count", "period", "created_at", "modified_at"}
+	registerSessionColumnsWithDefault    = []string{"email_verified", "send_count", "retry_count", "period", "created_at", "updated_at"}
 	registerSessionPrimaryKeyColumns     = []string{"id"}
 	registerSessionGeneratedColumns      = []string{}
 )
@@ -462,6 +462,9 @@ func (o *RegisterSession) Insert(ctx context.Context, exec boil.ContextExecutor,
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -554,6 +557,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *RegisterSession) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -695,6 +704,7 @@ func (o *RegisterSession) Upsert(ctx context.Context, exec boil.ContextExecutor,
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

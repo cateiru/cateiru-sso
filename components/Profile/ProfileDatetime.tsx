@@ -16,12 +16,12 @@ export const ProfileDatetime = () => {
   }, [user?.user.created_at]);
 
   const modified = React.useCallback(() => {
-    if (user?.user.modified_at) {
-      const d = new Date(user.user.modified_at);
+    if (user?.user.updated_at) {
+      const d = new Date(user.user.updated_at);
       return `更新日: ${d.toLocaleString()}`;
     }
     return '-';
-  }, [user?.user.modified_at]);
+  }, [user?.user.updated_at]);
 
   return (
     <Text color={textColor} textAlign="center">

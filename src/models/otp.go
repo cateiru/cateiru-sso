@@ -23,51 +23,51 @@ import (
 
 // Otp is an object representing the database table.
 type Otp struct {
-	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Secret     string    `boil:"secret" json:"secret" toml:"secret" yaml:"secret"`
-	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Secret    string    `boil:"secret" json:"secret" toml:"secret" yaml:"secret"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *otpR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L otpL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var OtpColumns = struct {
-	UserID     string
-	Secret     string
-	CreatedAt  string
-	ModifiedAt string
+	UserID    string
+	Secret    string
+	CreatedAt string
+	UpdatedAt string
 }{
-	UserID:     "user_id",
-	Secret:     "secret",
-	CreatedAt:  "created_at",
-	ModifiedAt: "modified_at",
+	UserID:    "user_id",
+	Secret:    "secret",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 var OtpTableColumns = struct {
-	UserID     string
-	Secret     string
-	CreatedAt  string
-	ModifiedAt string
+	UserID    string
+	Secret    string
+	CreatedAt string
+	UpdatedAt string
 }{
-	UserID:     "otp.user_id",
-	Secret:     "otp.secret",
-	CreatedAt:  "otp.created_at",
-	ModifiedAt: "otp.modified_at",
+	UserID:    "otp.user_id",
+	Secret:    "otp.secret",
+	CreatedAt: "otp.created_at",
+	UpdatedAt: "otp.updated_at",
 }
 
 // Generated where
 
 var OtpWhere = struct {
-	UserID     whereHelperstring
-	Secret     whereHelperstring
-	CreatedAt  whereHelpertime_Time
-	ModifiedAt whereHelpertime_Time
+	UserID    whereHelperstring
+	Secret    whereHelperstring
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
 }{
-	UserID:     whereHelperstring{field: "`otp`.`user_id`"},
-	Secret:     whereHelperstring{field: "`otp`.`secret`"},
-	CreatedAt:  whereHelpertime_Time{field: "`otp`.`created_at`"},
-	ModifiedAt: whereHelpertime_Time{field: "`otp`.`modified_at`"},
+	UserID:    whereHelperstring{field: "`otp`.`user_id`"},
+	Secret:    whereHelperstring{field: "`otp`.`secret`"},
+	CreatedAt: whereHelpertime_Time{field: "`otp`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`otp`.`updated_at`"},
 }
 
 // OtpRels is where relationship names are stored.
@@ -98,9 +98,9 @@ func (r *otpR) GetUser() *User {
 type otpL struct{}
 
 var (
-	otpAllColumns            = []string{"user_id", "secret", "created_at", "modified_at"}
+	otpAllColumns            = []string{"user_id", "secret", "created_at", "updated_at"}
 	otpColumnsWithoutDefault = []string{"user_id", "secret"}
-	otpColumnsWithDefault    = []string{"created_at", "modified_at"}
+	otpColumnsWithDefault    = []string{"created_at", "updated_at"}
 	otpPrimaryKeyColumns     = []string{"user_id"}
 	otpGeneratedColumns      = []string{}
 )
@@ -616,6 +616,9 @@ func (o *Otp) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -708,6 +711,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Otp) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -848,6 +857,7 @@ func (o *Otp) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColum
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

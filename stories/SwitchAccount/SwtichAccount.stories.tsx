@@ -18,7 +18,7 @@ const user = {
   locale_id: 'ja_JP',
 
   created_at: faker.date.past().toString(),
-  modified_at: faker.date.past().toString(),
+  updated_at: faker.date.past().toString(),
 };
 
 const meta: Meta<typeof SwitchAccount> = {

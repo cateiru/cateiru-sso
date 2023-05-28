@@ -568,7 +568,7 @@ func testWebauthnSessionsSelect(t *testing.T) {
 }
 
 var (
-	webauthnSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `Row`: `json`, `Period`: `datetime`, `Identifier`: `tinyint`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
+	webauthnSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `Row`: `json`, `Period`: `datetime`, `Identifier`: `tinyint`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_                      = bytes.MinRead
 )
 

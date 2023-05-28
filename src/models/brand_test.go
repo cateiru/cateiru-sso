@@ -722,7 +722,7 @@ func testBrandsSelect(t *testing.T) {
 }
 
 var (
-	brandDBTypes = map[string]string{`ID`: `varchar`, `Name`: `text`, `Description`: `text`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
+	brandDBTypes = map[string]string{`ID`: `varchar`, `Name`: `text`, `Description`: `text`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_            = bytes.MinRead
 )
 

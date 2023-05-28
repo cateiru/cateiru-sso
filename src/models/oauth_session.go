@@ -24,79 +24,79 @@ import (
 
 // OauthSession is an object representing the database table.
 type OauthSession struct {
-	Code       string      `boil:"code" json:"code" toml:"code" yaml:"code"`
-	UserID     string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	ClientID   string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	State      null.String `boil:"state" json:"state,omitempty" toml:"state" yaml:"state,omitempty"`
-	Nonce      null.String `boil:"nonce" json:"nonce,omitempty" toml:"nonce" yaml:"nonce,omitempty"`
-	Period     time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
-	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	Code      string      `boil:"code" json:"code" toml:"code" yaml:"code"`
+	UserID    string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	ClientID  string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	State     null.String `boil:"state" json:"state,omitempty" toml:"state" yaml:"state,omitempty"`
+	Nonce     null.String `boil:"nonce" json:"nonce,omitempty" toml:"nonce" yaml:"nonce,omitempty"`
+	Period    time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
+	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *oauthSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L oauthSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var OauthSessionColumns = struct {
-	Code       string
-	UserID     string
-	ClientID   string
-	State      string
-	Nonce      string
-	Period     string
-	CreatedAt  string
-	ModifiedAt string
+	Code      string
+	UserID    string
+	ClientID  string
+	State     string
+	Nonce     string
+	Period    string
+	CreatedAt string
+	UpdatedAt string
 }{
-	Code:       "code",
-	UserID:     "user_id",
-	ClientID:   "client_id",
-	State:      "state",
-	Nonce:      "nonce",
-	Period:     "period",
-	CreatedAt:  "created_at",
-	ModifiedAt: "modified_at",
+	Code:      "code",
+	UserID:    "user_id",
+	ClientID:  "client_id",
+	State:     "state",
+	Nonce:     "nonce",
+	Period:    "period",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 var OauthSessionTableColumns = struct {
-	Code       string
-	UserID     string
-	ClientID   string
-	State      string
-	Nonce      string
-	Period     string
-	CreatedAt  string
-	ModifiedAt string
+	Code      string
+	UserID    string
+	ClientID  string
+	State     string
+	Nonce     string
+	Period    string
+	CreatedAt string
+	UpdatedAt string
 }{
-	Code:       "oauth_session.code",
-	UserID:     "oauth_session.user_id",
-	ClientID:   "oauth_session.client_id",
-	State:      "oauth_session.state",
-	Nonce:      "oauth_session.nonce",
-	Period:     "oauth_session.period",
-	CreatedAt:  "oauth_session.created_at",
-	ModifiedAt: "oauth_session.modified_at",
+	Code:      "oauth_session.code",
+	UserID:    "oauth_session.user_id",
+	ClientID:  "oauth_session.client_id",
+	State:     "oauth_session.state",
+	Nonce:     "oauth_session.nonce",
+	Period:    "oauth_session.period",
+	CreatedAt: "oauth_session.created_at",
+	UpdatedAt: "oauth_session.updated_at",
 }
 
 // Generated where
 
 var OauthSessionWhere = struct {
-	Code       whereHelperstring
-	UserID     whereHelperstring
-	ClientID   whereHelperstring
-	State      whereHelpernull_String
-	Nonce      whereHelpernull_String
-	Period     whereHelpertime_Time
-	CreatedAt  whereHelpertime_Time
-	ModifiedAt whereHelpertime_Time
+	Code      whereHelperstring
+	UserID    whereHelperstring
+	ClientID  whereHelperstring
+	State     whereHelpernull_String
+	Nonce     whereHelpernull_String
+	Period    whereHelpertime_Time
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
 }{
-	Code:       whereHelperstring{field: "`oauth_session`.`code`"},
-	UserID:     whereHelperstring{field: "`oauth_session`.`user_id`"},
-	ClientID:   whereHelperstring{field: "`oauth_session`.`client_id`"},
-	State:      whereHelpernull_String{field: "`oauth_session`.`state`"},
-	Nonce:      whereHelpernull_String{field: "`oauth_session`.`nonce`"},
-	Period:     whereHelpertime_Time{field: "`oauth_session`.`period`"},
-	CreatedAt:  whereHelpertime_Time{field: "`oauth_session`.`created_at`"},
-	ModifiedAt: whereHelpertime_Time{field: "`oauth_session`.`modified_at`"},
+	Code:      whereHelperstring{field: "`oauth_session`.`code`"},
+	UserID:    whereHelperstring{field: "`oauth_session`.`user_id`"},
+	ClientID:  whereHelperstring{field: "`oauth_session`.`client_id`"},
+	State:     whereHelpernull_String{field: "`oauth_session`.`state`"},
+	Nonce:     whereHelpernull_String{field: "`oauth_session`.`nonce`"},
+	Period:    whereHelpertime_Time{field: "`oauth_session`.`period`"},
+	CreatedAt: whereHelpertime_Time{field: "`oauth_session`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`oauth_session`.`updated_at`"},
 }
 
 // OauthSessionRels is where relationship names are stored.
@@ -137,9 +137,9 @@ func (r *oauthSessionR) GetClient() *Client {
 type oauthSessionL struct{}
 
 var (
-	oauthSessionAllColumns            = []string{"code", "user_id", "client_id", "state", "nonce", "period", "created_at", "modified_at"}
+	oauthSessionAllColumns            = []string{"code", "user_id", "client_id", "state", "nonce", "period", "created_at", "updated_at"}
 	oauthSessionColumnsWithoutDefault = []string{"code", "user_id", "client_id", "state", "nonce"}
-	oauthSessionColumnsWithDefault    = []string{"period", "created_at", "modified_at"}
+	oauthSessionColumnsWithDefault    = []string{"period", "created_at", "updated_at"}
 	oauthSessionPrimaryKeyColumns     = []string{"code"}
 	oauthSessionGeneratedColumns      = []string{}
 )
@@ -833,6 +833,9 @@ func (o *OauthSession) Insert(ctx context.Context, exec boil.ContextExecutor, co
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -925,6 +928,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *OauthSession) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -1065,6 +1074,7 @@ func (o *OauthSession) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

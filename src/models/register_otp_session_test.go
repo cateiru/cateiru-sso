@@ -687,7 +687,7 @@ func testRegisterOtpSessionsSelect(t *testing.T) {
 }
 
 var (
-	registerOtpSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `PublicKey`: `text`, `Secret`: `text`, `Period`: `datetime`, `RetryCount`: `tinyint`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
+	registerOtpSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `PublicKey`: `text`, `Secret`: `text`, `Period`: `datetime`, `RetryCount`: `tinyint`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_                         = bytes.MinRead
 )
 

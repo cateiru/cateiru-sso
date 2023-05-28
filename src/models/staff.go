@@ -24,51 +24,51 @@ import (
 
 // Staff is an object representing the database table.
 type Staff struct {
-	UserID     string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Memo       null.String `boil:"memo" json:"memo,omitempty" toml:"memo" yaml:"memo,omitempty"`
-	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UserID    string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Memo      null.String `boil:"memo" json:"memo,omitempty" toml:"memo" yaml:"memo,omitempty"`
+	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *staffR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L staffL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var StaffColumns = struct {
-	UserID     string
-	Memo       string
-	CreatedAt  string
-	ModifiedAt string
+	UserID    string
+	Memo      string
+	CreatedAt string
+	UpdatedAt string
 }{
-	UserID:     "user_id",
-	Memo:       "memo",
-	CreatedAt:  "created_at",
-	ModifiedAt: "modified_at",
+	UserID:    "user_id",
+	Memo:      "memo",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 var StaffTableColumns = struct {
-	UserID     string
-	Memo       string
-	CreatedAt  string
-	ModifiedAt string
+	UserID    string
+	Memo      string
+	CreatedAt string
+	UpdatedAt string
 }{
-	UserID:     "staff.user_id",
-	Memo:       "staff.memo",
-	CreatedAt:  "staff.created_at",
-	ModifiedAt: "staff.modified_at",
+	UserID:    "staff.user_id",
+	Memo:      "staff.memo",
+	CreatedAt: "staff.created_at",
+	UpdatedAt: "staff.updated_at",
 }
 
 // Generated where
 
 var StaffWhere = struct {
-	UserID     whereHelperstring
-	Memo       whereHelpernull_String
-	CreatedAt  whereHelpertime_Time
-	ModifiedAt whereHelpertime_Time
+	UserID    whereHelperstring
+	Memo      whereHelpernull_String
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
 }{
-	UserID:     whereHelperstring{field: "`staff`.`user_id`"},
-	Memo:       whereHelpernull_String{field: "`staff`.`memo`"},
-	CreatedAt:  whereHelpertime_Time{field: "`staff`.`created_at`"},
-	ModifiedAt: whereHelpertime_Time{field: "`staff`.`modified_at`"},
+	UserID:    whereHelperstring{field: "`staff`.`user_id`"},
+	Memo:      whereHelpernull_String{field: "`staff`.`memo`"},
+	CreatedAt: whereHelpertime_Time{field: "`staff`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`staff`.`updated_at`"},
 }
 
 // StaffRels is where relationship names are stored.
@@ -99,9 +99,9 @@ func (r *staffR) GetUser() *User {
 type staffL struct{}
 
 var (
-	staffAllColumns            = []string{"user_id", "memo", "created_at", "modified_at"}
+	staffAllColumns            = []string{"user_id", "memo", "created_at", "updated_at"}
 	staffColumnsWithoutDefault = []string{"user_id", "memo"}
-	staffColumnsWithDefault    = []string{"created_at", "modified_at"}
+	staffColumnsWithDefault    = []string{"created_at", "updated_at"}
 	staffPrimaryKeyColumns     = []string{"user_id"}
 	staffGeneratedColumns      = []string{}
 )
@@ -617,6 +617,9 @@ func (o *Staff) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -709,6 +712,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Staff) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -849,6 +858,7 @@ func (o *Staff) Upsert(ctx context.Context, exec boil.ContextExecutor, updateCol
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

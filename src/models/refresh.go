@@ -24,72 +24,72 @@ import (
 
 // Refresh is an object representing the database table.
 type Refresh struct {
-	ID         string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID     string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	HistoryID  []byte      `boil:"history_id" json:"history_id" toml:"history_id" yaml:"history_id"`
-	SessionID  null.String `boil:"session_id" json:"session_id,omitempty" toml:"session_id" yaml:"session_id,omitempty"`
-	Period     time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
-	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	HistoryID []byte      `boil:"history_id" json:"history_id" toml:"history_id" yaml:"history_id"`
+	SessionID null.String `boil:"session_id" json:"session_id,omitempty" toml:"session_id" yaml:"session_id,omitempty"`
+	Period    time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
+	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *refreshR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L refreshL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var RefreshColumns = struct {
-	ID         string
-	UserID     string
-	HistoryID  string
-	SessionID  string
-	Period     string
-	CreatedAt  string
-	ModifiedAt string
+	ID        string
+	UserID    string
+	HistoryID string
+	SessionID string
+	Period    string
+	CreatedAt string
+	UpdatedAt string
 }{
-	ID:         "id",
-	UserID:     "user_id",
-	HistoryID:  "history_id",
-	SessionID:  "session_id",
-	Period:     "period",
-	CreatedAt:  "created_at",
-	ModifiedAt: "modified_at",
+	ID:        "id",
+	UserID:    "user_id",
+	HistoryID: "history_id",
+	SessionID: "session_id",
+	Period:    "period",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 var RefreshTableColumns = struct {
-	ID         string
-	UserID     string
-	HistoryID  string
-	SessionID  string
-	Period     string
-	CreatedAt  string
-	ModifiedAt string
+	ID        string
+	UserID    string
+	HistoryID string
+	SessionID string
+	Period    string
+	CreatedAt string
+	UpdatedAt string
 }{
-	ID:         "refresh.id",
-	UserID:     "refresh.user_id",
-	HistoryID:  "refresh.history_id",
-	SessionID:  "refresh.session_id",
-	Period:     "refresh.period",
-	CreatedAt:  "refresh.created_at",
-	ModifiedAt: "refresh.modified_at",
+	ID:        "refresh.id",
+	UserID:    "refresh.user_id",
+	HistoryID: "refresh.history_id",
+	SessionID: "refresh.session_id",
+	Period:    "refresh.period",
+	CreatedAt: "refresh.created_at",
+	UpdatedAt: "refresh.updated_at",
 }
 
 // Generated where
 
 var RefreshWhere = struct {
-	ID         whereHelperstring
-	UserID     whereHelperstring
-	HistoryID  whereHelper__byte
-	SessionID  whereHelpernull_String
-	Period     whereHelpertime_Time
-	CreatedAt  whereHelpertime_Time
-	ModifiedAt whereHelpertime_Time
+	ID        whereHelperstring
+	UserID    whereHelperstring
+	HistoryID whereHelper__byte
+	SessionID whereHelpernull_String
+	Period    whereHelpertime_Time
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
 }{
-	ID:         whereHelperstring{field: "`refresh`.`id`"},
-	UserID:     whereHelperstring{field: "`refresh`.`user_id`"},
-	HistoryID:  whereHelper__byte{field: "`refresh`.`history_id`"},
-	SessionID:  whereHelpernull_String{field: "`refresh`.`session_id`"},
-	Period:     whereHelpertime_Time{field: "`refresh`.`period`"},
-	CreatedAt:  whereHelpertime_Time{field: "`refresh`.`created_at`"},
-	ModifiedAt: whereHelpertime_Time{field: "`refresh`.`modified_at`"},
+	ID:        whereHelperstring{field: "`refresh`.`id`"},
+	UserID:    whereHelperstring{field: "`refresh`.`user_id`"},
+	HistoryID: whereHelper__byte{field: "`refresh`.`history_id`"},
+	SessionID: whereHelpernull_String{field: "`refresh`.`session_id`"},
+	Period:    whereHelpertime_Time{field: "`refresh`.`period`"},
+	CreatedAt: whereHelpertime_Time{field: "`refresh`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`refresh`.`updated_at`"},
 }
 
 // RefreshRels is where relationship names are stored.
@@ -120,9 +120,9 @@ func (r *refreshR) GetUser() *User {
 type refreshL struct{}
 
 var (
-	refreshAllColumns            = []string{"id", "user_id", "history_id", "session_id", "period", "created_at", "modified_at"}
+	refreshAllColumns            = []string{"id", "user_id", "history_id", "session_id", "period", "created_at", "updated_at"}
 	refreshColumnsWithoutDefault = []string{"id", "user_id", "session_id"}
-	refreshColumnsWithDefault    = []string{"history_id", "period", "created_at", "modified_at"}
+	refreshColumnsWithDefault    = []string{"history_id", "period", "created_at", "updated_at"}
 	refreshPrimaryKeyColumns     = []string{"id"}
 	refreshGeneratedColumns      = []string{}
 )
@@ -638,6 +638,9 @@ func (o *Refresh) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -730,6 +733,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Refresh) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -872,6 +881,7 @@ func (o *Refresh) Upsert(ctx context.Context, exec boil.ContextExecutor, updateC
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

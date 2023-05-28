@@ -38,7 +38,7 @@ export const Default: Story = {
             locale_id: 'ja_JP',
 
             created_at: faker.date.past().toISOString(),
-            modified_at: faker.date.past().toISOString(),
+            updated_at: faker.date.past().toISOString(),
           },
           {
             id: faker.string.uuid(),
@@ -53,7 +53,7 @@ export const Default: Story = {
             locale_id: 'ja_JP',
 
             created_at: faker.date.past().toISOString(),
-            modified_at: faker.date.past().toISOString(),
+            updated_at: faker.date.past().toISOString(),
           },
         ] as StaffUsers,
       },
@@ -84,7 +84,7 @@ export const Loading: Story = {
             locale_id: 'ja_JP',
 
             created_at: faker.date.past().toISOString(),
-            modified_at: faker.date.past().toISOString(),
+            updated_at: faker.date.past().toISOString(),
           },
         ] as StaffUsers,
       },

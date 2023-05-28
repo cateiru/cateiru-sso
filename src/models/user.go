@@ -35,7 +35,7 @@ type User struct {
 	Avatar     null.String `boil:"avatar" json:"avatar,omitempty" toml:"avatar" yaml:"avatar,omitempty"`
 	LocaleID   string      `boil:"locale_id" json:"locale_id" toml:"locale_id" yaml:"locale_id"`
 	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UpdatedAt  time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -53,7 +53,7 @@ var UserColumns = struct {
 	Avatar     string
 	LocaleID   string
 	CreatedAt  string
-	ModifiedAt string
+	UpdatedAt  string
 }{
 	ID:         "id",
 	UserName:   "user_name",
@@ -66,7 +66,7 @@ var UserColumns = struct {
 	Avatar:     "avatar",
 	LocaleID:   "locale_id",
 	CreatedAt:  "created_at",
-	ModifiedAt: "modified_at",
+	UpdatedAt:  "updated_at",
 }
 
 var UserTableColumns = struct {
@@ -81,7 +81,7 @@ var UserTableColumns = struct {
 	Avatar     string
 	LocaleID   string
 	CreatedAt  string
-	ModifiedAt string
+	UpdatedAt  string
 }{
 	ID:         "user.id",
 	UserName:   "user.user_name",
@@ -94,7 +94,7 @@ var UserTableColumns = struct {
 	Avatar:     "user.avatar",
 	LocaleID:   "user.locale_id",
 	CreatedAt:  "user.created_at",
-	ModifiedAt: "user.modified_at",
+	UpdatedAt:  "user.updated_at",
 }
 
 // Generated where
@@ -135,7 +135,7 @@ var UserWhere = struct {
 	Avatar     whereHelpernull_String
 	LocaleID   whereHelperstring
 	CreatedAt  whereHelpertime_Time
-	ModifiedAt whereHelpertime_Time
+	UpdatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`user`.`id`"},
 	UserName:   whereHelperstring{field: "`user`.`user_name`"},
@@ -148,7 +148,7 @@ var UserWhere = struct {
 	Avatar:     whereHelpernull_String{field: "`user`.`avatar`"},
 	LocaleID:   whereHelperstring{field: "`user`.`locale_id`"},
 	CreatedAt:  whereHelpertime_Time{field: "`user`.`created_at`"},
-	ModifiedAt: whereHelpertime_Time{field: "`user`.`modified_at`"},
+	UpdatedAt:  whereHelpertime_Time{field: "`user`.`updated_at`"},
 }
 
 // UserRels is where relationship names are stored.
@@ -379,9 +379,9 @@ func (r *userR) GetWebauthns() WebauthnSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "user_name", "email", "family_name", "middle_name", "given_name", "gender", "birthdate", "avatar", "locale_id", "created_at", "modified_at"}
+	userAllColumns            = []string{"id", "user_name", "email", "family_name", "middle_name", "given_name", "gender", "birthdate", "avatar", "locale_id", "created_at", "updated_at"}
 	userColumnsWithoutDefault = []string{"id", "email", "family_name", "middle_name", "given_name", "birthdate", "avatar"}
-	userColumnsWithDefault    = []string{"user_name", "gender", "locale_id", "created_at", "modified_at"}
+	userColumnsWithDefault    = []string{"user_name", "gender", "locale_id", "created_at", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )
@@ -4508,6 +4508,9 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -4600,6 +4603,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *User) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -4742,6 +4751,7 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColu
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -26,7 +26,7 @@ export const Enable: Story = {
         response: {
           password: true,
           otp: true,
-          otp_modified_at: faker.date.recent().toISOString(),
+          otp_updated_at: faker.date.recent().toISOString(),
         } as AccountCertificates,
       },
     ],
@@ -43,7 +43,7 @@ export const Disable: Story = {
         response: {
           password: true,
           otp: false,
-          otp_modified_at: null,
+          otp_updated_at: null,
         } as AccountCertificates,
       },
     ],
@@ -60,7 +60,7 @@ export const Impossible: Story = {
         response: {
           password: false,
           otp: false,
-          otp_modified_at: null,
+          otp_updated_at: null,
         } as AccountCertificates,
       },
     ],
@@ -78,7 +78,7 @@ export const Loading: Story = {
         response: {
           password: true,
           otp: true,
-          otp_modified_at: faker.date.recent().toISOString(),
+          otp_updated_at: faker.date.recent().toISOString(),
         } as AccountCertificates,
       },
     ],

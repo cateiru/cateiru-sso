@@ -27,7 +27,7 @@ type Setting struct {
 	NoticeEmail   bool      `boil:"notice_email" json:"notice_email" toml:"notice_email" yaml:"notice_email"`
 	NoticeWebpush bool      `boil:"notice_webpush" json:"notice_webpush" toml:"notice_webpush" yaml:"notice_webpush"`
 	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt    time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UpdatedAt     time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *settingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L settingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,13 +38,13 @@ var SettingColumns = struct {
 	NoticeEmail   string
 	NoticeWebpush string
 	CreatedAt     string
-	ModifiedAt    string
+	UpdatedAt     string
 }{
 	UserID:        "user_id",
 	NoticeEmail:   "notice_email",
 	NoticeWebpush: "notice_webpush",
 	CreatedAt:     "created_at",
-	ModifiedAt:    "modified_at",
+	UpdatedAt:     "updated_at",
 }
 
 var SettingTableColumns = struct {
@@ -52,13 +52,13 @@ var SettingTableColumns = struct {
 	NoticeEmail   string
 	NoticeWebpush string
 	CreatedAt     string
-	ModifiedAt    string
+	UpdatedAt     string
 }{
 	UserID:        "setting.user_id",
 	NoticeEmail:   "setting.notice_email",
 	NoticeWebpush: "setting.notice_webpush",
 	CreatedAt:     "setting.created_at",
-	ModifiedAt:    "setting.modified_at",
+	UpdatedAt:     "setting.updated_at",
 }
 
 // Generated where
@@ -68,13 +68,13 @@ var SettingWhere = struct {
 	NoticeEmail   whereHelperbool
 	NoticeWebpush whereHelperbool
 	CreatedAt     whereHelpertime_Time
-	ModifiedAt    whereHelpertime_Time
+	UpdatedAt     whereHelpertime_Time
 }{
 	UserID:        whereHelperstring{field: "`setting`.`user_id`"},
 	NoticeEmail:   whereHelperbool{field: "`setting`.`notice_email`"},
 	NoticeWebpush: whereHelperbool{field: "`setting`.`notice_webpush`"},
 	CreatedAt:     whereHelpertime_Time{field: "`setting`.`created_at`"},
-	ModifiedAt:    whereHelpertime_Time{field: "`setting`.`modified_at`"},
+	UpdatedAt:     whereHelpertime_Time{field: "`setting`.`updated_at`"},
 }
 
 // SettingRels is where relationship names are stored.
@@ -105,9 +105,9 @@ func (r *settingR) GetUser() *User {
 type settingL struct{}
 
 var (
-	settingAllColumns            = []string{"user_id", "notice_email", "notice_webpush", "created_at", "modified_at"}
+	settingAllColumns            = []string{"user_id", "notice_email", "notice_webpush", "created_at", "updated_at"}
 	settingColumnsWithoutDefault = []string{"user_id"}
-	settingColumnsWithDefault    = []string{"notice_email", "notice_webpush", "created_at", "modified_at"}
+	settingColumnsWithDefault    = []string{"notice_email", "notice_webpush", "created_at", "updated_at"}
 	settingPrimaryKeyColumns     = []string{"user_id"}
 	settingGeneratedColumns      = []string{}
 )
@@ -623,6 +623,9 @@ func (o *Setting) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -715,6 +718,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Setting) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -855,6 +864,7 @@ func (o *Setting) Upsert(ctx context.Context, exec boil.ContextExecutor, updateC
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

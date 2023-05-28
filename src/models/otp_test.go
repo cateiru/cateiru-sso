@@ -683,7 +683,7 @@ func testOtpsSelect(t *testing.T) {
 }
 
 var (
-	otpDBTypes = map[string]string{`UserID`: `varchar`, `Secret`: `text`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
+	otpDBTypes = map[string]string{`UserID`: `varchar`, `Secret`: `text`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_          = bytes.MinRead
 )
 

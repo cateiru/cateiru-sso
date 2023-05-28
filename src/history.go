@@ -273,7 +273,7 @@ func (h *Handler) HistoryLoginDeviceHandler(c echo.Context) error {
 			"refresh.session_id",
 			"refresh.period",
 			"refresh.created_at",
-			"refresh.modified_at",
+			"refresh.updated_at",
 		),
 		qm.From("login_history"),
 		qm.InnerJoin("refresh ON refresh.history_id = login_history.refresh_id"),

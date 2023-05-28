@@ -30,7 +30,7 @@ type RegisterOtpSession struct {
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
 	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UpdatedAt  time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *registerOtpSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L registerOtpSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,7 +44,7 @@ var RegisterOtpSessionColumns = struct {
 	Period     string
 	RetryCount string
 	CreatedAt  string
-	ModifiedAt string
+	UpdatedAt  string
 }{
 	ID:         "id",
 	UserID:     "user_id",
@@ -53,7 +53,7 @@ var RegisterOtpSessionColumns = struct {
 	Period:     "period",
 	RetryCount: "retry_count",
 	CreatedAt:  "created_at",
-	ModifiedAt: "modified_at",
+	UpdatedAt:  "updated_at",
 }
 
 var RegisterOtpSessionTableColumns = struct {
@@ -64,7 +64,7 @@ var RegisterOtpSessionTableColumns = struct {
 	Period     string
 	RetryCount string
 	CreatedAt  string
-	ModifiedAt string
+	UpdatedAt  string
 }{
 	ID:         "register_otp_session.id",
 	UserID:     "register_otp_session.user_id",
@@ -73,7 +73,7 @@ var RegisterOtpSessionTableColumns = struct {
 	Period:     "register_otp_session.period",
 	RetryCount: "register_otp_session.retry_count",
 	CreatedAt:  "register_otp_session.created_at",
-	ModifiedAt: "register_otp_session.modified_at",
+	UpdatedAt:  "register_otp_session.updated_at",
 }
 
 // Generated where
@@ -86,7 +86,7 @@ var RegisterOtpSessionWhere = struct {
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
 	CreatedAt  whereHelpertime_Time
-	ModifiedAt whereHelpertime_Time
+	UpdatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`register_otp_session`.`id`"},
 	UserID:     whereHelperstring{field: "`register_otp_session`.`user_id`"},
@@ -95,7 +95,7 @@ var RegisterOtpSessionWhere = struct {
 	Period:     whereHelpertime_Time{field: "`register_otp_session`.`period`"},
 	RetryCount: whereHelperuint8{field: "`register_otp_session`.`retry_count`"},
 	CreatedAt:  whereHelpertime_Time{field: "`register_otp_session`.`created_at`"},
-	ModifiedAt: whereHelpertime_Time{field: "`register_otp_session`.`modified_at`"},
+	UpdatedAt:  whereHelpertime_Time{field: "`register_otp_session`.`updated_at`"},
 }
 
 // RegisterOtpSessionRels is where relationship names are stored.
@@ -126,9 +126,9 @@ func (r *registerOtpSessionR) GetUser() *User {
 type registerOtpSessionL struct{}
 
 var (
-	registerOtpSessionAllColumns            = []string{"id", "user_id", "public_key", "secret", "period", "retry_count", "created_at", "modified_at"}
+	registerOtpSessionAllColumns            = []string{"id", "user_id", "public_key", "secret", "period", "retry_count", "created_at", "updated_at"}
 	registerOtpSessionColumnsWithoutDefault = []string{"id", "user_id", "public_key", "secret"}
-	registerOtpSessionColumnsWithDefault    = []string{"period", "retry_count", "created_at", "modified_at"}
+	registerOtpSessionColumnsWithDefault    = []string{"period", "retry_count", "created_at", "updated_at"}
 	registerOtpSessionPrimaryKeyColumns     = []string{"id"}
 	registerOtpSessionGeneratedColumns      = []string{}
 )
@@ -644,6 +644,9 @@ func (o *RegisterOtpSession) Insert(ctx context.Context, exec boil.ContextExecut
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -736,6 +739,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *RegisterOtpSession) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -876,6 +885,7 @@ func (o *RegisterOtpSession) Upsert(ctx context.Context, exec boil.ContextExecut
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

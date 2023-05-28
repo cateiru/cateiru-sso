@@ -11,7 +11,7 @@ import {OtpBackupModal} from './OtpBackupModal';
 import {OtpDeleteModal} from './OtpDeleteModal';
 
 interface Props {
-  modifiedAt: Date;
+  updatedAt: Date;
 }
 
 export const OtpEnableText: React.FC<Props> = props => {
@@ -26,7 +26,7 @@ export const OtpEnableText: React.FC<Props> = props => {
       <Text color={textColor} mb=".5rem">
         設定日時:
         <Text as="span" fontWeight="bold" ml=".3rem">
-          {props.modifiedAt.toLocaleString()}
+          {props.updatedAt.toLocaleString()}
         </Text>
       </Text>
       <Stack direction={{base: 'column', md: 'row'}}>

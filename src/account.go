@@ -40,8 +40,8 @@ type AccountReRegisterPasswordTemplate struct {
 type AccountCertificates struct {
 	Password bool `json:"password"`
 
-	OTP           bool      `json:"otp"`
-	OtpModifiedAt null.Time `json:"otp_modified_at"`
+	OTP          bool      `json:"otp"`
+	OtpUpdatedAt null.Time `json:"otp_updated_at"`
 }
 
 type AccountReRegisterPasswordIsSession struct {
@@ -753,13 +753,13 @@ func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
 
 	otpModified := null.NewTime(time.Time{}, false)
 	if otp != nil {
-		otpModified = null.TimeFrom(otp.ModifiedAt)
+		otpModified = null.TimeFrom(otp.UpdatedAt)
 	}
 
 	return c.JSON(http.StatusOK, AccountCertificates{
-		Password:      password,
-		OTP:           otp != nil,
-		OtpModifiedAt: otpModified,
+		Password:     password,
+		OTP:          otp != nil,
+		OtpUpdatedAt: otpModified,
 	})
 }
 

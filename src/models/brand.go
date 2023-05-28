@@ -28,7 +28,7 @@ type Brand struct {
 	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 	CreatedAt   time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt  time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UpdatedAt   time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *brandR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L brandL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,13 +39,13 @@ var BrandColumns = struct {
 	Name        string
 	Description string
 	CreatedAt   string
-	ModifiedAt  string
+	UpdatedAt   string
 }{
 	ID:          "id",
 	Name:        "name",
 	Description: "description",
 	CreatedAt:   "created_at",
-	ModifiedAt:  "modified_at",
+	UpdatedAt:   "updated_at",
 }
 
 var BrandTableColumns = struct {
@@ -53,13 +53,13 @@ var BrandTableColumns = struct {
 	Name        string
 	Description string
 	CreatedAt   string
-	ModifiedAt  string
+	UpdatedAt   string
 }{
 	ID:          "brand.id",
 	Name:        "brand.name",
 	Description: "brand.description",
 	CreatedAt:   "brand.created_at",
-	ModifiedAt:  "brand.modified_at",
+	UpdatedAt:   "brand.updated_at",
 }
 
 // Generated where
@@ -151,13 +151,13 @@ var BrandWhere = struct {
 	Name        whereHelperstring
 	Description whereHelpernull_String
 	CreatedAt   whereHelpertime_Time
-	ModifiedAt  whereHelpertime_Time
+	UpdatedAt   whereHelpertime_Time
 }{
 	ID:          whereHelperstring{field: "`brand`.`id`"},
 	Name:        whereHelperstring{field: "`brand`.`name`"},
 	Description: whereHelpernull_String{field: "`brand`.`description`"},
 	CreatedAt:   whereHelpertime_Time{field: "`brand`.`created_at`"},
-	ModifiedAt:  whereHelpertime_Time{field: "`brand`.`modified_at`"},
+	UpdatedAt:   whereHelpertime_Time{field: "`brand`.`updated_at`"},
 }
 
 // BrandRels is where relationship names are stored.
@@ -188,9 +188,9 @@ func (r *brandR) GetUserBrands() UserBrandSlice {
 type brandL struct{}
 
 var (
-	brandAllColumns            = []string{"id", "name", "description", "created_at", "modified_at"}
+	brandAllColumns            = []string{"id", "name", "description", "created_at", "updated_at"}
 	brandColumnsWithoutDefault = []string{"id", "name", "description"}
-	brandColumnsWithDefault    = []string{"created_at", "modified_at"}
+	brandColumnsWithDefault    = []string{"created_at", "updated_at"}
 	brandPrimaryKeyColumns     = []string{"id"}
 	brandGeneratedColumns      = []string{}
 )
@@ -709,6 +709,9 @@ func (o *Brand) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -801,6 +804,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Brand) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -941,6 +950,7 @@ func (o *Brand) Upsert(ctx context.Context, exec boil.ContextExecutor, updateCol
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

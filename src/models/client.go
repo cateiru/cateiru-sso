@@ -33,7 +33,7 @@ type Client struct {
 	OwnerUserID  string      `boil:"owner_user_id" json:"owner_user_id" toml:"owner_user_id" yaml:"owner_user_id"`
 	ClientSecret string      `boil:"client_secret" json:"client_secret" toml:"client_secret" yaml:"client_secret"`
 	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt   time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *clientR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L clientL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -49,7 +49,7 @@ var ClientColumns = struct {
 	OwnerUserID  string
 	ClientSecret string
 	CreatedAt    string
-	ModifiedAt   string
+	UpdatedAt    string
 }{
 	ClientID:     "client_id",
 	Name:         "name",
@@ -60,7 +60,7 @@ var ClientColumns = struct {
 	OwnerUserID:  "owner_user_id",
 	ClientSecret: "client_secret",
 	CreatedAt:    "created_at",
-	ModifiedAt:   "modified_at",
+	UpdatedAt:    "updated_at",
 }
 
 var ClientTableColumns = struct {
@@ -73,7 +73,7 @@ var ClientTableColumns = struct {
 	OwnerUserID  string
 	ClientSecret string
 	CreatedAt    string
-	ModifiedAt   string
+	UpdatedAt    string
 }{
 	ClientID:     "client.client_id",
 	Name:         "client.name",
@@ -84,7 +84,7 @@ var ClientTableColumns = struct {
 	OwnerUserID:  "client.owner_user_id",
 	ClientSecret: "client.client_secret",
 	CreatedAt:    "client.created_at",
-	ModifiedAt:   "client.modified_at",
+	UpdatedAt:    "client.updated_at",
 }
 
 // Generated where
@@ -99,7 +99,7 @@ var ClientWhere = struct {
 	OwnerUserID  whereHelperstring
 	ClientSecret whereHelperstring
 	CreatedAt    whereHelpertime_Time
-	ModifiedAt   whereHelpertime_Time
+	UpdatedAt    whereHelpertime_Time
 }{
 	ClientID:     whereHelperstring{field: "`client`.`client_id`"},
 	Name:         whereHelperstring{field: "`client`.`name`"},
@@ -110,7 +110,7 @@ var ClientWhere = struct {
 	OwnerUserID:  whereHelperstring{field: "`client`.`owner_user_id`"},
 	ClientSecret: whereHelperstring{field: "`client`.`client_secret`"},
 	CreatedAt:    whereHelpertime_Time{field: "`client`.`created_at`"},
-	ModifiedAt:   whereHelpertime_Time{field: "`client`.`modified_at`"},
+	UpdatedAt:    whereHelpertime_Time{field: "`client`.`updated_at`"},
 }
 
 // ClientRels is where relationship names are stored.
@@ -181,9 +181,9 @@ func (r *clientR) GetOauthSessions() OauthSessionSlice {
 type clientL struct{}
 
 var (
-	clientAllColumns            = []string{"client_id", "name", "description", "image", "is_allow", "prompt", "owner_user_id", "client_secret", "created_at", "modified_at"}
+	clientAllColumns            = []string{"client_id", "name", "description", "image", "is_allow", "prompt", "owner_user_id", "client_secret", "created_at", "updated_at"}
 	clientColumnsWithoutDefault = []string{"client_id", "name", "description", "image", "prompt", "owner_user_id", "client_secret"}
-	clientColumnsWithDefault    = []string{"is_allow", "created_at", "modified_at"}
+	clientColumnsWithDefault    = []string{"is_allow", "created_at", "updated_at"}
 	clientPrimaryKeyColumns     = []string{"client_id"}
 	clientGeneratedColumns      = []string{}
 )
@@ -1420,6 +1420,9 @@ func (o *Client) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -1512,6 +1515,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Client) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -1652,6 +1661,7 @@ func (o *Client) Upsert(ctx context.Context, exec boil.ContextExecutor, updateCo
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

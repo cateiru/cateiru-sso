@@ -16,6 +16,6 @@ type Story = StoryObj<typeof OtpEnableText>;
 
 export const Default: Story = {
   args: {
-    modifiedAt: faker.date.recent(),
+    updatedAt: faker.date.recent(),
   },
 };

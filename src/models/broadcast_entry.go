@@ -29,7 +29,7 @@ type BroadcastEntry struct {
 	Title        string      `boil:"title" json:"title" toml:"title" yaml:"title"`
 	Body         null.String `boil:"body" json:"body,omitempty" toml:"body" yaml:"body,omitempty"`
 	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	ModifiedAt   time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
+	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *broadcastEntryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L broadcastEntryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,14 +41,14 @@ var BroadcastEntryColumns = struct {
 	Title        string
 	Body         string
 	CreatedAt    string
-	ModifiedAt   string
+	UpdatedAt    string
 }{
 	ID:           "id",
 	CreateUserID: "create_user_id",
 	Title:        "title",
 	Body:         "body",
 	CreatedAt:    "created_at",
-	ModifiedAt:   "modified_at",
+	UpdatedAt:    "updated_at",
 }
 
 var BroadcastEntryTableColumns = struct {
@@ -57,14 +57,14 @@ var BroadcastEntryTableColumns = struct {
 	Title        string
 	Body         string
 	CreatedAt    string
-	ModifiedAt   string
+	UpdatedAt    string
 }{
 	ID:           "broadcast_entry.id",
 	CreateUserID: "broadcast_entry.create_user_id",
 	Title:        "broadcast_entry.title",
 	Body:         "broadcast_entry.body",
 	CreatedAt:    "broadcast_entry.created_at",
-	ModifiedAt:   "broadcast_entry.modified_at",
+	UpdatedAt:    "broadcast_entry.updated_at",
 }
 
 // Generated where
@@ -98,14 +98,14 @@ var BroadcastEntryWhere = struct {
 	Title        whereHelperstring
 	Body         whereHelpernull_String
 	CreatedAt    whereHelpertime_Time
-	ModifiedAt   whereHelpertime_Time
+	UpdatedAt    whereHelpertime_Time
 }{
 	ID:           whereHelperuint{field: "`broadcast_entry`.`id`"},
 	CreateUserID: whereHelperstring{field: "`broadcast_entry`.`create_user_id`"},
 	Title:        whereHelperstring{field: "`broadcast_entry`.`title`"},
 	Body:         whereHelpernull_String{field: "`broadcast_entry`.`body`"},
 	CreatedAt:    whereHelpertime_Time{field: "`broadcast_entry`.`created_at`"},
-	ModifiedAt:   whereHelpertime_Time{field: "`broadcast_entry`.`modified_at`"},
+	UpdatedAt:    whereHelpertime_Time{field: "`broadcast_entry`.`updated_at`"},
 }
 
 // BroadcastEntryRels is where relationship names are stored.
@@ -136,9 +136,9 @@ func (r *broadcastEntryR) GetEntryBroadcastNotices() BroadcastNoticeSlice {
 type broadcastEntryL struct{}
 
 var (
-	broadcastEntryAllColumns            = []string{"id", "create_user_id", "title", "body", "created_at", "modified_at"}
+	broadcastEntryAllColumns            = []string{"id", "create_user_id", "title", "body", "created_at", "updated_at"}
 	broadcastEntryColumnsWithoutDefault = []string{"create_user_id", "title", "body"}
-	broadcastEntryColumnsWithDefault    = []string{"id", "created_at", "modified_at"}
+	broadcastEntryColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
 	broadcastEntryPrimaryKeyColumns     = []string{"id"}
 	broadcastEntryGeneratedColumns      = []string{}
 )
@@ -657,6 +657,9 @@ func (o *BroadcastEntry) Insert(ctx context.Context, exec boil.ContextExecutor, 
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		if o.UpdatedAt.IsZero() {
+			o.UpdatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
@@ -760,6 +763,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *BroadcastEntry) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		o.UpdatedAt = currTime
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -900,6 +909,7 @@ func (o *BroadcastEntry) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 		if o.CreatedAt.IsZero() {
 			o.CreatedAt = currTime
 		}
+		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

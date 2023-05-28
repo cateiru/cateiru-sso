@@ -683,7 +683,7 @@ func testStaffsSelect(t *testing.T) {
 }
 
 var (
-	staffDBTypes = map[string]string{`UserID`: `varchar`, `Memo`: `text`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
+	staffDBTypes = map[string]string{`UserID`: `varchar`, `Memo`: `text`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_            = bytes.MinRead
 )
 
