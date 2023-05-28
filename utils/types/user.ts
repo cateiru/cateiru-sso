@@ -12,8 +12,8 @@ export const UserSchema = z.object({
   avatar: z.string().nullable(),
   locale_id: z.string(),
 
-  created: z.string().datetime({offset: true}),
-  modified: z.string().datetime({offset: true}),
+  created_at: z.string().datetime({offset: true}),
+  modified_at: z.string().datetime({offset: true}),
 });
 export type User = z.infer<typeof UserSchema>;
 
@@ -22,8 +22,8 @@ export const UserSettingSchema = z.object({
   notice_email: z.boolean(),
   notice_webpush: z.boolean(),
 
-  created: z.string().datetime(),
-  modified: z.string().datetime(),
+  created_at: z.string().datetime(),
+  modified_at: z.string().datetime(),
 });
 export type UserSetting = z.infer<typeof UserSettingSchema>;
 

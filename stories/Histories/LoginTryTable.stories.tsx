@@ -29,7 +29,7 @@ export const Default: Story = {
             browser: 'Firefox',
             is_mobile: false,
             ip: faker.internet.ip(),
-            created: faker.date.past().toISOString(),
+            created_at: faker.date.past().toISOString(),
 
             identifier: 0,
           },
@@ -40,7 +40,7 @@ export const Default: Story = {
             browser: 'Google Chrome',
             is_mobile: false,
             ip: faker.internet.ip(),
-            created: faker.date.past().toISOString(),
+            created_at: faker.date.past().toISOString(),
 
             identifier: 0,
           },
@@ -51,7 +51,7 @@ export const Default: Story = {
             browser: 'Safari',
             is_mobile: true,
             ip: faker.internet.ip(),
-            created: faker.date.past().toISOString(),
+            created_at: faker.date.past().toISOString(),
 
             identifier: 1,
           },
@@ -78,7 +78,7 @@ export const TooMany: Story = {
             browser: 'Firefox',
             is_mobile: false,
             ip: faker.internet.ip(),
-            created: faker.date.past().toISOString(),
+            created_at: faker.date.past().toISOString(),
 
             identifier: 0,
           })) as LoginTryHistoryList,
@@ -104,7 +104,7 @@ export const Loading: Story = {
             browser: 'Firefox',
             is_mobile: false,
             ip: faker.internet.ip(),
-            created: faker.date.past().toISOString(),
+            created_at: faker.date.past().toISOString(),
 
             identifier: 0,
           },

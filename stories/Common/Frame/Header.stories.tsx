@@ -31,8 +31,8 @@ const meta: Meta<typeof Header> = {
                 avatar: faker.image.avatar(),
                 locale_id: 'ja_JP',
 
-                created: faker.date.past().toString(),
-                modified: faker.date.past().toString(),
+                created_at: faker.date.past().toString(),
+                modified_at: faker.date.past().toString(),
               },
               is_staff: false,
             },
@@ -52,8 +52,8 @@ const meta: Meta<typeof Header> = {
                 avatar: null,
                 locale_id: 'ja_JP',
 
-                created: faker.date.past().toString(),
-                modified: faker.date.past().toString(),
+                created_at: faker.date.past().toString(),
+                modified_at: faker.date.past().toString(),
               },
               is_staff: false,
             },

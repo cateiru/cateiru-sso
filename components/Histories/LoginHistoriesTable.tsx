@@ -55,7 +55,7 @@ export const LoginHistoriesTable = () => {
         <Tbody>
           {data
             ? data.map(v => {
-                const created = new Date(v.created);
+                const created = new Date(v.created_at);
                 return (
                   <Tr key={v.id}>
                     <Td>

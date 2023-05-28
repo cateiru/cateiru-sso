@@ -11,7 +11,7 @@ export const LoginDeviceScheme = z.object({
 
   is_current: z.boolean(),
 
-  created: z.string().datetime({offset: true}),
+  created_at: z.string().datetime({offset: true}),
 });
 export type LoginDevice = z.infer<typeof LoginDeviceScheme>;
 
@@ -32,7 +32,7 @@ export const LoginTryHistoryScheme = z.object({
   // 1: パスワード再登録
   identifier: z.number(),
 
-  created: z.string().datetime({offset: true}),
+  created_at: z.string().datetime({offset: true}),
 });
 export type LoginTryHistory = z.infer<typeof LoginTryHistoryScheme>;
 

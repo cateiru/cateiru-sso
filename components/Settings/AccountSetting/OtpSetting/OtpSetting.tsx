@@ -34,8 +34,8 @@ export const OtpSetting = () => {
       }
 
       // OTP設定済み
-      if (data.otp && data.otp_modified) {
-        return <OtpEnableText modified={new Date(data.otp_modified)} />;
+      if (data.otp && data.otp_modified_at) {
+        return <OtpEnableText modifiedAt={new Date(data.otp_modified_at)} />;
       }
 
       // OTP無効化

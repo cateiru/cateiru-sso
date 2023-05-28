@@ -17,8 +17,8 @@ const user = {
   avatar: faker.image.avatar(),
   locale_id: 'ja_JP',
 
-  created: faker.date.past().toString(),
-  modified: faker.date.past().toString(),
+  created_at: faker.date.past().toString(),
+  modified_at: faker.date.past().toString(),
 };
 
 const meta: Meta<typeof SwitchAccount> = {

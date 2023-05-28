@@ -13,7 +13,7 @@ export type AccountUserList = z.infer<typeof AccountUserListSchema>;
 export const AccountCertificatesSchema = z.object({
   password: z.boolean(),
   otp: z.boolean(),
-  otp_modified: z.string().datetime({offset: true}).nullable(),
+  otp_modified_at: z.string().datetime({offset: true}).nullable(),
 });
 export type AccountCertificates = z.infer<typeof AccountCertificatesSchema>;
 
@@ -32,7 +32,7 @@ export const AccountWebAuthnDeviceSchema = z.object({
   is_mobile: z.boolean().nullable(),
   ip: z.string().nullable(),
 
-  created: z.string().datetime({offset: true}),
+  created_at: z.string().datetime({offset: true}),
 });
 export type AccountWebAuthnDevice = z.infer<typeof AccountWebAuthnDeviceSchema>;
 

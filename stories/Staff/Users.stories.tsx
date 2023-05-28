@@ -37,8 +37,8 @@ export const Default: Story = {
             avatar: faker.image.avatar(),
             locale_id: 'ja_JP',
 
-            created: faker.date.past().toISOString(),
-            modified: faker.date.past().toISOString(),
+            created_at: faker.date.past().toISOString(),
+            modified_at: faker.date.past().toISOString(),
           },
           {
             id: faker.string.uuid(),
@@ -52,8 +52,8 @@ export const Default: Story = {
             avatar: faker.image.avatar(),
             locale_id: 'ja_JP',
 
-            created: faker.date.past().toISOString(),
-            modified: faker.date.past().toISOString(),
+            created_at: faker.date.past().toISOString(),
+            modified_at: faker.date.past().toISOString(),
           },
         ] as StaffUsers,
       },
@@ -83,8 +83,8 @@ export const Loading: Story = {
             avatar: faker.image.avatar(),
             locale_id: 'ja_JP',
 
-            created: faker.date.past().toISOString(),
-            modified: faker.date.past().toISOString(),
+            created_at: faker.date.past().toISOString(),
+            modified_at: faker.date.past().toISOString(),
           },
         ] as StaffUsers,
       },

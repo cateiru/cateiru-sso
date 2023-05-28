@@ -53,7 +53,7 @@ export const WebAuthnDevices = () => {
     return (
       <>
         {data.map(v => {
-          const created = new Date(v.created);
+          const created = new Date(v.created_at);
           return (
             <Tr key={`webauthn-${v.id}`}>
               <Td>
