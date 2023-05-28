@@ -24,51 +24,51 @@ import (
 
 // Staff is an object representing the database table.
 type Staff struct {
-	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Memo     null.String `boil:"memo" json:"memo,omitempty" toml:"memo" yaml:"memo,omitempty"`
-	Created  time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	UserID     string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Memo       null.String `boil:"memo" json:"memo,omitempty" toml:"memo" yaml:"memo,omitempty"`
+	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *staffR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L staffL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var StaffColumns = struct {
-	UserID   string
-	Memo     string
-	Created  string
-	Modified string
+	UserID     string
+	Memo       string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	UserID:   "user_id",
-	Memo:     "memo",
-	Created:  "created",
-	Modified: "modified",
+	UserID:     "user_id",
+	Memo:       "memo",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var StaffTableColumns = struct {
-	UserID   string
-	Memo     string
-	Created  string
-	Modified string
+	UserID     string
+	Memo       string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	UserID:   "staff.user_id",
-	Memo:     "staff.memo",
-	Created:  "staff.created",
-	Modified: "staff.modified",
+	UserID:     "staff.user_id",
+	Memo:       "staff.memo",
+	CreatedAt:  "staff.created_at",
+	ModifiedAt: "staff.modified_at",
 }
 
 // Generated where
 
 var StaffWhere = struct {
-	UserID   whereHelperstring
-	Memo     whereHelpernull_String
-	Created  whereHelpertime_Time
-	Modified whereHelpertime_Time
+	UserID     whereHelperstring
+	Memo       whereHelpernull_String
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
-	UserID:   whereHelperstring{field: "`staff`.`user_id`"},
-	Memo:     whereHelpernull_String{field: "`staff`.`memo`"},
-	Created:  whereHelpertime_Time{field: "`staff`.`created`"},
-	Modified: whereHelpertime_Time{field: "`staff`.`modified`"},
+	UserID:     whereHelperstring{field: "`staff`.`user_id`"},
+	Memo:       whereHelpernull_String{field: "`staff`.`memo`"},
+	CreatedAt:  whereHelpertime_Time{field: "`staff`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`staff`.`modified_at`"},
 }
 
 // StaffRels is where relationship names are stored.
@@ -99,9 +99,9 @@ func (r *staffR) GetUser() *User {
 type staffL struct{}
 
 var (
-	staffAllColumns            = []string{"user_id", "memo", "created", "modified"}
+	staffAllColumns            = []string{"user_id", "memo", "created_at", "modified_at"}
 	staffColumnsWithoutDefault = []string{"user_id", "memo"}
-	staffColumnsWithDefault    = []string{"created", "modified"}
+	staffColumnsWithDefault    = []string{"created_at", "modified_at"}
 	staffPrimaryKeyColumns     = []string{"user_id"}
 	staffGeneratedColumns      = []string{}
 )
@@ -611,6 +611,13 @@ func (o *Staff) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -835,6 +842,13 @@ var mySQLStaffUniqueColumns = []string{
 func (o *Staff) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no staff provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

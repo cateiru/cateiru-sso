@@ -23,51 +23,51 @@ import (
 
 // ClientScope is an object representing the database table.
 type ClientScope struct {
-	ID       uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ClientID string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	Scope    string    `boil:"scope" json:"scope" toml:"scope" yaml:"scope"`
-	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	ID        uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ClientID  string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	Scope     string    `boil:"scope" json:"scope" toml:"scope" yaml:"scope"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *clientScopeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L clientScopeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ClientScopeColumns = struct {
-	ID       string
-	ClientID string
-	Scope    string
-	Created  string
+	ID        string
+	ClientID  string
+	Scope     string
+	CreatedAt string
 }{
-	ID:       "id",
-	ClientID: "client_id",
-	Scope:    "scope",
-	Created:  "created",
+	ID:        "id",
+	ClientID:  "client_id",
+	Scope:     "scope",
+	CreatedAt: "created_at",
 }
 
 var ClientScopeTableColumns = struct {
-	ID       string
-	ClientID string
-	Scope    string
-	Created  string
+	ID        string
+	ClientID  string
+	Scope     string
+	CreatedAt string
 }{
-	ID:       "client_scope.id",
-	ClientID: "client_scope.client_id",
-	Scope:    "client_scope.scope",
-	Created:  "client_scope.created",
+	ID:        "client_scope.id",
+	ClientID:  "client_scope.client_id",
+	Scope:     "client_scope.scope",
+	CreatedAt: "client_scope.created_at",
 }
 
 // Generated where
 
 var ClientScopeWhere = struct {
-	ID       whereHelperuint
-	ClientID whereHelperstring
-	Scope    whereHelperstring
-	Created  whereHelpertime_Time
+	ID        whereHelperuint
+	ClientID  whereHelperstring
+	Scope     whereHelperstring
+	CreatedAt whereHelpertime_Time
 }{
-	ID:       whereHelperuint{field: "`client_scope`.`id`"},
-	ClientID: whereHelperstring{field: "`client_scope`.`client_id`"},
-	Scope:    whereHelperstring{field: "`client_scope`.`scope`"},
-	Created:  whereHelpertime_Time{field: "`client_scope`.`created`"},
+	ID:        whereHelperuint{field: "`client_scope`.`id`"},
+	ClientID:  whereHelperstring{field: "`client_scope`.`client_id`"},
+	Scope:     whereHelperstring{field: "`client_scope`.`scope`"},
+	CreatedAt: whereHelpertime_Time{field: "`client_scope`.`created_at`"},
 }
 
 // ClientScopeRels is where relationship names are stored.
@@ -98,9 +98,9 @@ func (r *clientScopeR) GetClient() *Client {
 type clientScopeL struct{}
 
 var (
-	clientScopeAllColumns            = []string{"id", "client_id", "scope", "created"}
+	clientScopeAllColumns            = []string{"id", "client_id", "scope", "created_at"}
 	clientScopeColumnsWithoutDefault = []string{"client_id", "scope"}
-	clientScopeColumnsWithDefault    = []string{"id", "created"}
+	clientScopeColumnsWithDefault    = []string{"id", "created_at"}
 	clientScopePrimaryKeyColumns     = []string{"id"}
 	clientScopeGeneratedColumns      = []string{}
 )
@@ -610,6 +610,13 @@ func (o *ClientScope) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -845,6 +852,13 @@ var mySQLClientScopeUniqueColumns = []string{
 func (o *ClientScope) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no client_scope provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -32,8 +32,8 @@ type Client struct {
 	Prompt       null.String `boil:"prompt" json:"prompt,omitempty" toml:"prompt" yaml:"prompt,omitempty"`
 	OwnerUserID  string      `boil:"owner_user_id" json:"owner_user_id" toml:"owner_user_id" yaml:"owner_user_id"`
 	ClientSecret string      `boil:"client_secret" json:"client_secret" toml:"client_secret" yaml:"client_secret"`
-	Created      time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified     time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt   time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *clientR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L clientL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -48,8 +48,8 @@ var ClientColumns = struct {
 	Prompt       string
 	OwnerUserID  string
 	ClientSecret string
-	Created      string
-	Modified     string
+	CreatedAt    string
+	ModifiedAt   string
 }{
 	ClientID:     "client_id",
 	Name:         "name",
@@ -59,8 +59,8 @@ var ClientColumns = struct {
 	Prompt:       "prompt",
 	OwnerUserID:  "owner_user_id",
 	ClientSecret: "client_secret",
-	Created:      "created",
-	Modified:     "modified",
+	CreatedAt:    "created_at",
+	ModifiedAt:   "modified_at",
 }
 
 var ClientTableColumns = struct {
@@ -72,8 +72,8 @@ var ClientTableColumns = struct {
 	Prompt       string
 	OwnerUserID  string
 	ClientSecret string
-	Created      string
-	Modified     string
+	CreatedAt    string
+	ModifiedAt   string
 }{
 	ClientID:     "client.client_id",
 	Name:         "client.name",
@@ -83,8 +83,8 @@ var ClientTableColumns = struct {
 	Prompt:       "client.prompt",
 	OwnerUserID:  "client.owner_user_id",
 	ClientSecret: "client.client_secret",
-	Created:      "client.created",
-	Modified:     "client.modified",
+	CreatedAt:    "client.created_at",
+	ModifiedAt:   "client.modified_at",
 }
 
 // Generated where
@@ -98,8 +98,8 @@ var ClientWhere = struct {
 	Prompt       whereHelpernull_String
 	OwnerUserID  whereHelperstring
 	ClientSecret whereHelperstring
-	Created      whereHelpertime_Time
-	Modified     whereHelpertime_Time
+	CreatedAt    whereHelpertime_Time
+	ModifiedAt   whereHelpertime_Time
 }{
 	ClientID:     whereHelperstring{field: "`client`.`client_id`"},
 	Name:         whereHelperstring{field: "`client`.`name`"},
@@ -109,8 +109,8 @@ var ClientWhere = struct {
 	Prompt:       whereHelpernull_String{field: "`client`.`prompt`"},
 	OwnerUserID:  whereHelperstring{field: "`client`.`owner_user_id`"},
 	ClientSecret: whereHelperstring{field: "`client`.`client_secret`"},
-	Created:      whereHelpertime_Time{field: "`client`.`created`"},
-	Modified:     whereHelpertime_Time{field: "`client`.`modified`"},
+	CreatedAt:    whereHelpertime_Time{field: "`client`.`created_at`"},
+	ModifiedAt:   whereHelpertime_Time{field: "`client`.`modified_at`"},
 }
 
 // ClientRels is where relationship names are stored.
@@ -181,9 +181,9 @@ func (r *clientR) GetOauthSessions() OauthSessionSlice {
 type clientL struct{}
 
 var (
-	clientAllColumns            = []string{"client_id", "name", "description", "image", "is_allow", "prompt", "owner_user_id", "client_secret", "created", "modified"}
+	clientAllColumns            = []string{"client_id", "name", "description", "image", "is_allow", "prompt", "owner_user_id", "client_secret", "created_at", "modified_at"}
 	clientColumnsWithoutDefault = []string{"client_id", "name", "description", "image", "prompt", "owner_user_id", "client_secret"}
-	clientColumnsWithDefault    = []string{"is_allow", "created", "modified"}
+	clientColumnsWithDefault    = []string{"is_allow", "created_at", "modified_at"}
 	clientPrimaryKeyColumns     = []string{"client_id"}
 	clientGeneratedColumns      = []string{}
 )
@@ -1414,6 +1414,13 @@ func (o *Client) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1638,6 +1645,13 @@ var mySQLClientUniqueColumns = []string{
 func (o *Client) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no client provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -27,7 +27,7 @@ type ClientAllowRule struct {
 	ClientID    string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	UserID      null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	EmailDomain null.String `boil:"email_domain" json:"email_domain,omitempty" toml:"email_domain" yaml:"email_domain,omitempty"`
-	Created     time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	CreatedAt   time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *clientAllowRuleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L clientAllowRuleL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,24 +37,24 @@ var ClientAllowRuleColumns = struct {
 	ClientID    string
 	UserID      string
 	EmailDomain string
-	Created     string
+	CreatedAt   string
 }{
 	ClientID:    "client_id",
 	UserID:      "user_id",
 	EmailDomain: "email_domain",
-	Created:     "created",
+	CreatedAt:   "created_at",
 }
 
 var ClientAllowRuleTableColumns = struct {
 	ClientID    string
 	UserID      string
 	EmailDomain string
-	Created     string
+	CreatedAt   string
 }{
 	ClientID:    "client_allow_rule.client_id",
 	UserID:      "client_allow_rule.user_id",
 	EmailDomain: "client_allow_rule.email_domain",
-	Created:     "client_allow_rule.created",
+	CreatedAt:   "client_allow_rule.created_at",
 }
 
 // Generated where
@@ -63,12 +63,12 @@ var ClientAllowRuleWhere = struct {
 	ClientID    whereHelperstring
 	UserID      whereHelpernull_String
 	EmailDomain whereHelpernull_String
-	Created     whereHelpertime_Time
+	CreatedAt   whereHelpertime_Time
 }{
 	ClientID:    whereHelperstring{field: "`client_allow_rule`.`client_id`"},
 	UserID:      whereHelpernull_String{field: "`client_allow_rule`.`user_id`"},
 	EmailDomain: whereHelpernull_String{field: "`client_allow_rule`.`email_domain`"},
-	Created:     whereHelpertime_Time{field: "`client_allow_rule`.`created`"},
+	CreatedAt:   whereHelpertime_Time{field: "`client_allow_rule`.`created_at`"},
 }
 
 // ClientAllowRuleRels is where relationship names are stored.
@@ -99,9 +99,9 @@ func (r *clientAllowRuleR) GetClient() *Client {
 type clientAllowRuleL struct{}
 
 var (
-	clientAllowRuleAllColumns            = []string{"client_id", "user_id", "email_domain", "created"}
+	clientAllowRuleAllColumns            = []string{"client_id", "user_id", "email_domain", "created_at"}
 	clientAllowRuleColumnsWithoutDefault = []string{"client_id", "user_id", "email_domain"}
-	clientAllowRuleColumnsWithDefault    = []string{"created"}
+	clientAllowRuleColumnsWithDefault    = []string{"created_at"}
 	clientAllowRulePrimaryKeyColumns     = []string{"client_id"}
 	clientAllowRuleGeneratedColumns      = []string{}
 )
@@ -611,6 +611,13 @@ func (o *ClientAllowRule) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -835,6 +842,13 @@ var mySQLClientAllowRuleUniqueColumns = []string{
 func (o *ClientAllowRule) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no client_allow_rule provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

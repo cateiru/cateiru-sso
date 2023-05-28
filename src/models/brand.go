@@ -27,8 +27,8 @@ type Brand struct {
 	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	Created     time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified    time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt   time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt  time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *brandR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L brandL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,28 +38,28 @@ var BrandColumns = struct {
 	ID          string
 	Name        string
 	Description string
-	Created     string
-	Modified    string
+	CreatedAt   string
+	ModifiedAt  string
 }{
 	ID:          "id",
 	Name:        "name",
 	Description: "description",
-	Created:     "created",
-	Modified:    "modified",
+	CreatedAt:   "created_at",
+	ModifiedAt:  "modified_at",
 }
 
 var BrandTableColumns = struct {
 	ID          string
 	Name        string
 	Description string
-	Created     string
-	Modified    string
+	CreatedAt   string
+	ModifiedAt  string
 }{
 	ID:          "brand.id",
 	Name:        "brand.name",
 	Description: "brand.description",
-	Created:     "brand.created",
-	Modified:    "brand.modified",
+	CreatedAt:   "brand.created_at",
+	ModifiedAt:  "brand.modified_at",
 }
 
 // Generated where
@@ -150,14 +150,14 @@ var BrandWhere = struct {
 	ID          whereHelperstring
 	Name        whereHelperstring
 	Description whereHelpernull_String
-	Created     whereHelpertime_Time
-	Modified    whereHelpertime_Time
+	CreatedAt   whereHelpertime_Time
+	ModifiedAt  whereHelpertime_Time
 }{
 	ID:          whereHelperstring{field: "`brand`.`id`"},
 	Name:        whereHelperstring{field: "`brand`.`name`"},
 	Description: whereHelpernull_String{field: "`brand`.`description`"},
-	Created:     whereHelpertime_Time{field: "`brand`.`created`"},
-	Modified:    whereHelpertime_Time{field: "`brand`.`modified`"},
+	CreatedAt:   whereHelpertime_Time{field: "`brand`.`created_at`"},
+	ModifiedAt:  whereHelpertime_Time{field: "`brand`.`modified_at`"},
 }
 
 // BrandRels is where relationship names are stored.
@@ -188,9 +188,9 @@ func (r *brandR) GetUserBrands() UserBrandSlice {
 type brandL struct{}
 
 var (
-	brandAllColumns            = []string{"id", "name", "description", "created", "modified"}
+	brandAllColumns            = []string{"id", "name", "description", "created_at", "modified_at"}
 	brandColumnsWithoutDefault = []string{"id", "name", "description"}
-	brandColumnsWithDefault    = []string{"created", "modified"}
+	brandColumnsWithDefault    = []string{"created_at", "modified_at"}
 	brandPrimaryKeyColumns     = []string{"id"}
 	brandGeneratedColumns      = []string{}
 )
@@ -703,6 +703,13 @@ func (o *Brand) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -927,6 +934,13 @@ var mySQLBrandUniqueColumns = []string{
 func (o *Brand) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no brand provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

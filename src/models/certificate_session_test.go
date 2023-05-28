@@ -687,7 +687,7 @@ func testCertificateSessionsSelect(t *testing.T) {
 }
 
 var (
-	certificateSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `Period`: `datetime`, `Identifier`: `tinyint`, `Created`: `datetime`}
+	certificateSessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `Period`: `datetime`, `Identifier`: `tinyint`, `CreatedAt`: `datetime`}
 	_                         = bytes.MinRead
 )
 

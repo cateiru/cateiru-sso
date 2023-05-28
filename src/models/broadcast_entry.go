@@ -28,8 +28,8 @@ type BroadcastEntry struct {
 	CreateUserID string      `boil:"create_user_id" json:"create_user_id" toml:"create_user_id" yaml:"create_user_id"`
 	Title        string      `boil:"title" json:"title" toml:"title" yaml:"title"`
 	Body         null.String `boil:"body" json:"body,omitempty" toml:"body" yaml:"body,omitempty"`
-	Created      time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified     time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt   time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *broadcastEntryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L broadcastEntryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,15 +40,15 @@ var BroadcastEntryColumns = struct {
 	CreateUserID string
 	Title        string
 	Body         string
-	Created      string
-	Modified     string
+	CreatedAt    string
+	ModifiedAt   string
 }{
 	ID:           "id",
 	CreateUserID: "create_user_id",
 	Title:        "title",
 	Body:         "body",
-	Created:      "created",
-	Modified:     "modified",
+	CreatedAt:    "created_at",
+	ModifiedAt:   "modified_at",
 }
 
 var BroadcastEntryTableColumns = struct {
@@ -56,15 +56,15 @@ var BroadcastEntryTableColumns = struct {
 	CreateUserID string
 	Title        string
 	Body         string
-	Created      string
-	Modified     string
+	CreatedAt    string
+	ModifiedAt   string
 }{
 	ID:           "broadcast_entry.id",
 	CreateUserID: "broadcast_entry.create_user_id",
 	Title:        "broadcast_entry.title",
 	Body:         "broadcast_entry.body",
-	Created:      "broadcast_entry.created",
-	Modified:     "broadcast_entry.modified",
+	CreatedAt:    "broadcast_entry.created_at",
+	ModifiedAt:   "broadcast_entry.modified_at",
 }
 
 // Generated where
@@ -97,15 +97,15 @@ var BroadcastEntryWhere = struct {
 	CreateUserID whereHelperstring
 	Title        whereHelperstring
 	Body         whereHelpernull_String
-	Created      whereHelpertime_Time
-	Modified     whereHelpertime_Time
+	CreatedAt    whereHelpertime_Time
+	ModifiedAt   whereHelpertime_Time
 }{
 	ID:           whereHelperuint{field: "`broadcast_entry`.`id`"},
 	CreateUserID: whereHelperstring{field: "`broadcast_entry`.`create_user_id`"},
 	Title:        whereHelperstring{field: "`broadcast_entry`.`title`"},
 	Body:         whereHelpernull_String{field: "`broadcast_entry`.`body`"},
-	Created:      whereHelpertime_Time{field: "`broadcast_entry`.`created`"},
-	Modified:     whereHelpertime_Time{field: "`broadcast_entry`.`modified`"},
+	CreatedAt:    whereHelpertime_Time{field: "`broadcast_entry`.`created_at`"},
+	ModifiedAt:   whereHelpertime_Time{field: "`broadcast_entry`.`modified_at`"},
 }
 
 // BroadcastEntryRels is where relationship names are stored.
@@ -136,9 +136,9 @@ func (r *broadcastEntryR) GetEntryBroadcastNotices() BroadcastNoticeSlice {
 type broadcastEntryL struct{}
 
 var (
-	broadcastEntryAllColumns            = []string{"id", "create_user_id", "title", "body", "created", "modified"}
+	broadcastEntryAllColumns            = []string{"id", "create_user_id", "title", "body", "created_at", "modified_at"}
 	broadcastEntryColumnsWithoutDefault = []string{"create_user_id", "title", "body"}
-	broadcastEntryColumnsWithDefault    = []string{"id", "created", "modified"}
+	broadcastEntryColumnsWithDefault    = []string{"id", "created_at", "modified_at"}
 	broadcastEntryPrimaryKeyColumns     = []string{"id"}
 	broadcastEntryGeneratedColumns      = []string{}
 )
@@ -651,6 +651,13 @@ func (o *BroadcastEntry) Insert(ctx context.Context, exec boil.ContextExecutor, 
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -886,6 +893,13 @@ var mySQLBroadcastEntryUniqueColumns = []string{
 func (o *BroadcastEntry) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no broadcast_entry provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

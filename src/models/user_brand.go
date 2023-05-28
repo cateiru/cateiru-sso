@@ -23,51 +23,51 @@ import (
 
 // UserBrand is an object representing the database table.
 type UserBrand struct {
-	ID      uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID  string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	BrandID string    `boil:"brand_id" json:"brand_id" toml:"brand_id" yaml:"brand_id"`
-	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	ID        uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	BrandID   string    `boil:"brand_id" json:"brand_id" toml:"brand_id" yaml:"brand_id"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *userBrandR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userBrandL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var UserBrandColumns = struct {
-	ID      string
-	UserID  string
-	BrandID string
-	Created string
+	ID        string
+	UserID    string
+	BrandID   string
+	CreatedAt string
 }{
-	ID:      "id",
-	UserID:  "user_id",
-	BrandID: "brand_id",
-	Created: "created",
+	ID:        "id",
+	UserID:    "user_id",
+	BrandID:   "brand_id",
+	CreatedAt: "created_at",
 }
 
 var UserBrandTableColumns = struct {
-	ID      string
-	UserID  string
-	BrandID string
-	Created string
+	ID        string
+	UserID    string
+	BrandID   string
+	CreatedAt string
 }{
-	ID:      "user_brand.id",
-	UserID:  "user_brand.user_id",
-	BrandID: "user_brand.brand_id",
-	Created: "user_brand.created",
+	ID:        "user_brand.id",
+	UserID:    "user_brand.user_id",
+	BrandID:   "user_brand.brand_id",
+	CreatedAt: "user_brand.created_at",
 }
 
 // Generated where
 
 var UserBrandWhere = struct {
-	ID      whereHelperuint
-	UserID  whereHelperstring
-	BrandID whereHelperstring
-	Created whereHelpertime_Time
+	ID        whereHelperuint
+	UserID    whereHelperstring
+	BrandID   whereHelperstring
+	CreatedAt whereHelpertime_Time
 }{
-	ID:      whereHelperuint{field: "`user_brand`.`id`"},
-	UserID:  whereHelperstring{field: "`user_brand`.`user_id`"},
-	BrandID: whereHelperstring{field: "`user_brand`.`brand_id`"},
-	Created: whereHelpertime_Time{field: "`user_brand`.`created`"},
+	ID:        whereHelperuint{field: "`user_brand`.`id`"},
+	UserID:    whereHelperstring{field: "`user_brand`.`user_id`"},
+	BrandID:   whereHelperstring{field: "`user_brand`.`brand_id`"},
+	CreatedAt: whereHelpertime_Time{field: "`user_brand`.`created_at`"},
 }
 
 // UserBrandRels is where relationship names are stored.
@@ -108,9 +108,9 @@ func (r *userBrandR) GetBrand() *Brand {
 type userBrandL struct{}
 
 var (
-	userBrandAllColumns            = []string{"id", "user_id", "brand_id", "created"}
+	userBrandAllColumns            = []string{"id", "user_id", "brand_id", "created_at"}
 	userBrandColumnsWithoutDefault = []string{"user_id", "brand_id"}
-	userBrandColumnsWithDefault    = []string{"id", "created"}
+	userBrandColumnsWithDefault    = []string{"id", "created_at"}
 	userBrandPrimaryKeyColumns     = []string{"id"}
 	userBrandGeneratedColumns      = []string{}
 )
@@ -798,6 +798,13 @@ func (o *UserBrand) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1033,6 +1040,13 @@ var mySQLUserBrandUniqueColumns = []string{
 func (o *UserBrand) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no user_brand provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

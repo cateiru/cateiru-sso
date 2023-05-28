@@ -805,7 +805,7 @@ func testBroadcastNoticesSelect(t *testing.T) {
 }
 
 var (
-	broadcastNoticeDBTypes = map[string]string{`ID`: `int`, `EntryID`: `int`, `UserID`: `varchar`, `IsRead`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
+	broadcastNoticeDBTypes = map[string]string{`ID`: `int`, `EntryID`: `int`, `UserID`: `varchar`, `IsRead`: `tinyint`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
 	_                      = bytes.MinRead
 )
 

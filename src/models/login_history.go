@@ -32,7 +32,7 @@ type LoginHistory struct {
 	Browser   null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
 	IsMobile  null.Bool   `boil:"is_mobile" json:"is_mobile,omitempty" toml:"is_mobile" yaml:"is_mobile,omitempty"`
 	IP        []byte      `boil:"ip" json:"ip" toml:"ip" yaml:"ip"`
-	Created   time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *loginHistoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L loginHistoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -47,7 +47,7 @@ var LoginHistoryColumns = struct {
 	Browser   string
 	IsMobile  string
 	IP        string
-	Created   string
+	CreatedAt string
 }{
 	ID:        "id",
 	UserID:    "user_id",
@@ -57,7 +57,7 @@ var LoginHistoryColumns = struct {
 	Browser:   "browser",
 	IsMobile:  "is_mobile",
 	IP:        "ip",
-	Created:   "created",
+	CreatedAt: "created_at",
 }
 
 var LoginHistoryTableColumns = struct {
@@ -69,7 +69,7 @@ var LoginHistoryTableColumns = struct {
 	Browser   string
 	IsMobile  string
 	IP        string
-	Created   string
+	CreatedAt string
 }{
 	ID:        "login_history.id",
 	UserID:    "login_history.user_id",
@@ -79,7 +79,7 @@ var LoginHistoryTableColumns = struct {
 	Browser:   "login_history.browser",
 	IsMobile:  "login_history.is_mobile",
 	IP:        "login_history.ip",
-	Created:   "login_history.created",
+	CreatedAt: "login_history.created_at",
 }
 
 // Generated where
@@ -93,7 +93,7 @@ var LoginHistoryWhere = struct {
 	Browser   whereHelpernull_String
 	IsMobile  whereHelpernull_Bool
 	IP        whereHelper__byte
-	Created   whereHelpertime_Time
+	CreatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperuint{field: "`login_history`.`id`"},
 	UserID:    whereHelperstring{field: "`login_history`.`user_id`"},
@@ -103,7 +103,7 @@ var LoginHistoryWhere = struct {
 	Browser:   whereHelpernull_String{field: "`login_history`.`browser`"},
 	IsMobile:  whereHelpernull_Bool{field: "`login_history`.`is_mobile`"},
 	IP:        whereHelper__byte{field: "`login_history`.`ip`"},
-	Created:   whereHelpertime_Time{field: "`login_history`.`created`"},
+	CreatedAt: whereHelpertime_Time{field: "`login_history`.`created_at`"},
 }
 
 // LoginHistoryRels is where relationship names are stored.
@@ -134,9 +134,9 @@ func (r *loginHistoryR) GetUser() *User {
 type loginHistoryL struct{}
 
 var (
-	loginHistoryAllColumns            = []string{"id", "user_id", "refresh_id", "device", "os", "browser", "is_mobile", "ip", "created"}
+	loginHistoryAllColumns            = []string{"id", "user_id", "refresh_id", "device", "os", "browser", "is_mobile", "ip", "created_at"}
 	loginHistoryColumnsWithoutDefault = []string{"user_id", "refresh_id", "device", "os", "browser", "is_mobile", "ip"}
-	loginHistoryColumnsWithDefault    = []string{"id", "created"}
+	loginHistoryColumnsWithDefault    = []string{"id", "created_at"}
 	loginHistoryPrimaryKeyColumns     = []string{"id"}
 	loginHistoryGeneratedColumns      = []string{}
 )
@@ -646,6 +646,13 @@ func (o *LoginHistory) Insert(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -881,6 +888,13 @@ var mySQLLoginHistoryUniqueColumns = []string{
 func (o *LoginHistory) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no login_history provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

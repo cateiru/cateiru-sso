@@ -27,7 +27,7 @@ type CertificateSession struct {
 	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	Identifier int8      `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
-	Created    time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *certificateSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L certificateSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -38,13 +38,13 @@ var CertificateSessionColumns = struct {
 	UserID     string
 	Period     string
 	Identifier string
-	Created    string
+	CreatedAt  string
 }{
 	ID:         "id",
 	UserID:     "user_id",
 	Period:     "period",
 	Identifier: "identifier",
-	Created:    "created",
+	CreatedAt:  "created_at",
 }
 
 var CertificateSessionTableColumns = struct {
@@ -52,13 +52,13 @@ var CertificateSessionTableColumns = struct {
 	UserID     string
 	Period     string
 	Identifier string
-	Created    string
+	CreatedAt  string
 }{
 	ID:         "certificate_session.id",
 	UserID:     "certificate_session.user_id",
 	Period:     "certificate_session.period",
 	Identifier: "certificate_session.identifier",
-	Created:    "certificate_session.created",
+	CreatedAt:  "certificate_session.created_at",
 }
 
 // Generated where
@@ -91,13 +91,13 @@ var CertificateSessionWhere = struct {
 	UserID     whereHelperstring
 	Period     whereHelpertime_Time
 	Identifier whereHelperint8
-	Created    whereHelpertime_Time
+	CreatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`certificate_session`.`id`"},
 	UserID:     whereHelperstring{field: "`certificate_session`.`user_id`"},
 	Period:     whereHelpertime_Time{field: "`certificate_session`.`period`"},
 	Identifier: whereHelperint8{field: "`certificate_session`.`identifier`"},
-	Created:    whereHelpertime_Time{field: "`certificate_session`.`created`"},
+	CreatedAt:  whereHelpertime_Time{field: "`certificate_session`.`created_at`"},
 }
 
 // CertificateSessionRels is where relationship names are stored.
@@ -128,9 +128,9 @@ func (r *certificateSessionR) GetUser() *User {
 type certificateSessionL struct{}
 
 var (
-	certificateSessionAllColumns            = []string{"id", "user_id", "period", "identifier", "created"}
+	certificateSessionAllColumns            = []string{"id", "user_id", "period", "identifier", "created_at"}
 	certificateSessionColumnsWithoutDefault = []string{"id", "user_id"}
-	certificateSessionColumnsWithDefault    = []string{"period", "identifier", "created"}
+	certificateSessionColumnsWithDefault    = []string{"period", "identifier", "created_at"}
 	certificateSessionPrimaryKeyColumns     = []string{"id"}
 	certificateSessionGeneratedColumns      = []string{}
 )
@@ -640,6 +640,13 @@ func (o *CertificateSession) Insert(ctx context.Context, exec boil.ContextExecut
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -864,6 +871,13 @@ var mySQLCertificateSessionUniqueColumns = []string{
 func (o *CertificateSession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no certificate_session provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

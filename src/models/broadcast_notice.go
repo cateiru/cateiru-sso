@@ -23,47 +23,47 @@ import (
 
 // BroadcastNotice is an object representing the database table.
 type BroadcastNotice struct {
-	ID       uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	EntryID  uint      `boil:"entry_id" json:"entry_id" toml:"entry_id" yaml:"entry_id"`
-	UserID   string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	IsRead   bool      `boil:"is_read" json:"is_read" toml:"is_read" yaml:"is_read"`
-	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	ID         uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	EntryID    uint      `boil:"entry_id" json:"entry_id" toml:"entry_id" yaml:"entry_id"`
+	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	IsRead     bool      `boil:"is_read" json:"is_read" toml:"is_read" yaml:"is_read"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *broadcastNoticeR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L broadcastNoticeL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var BroadcastNoticeColumns = struct {
-	ID       string
-	EntryID  string
-	UserID   string
-	IsRead   string
-	Created  string
-	Modified string
+	ID         string
+	EntryID    string
+	UserID     string
+	IsRead     string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	ID:       "id",
-	EntryID:  "entry_id",
-	UserID:   "user_id",
-	IsRead:   "is_read",
-	Created:  "created",
-	Modified: "modified",
+	ID:         "id",
+	EntryID:    "entry_id",
+	UserID:     "user_id",
+	IsRead:     "is_read",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var BroadcastNoticeTableColumns = struct {
-	ID       string
-	EntryID  string
-	UserID   string
-	IsRead   string
-	Created  string
-	Modified string
+	ID         string
+	EntryID    string
+	UserID     string
+	IsRead     string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	ID:       "broadcast_notice.id",
-	EntryID:  "broadcast_notice.entry_id",
-	UserID:   "broadcast_notice.user_id",
-	IsRead:   "broadcast_notice.is_read",
-	Created:  "broadcast_notice.created",
-	Modified: "broadcast_notice.modified",
+	ID:         "broadcast_notice.id",
+	EntryID:    "broadcast_notice.entry_id",
+	UserID:     "broadcast_notice.user_id",
+	IsRead:     "broadcast_notice.is_read",
+	CreatedAt:  "broadcast_notice.created_at",
+	ModifiedAt: "broadcast_notice.modified_at",
 }
 
 // Generated where
@@ -78,19 +78,19 @@ func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field
 func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
 var BroadcastNoticeWhere = struct {
-	ID       whereHelperuint
-	EntryID  whereHelperuint
-	UserID   whereHelperstring
-	IsRead   whereHelperbool
-	Created  whereHelpertime_Time
-	Modified whereHelpertime_Time
+	ID         whereHelperuint
+	EntryID    whereHelperuint
+	UserID     whereHelperstring
+	IsRead     whereHelperbool
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
-	ID:       whereHelperuint{field: "`broadcast_notice`.`id`"},
-	EntryID:  whereHelperuint{field: "`broadcast_notice`.`entry_id`"},
-	UserID:   whereHelperstring{field: "`broadcast_notice`.`user_id`"},
-	IsRead:   whereHelperbool{field: "`broadcast_notice`.`is_read`"},
-	Created:  whereHelpertime_Time{field: "`broadcast_notice`.`created`"},
-	Modified: whereHelpertime_Time{field: "`broadcast_notice`.`modified`"},
+	ID:         whereHelperuint{field: "`broadcast_notice`.`id`"},
+	EntryID:    whereHelperuint{field: "`broadcast_notice`.`entry_id`"},
+	UserID:     whereHelperstring{field: "`broadcast_notice`.`user_id`"},
+	IsRead:     whereHelperbool{field: "`broadcast_notice`.`is_read`"},
+	CreatedAt:  whereHelpertime_Time{field: "`broadcast_notice`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`broadcast_notice`.`modified_at`"},
 }
 
 // BroadcastNoticeRels is where relationship names are stored.
@@ -131,9 +131,9 @@ func (r *broadcastNoticeR) GetUser() *User {
 type broadcastNoticeL struct{}
 
 var (
-	broadcastNoticeAllColumns            = []string{"id", "entry_id", "user_id", "is_read", "created", "modified"}
+	broadcastNoticeAllColumns            = []string{"id", "entry_id", "user_id", "is_read", "created_at", "modified_at"}
 	broadcastNoticeColumnsWithoutDefault = []string{"entry_id", "user_id"}
-	broadcastNoticeColumnsWithDefault    = []string{"id", "is_read", "created", "modified"}
+	broadcastNoticeColumnsWithDefault    = []string{"id", "is_read", "created_at", "modified_at"}
 	broadcastNoticePrimaryKeyColumns     = []string{"id"}
 	broadcastNoticeGeneratedColumns      = []string{}
 )
@@ -821,6 +821,13 @@ func (o *BroadcastNotice) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1056,6 +1063,13 @@ var mySQLBroadcastNoticeUniqueColumns = []string{
 func (o *BroadcastNotice) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no broadcast_notice provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

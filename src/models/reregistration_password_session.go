@@ -28,7 +28,7 @@ type ReregistrationPasswordSession struct {
 	Period      time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	PeriodClear time.Time `boil:"period_clear" json:"period_clear" toml:"period_clear" yaml:"period_clear"`
 	Completed   bool      `boil:"completed" json:"completed" toml:"completed" yaml:"completed"`
-	Created     time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	CreatedAt   time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *reregistrationPasswordSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L reregistrationPasswordSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,14 +40,14 @@ var ReregistrationPasswordSessionColumns = struct {
 	Period      string
 	PeriodClear string
 	Completed   string
-	Created     string
+	CreatedAt   string
 }{
 	ID:          "id",
 	Email:       "email",
 	Period:      "period",
 	PeriodClear: "period_clear",
 	Completed:   "completed",
-	Created:     "created",
+	CreatedAt:   "created_at",
 }
 
 var ReregistrationPasswordSessionTableColumns = struct {
@@ -56,14 +56,14 @@ var ReregistrationPasswordSessionTableColumns = struct {
 	Period      string
 	PeriodClear string
 	Completed   string
-	Created     string
+	CreatedAt   string
 }{
 	ID:          "reregistration_password_session.id",
 	Email:       "reregistration_password_session.email",
 	Period:      "reregistration_password_session.period",
 	PeriodClear: "reregistration_password_session.period_clear",
 	Completed:   "reregistration_password_session.completed",
-	Created:     "reregistration_password_session.created",
+	CreatedAt:   "reregistration_password_session.created_at",
 }
 
 // Generated where
@@ -74,14 +74,14 @@ var ReregistrationPasswordSessionWhere = struct {
 	Period      whereHelpertime_Time
 	PeriodClear whereHelpertime_Time
 	Completed   whereHelperbool
-	Created     whereHelpertime_Time
+	CreatedAt   whereHelpertime_Time
 }{
 	ID:          whereHelperstring{field: "`reregistration_password_session`.`id`"},
 	Email:       whereHelperstring{field: "`reregistration_password_session`.`email`"},
 	Period:      whereHelpertime_Time{field: "`reregistration_password_session`.`period`"},
 	PeriodClear: whereHelpertime_Time{field: "`reregistration_password_session`.`period_clear`"},
 	Completed:   whereHelperbool{field: "`reregistration_password_session`.`completed`"},
-	Created:     whereHelpertime_Time{field: "`reregistration_password_session`.`created`"},
+	CreatedAt:   whereHelpertime_Time{field: "`reregistration_password_session`.`created_at`"},
 }
 
 // ReregistrationPasswordSessionRels is where relationship names are stored.
@@ -101,9 +101,9 @@ func (*reregistrationPasswordSessionR) NewStruct() *reregistrationPasswordSessio
 type reregistrationPasswordSessionL struct{}
 
 var (
-	reregistrationPasswordSessionAllColumns            = []string{"id", "email", "period", "period_clear", "completed", "created"}
+	reregistrationPasswordSessionAllColumns            = []string{"id", "email", "period", "period_clear", "completed", "created_at"}
 	reregistrationPasswordSessionColumnsWithoutDefault = []string{"id", "email"}
-	reregistrationPasswordSessionColumnsWithDefault    = []string{"period", "period_clear", "completed", "created"}
+	reregistrationPasswordSessionColumnsWithDefault    = []string{"period", "period_clear", "completed", "created_at"}
 	reregistrationPasswordSessionPrimaryKeyColumns     = []string{"id"}
 	reregistrationPasswordSessionGeneratedColumns      = []string{}
 )
@@ -435,6 +435,13 @@ func (o *ReregistrationPasswordSession) Insert(ctx context.Context, exec boil.Co
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -659,6 +666,13 @@ var mySQLReregistrationPasswordSessionUniqueColumns = []string{
 func (o *ReregistrationPasswordSession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no reregistration_password_session provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -15,8 +15,8 @@ import (
 )
 
 type ClientLoginResponse struct {
-	Scope   []string
-	Created time.Time `json:"created"`
+	Scope     []string
+	CreatedAt time.Time `json:"created_at"`
 
 	Client *ClientResponse `json:"client"`
 }
@@ -32,7 +32,7 @@ type ClientLoginHistoryResponse struct {
 	IsMobile null.Bool   `json:"is_mobile"`
 	Ip       string      `json:"ip"`
 
-	Created time.Time `json:"created"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type ClientResponse struct {
@@ -54,7 +54,7 @@ type LoginDeviceResponse struct {
 
 	IsCurrent bool `json:"is_current"`
 
-	Created time.Time `json:"created"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type LoginTryHistoryResponse struct {
@@ -68,7 +68,7 @@ type LoginTryHistoryResponse struct {
 
 	Identifier int8 `json:"identifier"`
 
-	Created time.Time `json:"created"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type LoginHistoriesSlice struct {
@@ -88,7 +88,7 @@ func (h *Handler) HistoryClientLoginHandler(c echo.Context) error {
 	clientRefresh, err := models.ClientRefreshes(
 		models.ClientRefreshWhere.UserID.EQ(u.ID),
 		qm.And("period > NOW()"),
-		qm.OrderBy("created DESC"),
+		qm.OrderBy("created_at DESC"),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
@@ -142,8 +142,8 @@ func (h *Handler) HistoryClientLoginHandler(c echo.Context) error {
 		}
 
 		logins = append(logins, ClientLoginResponse{
-			Scope:   scope,
-			Created: r.Created,
+			Scope:     scope,
+			CreatedAt: r.CreatedAt,
 
 			Client: client,
 		})
@@ -164,7 +164,7 @@ func (h *Handler) HistoryClientHandler(c echo.Context) error {
 	histories, err := models.LoginClientHistories(
 		models.LoginClientHistoryWhere.UserID.EQ(u.ID),
 		qm.Limit(50),
-		qm.OrderBy("created DESC"),
+		qm.OrderBy("created_at DESC"),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
@@ -221,7 +221,7 @@ func (h *Handler) HistoryClientHandler(c echo.Context) error {
 			IsMobile: history.IsMobile,
 			Ip:       net.IP.To16(history.IP).String(),
 
-			Created: history.Created,
+			CreatedAt: history.CreatedAt,
 
 			Client: client,
 		})
@@ -265,21 +265,21 @@ func (h *Handler) HistoryLoginDeviceHandler(c echo.Context) error {
 			"login_history.browser",
 			"login_history.is_mobile",
 			"login_history.ip",
-			"login_history.created",
+			"login_history.created_at",
 
 			"refresh.id",
 			"refresh.user_id",
 			"refresh.history_id",
 			"refresh.session_id",
 			"refresh.period",
-			"refresh.created",
-			"refresh.modified",
+			"refresh.created_at",
+			"refresh.modified_at",
 		),
 		qm.From("login_history"),
 		qm.InnerJoin("refresh ON refresh.history_id = login_history.refresh_id"),
 		qm.Where("login_history.user_id = ?", u.ID),
 		qm.And("refresh.period > NOW()"),
-		qm.OrderBy("login_history.created DESC"),
+		qm.OrderBy("login_history.created_at DESC"),
 		qm.Limit(50),
 	).Bind(ctx, h.DB, &loginDevices)
 	if err != nil {
@@ -299,7 +299,7 @@ func (h *Handler) HistoryLoginDeviceHandler(c echo.Context) error {
 
 			IsCurrent: l.Refresh.ID == refreshToken.Value,
 
-			Created: l.LoginHistory.Created,
+			CreatedAt: l.LoginHistory.CreatedAt,
 		})
 	}
 
@@ -321,7 +321,7 @@ func (h *Handler) HistoryLoginHistoryHandler(c echo.Context) error {
 	// LIMIT 50;
 	loginHistories, err := models.LoginHistories(
 		models.LoginHistoryWhere.UserID.EQ(u.ID),
-		qm.OrderBy("created DESC"),
+		qm.OrderBy("created_at DESC"),
 		qm.Limit(50),
 	).All(ctx, h.DB)
 	if err != nil {
@@ -341,7 +341,7 @@ func (h *Handler) HistoryLoginHistoryHandler(c echo.Context) error {
 
 			IsCurrent: false,
 
-			Created: l.Created,
+			CreatedAt: l.CreatedAt,
 		})
 	}
 
@@ -363,7 +363,7 @@ func (h *Handler) HistoryLoginTryHistoryHandler(c echo.Context) error {
 	// LIMIT 50;
 	loginTryHistries, err := models.LoginTryHistories(
 		models.LoginTryHistoryWhere.UserID.EQ(u.ID),
-		qm.OrderBy("created DESC"),
+		qm.OrderBy("created_at DESC"),
 		qm.Limit(50),
 	).All(ctx, h.DB)
 	if err != nil {
@@ -383,7 +383,7 @@ func (h *Handler) HistoryLoginTryHistoryHandler(c echo.Context) error {
 
 			Identifier: l.Identifier,
 
-			Created: l.Created,
+			CreatedAt: l.CreatedAt,
 		})
 	}
 

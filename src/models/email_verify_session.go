@@ -29,8 +29,8 @@ type EmailVerifySession struct {
 	VerifyCode string    `boil:"verify_code" json:"verify_code" toml:"verify_code" yaml:"verify_code"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
-	Created    time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified   time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *emailVerifySessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L emailVerifySessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -43,8 +43,8 @@ var EmailVerifySessionColumns = struct {
 	VerifyCode string
 	Period     string
 	RetryCount string
-	Created    string
-	Modified   string
+	CreatedAt  string
+	ModifiedAt string
 }{
 	ID:         "id",
 	UserID:     "user_id",
@@ -52,8 +52,8 @@ var EmailVerifySessionColumns = struct {
 	VerifyCode: "verify_code",
 	Period:     "period",
 	RetryCount: "retry_count",
-	Created:    "created",
-	Modified:   "modified",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var EmailVerifySessionTableColumns = struct {
@@ -63,8 +63,8 @@ var EmailVerifySessionTableColumns = struct {
 	VerifyCode string
 	Period     string
 	RetryCount string
-	Created    string
-	Modified   string
+	CreatedAt  string
+	ModifiedAt string
 }{
 	ID:         "email_verify_session.id",
 	UserID:     "email_verify_session.user_id",
@@ -72,8 +72,8 @@ var EmailVerifySessionTableColumns = struct {
 	VerifyCode: "email_verify_session.verify_code",
 	Period:     "email_verify_session.period",
 	RetryCount: "email_verify_session.retry_count",
-	Created:    "email_verify_session.created",
-	Modified:   "email_verify_session.modified",
+	CreatedAt:  "email_verify_session.created_at",
+	ModifiedAt: "email_verify_session.modified_at",
 }
 
 // Generated where
@@ -108,8 +108,8 @@ var EmailVerifySessionWhere = struct {
 	VerifyCode whereHelperstring
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
-	Created    whereHelpertime_Time
-	Modified   whereHelpertime_Time
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`email_verify_session`.`id`"},
 	UserID:     whereHelperstring{field: "`email_verify_session`.`user_id`"},
@@ -117,8 +117,8 @@ var EmailVerifySessionWhere = struct {
 	VerifyCode: whereHelperstring{field: "`email_verify_session`.`verify_code`"},
 	Period:     whereHelpertime_Time{field: "`email_verify_session`.`period`"},
 	RetryCount: whereHelperuint8{field: "`email_verify_session`.`retry_count`"},
-	Created:    whereHelpertime_Time{field: "`email_verify_session`.`created`"},
-	Modified:   whereHelpertime_Time{field: "`email_verify_session`.`modified`"},
+	CreatedAt:  whereHelpertime_Time{field: "`email_verify_session`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`email_verify_session`.`modified_at`"},
 }
 
 // EmailVerifySessionRels is where relationship names are stored.
@@ -149,9 +149,9 @@ func (r *emailVerifySessionR) GetUser() *User {
 type emailVerifySessionL struct{}
 
 var (
-	emailVerifySessionAllColumns            = []string{"id", "user_id", "new_email", "verify_code", "period", "retry_count", "created", "modified"}
+	emailVerifySessionAllColumns            = []string{"id", "user_id", "new_email", "verify_code", "period", "retry_count", "created_at", "modified_at"}
 	emailVerifySessionColumnsWithoutDefault = []string{"id", "user_id", "new_email", "verify_code"}
-	emailVerifySessionColumnsWithDefault    = []string{"period", "retry_count", "created", "modified"}
+	emailVerifySessionColumnsWithDefault    = []string{"period", "retry_count", "created_at", "modified_at"}
 	emailVerifySessionPrimaryKeyColumns     = []string{"id"}
 	emailVerifySessionGeneratedColumns      = []string{}
 )
@@ -661,6 +661,13 @@ func (o *EmailVerifySession) Insert(ctx context.Context, exec boil.ContextExecut
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -885,6 +892,13 @@ var mySQLEmailVerifySessionUniqueColumns = []string{
 func (o *EmailVerifySession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no email_verify_session provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

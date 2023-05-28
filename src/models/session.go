@@ -23,51 +23,51 @@ import (
 
 // Session is an object representing the database table.
 type Session struct {
-	ID      string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID  string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Period  time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
-	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Period    time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *sessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L sessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var SessionColumns = struct {
-	ID      string
-	UserID  string
-	Period  string
-	Created string
+	ID        string
+	UserID    string
+	Period    string
+	CreatedAt string
 }{
-	ID:      "id",
-	UserID:  "user_id",
-	Period:  "period",
-	Created: "created",
+	ID:        "id",
+	UserID:    "user_id",
+	Period:    "period",
+	CreatedAt: "created_at",
 }
 
 var SessionTableColumns = struct {
-	ID      string
-	UserID  string
-	Period  string
-	Created string
+	ID        string
+	UserID    string
+	Period    string
+	CreatedAt string
 }{
-	ID:      "session.id",
-	UserID:  "session.user_id",
-	Period:  "session.period",
-	Created: "session.created",
+	ID:        "session.id",
+	UserID:    "session.user_id",
+	Period:    "session.period",
+	CreatedAt: "session.created_at",
 }
 
 // Generated where
 
 var SessionWhere = struct {
-	ID      whereHelperstring
-	UserID  whereHelperstring
-	Period  whereHelpertime_Time
-	Created whereHelpertime_Time
+	ID        whereHelperstring
+	UserID    whereHelperstring
+	Period    whereHelpertime_Time
+	CreatedAt whereHelpertime_Time
 }{
-	ID:      whereHelperstring{field: "`session`.`id`"},
-	UserID:  whereHelperstring{field: "`session`.`user_id`"},
-	Period:  whereHelpertime_Time{field: "`session`.`period`"},
-	Created: whereHelpertime_Time{field: "`session`.`created`"},
+	ID:        whereHelperstring{field: "`session`.`id`"},
+	UserID:    whereHelperstring{field: "`session`.`user_id`"},
+	Period:    whereHelpertime_Time{field: "`session`.`period`"},
+	CreatedAt: whereHelpertime_Time{field: "`session`.`created_at`"},
 }
 
 // SessionRels is where relationship names are stored.
@@ -98,9 +98,9 @@ func (r *sessionR) GetUser() *User {
 type sessionL struct{}
 
 var (
-	sessionAllColumns            = []string{"id", "user_id", "period", "created"}
+	sessionAllColumns            = []string{"id", "user_id", "period", "created_at"}
 	sessionColumnsWithoutDefault = []string{"id", "user_id"}
-	sessionColumnsWithDefault    = []string{"period", "created"}
+	sessionColumnsWithDefault    = []string{"period", "created_at"}
 	sessionPrimaryKeyColumns     = []string{"id"}
 	sessionGeneratedColumns      = []string{}
 )
@@ -610,6 +610,13 @@ func (o *Session) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -834,6 +841,13 @@ var mySQLSessionUniqueColumns = []string{
 func (o *Session) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no session provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

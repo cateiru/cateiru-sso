@@ -805,7 +805,7 @@ func testUserBrandsSelect(t *testing.T) {
 }
 
 var (
-	userBrandDBTypes = map[string]string{`ID`: `int`, `UserID`: `varchar`, `BrandID`: `varchar`, `Created`: `datetime`}
+	userBrandDBTypes = map[string]string{`ID`: `int`, `UserID`: `varchar`, `BrandID`: `varchar`, `CreatedAt`: `datetime`}
 	_                = bytes.MinRead
 )
 

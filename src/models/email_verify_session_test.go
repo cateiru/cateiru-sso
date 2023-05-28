@@ -687,7 +687,7 @@ func testEmailVerifySessionsSelect(t *testing.T) {
 }
 
 var (
-	emailVerifySessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `NewEmail`: `varchar`, `VerifyCode`: `char`, `Period`: `datetime`, `RetryCount`: `tinyint`, `Created`: `datetime`, `Modified`: `datetime`}
+	emailVerifySessionDBTypes = map[string]string{`ID`: `varchar`, `UserID`: `varchar`, `NewEmail`: `varchar`, `VerifyCode`: `char`, `Period`: `datetime`, `RetryCount`: `tinyint`, `CreatedAt`: `datetime`, `ModifiedAt`: `datetime`}
 	_                         = bytes.MinRead
 )
 

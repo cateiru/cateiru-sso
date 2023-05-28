@@ -23,51 +23,51 @@ import (
 
 // Otp is an object representing the database table.
 type Otp struct {
-	UserID   string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Secret   string    `boil:"secret" json:"secret" toml:"secret" yaml:"secret"`
-	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Secret     string    `boil:"secret" json:"secret" toml:"secret" yaml:"secret"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *otpR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L otpL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var OtpColumns = struct {
-	UserID   string
-	Secret   string
-	Created  string
-	Modified string
+	UserID     string
+	Secret     string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	UserID:   "user_id",
-	Secret:   "secret",
-	Created:  "created",
-	Modified: "modified",
+	UserID:     "user_id",
+	Secret:     "secret",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var OtpTableColumns = struct {
-	UserID   string
-	Secret   string
-	Created  string
-	Modified string
+	UserID     string
+	Secret     string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	UserID:   "otp.user_id",
-	Secret:   "otp.secret",
-	Created:  "otp.created",
-	Modified: "otp.modified",
+	UserID:     "otp.user_id",
+	Secret:     "otp.secret",
+	CreatedAt:  "otp.created_at",
+	ModifiedAt: "otp.modified_at",
 }
 
 // Generated where
 
 var OtpWhere = struct {
-	UserID   whereHelperstring
-	Secret   whereHelperstring
-	Created  whereHelpertime_Time
-	Modified whereHelpertime_Time
+	UserID     whereHelperstring
+	Secret     whereHelperstring
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
-	UserID:   whereHelperstring{field: "`otp`.`user_id`"},
-	Secret:   whereHelperstring{field: "`otp`.`secret`"},
-	Created:  whereHelpertime_Time{field: "`otp`.`created`"},
-	Modified: whereHelpertime_Time{field: "`otp`.`modified`"},
+	UserID:     whereHelperstring{field: "`otp`.`user_id`"},
+	Secret:     whereHelperstring{field: "`otp`.`secret`"},
+	CreatedAt:  whereHelpertime_Time{field: "`otp`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`otp`.`modified_at`"},
 }
 
 // OtpRels is where relationship names are stored.
@@ -98,9 +98,9 @@ func (r *otpR) GetUser() *User {
 type otpL struct{}
 
 var (
-	otpAllColumns            = []string{"user_id", "secret", "created", "modified"}
+	otpAllColumns            = []string{"user_id", "secret", "created_at", "modified_at"}
 	otpColumnsWithoutDefault = []string{"user_id", "secret"}
-	otpColumnsWithDefault    = []string{"created", "modified"}
+	otpColumnsWithDefault    = []string{"created_at", "modified_at"}
 	otpPrimaryKeyColumns     = []string{"user_id"}
 	otpGeneratedColumns      = []string{}
 )
@@ -610,6 +610,13 @@ func (o *Otp) Insert(ctx context.Context, exec boil.ContextExecutor, columns boi
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -834,6 +841,13 @@ var mySQLOtpUniqueColumns = []string{
 func (o *Otp) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no otp provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

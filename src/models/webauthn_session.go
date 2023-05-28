@@ -30,8 +30,8 @@ type WebauthnSession struct {
 	Row        types.JSON  `boil:"row" json:"row" toml:"row" yaml:"row"`
 	Period     time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
 	Identifier int8        `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
-	Created    time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified   time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *webauthnSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L webauthnSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -43,16 +43,16 @@ var WebauthnSessionColumns = struct {
 	Row        string
 	Period     string
 	Identifier string
-	Created    string
-	Modified   string
+	CreatedAt  string
+	ModifiedAt string
 }{
 	ID:         "id",
 	UserID:     "user_id",
 	Row:        "row",
 	Period:     "period",
 	Identifier: "identifier",
-	Created:    "created",
-	Modified:   "modified",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var WebauthnSessionTableColumns = struct {
@@ -61,16 +61,16 @@ var WebauthnSessionTableColumns = struct {
 	Row        string
 	Period     string
 	Identifier string
-	Created    string
-	Modified   string
+	CreatedAt  string
+	ModifiedAt string
 }{
 	ID:         "webauthn_session.id",
 	UserID:     "webauthn_session.user_id",
 	Row:        "webauthn_session.row",
 	Period:     "webauthn_session.period",
 	Identifier: "webauthn_session.identifier",
-	Created:    "webauthn_session.created",
-	Modified:   "webauthn_session.modified",
+	CreatedAt:  "webauthn_session.created_at",
+	ModifiedAt: "webauthn_session.modified_at",
 }
 
 // Generated where
@@ -81,16 +81,16 @@ var WebauthnSessionWhere = struct {
 	Row        whereHelpertypes_JSON
 	Period     whereHelpertime_Time
 	Identifier whereHelperint8
-	Created    whereHelpertime_Time
-	Modified   whereHelpertime_Time
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`webauthn_session`.`id`"},
 	UserID:     whereHelpernull_String{field: "`webauthn_session`.`user_id`"},
 	Row:        whereHelpertypes_JSON{field: "`webauthn_session`.`row`"},
 	Period:     whereHelpertime_Time{field: "`webauthn_session`.`period`"},
 	Identifier: whereHelperint8{field: "`webauthn_session`.`identifier`"},
-	Created:    whereHelpertime_Time{field: "`webauthn_session`.`created`"},
-	Modified:   whereHelpertime_Time{field: "`webauthn_session`.`modified`"},
+	CreatedAt:  whereHelpertime_Time{field: "`webauthn_session`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`webauthn_session`.`modified_at`"},
 }
 
 // WebauthnSessionRels is where relationship names are stored.
@@ -110,9 +110,9 @@ func (*webauthnSessionR) NewStruct() *webauthnSessionR {
 type webauthnSessionL struct{}
 
 var (
-	webauthnSessionAllColumns            = []string{"id", "user_id", "row", "period", "identifier", "created", "modified"}
+	webauthnSessionAllColumns            = []string{"id", "user_id", "row", "period", "identifier", "created_at", "modified_at"}
 	webauthnSessionColumnsWithoutDefault = []string{"id", "user_id", "row"}
-	webauthnSessionColumnsWithDefault    = []string{"period", "identifier", "created", "modified"}
+	webauthnSessionColumnsWithDefault    = []string{"period", "identifier", "created_at", "modified_at"}
 	webauthnSessionPrimaryKeyColumns     = []string{"id"}
 	webauthnSessionGeneratedColumns      = []string{}
 )
@@ -444,6 +444,13 @@ func (o *WebauthnSession) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -668,6 +675,13 @@ var mySQLWebauthnSessionUniqueColumns = []string{
 func (o *WebauthnSession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no webauthn_session provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

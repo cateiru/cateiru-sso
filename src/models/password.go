@@ -23,58 +23,58 @@ import (
 
 // Password is an object representing the database table.
 type Password struct {
-	UserID   string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Salt     []byte    `boil:"salt" json:"salt" toml:"salt" yaml:"salt"`
-	Hash     []byte    `boil:"hash" json:"hash" toml:"hash" yaml:"hash"`
-	Created  time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	UserID     string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Salt       []byte    `boil:"salt" json:"salt" toml:"salt" yaml:"salt"`
+	Hash       []byte    `boil:"hash" json:"hash" toml:"hash" yaml:"hash"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *passwordR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L passwordL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var PasswordColumns = struct {
-	UserID   string
-	Salt     string
-	Hash     string
-	Created  string
-	Modified string
+	UserID     string
+	Salt       string
+	Hash       string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	UserID:   "user_id",
-	Salt:     "salt",
-	Hash:     "hash",
-	Created:  "created",
-	Modified: "modified",
+	UserID:     "user_id",
+	Salt:       "salt",
+	Hash:       "hash",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var PasswordTableColumns = struct {
-	UserID   string
-	Salt     string
-	Hash     string
-	Created  string
-	Modified string
+	UserID     string
+	Salt       string
+	Hash       string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	UserID:   "password.user_id",
-	Salt:     "password.salt",
-	Hash:     "password.hash",
-	Created:  "password.created",
-	Modified: "password.modified",
+	UserID:     "password.user_id",
+	Salt:       "password.salt",
+	Hash:       "password.hash",
+	CreatedAt:  "password.created_at",
+	ModifiedAt: "password.modified_at",
 }
 
 // Generated where
 
 var PasswordWhere = struct {
-	UserID   whereHelperstring
-	Salt     whereHelper__byte
-	Hash     whereHelper__byte
-	Created  whereHelpertime_Time
-	Modified whereHelpertime_Time
+	UserID     whereHelperstring
+	Salt       whereHelper__byte
+	Hash       whereHelper__byte
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
-	UserID:   whereHelperstring{field: "`password`.`user_id`"},
-	Salt:     whereHelper__byte{field: "`password`.`salt`"},
-	Hash:     whereHelper__byte{field: "`password`.`hash`"},
-	Created:  whereHelpertime_Time{field: "`password`.`created`"},
-	Modified: whereHelpertime_Time{field: "`password`.`modified`"},
+	UserID:     whereHelperstring{field: "`password`.`user_id`"},
+	Salt:       whereHelper__byte{field: "`password`.`salt`"},
+	Hash:       whereHelper__byte{field: "`password`.`hash`"},
+	CreatedAt:  whereHelpertime_Time{field: "`password`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`password`.`modified_at`"},
 }
 
 // PasswordRels is where relationship names are stored.
@@ -105,9 +105,9 @@ func (r *passwordR) GetUser() *User {
 type passwordL struct{}
 
 var (
-	passwordAllColumns            = []string{"user_id", "salt", "hash", "created", "modified"}
+	passwordAllColumns            = []string{"user_id", "salt", "hash", "created_at", "modified_at"}
 	passwordColumnsWithoutDefault = []string{"user_id", "salt", "hash"}
-	passwordColumnsWithDefault    = []string{"created", "modified"}
+	passwordColumnsWithDefault    = []string{"created_at", "modified_at"}
 	passwordPrimaryKeyColumns     = []string{"user_id"}
 	passwordGeneratedColumns      = []string{}
 )
@@ -617,6 +617,13 @@ func (o *Password) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -841,6 +848,13 @@ var mySQLPasswordUniqueColumns = []string{
 func (o *Password) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no password provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

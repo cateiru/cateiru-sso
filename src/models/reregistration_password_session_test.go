@@ -568,7 +568,7 @@ func testReregistrationPasswordSessionsSelect(t *testing.T) {
 }
 
 var (
-	reregistrationPasswordSessionDBTypes = map[string]string{`ID`: `varchar`, `Email`: `varchar`, `Period`: `datetime`, `PeriodClear`: `datetime`, `Completed`: `tinyint`, `Created`: `datetime`}
+	reregistrationPasswordSessionDBTypes = map[string]string{`ID`: `varchar`, `Email`: `varchar`, `Period`: `datetime`, `PeriodClear`: `datetime`, `Completed`: `tinyint`, `CreatedAt`: `datetime`}
 	_                                    = bytes.MinRead
 )
 

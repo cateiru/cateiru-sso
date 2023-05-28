@@ -191,7 +191,7 @@ func TestHistoryClientHandler(t *testing.T) {
 		require.NoError(t, m.Json(&response))
 		require.Len(t, response, 2)
 
-		require.True(t, response[0].Created.After(response[1].Created))
+		require.True(t, response[0].CreatedAt.After(response[1].CreatedAt))
 	})
 }
 

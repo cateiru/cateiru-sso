@@ -33,7 +33,7 @@ type Webauthn struct {
 	Browser    null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
 	IsMobile   null.Bool   `boil:"is_mobile" json:"is_mobile,omitempty" toml:"is_mobile" yaml:"is_mobile,omitempty"`
 	IP         []byte      `boil:"ip" json:"ip" toml:"ip" yaml:"ip"`
-	Created    time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *webauthnR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L webauthnL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -48,7 +48,7 @@ var WebauthnColumns = struct {
 	Browser    string
 	IsMobile   string
 	IP         string
-	Created    string
+	CreatedAt  string
 }{
 	ID:         "id",
 	UserID:     "user_id",
@@ -58,7 +58,7 @@ var WebauthnColumns = struct {
 	Browser:    "browser",
 	IsMobile:   "is_mobile",
 	IP:         "ip",
-	Created:    "created",
+	CreatedAt:  "created_at",
 }
 
 var WebauthnTableColumns = struct {
@@ -70,7 +70,7 @@ var WebauthnTableColumns = struct {
 	Browser    string
 	IsMobile   string
 	IP         string
-	Created    string
+	CreatedAt  string
 }{
 	ID:         "webauthn.id",
 	UserID:     "webauthn.user_id",
@@ -80,7 +80,7 @@ var WebauthnTableColumns = struct {
 	Browser:    "webauthn.browser",
 	IsMobile:   "webauthn.is_mobile",
 	IP:         "webauthn.ip",
-	Created:    "webauthn.created",
+	CreatedAt:  "webauthn.created_at",
 }
 
 // Generated where
@@ -117,7 +117,7 @@ var WebauthnWhere = struct {
 	Browser    whereHelpernull_String
 	IsMobile   whereHelpernull_Bool
 	IP         whereHelper__byte
-	Created    whereHelpertime_Time
+	CreatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperuint64{field: "`webauthn`.`id`"},
 	UserID:     whereHelperstring{field: "`webauthn`.`user_id`"},
@@ -127,7 +127,7 @@ var WebauthnWhere = struct {
 	Browser:    whereHelpernull_String{field: "`webauthn`.`browser`"},
 	IsMobile:   whereHelpernull_Bool{field: "`webauthn`.`is_mobile`"},
 	IP:         whereHelper__byte{field: "`webauthn`.`ip`"},
-	Created:    whereHelpertime_Time{field: "`webauthn`.`created`"},
+	CreatedAt:  whereHelpertime_Time{field: "`webauthn`.`created_at`"},
 }
 
 // WebauthnRels is where relationship names are stored.
@@ -158,9 +158,9 @@ func (r *webauthnR) GetUser() *User {
 type webauthnL struct{}
 
 var (
-	webauthnAllColumns            = []string{"id", "user_id", "credential", "device", "os", "browser", "is_mobile", "ip", "created"}
+	webauthnAllColumns            = []string{"id", "user_id", "credential", "device", "os", "browser", "is_mobile", "ip", "created_at"}
 	webauthnColumnsWithoutDefault = []string{"user_id", "credential", "device", "os", "browser", "is_mobile", "ip"}
-	webauthnColumnsWithDefault    = []string{"id", "created"}
+	webauthnColumnsWithDefault    = []string{"id", "created_at"}
 	webauthnPrimaryKeyColumns     = []string{"id"}
 	webauthnGeneratedColumns      = []string{}
 )
@@ -670,6 +670,13 @@ func (o *Webauthn) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -905,6 +912,13 @@ var mySQLWebauthnUniqueColumns = []string{
 func (o *Webauthn) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no webauthn provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

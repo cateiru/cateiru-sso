@@ -23,51 +23,51 @@ import (
 
 // OtpBackup is an object representing the database table.
 type OtpBackup struct {
-	ID      uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID  string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Code    string    `boil:"code" json:"code" toml:"code" yaml:"code"`
-	Created time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	ID        uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Code      string    `boil:"code" json:"code" toml:"code" yaml:"code"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *otpBackupR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L otpBackupL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var OtpBackupColumns = struct {
-	ID      string
-	UserID  string
-	Code    string
-	Created string
+	ID        string
+	UserID    string
+	Code      string
+	CreatedAt string
 }{
-	ID:      "id",
-	UserID:  "user_id",
-	Code:    "code",
-	Created: "created",
+	ID:        "id",
+	UserID:    "user_id",
+	Code:      "code",
+	CreatedAt: "created_at",
 }
 
 var OtpBackupTableColumns = struct {
-	ID      string
-	UserID  string
-	Code    string
-	Created string
+	ID        string
+	UserID    string
+	Code      string
+	CreatedAt string
 }{
-	ID:      "otp_backup.id",
-	UserID:  "otp_backup.user_id",
-	Code:    "otp_backup.code",
-	Created: "otp_backup.created",
+	ID:        "otp_backup.id",
+	UserID:    "otp_backup.user_id",
+	Code:      "otp_backup.code",
+	CreatedAt: "otp_backup.created_at",
 }
 
 // Generated where
 
 var OtpBackupWhere = struct {
-	ID      whereHelperuint
-	UserID  whereHelperstring
-	Code    whereHelperstring
-	Created whereHelpertime_Time
+	ID        whereHelperuint
+	UserID    whereHelperstring
+	Code      whereHelperstring
+	CreatedAt whereHelpertime_Time
 }{
-	ID:      whereHelperuint{field: "`otp_backup`.`id`"},
-	UserID:  whereHelperstring{field: "`otp_backup`.`user_id`"},
-	Code:    whereHelperstring{field: "`otp_backup`.`code`"},
-	Created: whereHelpertime_Time{field: "`otp_backup`.`created`"},
+	ID:        whereHelperuint{field: "`otp_backup`.`id`"},
+	UserID:    whereHelperstring{field: "`otp_backup`.`user_id`"},
+	Code:      whereHelperstring{field: "`otp_backup`.`code`"},
+	CreatedAt: whereHelpertime_Time{field: "`otp_backup`.`created_at`"},
 }
 
 // OtpBackupRels is where relationship names are stored.
@@ -98,9 +98,9 @@ func (r *otpBackupR) GetUser() *User {
 type otpBackupL struct{}
 
 var (
-	otpBackupAllColumns            = []string{"id", "user_id", "code", "created"}
+	otpBackupAllColumns            = []string{"id", "user_id", "code", "created_at"}
 	otpBackupColumnsWithoutDefault = []string{"user_id", "code"}
-	otpBackupColumnsWithDefault    = []string{"id", "created"}
+	otpBackupColumnsWithDefault    = []string{"id", "created_at"}
 	otpBackupPrimaryKeyColumns     = []string{"id"}
 	otpBackupGeneratedColumns      = []string{}
 )
@@ -610,6 +610,13 @@ func (o *OtpBackup) Insert(ctx context.Context, exec boil.ContextExecutor, colum
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -845,6 +852,13 @@ var mySQLOtpBackupUniqueColumns = []string{
 func (o *OtpBackup) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no otp_backup provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

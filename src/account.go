@@ -40,8 +40,8 @@ type AccountReRegisterPasswordTemplate struct {
 type AccountCertificates struct {
 	Password bool `json:"password"`
 
-	OTP         bool      `json:"otp"`
-	OtpModified null.Time `json:"otp_modified"`
+	OTP           bool      `json:"otp"`
+	OtpModifiedAt null.Time `json:"otp_modified_at"`
 }
 
 type AccountReRegisterPasswordIsSession struct {
@@ -57,7 +57,7 @@ type AccountWebauthnDevice struct {
 	IsMobile null.Bool   `json:"is_mobile,omitempty"`
 	IP       string      `json:"ip"`
 
-	Created time.Time `json:"created"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // ログイン可能なアカウントのリストを返すハンドラ
@@ -603,7 +603,7 @@ func (h *Handler) AccountWebauthnRegisteredDevicesHandler(c echo.Context) error 
 
 	devices, err := models.Webauthns(
 		models.WebauthnWhere.UserID.EQ(user.ID),
-		qm.OrderBy("created DESC"),
+		qm.OrderBy("created_at DESC"),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
@@ -620,7 +620,7 @@ func (h *Handler) AccountWebauthnRegisteredDevicesHandler(c echo.Context) error 
 			IsMobile: device.IsMobile,
 			IP:       net.IP.To16(device.IP).String(),
 
-			Created: device.Created,
+			CreatedAt: device.CreatedAt,
 		}
 	}
 
@@ -753,13 +753,13 @@ func (h *Handler) AccountCertificatesHandler(c echo.Context) error {
 
 	otpModified := null.NewTime(time.Time{}, false)
 	if otp != nil {
-		otpModified = null.TimeFrom(otp.Modified)
+		otpModified = null.TimeFrom(otp.ModifiedAt)
 	}
 
 	return c.JSON(http.StatusOK, AccountCertificates{
-		Password:    password,
-		OTP:         otp != nil,
-		OtpModified: otpModified,
+		Password:      password,
+		OTP:           otp != nil,
+		OtpModifiedAt: otpModified,
 	})
 }
 
@@ -1022,29 +1022,14 @@ func (h *Handler) AccountReRegisterPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	passwordDB, err := models.Passwords(
-		models.PasswordWhere.UserID.EQ(user.ID),
-	).One(ctx, h.DB)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return err
+	// パスワードが設定されていない場合は新規作成する
+	password := &models.Password{
+		UserID: user.ID,
+		Hash:   hash,
+		Salt:   salt,
 	}
-	if passwordDB == nil {
-		// 新たにパスワードを作成する
-		passwordDB = &models.Password{
-			UserID: user.ID,
-			Hash:   hash,
-			Salt:   salt,
-		}
-		if err := passwordDB.Insert(ctx, h.DB, boil.Infer()); err != nil {
-			return err
-		}
-	} else {
-		// パスワードを更新する
-		passwordDB.Hash = hash
-		passwordDB.Salt = salt
-		if _, err := passwordDB.Update(ctx, h.DB, boil.Infer()); err != nil {
-			return err
-		}
+	if err := password.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
+		return err
 	}
 
 	// 使用済みフラグを立てる

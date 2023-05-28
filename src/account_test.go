@@ -1638,7 +1638,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		require.True(t, response.Password)
 		require.False(t, response.OTP)
-		require.False(t, response.OtpModified.Valid)
+		require.False(t, response.OtpModifiedAt.Valid)
 	})
 
 	t.Run("成功: パスワード、OTP", func(t *testing.T) {
@@ -1664,7 +1664,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 
 		require.True(t, response.Password)
 		require.True(t, response.OTP)
-		require.True(t, response.OtpModified.Valid)
+		require.True(t, response.OtpModifiedAt.Valid)
 	})
 }
 

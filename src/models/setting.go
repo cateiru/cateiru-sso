@@ -26,8 +26,8 @@ type Setting struct {
 	UserID        string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	NoticeEmail   bool      `boil:"notice_email" json:"notice_email" toml:"notice_email" yaml:"notice_email"`
 	NoticeWebpush bool      `boil:"notice_webpush" json:"notice_webpush" toml:"notice_webpush" yaml:"notice_webpush"`
-	Created       time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified      time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt    time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *settingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L settingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,28 +37,28 @@ var SettingColumns = struct {
 	UserID        string
 	NoticeEmail   string
 	NoticeWebpush string
-	Created       string
-	Modified      string
+	CreatedAt     string
+	ModifiedAt    string
 }{
 	UserID:        "user_id",
 	NoticeEmail:   "notice_email",
 	NoticeWebpush: "notice_webpush",
-	Created:       "created",
-	Modified:      "modified",
+	CreatedAt:     "created_at",
+	ModifiedAt:    "modified_at",
 }
 
 var SettingTableColumns = struct {
 	UserID        string
 	NoticeEmail   string
 	NoticeWebpush string
-	Created       string
-	Modified      string
+	CreatedAt     string
+	ModifiedAt    string
 }{
 	UserID:        "setting.user_id",
 	NoticeEmail:   "setting.notice_email",
 	NoticeWebpush: "setting.notice_webpush",
-	Created:       "setting.created",
-	Modified:      "setting.modified",
+	CreatedAt:     "setting.created_at",
+	ModifiedAt:    "setting.modified_at",
 }
 
 // Generated where
@@ -67,14 +67,14 @@ var SettingWhere = struct {
 	UserID        whereHelperstring
 	NoticeEmail   whereHelperbool
 	NoticeWebpush whereHelperbool
-	Created       whereHelpertime_Time
-	Modified      whereHelpertime_Time
+	CreatedAt     whereHelpertime_Time
+	ModifiedAt    whereHelpertime_Time
 }{
 	UserID:        whereHelperstring{field: "`setting`.`user_id`"},
 	NoticeEmail:   whereHelperbool{field: "`setting`.`notice_email`"},
 	NoticeWebpush: whereHelperbool{field: "`setting`.`notice_webpush`"},
-	Created:       whereHelpertime_Time{field: "`setting`.`created`"},
-	Modified:      whereHelpertime_Time{field: "`setting`.`modified`"},
+	CreatedAt:     whereHelpertime_Time{field: "`setting`.`created_at`"},
+	ModifiedAt:    whereHelpertime_Time{field: "`setting`.`modified_at`"},
 }
 
 // SettingRels is where relationship names are stored.
@@ -105,9 +105,9 @@ func (r *settingR) GetUser() *User {
 type settingL struct{}
 
 var (
-	settingAllColumns            = []string{"user_id", "notice_email", "notice_webpush", "created", "modified"}
+	settingAllColumns            = []string{"user_id", "notice_email", "notice_webpush", "created_at", "modified_at"}
 	settingColumnsWithoutDefault = []string{"user_id"}
-	settingColumnsWithDefault    = []string{"notice_email", "notice_webpush", "created", "modified"}
+	settingColumnsWithDefault    = []string{"notice_email", "notice_webpush", "created_at", "modified_at"}
 	settingPrimaryKeyColumns     = []string{"user_id"}
 	settingGeneratedColumns      = []string{}
 )
@@ -617,6 +617,13 @@ func (o *Setting) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -841,6 +848,13 @@ var mySQLSettingUniqueColumns = []string{
 func (o *Setting) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no setting provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

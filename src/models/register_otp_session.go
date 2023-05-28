@@ -29,8 +29,8 @@ type RegisterOtpSession struct {
 	Secret     string    `boil:"secret" json:"secret" toml:"secret" yaml:"secret"`
 	Period     time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
 	RetryCount uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
-	Created    time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified   time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt  time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *registerOtpSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L registerOtpSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -43,8 +43,8 @@ var RegisterOtpSessionColumns = struct {
 	Secret     string
 	Period     string
 	RetryCount string
-	Created    string
-	Modified   string
+	CreatedAt  string
+	ModifiedAt string
 }{
 	ID:         "id",
 	UserID:     "user_id",
@@ -52,8 +52,8 @@ var RegisterOtpSessionColumns = struct {
 	Secret:     "secret",
 	Period:     "period",
 	RetryCount: "retry_count",
-	Created:    "created",
-	Modified:   "modified",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var RegisterOtpSessionTableColumns = struct {
@@ -63,8 +63,8 @@ var RegisterOtpSessionTableColumns = struct {
 	Secret     string
 	Period     string
 	RetryCount string
-	Created    string
-	Modified   string
+	CreatedAt  string
+	ModifiedAt string
 }{
 	ID:         "register_otp_session.id",
 	UserID:     "register_otp_session.user_id",
@@ -72,8 +72,8 @@ var RegisterOtpSessionTableColumns = struct {
 	Secret:     "register_otp_session.secret",
 	Period:     "register_otp_session.period",
 	RetryCount: "register_otp_session.retry_count",
-	Created:    "register_otp_session.created",
-	Modified:   "register_otp_session.modified",
+	CreatedAt:  "register_otp_session.created_at",
+	ModifiedAt: "register_otp_session.modified_at",
 }
 
 // Generated where
@@ -85,8 +85,8 @@ var RegisterOtpSessionWhere = struct {
 	Secret     whereHelperstring
 	Period     whereHelpertime_Time
 	RetryCount whereHelperuint8
-	Created    whereHelpertime_Time
-	Modified   whereHelpertime_Time
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`register_otp_session`.`id`"},
 	UserID:     whereHelperstring{field: "`register_otp_session`.`user_id`"},
@@ -94,8 +94,8 @@ var RegisterOtpSessionWhere = struct {
 	Secret:     whereHelperstring{field: "`register_otp_session`.`secret`"},
 	Period:     whereHelpertime_Time{field: "`register_otp_session`.`period`"},
 	RetryCount: whereHelperuint8{field: "`register_otp_session`.`retry_count`"},
-	Created:    whereHelpertime_Time{field: "`register_otp_session`.`created`"},
-	Modified:   whereHelpertime_Time{field: "`register_otp_session`.`modified`"},
+	CreatedAt:  whereHelpertime_Time{field: "`register_otp_session`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`register_otp_session`.`modified_at`"},
 }
 
 // RegisterOtpSessionRels is where relationship names are stored.
@@ -126,9 +126,9 @@ func (r *registerOtpSessionR) GetUser() *User {
 type registerOtpSessionL struct{}
 
 var (
-	registerOtpSessionAllColumns            = []string{"id", "user_id", "public_key", "secret", "period", "retry_count", "created", "modified"}
+	registerOtpSessionAllColumns            = []string{"id", "user_id", "public_key", "secret", "period", "retry_count", "created_at", "modified_at"}
 	registerOtpSessionColumnsWithoutDefault = []string{"id", "user_id", "public_key", "secret"}
-	registerOtpSessionColumnsWithDefault    = []string{"period", "retry_count", "created", "modified"}
+	registerOtpSessionColumnsWithDefault    = []string{"period", "retry_count", "created_at", "modified_at"}
 	registerOtpSessionPrimaryKeyColumns     = []string{"id"}
 	registerOtpSessionGeneratedColumns      = []string{}
 )
@@ -638,6 +638,13 @@ func (o *RegisterOtpSession) Insert(ctx context.Context, exec boil.ContextExecut
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -862,6 +869,13 @@ var mySQLRegisterOtpSessionUniqueColumns = []string{
 func (o *RegisterOtpSession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no register_otp_session provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

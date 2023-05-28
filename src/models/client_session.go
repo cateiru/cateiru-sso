@@ -28,7 +28,7 @@ type ClientSession struct {
 	ClientID      string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	LoginClientID uint      `boil:"login_client_id" json:"login_client_id" toml:"login_client_id" yaml:"login_client_id"`
 	Period        time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
-	Created       time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
+	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *clientSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L clientSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -40,14 +40,14 @@ var ClientSessionColumns = struct {
 	ClientID      string
 	LoginClientID string
 	Period        string
-	Created       string
+	CreatedAt     string
 }{
 	ID:            "id",
 	UserID:        "user_id",
 	ClientID:      "client_id",
 	LoginClientID: "login_client_id",
 	Period:        "period",
-	Created:       "created",
+	CreatedAt:     "created_at",
 }
 
 var ClientSessionTableColumns = struct {
@@ -56,14 +56,14 @@ var ClientSessionTableColumns = struct {
 	ClientID      string
 	LoginClientID string
 	Period        string
-	Created       string
+	CreatedAt     string
 }{
 	ID:            "client_session.id",
 	UserID:        "client_session.user_id",
 	ClientID:      "client_session.client_id",
 	LoginClientID: "client_session.login_client_id",
 	Period:        "client_session.period",
-	Created:       "client_session.created",
+	CreatedAt:     "client_session.created_at",
 }
 
 // Generated where
@@ -74,14 +74,14 @@ var ClientSessionWhere = struct {
 	ClientID      whereHelperstring
 	LoginClientID whereHelperuint
 	Period        whereHelpertime_Time
-	Created       whereHelpertime_Time
+	CreatedAt     whereHelpertime_Time
 }{
 	ID:            whereHelperstring{field: "`client_session`.`id`"},
 	UserID:        whereHelperstring{field: "`client_session`.`user_id`"},
 	ClientID:      whereHelperstring{field: "`client_session`.`client_id`"},
 	LoginClientID: whereHelperuint{field: "`client_session`.`login_client_id`"},
 	Period:        whereHelpertime_Time{field: "`client_session`.`period`"},
-	Created:       whereHelpertime_Time{field: "`client_session`.`created`"},
+	CreatedAt:     whereHelpertime_Time{field: "`client_session`.`created_at`"},
 }
 
 // ClientSessionRels is where relationship names are stored.
@@ -112,9 +112,9 @@ func (r *clientSessionR) GetUser() *User {
 type clientSessionL struct{}
 
 var (
-	clientSessionAllColumns            = []string{"id", "user_id", "client_id", "login_client_id", "period", "created"}
+	clientSessionAllColumns            = []string{"id", "user_id", "client_id", "login_client_id", "period", "created_at"}
 	clientSessionColumnsWithoutDefault = []string{"id", "user_id", "client_id", "login_client_id"}
-	clientSessionColumnsWithDefault    = []string{"period", "created"}
+	clientSessionColumnsWithDefault    = []string{"period", "created_at"}
 	clientSessionPrimaryKeyColumns     = []string{"id"}
 	clientSessionGeneratedColumns      = []string{}
 )
@@ -624,6 +624,13 @@ func (o *ClientSession) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -848,6 +855,13 @@ var mySQLClientSessionUniqueColumns = []string{
 func (o *ClientSession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no client_session provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

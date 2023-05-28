@@ -24,62 +24,62 @@ import (
 
 // LoginClientHistory is an object representing the database table.
 type LoginClientHistory struct {
-	ID       uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ClientID string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	UserID   string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Device   null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
-	Os       null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
-	Browser  null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
-	IsMobile null.Bool   `boil:"is_mobile" json:"is_mobile,omitempty" toml:"is_mobile" yaml:"is_mobile,omitempty"`
-	IP       []byte      `boil:"ip" json:"ip" toml:"ip" yaml:"ip"`
-	Created  time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	ID        uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ClientID  string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	UserID    string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Device    null.String `boil:"device" json:"device,omitempty" toml:"device" yaml:"device,omitempty"`
+	Os        null.String `boil:"os" json:"os,omitempty" toml:"os" yaml:"os,omitempty"`
+	Browser   null.String `boil:"browser" json:"browser,omitempty" toml:"browser" yaml:"browser,omitempty"`
+	IsMobile  null.Bool   `boil:"is_mobile" json:"is_mobile,omitempty" toml:"is_mobile" yaml:"is_mobile,omitempty"`
+	IP        []byte      `boil:"ip" json:"ip" toml:"ip" yaml:"ip"`
+	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *loginClientHistoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L loginClientHistoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var LoginClientHistoryColumns = struct {
-	ID       string
-	ClientID string
-	UserID   string
-	Device   string
-	Os       string
-	Browser  string
-	IsMobile string
-	IP       string
-	Created  string
+	ID        string
+	ClientID  string
+	UserID    string
+	Device    string
+	Os        string
+	Browser   string
+	IsMobile  string
+	IP        string
+	CreatedAt string
 }{
-	ID:       "id",
-	ClientID: "client_id",
-	UserID:   "user_id",
-	Device:   "device",
-	Os:       "os",
-	Browser:  "browser",
-	IsMobile: "is_mobile",
-	IP:       "ip",
-	Created:  "created",
+	ID:        "id",
+	ClientID:  "client_id",
+	UserID:    "user_id",
+	Device:    "device",
+	Os:        "os",
+	Browser:   "browser",
+	IsMobile:  "is_mobile",
+	IP:        "ip",
+	CreatedAt: "created_at",
 }
 
 var LoginClientHistoryTableColumns = struct {
-	ID       string
-	ClientID string
-	UserID   string
-	Device   string
-	Os       string
-	Browser  string
-	IsMobile string
-	IP       string
-	Created  string
+	ID        string
+	ClientID  string
+	UserID    string
+	Device    string
+	Os        string
+	Browser   string
+	IsMobile  string
+	IP        string
+	CreatedAt string
 }{
-	ID:       "login_client_history.id",
-	ClientID: "login_client_history.client_id",
-	UserID:   "login_client_history.user_id",
-	Device:   "login_client_history.device",
-	Os:       "login_client_history.os",
-	Browser:  "login_client_history.browser",
-	IsMobile: "login_client_history.is_mobile",
-	IP:       "login_client_history.ip",
-	Created:  "login_client_history.created",
+	ID:        "login_client_history.id",
+	ClientID:  "login_client_history.client_id",
+	UserID:    "login_client_history.user_id",
+	Device:    "login_client_history.device",
+	Os:        "login_client_history.os",
+	Browser:   "login_client_history.browser",
+	IsMobile:  "login_client_history.is_mobile",
+	IP:        "login_client_history.ip",
+	CreatedAt: "login_client_history.created_at",
 }
 
 // Generated where
@@ -118,25 +118,25 @@ func (w whereHelper__byte) GT(x []byte) qm.QueryMod  { return qmhelper.Where(w.f
 func (w whereHelper__byte) GTE(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
 var LoginClientHistoryWhere = struct {
-	ID       whereHelperuint
-	ClientID whereHelperstring
-	UserID   whereHelperstring
-	Device   whereHelpernull_String
-	Os       whereHelpernull_String
-	Browser  whereHelpernull_String
-	IsMobile whereHelpernull_Bool
-	IP       whereHelper__byte
-	Created  whereHelpertime_Time
+	ID        whereHelperuint
+	ClientID  whereHelperstring
+	UserID    whereHelperstring
+	Device    whereHelpernull_String
+	Os        whereHelpernull_String
+	Browser   whereHelpernull_String
+	IsMobile  whereHelpernull_Bool
+	IP        whereHelper__byte
+	CreatedAt whereHelpertime_Time
 }{
-	ID:       whereHelperuint{field: "`login_client_history`.`id`"},
-	ClientID: whereHelperstring{field: "`login_client_history`.`client_id`"},
-	UserID:   whereHelperstring{field: "`login_client_history`.`user_id`"},
-	Device:   whereHelpernull_String{field: "`login_client_history`.`device`"},
-	Os:       whereHelpernull_String{field: "`login_client_history`.`os`"},
-	Browser:  whereHelpernull_String{field: "`login_client_history`.`browser`"},
-	IsMobile: whereHelpernull_Bool{field: "`login_client_history`.`is_mobile`"},
-	IP:       whereHelper__byte{field: "`login_client_history`.`ip`"},
-	Created:  whereHelpertime_Time{field: "`login_client_history`.`created`"},
+	ID:        whereHelperuint{field: "`login_client_history`.`id`"},
+	ClientID:  whereHelperstring{field: "`login_client_history`.`client_id`"},
+	UserID:    whereHelperstring{field: "`login_client_history`.`user_id`"},
+	Device:    whereHelpernull_String{field: "`login_client_history`.`device`"},
+	Os:        whereHelpernull_String{field: "`login_client_history`.`os`"},
+	Browser:   whereHelpernull_String{field: "`login_client_history`.`browser`"},
+	IsMobile:  whereHelpernull_Bool{field: "`login_client_history`.`is_mobile`"},
+	IP:        whereHelper__byte{field: "`login_client_history`.`ip`"},
+	CreatedAt: whereHelpertime_Time{field: "`login_client_history`.`created_at`"},
 }
 
 // LoginClientHistoryRels is where relationship names are stored.
@@ -177,9 +177,9 @@ func (r *loginClientHistoryR) GetUser() *User {
 type loginClientHistoryL struct{}
 
 var (
-	loginClientHistoryAllColumns            = []string{"id", "client_id", "user_id", "device", "os", "browser", "is_mobile", "ip", "created"}
+	loginClientHistoryAllColumns            = []string{"id", "client_id", "user_id", "device", "os", "browser", "is_mobile", "ip", "created_at"}
 	loginClientHistoryColumnsWithoutDefault = []string{"client_id", "user_id", "device", "os", "browser", "is_mobile", "ip"}
-	loginClientHistoryColumnsWithDefault    = []string{"id", "created"}
+	loginClientHistoryColumnsWithDefault    = []string{"id", "created_at"}
 	loginClientHistoryPrimaryKeyColumns     = []string{"id"}
 	loginClientHistoryGeneratedColumns      = []string{}
 )
@@ -867,6 +867,13 @@ func (o *LoginClientHistory) Insert(ctx context.Context, exec boil.ContextExecut
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1102,6 +1109,13 @@ var mySQLLoginClientHistoryUniqueColumns = []string{
 func (o *LoginClientHistory) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no login_client_history provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

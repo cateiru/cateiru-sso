@@ -34,8 +34,8 @@ type User struct {
 	Birthdate  null.Time   `boil:"birthdate" json:"birthdate,omitempty" toml:"birthdate" yaml:"birthdate,omitempty"`
 	Avatar     null.String `boil:"avatar" json:"avatar,omitempty" toml:"avatar" yaml:"avatar,omitempty"`
 	LocaleID   string      `boil:"locale_id" json:"locale_id" toml:"locale_id" yaml:"locale_id"`
-	Created    time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified   time.Time   `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time   `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -52,8 +52,8 @@ var UserColumns = struct {
 	Birthdate  string
 	Avatar     string
 	LocaleID   string
-	Created    string
-	Modified   string
+	CreatedAt  string
+	ModifiedAt string
 }{
 	ID:         "id",
 	UserName:   "user_name",
@@ -65,8 +65,8 @@ var UserColumns = struct {
 	Birthdate:  "birthdate",
 	Avatar:     "avatar",
 	LocaleID:   "locale_id",
-	Created:    "created",
-	Modified:   "modified",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var UserTableColumns = struct {
@@ -80,8 +80,8 @@ var UserTableColumns = struct {
 	Birthdate  string
 	Avatar     string
 	LocaleID   string
-	Created    string
-	Modified   string
+	CreatedAt  string
+	ModifiedAt string
 }{
 	ID:         "user.id",
 	UserName:   "user.user_name",
@@ -93,8 +93,8 @@ var UserTableColumns = struct {
 	Birthdate:  "user.birthdate",
 	Avatar:     "user.avatar",
 	LocaleID:   "user.locale_id",
-	Created:    "user.created",
-	Modified:   "user.modified",
+	CreatedAt:  "user.created_at",
+	ModifiedAt: "user.modified_at",
 }
 
 // Generated where
@@ -134,8 +134,8 @@ var UserWhere = struct {
 	Birthdate  whereHelpernull_Time
 	Avatar     whereHelpernull_String
 	LocaleID   whereHelperstring
-	Created    whereHelpertime_Time
-	Modified   whereHelpertime_Time
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
 	ID:         whereHelperstring{field: "`user`.`id`"},
 	UserName:   whereHelperstring{field: "`user`.`user_name`"},
@@ -147,8 +147,8 @@ var UserWhere = struct {
 	Birthdate:  whereHelpernull_Time{field: "`user`.`birthdate`"},
 	Avatar:     whereHelpernull_String{field: "`user`.`avatar`"},
 	LocaleID:   whereHelperstring{field: "`user`.`locale_id`"},
-	Created:    whereHelpertime_Time{field: "`user`.`created`"},
-	Modified:   whereHelpertime_Time{field: "`user`.`modified`"},
+	CreatedAt:  whereHelpertime_Time{field: "`user`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`user`.`modified_at`"},
 }
 
 // UserRels is where relationship names are stored.
@@ -379,9 +379,9 @@ func (r *userR) GetWebauthns() WebauthnSlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "user_name", "email", "family_name", "middle_name", "given_name", "gender", "birthdate", "avatar", "locale_id", "created", "modified"}
+	userAllColumns            = []string{"id", "user_name", "email", "family_name", "middle_name", "given_name", "gender", "birthdate", "avatar", "locale_id", "created_at", "modified_at"}
 	userColumnsWithoutDefault = []string{"id", "email", "family_name", "middle_name", "given_name", "birthdate", "avatar"}
-	userColumnsWithDefault    = []string{"user_name", "gender", "locale_id", "created", "modified"}
+	userColumnsWithDefault    = []string{"user_name", "gender", "locale_id", "created_at", "modified_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )
@@ -4502,6 +4502,13 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -4728,6 +4735,13 @@ var mySQLUserUniqueColumns = []string{
 func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no user provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

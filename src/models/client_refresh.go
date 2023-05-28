@@ -24,57 +24,57 @@ import (
 
 // ClientRefresh is an object representing the database table.
 type ClientRefresh struct {
-	ID        string     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID    string     `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	ClientID  string     `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	Scopes    types.JSON `boil:"scopes" json:"scopes" toml:"scopes" yaml:"scopes"`
-	SessionID string     `boil:"session_id" json:"session_id" toml:"session_id" yaml:"session_id"`
-	Period    time.Time  `boil:"period" json:"period" toml:"period" yaml:"period"`
-	Created   time.Time  `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified  time.Time  `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	ID         string     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID     string     `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	ClientID   string     `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	Scopes     types.JSON `boil:"scopes" json:"scopes" toml:"scopes" yaml:"scopes"`
+	SessionID  string     `boil:"session_id" json:"session_id" toml:"session_id" yaml:"session_id"`
+	Period     time.Time  `boil:"period" json:"period" toml:"period" yaml:"period"`
+	CreatedAt  time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt time.Time  `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *clientRefreshR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L clientRefreshL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ClientRefreshColumns = struct {
-	ID        string
-	UserID    string
-	ClientID  string
-	Scopes    string
-	SessionID string
-	Period    string
-	Created   string
-	Modified  string
+	ID         string
+	UserID     string
+	ClientID   string
+	Scopes     string
+	SessionID  string
+	Period     string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	ID:        "id",
-	UserID:    "user_id",
-	ClientID:  "client_id",
-	Scopes:    "scopes",
-	SessionID: "session_id",
-	Period:    "period",
-	Created:   "created",
-	Modified:  "modified",
+	ID:         "id",
+	UserID:     "user_id",
+	ClientID:   "client_id",
+	Scopes:     "scopes",
+	SessionID:  "session_id",
+	Period:     "period",
+	CreatedAt:  "created_at",
+	ModifiedAt: "modified_at",
 }
 
 var ClientRefreshTableColumns = struct {
-	ID        string
-	UserID    string
-	ClientID  string
-	Scopes    string
-	SessionID string
-	Period    string
-	Created   string
-	Modified  string
+	ID         string
+	UserID     string
+	ClientID   string
+	Scopes     string
+	SessionID  string
+	Period     string
+	CreatedAt  string
+	ModifiedAt string
 }{
-	ID:        "client_refresh.id",
-	UserID:    "client_refresh.user_id",
-	ClientID:  "client_refresh.client_id",
-	Scopes:    "client_refresh.scopes",
-	SessionID: "client_refresh.session_id",
-	Period:    "client_refresh.period",
-	Created:   "client_refresh.created",
-	Modified:  "client_refresh.modified",
+	ID:         "client_refresh.id",
+	UserID:     "client_refresh.user_id",
+	ClientID:   "client_refresh.client_id",
+	Scopes:     "client_refresh.scopes",
+	SessionID:  "client_refresh.session_id",
+	Period:     "client_refresh.period",
+	CreatedAt:  "client_refresh.created_at",
+	ModifiedAt: "client_refresh.modified_at",
 }
 
 // Generated where
@@ -101,23 +101,23 @@ func (w whereHelpertypes_JSON) GTE(x types.JSON) qm.QueryMod {
 }
 
 var ClientRefreshWhere = struct {
-	ID        whereHelperstring
-	UserID    whereHelperstring
-	ClientID  whereHelperstring
-	Scopes    whereHelpertypes_JSON
-	SessionID whereHelperstring
-	Period    whereHelpertime_Time
-	Created   whereHelpertime_Time
-	Modified  whereHelpertime_Time
+	ID         whereHelperstring
+	UserID     whereHelperstring
+	ClientID   whereHelperstring
+	Scopes     whereHelpertypes_JSON
+	SessionID  whereHelperstring
+	Period     whereHelpertime_Time
+	CreatedAt  whereHelpertime_Time
+	ModifiedAt whereHelpertime_Time
 }{
-	ID:        whereHelperstring{field: "`client_refresh`.`id`"},
-	UserID:    whereHelperstring{field: "`client_refresh`.`user_id`"},
-	ClientID:  whereHelperstring{field: "`client_refresh`.`client_id`"},
-	Scopes:    whereHelpertypes_JSON{field: "`client_refresh`.`scopes`"},
-	SessionID: whereHelperstring{field: "`client_refresh`.`session_id`"},
-	Period:    whereHelpertime_Time{field: "`client_refresh`.`period`"},
-	Created:   whereHelpertime_Time{field: "`client_refresh`.`created`"},
-	Modified:  whereHelpertime_Time{field: "`client_refresh`.`modified`"},
+	ID:         whereHelperstring{field: "`client_refresh`.`id`"},
+	UserID:     whereHelperstring{field: "`client_refresh`.`user_id`"},
+	ClientID:   whereHelperstring{field: "`client_refresh`.`client_id`"},
+	Scopes:     whereHelpertypes_JSON{field: "`client_refresh`.`scopes`"},
+	SessionID:  whereHelperstring{field: "`client_refresh`.`session_id`"},
+	Period:     whereHelpertime_Time{field: "`client_refresh`.`period`"},
+	CreatedAt:  whereHelpertime_Time{field: "`client_refresh`.`created_at`"},
+	ModifiedAt: whereHelpertime_Time{field: "`client_refresh`.`modified_at`"},
 }
 
 // ClientRefreshRels is where relationship names are stored.
@@ -148,9 +148,9 @@ func (r *clientRefreshR) GetUser() *User {
 type clientRefreshL struct{}
 
 var (
-	clientRefreshAllColumns            = []string{"id", "user_id", "client_id", "scopes", "session_id", "period", "created", "modified"}
+	clientRefreshAllColumns            = []string{"id", "user_id", "client_id", "scopes", "session_id", "period", "created_at", "modified_at"}
 	clientRefreshColumnsWithoutDefault = []string{"id", "user_id", "client_id", "scopes", "session_id"}
-	clientRefreshColumnsWithDefault    = []string{"period", "created", "modified"}
+	clientRefreshColumnsWithDefault    = []string{"period", "created_at", "modified_at"}
 	clientRefreshPrimaryKeyColumns     = []string{"id"}
 	clientRefreshGeneratedColumns      = []string{}
 )
@@ -660,6 +660,13 @@ func (o *ClientRefresh) Insert(ctx context.Context, exec boil.ContextExecutor, c
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -884,6 +891,13 @@ var mySQLClientRefreshUniqueColumns = []string{
 func (o *ClientRefresh) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no client_refresh provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

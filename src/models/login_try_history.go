@@ -32,7 +32,7 @@ type LoginTryHistory struct {
 	IsMobile   null.Bool   `boil:"is_mobile" json:"is_mobile,omitempty" toml:"is_mobile" yaml:"is_mobile,omitempty"`
 	IP         []byte      `boil:"ip" json:"ip" toml:"ip" yaml:"ip"`
 	Identifier int8        `boil:"identifier" json:"identifier" toml:"identifier" yaml:"identifier"`
-	Created    time.Time   `boil:"created" json:"created" toml:"created" yaml:"created"`
+	CreatedAt  time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *loginTryHistoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L loginTryHistoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -47,7 +47,7 @@ var LoginTryHistoryColumns = struct {
 	IsMobile   string
 	IP         string
 	Identifier string
-	Created    string
+	CreatedAt  string
 }{
 	ID:         "id",
 	UserID:     "user_id",
@@ -57,7 +57,7 @@ var LoginTryHistoryColumns = struct {
 	IsMobile:   "is_mobile",
 	IP:         "ip",
 	Identifier: "identifier",
-	Created:    "created",
+	CreatedAt:  "created_at",
 }
 
 var LoginTryHistoryTableColumns = struct {
@@ -69,7 +69,7 @@ var LoginTryHistoryTableColumns = struct {
 	IsMobile   string
 	IP         string
 	Identifier string
-	Created    string
+	CreatedAt  string
 }{
 	ID:         "login_try_history.id",
 	UserID:     "login_try_history.user_id",
@@ -79,7 +79,7 @@ var LoginTryHistoryTableColumns = struct {
 	IsMobile:   "login_try_history.is_mobile",
 	IP:         "login_try_history.ip",
 	Identifier: "login_try_history.identifier",
-	Created:    "login_try_history.created",
+	CreatedAt:  "login_try_history.created_at",
 }
 
 // Generated where
@@ -93,7 +93,7 @@ var LoginTryHistoryWhere = struct {
 	IsMobile   whereHelpernull_Bool
 	IP         whereHelper__byte
 	Identifier whereHelperint8
-	Created    whereHelpertime_Time
+	CreatedAt  whereHelpertime_Time
 }{
 	ID:         whereHelperuint{field: "`login_try_history`.`id`"},
 	UserID:     whereHelperstring{field: "`login_try_history`.`user_id`"},
@@ -103,7 +103,7 @@ var LoginTryHistoryWhere = struct {
 	IsMobile:   whereHelpernull_Bool{field: "`login_try_history`.`is_mobile`"},
 	IP:         whereHelper__byte{field: "`login_try_history`.`ip`"},
 	Identifier: whereHelperint8{field: "`login_try_history`.`identifier`"},
-	Created:    whereHelpertime_Time{field: "`login_try_history`.`created`"},
+	CreatedAt:  whereHelpertime_Time{field: "`login_try_history`.`created_at`"},
 }
 
 // LoginTryHistoryRels is where relationship names are stored.
@@ -134,9 +134,9 @@ func (r *loginTryHistoryR) GetUser() *User {
 type loginTryHistoryL struct{}
 
 var (
-	loginTryHistoryAllColumns            = []string{"id", "user_id", "device", "os", "browser", "is_mobile", "ip", "identifier", "created"}
+	loginTryHistoryAllColumns            = []string{"id", "user_id", "device", "os", "browser", "is_mobile", "ip", "identifier", "created_at"}
 	loginTryHistoryColumnsWithoutDefault = []string{"user_id", "device", "os", "browser", "is_mobile", "ip"}
-	loginTryHistoryColumnsWithDefault    = []string{"id", "identifier", "created"}
+	loginTryHistoryColumnsWithDefault    = []string{"id", "identifier", "created_at"}
 	loginTryHistoryPrimaryKeyColumns     = []string{"id"}
 	loginTryHistoryGeneratedColumns      = []string{}
 )
@@ -646,6 +646,13 @@ func (o *LoginTryHistory) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -881,6 +888,13 @@ var mySQLLoginTryHistoryUniqueColumns = []string{
 func (o *LoginTryHistory) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no login_try_history provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

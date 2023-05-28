@@ -687,7 +687,7 @@ func testClientScopesSelect(t *testing.T) {
 }
 
 var (
-	clientScopeDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `Scope`: `varchar`, `Created`: `datetime`}
+	clientScopeDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `Scope`: `varchar`, `CreatedAt`: `datetime`}
 	_                  = bytes.MinRead
 )
 

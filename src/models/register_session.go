@@ -30,8 +30,8 @@ type RegisterSession struct {
 	VerifyCode    string    `boil:"verify_code" json:"verify_code" toml:"verify_code" yaml:"verify_code"`
 	RetryCount    uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
 	Period        time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
-	Created       time.Time `boil:"created" json:"created" toml:"created" yaml:"created"`
-	Modified      time.Time `boil:"modified" json:"modified" toml:"modified" yaml:"modified"`
+	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	ModifiedAt    time.Time `boil:"modified_at" json:"modified_at" toml:"modified_at" yaml:"modified_at"`
 
 	R *registerSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L registerSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,8 +45,8 @@ var RegisterSessionColumns = struct {
 	VerifyCode    string
 	RetryCount    string
 	Period        string
-	Created       string
-	Modified      string
+	CreatedAt     string
+	ModifiedAt    string
 }{
 	ID:            "id",
 	Email:         "email",
@@ -55,8 +55,8 @@ var RegisterSessionColumns = struct {
 	VerifyCode:    "verify_code",
 	RetryCount:    "retry_count",
 	Period:        "period",
-	Created:       "created",
-	Modified:      "modified",
+	CreatedAt:     "created_at",
+	ModifiedAt:    "modified_at",
 }
 
 var RegisterSessionTableColumns = struct {
@@ -67,8 +67,8 @@ var RegisterSessionTableColumns = struct {
 	VerifyCode    string
 	RetryCount    string
 	Period        string
-	Created       string
-	Modified      string
+	CreatedAt     string
+	ModifiedAt    string
 }{
 	ID:            "register_session.id",
 	Email:         "register_session.email",
@@ -77,8 +77,8 @@ var RegisterSessionTableColumns = struct {
 	VerifyCode:    "register_session.verify_code",
 	RetryCount:    "register_session.retry_count",
 	Period:        "register_session.period",
-	Created:       "register_session.created",
-	Modified:      "register_session.modified",
+	CreatedAt:     "register_session.created_at",
+	ModifiedAt:    "register_session.modified_at",
 }
 
 // Generated where
@@ -91,8 +91,8 @@ var RegisterSessionWhere = struct {
 	VerifyCode    whereHelperstring
 	RetryCount    whereHelperuint8
 	Period        whereHelpertime_Time
-	Created       whereHelpertime_Time
-	Modified      whereHelpertime_Time
+	CreatedAt     whereHelpertime_Time
+	ModifiedAt    whereHelpertime_Time
 }{
 	ID:            whereHelperstring{field: "`register_session`.`id`"},
 	Email:         whereHelperstring{field: "`register_session`.`email`"},
@@ -101,8 +101,8 @@ var RegisterSessionWhere = struct {
 	VerifyCode:    whereHelperstring{field: "`register_session`.`verify_code`"},
 	RetryCount:    whereHelperuint8{field: "`register_session`.`retry_count`"},
 	Period:        whereHelpertime_Time{field: "`register_session`.`period`"},
-	Created:       whereHelpertime_Time{field: "`register_session`.`created`"},
-	Modified:      whereHelpertime_Time{field: "`register_session`.`modified`"},
+	CreatedAt:     whereHelpertime_Time{field: "`register_session`.`created_at`"},
+	ModifiedAt:    whereHelpertime_Time{field: "`register_session`.`modified_at`"},
 }
 
 // RegisterSessionRels is where relationship names are stored.
@@ -122,9 +122,9 @@ func (*registerSessionR) NewStruct() *registerSessionR {
 type registerSessionL struct{}
 
 var (
-	registerSessionAllColumns            = []string{"id", "email", "email_verified", "send_count", "verify_code", "retry_count", "period", "created", "modified"}
+	registerSessionAllColumns            = []string{"id", "email", "email_verified", "send_count", "verify_code", "retry_count", "period", "created_at", "modified_at"}
 	registerSessionColumnsWithoutDefault = []string{"id", "email", "verify_code"}
-	registerSessionColumnsWithDefault    = []string{"email_verified", "send_count", "retry_count", "period", "created", "modified"}
+	registerSessionColumnsWithDefault    = []string{"email_verified", "send_count", "retry_count", "period", "created_at", "modified_at"}
 	registerSessionPrimaryKeyColumns     = []string{"id"}
 	registerSessionGeneratedColumns      = []string{}
 )
@@ -456,6 +456,13 @@ func (o *RegisterSession) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -681,6 +688,13 @@ var mySQLRegisterSessionUniqueColumns = []string{
 func (o *RegisterSession) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no register_session provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
