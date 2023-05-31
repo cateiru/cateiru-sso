@@ -532,6 +532,8 @@ CREATE TABLE `client_scope` (
 
 -- クライアントのis_allowが1のときのホワイトリストルール
 CREATE TABLE `client_allow_rule` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
     `client_id` VARCHAR(31) NOT NULL,
 
     -- user_idが指定されている場合、そのユーザのみを通過させる
@@ -545,7 +547,10 @@ CREATE TABLE `client_allow_rule` (
 
     FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
-    PRIMARY KEY (`client_id`)
+    PRIMARY KEY (`id`),
+    INDEX `client_allow_rule_client_id` (`client_id`),
+    INDEX `client_allow_rule_user_id` (`user_id`),
+    INDEX `client_allow_rule_client_id_user_id` (`client_id`, `user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- 過去にログインしたSSOクライアントのテーブル

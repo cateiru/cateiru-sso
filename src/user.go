@@ -537,7 +537,7 @@ func (h *Handler) UserDeleteAvatarHandler(c echo.Context) error {
 
 // SSOクライアントからログアウトする
 // TODO: SSOクライアントのログインを実装してからやる
-func (h *Handler) UserLogoutClient(c echo.Context) error {
+func (h *Handler) UserLogoutClientHandler(c echo.Context) error {
 	return nil
 }
 

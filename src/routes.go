@@ -64,7 +64,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	user.POST("/email/register", h.UserUpdateEmailRegisterHandler) // Email変更確認コード打つ
 	user.POST("/avatar", h.UserAvatarHandler)                      // アバター画像の設定
 	user.DELETE("/avatar", h.UserDeleteAvatarHandler)
-	user.POST("/client/logout", h.UserLogoutClient) // クライアントからログアウト
+	user.POST("/client/logout", h.UserLogoutClientHandler) // TODO: クライアントからログアウト
 
 	// 履歴
 	history := version.Group("/history")
@@ -85,8 +85,10 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	client.POST("/", h.ClientCreateHandler) // クライアント新規作成
 	client.PUT("/", h.ClientUpdateHandler)  // クライアントの編集
 	client.DELETE("/", h.ClientDeleteHandler)
-	client.POST("/allow_user", h.ClientAddAllowUser)
-	client.DELETE("/allow_user", h.ClientDeleteAllowUser)
+	client.DELETE("/image", h.ClientDeleteImageHandler) // クライアント画像の削除
+	client.GET("/allow_user", h.ClientAllowUserHandler)
+	client.POST("/allow_user", h.ClientAddAllowUserHandler)
+	client.DELETE("/allow_user", h.ClientDeleteAllowUserHandler)
 	client.GET("/login_users", h.ClientLoginUsersHandler) // ログインしているユーザ一覧
 
 	// OIDC
@@ -96,8 +98,6 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	oidc.POST("/cert/begin_webauthn", h.Root)
 	oidc.POST("/cert/webathn", h.Root)
 	oidc.POST("/cert/password", h.Root)
-	oidc.GET("/quiz", h.Root)
-	oidc.POST("/quiz", h.Root)
 	oidc.POST("/cert/otp", h.Root)
 	oidc.POST("/login", h.Root)
 

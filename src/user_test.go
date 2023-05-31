@@ -1200,7 +1200,7 @@ func TestUserDeleteAvatarHandler(t *testing.T) {
 }
 
 // TODO: クライアントの実装してから
-func TestUserLogoutClient(t *testing.T) {
+func TestUserLogoutClientHandler(t *testing.T) {
 	t.Run("成功: 指定したクライアントからログアウトできる", func(t *testing.T) {})
 
 	t.Run("失敗: クライアントIDが空", func(t *testing.T) {})

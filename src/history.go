@@ -18,13 +18,13 @@ type ClientLoginResponse struct {
 	Scope     []string
 	CreatedAt time.Time `json:"created_at"`
 
-	Client *ClientResponse `json:"client"`
+	Client *ClientHistoryResponse `json:"client"`
 }
 
 type ClientLoginHistoryResponse struct {
 	ID uint `json:"id"`
 
-	Client *ClientResponse `json:"client"`
+	Client *ClientHistoryResponse `json:"client"`
 
 	Device   null.String `json:"device"`
 	OS       null.String `json:"os"`
@@ -35,7 +35,7 @@ type ClientLoginHistoryResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type ClientResponse struct {
+type ClientHistoryResponse struct {
 	ClientID string `json:"client_id"`
 
 	Name        string      `json:"name"`
@@ -94,9 +94,9 @@ func (h *Handler) HistoryClientLoginHandler(c echo.Context) error {
 		return err
 	}
 
-	cacheClient := []*ClientResponse{}
+	cacheClient := []*ClientHistoryResponse{}
 	cacheEmptyClientId := []string{}
-	getClient := func(clientID string) (*ClientResponse, error) {
+	getClient := func(clientID string) (*ClientHistoryResponse, error) {
 		for _, cache := range cacheClient {
 			if cache.ClientID == clientID {
 				return cache, nil
@@ -119,7 +119,7 @@ func (h *Handler) HistoryClientLoginHandler(c echo.Context) error {
 			return nil, err
 		}
 
-		client := &ClientResponse{
+		client := &ClientHistoryResponse{
 			ClientID:    clientFromDB.ClientID,
 			Name:        clientFromDB.Name,
 			Description: clientFromDB.Description,
@@ -170,9 +170,9 @@ func (h *Handler) HistoryClientHandler(c echo.Context) error {
 		return err
 	}
 
-	cacheClient := []*ClientResponse{}
+	cacheClient := []*ClientHistoryResponse{}
 	cacheEmptyClientId := []string{}
-	getClient := func(clientID string) (*ClientResponse, error) {
+	getClient := func(clientID string) (*ClientHistoryResponse, error) {
 		for _, cache := range cacheClient {
 			if cache.ClientID == clientID {
 				return cache, nil
@@ -195,7 +195,7 @@ func (h *Handler) HistoryClientHandler(c echo.Context) error {
 			return nil, err
 		}
 
-		client := &ClientResponse{
+		client := &ClientHistoryResponse{
 			ClientID:    clientFromDB.ClientID,
 			Name:        clientFromDB.Name,
 			Description: clientFromDB.Description,
