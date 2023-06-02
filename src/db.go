@@ -6,7 +6,6 @@ import (
 )
 
 // トランザクション組む
-// TODO: テスト
 func TxDB(ctx context.Context, db *sql.DB, f func(tx *sql.Tx) error) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {

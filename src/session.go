@@ -17,7 +17,6 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"go.uber.org/zap"
 )
 
 type SessionInterface interface {
@@ -253,31 +252,6 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 		return nil, []*http.Cookie{}, err
 	}
 
-	// トランザクション貼る
-	tx, err := s.DB.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, []*http.Cookie{}, err
-	}
-
-	// 前のリフレッシュトークンは削除してしまう
-	if _, err := refresh.Delete(ctx, tx); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, []*http.Cookie{}, err
-		}
-		return nil, []*http.Cookie{}, err
-	}
-	// リフレッシュトークンにセッショントークンが紐付けられている場合は、セッショントークンを削除する
-	if refresh.SessionID.Valid {
-		if _, err := models.Sessions(
-			models.SessionWhere.ID.EQ(refresh.SessionID.String),
-		).DeleteAll(ctx, tx); err != nil {
-			if err := tx.Rollback(); err != nil {
-				return nil, []*http.Cookie{}, err
-			}
-			return nil, []*http.Cookie{}, err
-		}
-	}
-
 	// リフレッシュトークンを更新し、セッショントークンを新規作成する
 	newSessionToken, err := lib.RandomStr(31)
 	if err != nil {
@@ -288,37 +262,44 @@ func (s *Session) loginWithRefresh(ctx context.Context, cookies []*http.Cookie, 
 		return nil, []*http.Cookie{}, err
 	}
 
-	newSession := models.Session{
-		ID:     newSessionToken,
-		UserID: u.ID,
-
-		Period: time.Now().Add(s.SessionDBPeriod),
-	}
-	if err := newSession.Insert(ctx, tx, boil.Infer()); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, []*http.Cookie{}, err
+	// トランザクション組む
+	err = TxDB(ctx, s.DB, func(tx *sql.Tx) error {
+		// 前のリフレッシュトークンは削除してしまう
+		if _, err := refresh.Delete(ctx, tx); err != nil {
+			return err
 		}
-		return nil, []*http.Cookie{}, err
-	}
-	newRefresh := models.Refresh{
-		ID:        newRefreshToken,
-		UserID:    u.ID,
-		HistoryID: refresh.HistoryID, // history_id は引き継ぐ
-		SessionID: null.NewString(newSessionToken, true),
-
-		Period: time.Now().Add(s.RefreshDBPeriod),
-	}
-	if err := newRefresh.Insert(ctx, tx, boil.Infer()); err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, []*http.Cookie{}, err
+		// リフレッシュトークンにセッショントークンが紐付けられている場合は、セッショントークンを削除する
+		if refresh.SessionID.Valid {
+			if _, err := models.Sessions(
+				models.SessionWhere.ID.EQ(refresh.SessionID.String),
+			).DeleteAll(ctx, tx); err != nil {
+				return err
+			}
 		}
-		return nil, []*http.Cookie{}, err
-	}
 
-	if err := tx.Commit(); err != nil {
-		if err := tx.Rollback(); err != nil {
-			L.Error("tx error", zap.Error(err))
+		newSession := models.Session{
+			ID:     newSessionToken,
+			UserID: u.ID,
+
+			Period: time.Now().Add(s.SessionDBPeriod),
 		}
+		if err := newSession.Insert(ctx, tx, boil.Infer()); err != nil {
+			return err
+		}
+		newRefresh := models.Refresh{
+			ID:        newRefreshToken,
+			UserID:    u.ID,
+			HistoryID: refresh.HistoryID, // history_id は引き継ぐ
+			SessionID: null.NewString(newSessionToken, true),
+
+			Period: time.Now().Add(s.RefreshDBPeriod),
+		}
+		if err := newRefresh.Insert(ctx, tx, boil.Infer()); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
 		return nil, []*http.Cookie{}, err
 	}
 
