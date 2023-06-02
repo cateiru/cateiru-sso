@@ -480,7 +480,8 @@ CREATE TABLE `client` (
     FOREIGN KEY (`owner_user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`client_id`),
-    INDEX `client_owner_user_id` (`owner_user_id`)
+    INDEX `client_owner_user_id` (`owner_user_id`),
+    INDEX `client_owner_user_id_client_id` (`owner_user_id`, `client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- OAuthで接続したときのセッション
