@@ -2,7 +2,6 @@ package lib
 
 import (
 	"regexp"
-	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -13,19 +12,18 @@ var emailReg = regexp.MustCompile(`^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9]+\.)+[a-zA-Z]{2
 var userNameReg = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 var otpReg = regexp.MustCompile(`^[0-9]+$`)
 
-// iCloudなどでPasskeyを共有する際に、UAのOSで判定するため
-// AppleのOSは予め定義しておく
-var appleOS = []string{
-	"macOS",
-	"iOS",
-	"iPadOS",
-}
-
 var allowContentType = []string{
 	"image/gif",
 	"image/jpeg",
 	"image/png",
 	"image/webp",
+}
+
+// サポートしているOIDCのスコープ
+var allowScopes = []string{
+	"openid",
+	"profile",
+	"email",
 }
 
 // Emailの形式が正しいかを検証する
@@ -87,33 +85,6 @@ func ValidateOTPCode(o string) bool {
 	return otpReg.MatchString(o)
 }
 
-// Passkeyの自動ログイン判定用
-func ValidateOS(os string, currentOS string) bool {
-	formattedOS := strings.ToLower(os)
-	formattedCurrentOS := strings.ToLower(currentOS)
-
-	if formattedOS == formattedCurrentOS {
-		return true
-	}
-
-	isAppleOS := false
-	isAppleCurrentOS := false
-	for _, apple := range appleOS {
-		formattedAppleOS := strings.ToLower(apple)
-		if formattedOS == formattedAppleOS {
-			isAppleOS = true
-		}
-		if formattedCurrentOS == formattedAppleOS {
-			isAppleCurrentOS = true
-		}
-	}
-	if isAppleOS && isAppleCurrentOS {
-		return true
-	}
-
-	return false
-}
-
 // 性別判定
 // 0: 不明、1: 男性、2: 女性、9: 適用不能
 func ValidateGender(gender string) bool {
@@ -145,6 +116,15 @@ func ValidateLocale(l string) bool {
 func ValidateContentType(c string) bool {
 	for _, allow := range allowContentType {
 		if allow == c {
+			return true
+		}
+	}
+	return false
+}
+
+func ValidateScope(s string) bool {
+	for _, allow := range allowScopes {
+		if allow == s {
 			return true
 		}
 	}

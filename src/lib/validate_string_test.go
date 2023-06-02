@@ -125,32 +125,6 @@ func TestValidateOTPCode(t *testing.T) {
 	})
 }
 
-func TestValidateOS(t *testing.T) {
-	t.Run("成功", func(t *testing.T) {
-		values := map[string]string{
-			"Windows": "Windows",
-			"macOS":   "MacOS",
-			"iOS":     "macOS",
-			"iPadOS":  "macOS",
-		}
-
-		for os, currentOS := range values {
-			require.True(t, lib.ValidateOS(os, currentOS))
-		}
-	})
-
-	t.Run("失敗", func(t *testing.T) {
-		values := map[string]string{
-			"Windows": "",
-			"macOS":   "Windows",
-		}
-
-		for os, currentOS := range values {
-			require.False(t, lib.ValidateOS(os, currentOS))
-		}
-	})
-}
-
 func TestValidateGender(t *testing.T) {
 	t.Run("成功", func(t *testing.T) {
 		genders := []string{
@@ -260,6 +234,32 @@ func TestValidateContentType(t *testing.T) {
 
 		for _, c := range contentTypes {
 			require.False(t, lib.ValidateContentType(c), c)
+		}
+	})
+}
+
+func TestValidateScope(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		scopes := []string{
+			"openid",
+			"profile",
+			"email",
+		}
+
+		for _, s := range scopes {
+			require.True(t, lib.ValidateScope(s), s)
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		scopes := []string{
+			"address",
+			"phone",
+			"offline_access",
+		}
+
+		for _, s := range scopes {
+			require.False(t, lib.ValidateScope(s), s)
 		}
 	})
 }
