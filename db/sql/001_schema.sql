@@ -324,7 +324,8 @@ CREATE TABLE `refresh` (
     PRIMARY KEY(`id`),
     INDEX `refresh_user_id` (`user_id`),
     UNIQUE INDEX `refresh_history_id` (`history_id`),
-    UNIQUE INDEX `refresh_session_id` (`session_id`)
+    UNIQUE INDEX `refresh_session_id` (`session_id`),
+    INDEX `refresh_id_period` (`id`, `period`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- パスワードによる認証は成功して次にOTPを求める場合のセッションを保存するテーブル
