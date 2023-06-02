@@ -115,6 +115,7 @@ func RegisterUser(t *testing.T, ctx context.Context, email string) models.User {
 	return *dbU
 }
 
+// UserAgentを設定する
 func SetUserData(t *testing.T, m *easy.MockHandler, userData *src.UserData) {
 	// iPhone safari
 	if userData.Browser == "Safari" && userData.OS == "iOS" && userData.Device == "iPhone" && userData.IsMobile {
@@ -332,7 +333,7 @@ func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []s
 
 // SSOクライアントを作成する
 // 戻り値は、(clientID, clientSecret)
-func RegisterClient(t *testing.T, ctx context.Context, u *models.User) (string, string) {
+func RegisterClient(t *testing.T, ctx context.Context, u *models.User, scopes ...string) (string, string) {
 	clientID := ulid.Make()
 
 	secret, err := lib.RandomStr(63)
@@ -349,7 +350,37 @@ func RegisterClient(t *testing.T, ctx context.Context, u *models.User) (string, 
 	err = client.Insert(ctx, DB, boil.Infer())
 	require.NoError(t, err)
 
+	for _, scope := range scopes {
+		clientScope := models.ClientScope{
+			ClientID: clientID.String(),
+			Scope:    scope,
+		}
+		err = clientScope.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	}
+
 	return clientID.String(), secret
+}
+
+// クライアントのAllow Ruleを作成する
+func RegisterAllowRules(t *testing.T, ctx context.Context, clientId string, isUserId bool, value string) {
+	if isUserId {
+		rule := models.ClientAllowRule{
+			ClientID: clientId,
+
+			UserID: null.StringFrom(value),
+		}
+		err := rule.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	} else {
+		rule := models.ClientAllowRule{
+			ClientID: clientId,
+
+			EmailDomain: null.StringFrom(value),
+		}
+		err := rule.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	}
 }
 
 func RegisterBrand(t *testing.T, ctx context.Context, name string, description string, u ...*models.User) string {
