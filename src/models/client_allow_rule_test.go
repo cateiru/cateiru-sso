@@ -149,7 +149,7 @@ func testClientAllowRulesExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := ClientAllowRuleExists(ctx, tx, o.ClientID)
+	e, err := ClientAllowRuleExists(ctx, tx, o.ID)
 	if err != nil {
 		t.Errorf("Unable to check if ClientAllowRule exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testClientAllowRulesFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	clientAllowRuleFound, err := FindClientAllowRule(ctx, tx, o.ClientID)
+	clientAllowRuleFound, err := FindClientAllowRule(ctx, tx, o.ID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -593,19 +593,23 @@ func testClientAllowRuleToOneSetOpClientUsingClient(t *testing.T) {
 			t.Error("relationship struct not set to correct value")
 		}
 
-		if x.R.ClientAllowRule != &a {
+		if x.R.ClientAllowRules[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
 		if a.ClientID != x.ClientID {
 			t.Error("foreign key was wrong value", a.ClientID)
 		}
 
-		if exists, err := ClientAllowRuleExists(ctx, tx, a.ClientID); err != nil {
-			t.Fatal(err)
-		} else if !exists {
-			t.Error("want 'a' to exist")
+		zero := reflect.Zero(reflect.TypeOf(a.ClientID))
+		reflect.Indirect(reflect.ValueOf(&a.ClientID)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
 		}
 
+		if a.ClientID != x.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, x.ClientID)
+		}
 	}
 }
 
@@ -683,7 +687,7 @@ func testClientAllowRulesSelect(t *testing.T) {
 }
 
 var (
-	clientAllowRuleDBTypes = map[string]string{`ClientID`: `varchar`, `UserID`: `varchar`, `EmailDomain`: `varchar`, `CreatedAt`: `datetime`}
+	clientAllowRuleDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `UserID`: `varchar`, `EmailDomain`: `varchar`, `CreatedAt`: `datetime`}
 	_                      = bytes.MinRead
 )
 

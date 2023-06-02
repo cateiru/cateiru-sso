@@ -24,6 +24,7 @@ import (
 
 // ClientAllowRule is an object representing the database table.
 type ClientAllowRule struct {
+	ID          uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
 	ClientID    string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	UserID      null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	EmailDomain null.String `boil:"email_domain" json:"email_domain,omitempty" toml:"email_domain" yaml:"email_domain,omitempty"`
@@ -34,11 +35,13 @@ type ClientAllowRule struct {
 }
 
 var ClientAllowRuleColumns = struct {
+	ID          string
 	ClientID    string
 	UserID      string
 	EmailDomain string
 	CreatedAt   string
 }{
+	ID:          "id",
 	ClientID:    "client_id",
 	UserID:      "user_id",
 	EmailDomain: "email_domain",
@@ -46,11 +49,13 @@ var ClientAllowRuleColumns = struct {
 }
 
 var ClientAllowRuleTableColumns = struct {
+	ID          string
 	ClientID    string
 	UserID      string
 	EmailDomain string
 	CreatedAt   string
 }{
+	ID:          "client_allow_rule.id",
 	ClientID:    "client_allow_rule.client_id",
 	UserID:      "client_allow_rule.user_id",
 	EmailDomain: "client_allow_rule.email_domain",
@@ -60,11 +65,13 @@ var ClientAllowRuleTableColumns = struct {
 // Generated where
 
 var ClientAllowRuleWhere = struct {
+	ID          whereHelperuint
 	ClientID    whereHelperstring
 	UserID      whereHelpernull_String
 	EmailDomain whereHelpernull_String
 	CreatedAt   whereHelpertime_Time
 }{
+	ID:          whereHelperuint{field: "`client_allow_rule`.`id`"},
 	ClientID:    whereHelperstring{field: "`client_allow_rule`.`client_id`"},
 	UserID:      whereHelpernull_String{field: "`client_allow_rule`.`user_id`"},
 	EmailDomain: whereHelpernull_String{field: "`client_allow_rule`.`email_domain`"},
@@ -99,10 +106,10 @@ func (r *clientAllowRuleR) GetClient() *Client {
 type clientAllowRuleL struct{}
 
 var (
-	clientAllowRuleAllColumns            = []string{"client_id", "user_id", "email_domain", "created_at"}
+	clientAllowRuleAllColumns            = []string{"id", "client_id", "user_id", "email_domain", "created_at"}
 	clientAllowRuleColumnsWithoutDefault = []string{"client_id", "user_id", "email_domain"}
-	clientAllowRuleColumnsWithDefault    = []string{"created_at"}
-	clientAllowRulePrimaryKeyColumns     = []string{"client_id"}
+	clientAllowRuleColumnsWithDefault    = []string{"id", "created_at"}
+	clientAllowRulePrimaryKeyColumns     = []string{"id"}
 	clientAllowRuleGeneratedColumns      = []string{}
 )
 
@@ -495,7 +502,7 @@ func (clientAllowRuleL) LoadClient(ctx context.Context, e boil.ContextExecutor, 
 		if foreign.R == nil {
 			foreign.R = &clientR{}
 		}
-		foreign.R.ClientAllowRule = object
+		foreign.R.ClientAllowRules = append(foreign.R.ClientAllowRules, object)
 		return nil
 	}
 
@@ -506,7 +513,7 @@ func (clientAllowRuleL) LoadClient(ctx context.Context, e boil.ContextExecutor, 
 				if foreign.R == nil {
 					foreign.R = &clientR{}
 				}
-				foreign.R.ClientAllowRule = local
+				foreign.R.ClientAllowRules = append(foreign.R.ClientAllowRules, local)
 				break
 			}
 		}
@@ -517,7 +524,7 @@ func (clientAllowRuleL) LoadClient(ctx context.Context, e boil.ContextExecutor, 
 
 // SetClient of the clientAllowRule to the related item.
 // Sets o.R.Client to related.
-// Adds o to related.R.ClientAllowRule.
+// Adds o to related.R.ClientAllowRules.
 func (o *ClientAllowRule) SetClient(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Client) error {
 	var err error
 	if insert {
@@ -531,7 +538,7 @@ func (o *ClientAllowRule) SetClient(ctx context.Context, exec boil.ContextExecut
 		strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
 		strmangle.WhereClause("`", "`", 0, clientAllowRulePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ClientID, o.ClientID}
+	values := []interface{}{related.ClientID, o.ID}
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -553,10 +560,10 @@ func (o *ClientAllowRule) SetClient(ctx context.Context, exec boil.ContextExecut
 
 	if related.R == nil {
 		related.R = &clientR{
-			ClientAllowRule: o,
+			ClientAllowRules: ClientAllowRuleSlice{o},
 		}
 	} else {
-		related.R.ClientAllowRule = o
+		related.R.ClientAllowRules = append(related.R.ClientAllowRules, o)
 	}
 
 	return nil
@@ -575,7 +582,7 @@ func ClientAllowRules(mods ...qm.QueryMod) clientAllowRuleQuery {
 
 // FindClientAllowRule retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindClientAllowRule(ctx context.Context, exec boil.ContextExecutor, clientID string, selectCols ...string) (*ClientAllowRule, error) {
+func FindClientAllowRule(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols ...string) (*ClientAllowRule, error) {
 	clientAllowRuleObj := &ClientAllowRule{}
 
 	sel := "*"
@@ -583,10 +590,10 @@ func FindClientAllowRule(ctx context.Context, exec boil.ContextExecutor, clientI
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `client_allow_rule` where `client_id`=?", sel,
+		"select %s from `client_allow_rule` where `id`=?", sel,
 	)
 
-	q := queries.Raw(query, clientID)
+	q := queries.Raw(query, iD)
 
 	err := q.Bind(ctx, exec, clientAllowRuleObj)
 	if err != nil {
@@ -669,20 +676,31 @@ func (o *ClientAllowRule) Insert(ctx context.Context, exec boil.ContextExecutor,
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into client_allow_rule")
 	}
 
+	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
 		goto CacheNoHooks
 	}
 
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = uint(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == clientAllowRuleMapping["id"] {
+		goto CacheNoHooks
+	}
+
 	identifierCols = []interface{}{
-		o.ClientID,
+		o.ID,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -834,7 +852,7 @@ func (o ClientAllowRuleSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 }
 
 var mySQLClientAllowRuleUniqueColumns = []string{
-	"client_id",
+	"id",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
@@ -939,16 +957,27 @@ func (o *ClientAllowRule) Upsert(ctx context.Context, exec boil.ContextExecutor,
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	_, err = exec.ExecContext(ctx, cache.query, vals...)
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for client_allow_rule")
 	}
 
+	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
+		goto CacheNoHooks
+	}
+
+	lastID, err = result.LastInsertId()
+	if err != nil {
+		return ErrSyncFail
+	}
+
+	o.ID = uint(lastID)
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == clientAllowRuleMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -990,7 +1019,7 @@ func (o *ClientAllowRule) Delete(ctx context.Context, exec boil.ContextExecutor)
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), clientAllowRulePrimaryKeyMapping)
-	sql := "DELETE FROM `client_allow_rule` WHERE `client_id`=?"
+	sql := "DELETE FROM `client_allow_rule` WHERE `id`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1087,7 +1116,7 @@ func (o ClientAllowRuleSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *ClientAllowRule) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindClientAllowRule(ctx, exec, o.ClientID)
+	ret, err := FindClientAllowRule(ctx, exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -1126,16 +1155,16 @@ func (o *ClientAllowRuleSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 }
 
 // ClientAllowRuleExists checks if the ClientAllowRule row exists.
-func ClientAllowRuleExists(ctx context.Context, exec boil.ContextExecutor, clientID string) (bool, error) {
+func ClientAllowRuleExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `client_allow_rule` where `client_id`=? limit 1)"
+	sql := "select exists(select 1 from `client_allow_rule` where `id`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, clientID)
+		fmt.Fprintln(writer, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, clientID)
+	row := exec.QueryRowContext(ctx, sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1147,5 +1176,5 @@ func ClientAllowRuleExists(ctx context.Context, exec boil.ContextExecutor, clien
 
 // Exists checks if the ClientAllowRule row exists.
 func (o *ClientAllowRule) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return ClientAllowRuleExists(ctx, exec, o.ClientID)
+	return ClientAllowRuleExists(ctx, exec, o.ID)
 }

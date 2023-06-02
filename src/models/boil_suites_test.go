@@ -459,7 +459,6 @@ func TestToOne(t *testing.T) {
 // TestOneToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOne(t *testing.T) {
-	t.Run("ClientToClientAllowRuleUsingClientAllowRule", testClientOneToOneClientAllowRuleUsingClientAllowRule)
 	t.Run("UserToOtpUsingOtp", testUserOneToOneOtpUsingOtp)
 	t.Run("UserToPasswordUsingPassword", testUserOneToOnePasswordUsingPassword)
 	t.Run("UserToSettingUsingSetting", testUserOneToOneSettingUsingSetting)
@@ -471,6 +470,7 @@ func TestOneToOne(t *testing.T) {
 func TestToMany(t *testing.T) {
 	t.Run("BrandToUserBrands", testBrandToManyUserBrands)
 	t.Run("BroadcastEntryToEntryBroadcastNotices", testBroadcastEntryToManyEntryBroadcastNotices)
+	t.Run("ClientToClientAllowRules", testClientToManyClientAllowRules)
 	t.Run("ClientToClientScopes", testClientToManyClientScopes)
 	t.Run("ClientToLoginClientHistories", testClientToManyLoginClientHistories)
 	t.Run("ClientToOauthSessions", testClientToManyOauthSessions)
@@ -500,7 +500,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("BroadcastNoticeToUserUsingBroadcastNotices", testBroadcastNoticeToOneSetOpUserUsingUser)
 	t.Run("CertificateSessionToUserUsingCertificateSessions", testCertificateSessionToOneSetOpUserUsingUser)
 	t.Run("ClientToUserUsingOwnerUserClients", testClientToOneSetOpUserUsingOwnerUser)
-	t.Run("ClientAllowRuleToClientUsingClientAllowRule", testClientAllowRuleToOneSetOpClientUsingClient)
+	t.Run("ClientAllowRuleToClientUsingClientAllowRules", testClientAllowRuleToOneSetOpClientUsingClient)
 	t.Run("ClientRefreshToUserUsingClientRefreshes", testClientRefreshToOneSetOpUserUsingUser)
 	t.Run("ClientScopeToClientUsingClientScopes", testClientScopeToOneSetOpClientUsingClient)
 	t.Run("ClientSessionToUserUsingClientSessions", testClientSessionToOneSetOpUserUsingUser)
@@ -532,7 +532,6 @@ func TestToOneRemove(t *testing.T) {}
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOneSet(t *testing.T) {
-	t.Run("ClientToClientAllowRuleUsingClientAllowRule", testClientOneToOneSetOpClientAllowRuleUsingClientAllowRule)
 	t.Run("UserToOtpUsingOtp", testUserOneToOneSetOpOtpUsingOtp)
 	t.Run("UserToPasswordUsingPassword", testUserOneToOneSetOpPasswordUsingPassword)
 	t.Run("UserToSettingUsingSetting", testUserOneToOneSetOpSettingUsingSetting)
@@ -548,6 +547,7 @@ func TestOneToOneRemove(t *testing.T) {}
 func TestToManyAdd(t *testing.T) {
 	t.Run("BrandToUserBrands", testBrandToManyAddOpUserBrands)
 	t.Run("BroadcastEntryToEntryBroadcastNotices", testBroadcastEntryToManyAddOpEntryBroadcastNotices)
+	t.Run("ClientToClientAllowRules", testClientToManyAddOpClientAllowRules)
 	t.Run("ClientToClientScopes", testClientToManyAddOpClientScopes)
 	t.Run("ClientToLoginClientHistories", testClientToManyAddOpLoginClientHistories)
 	t.Run("ClientToOauthSessions", testClientToManyAddOpOauthSessions)

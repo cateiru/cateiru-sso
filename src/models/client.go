@@ -116,13 +116,13 @@ var ClientWhere = struct {
 // ClientRels is where relationship names are stored.
 var ClientRels = struct {
 	OwnerUser            string
-	ClientAllowRule      string
+	ClientAllowRules     string
 	ClientScopes         string
 	LoginClientHistories string
 	OauthSessions        string
 }{
 	OwnerUser:            "OwnerUser",
-	ClientAllowRule:      "ClientAllowRule",
+	ClientAllowRules:     "ClientAllowRules",
 	ClientScopes:         "ClientScopes",
 	LoginClientHistories: "LoginClientHistories",
 	OauthSessions:        "OauthSessions",
@@ -131,7 +131,7 @@ var ClientRels = struct {
 // clientR is where relationships are stored.
 type clientR struct {
 	OwnerUser            *User                   `boil:"OwnerUser" json:"OwnerUser" toml:"OwnerUser" yaml:"OwnerUser"`
-	ClientAllowRule      *ClientAllowRule        `boil:"ClientAllowRule" json:"ClientAllowRule" toml:"ClientAllowRule" yaml:"ClientAllowRule"`
+	ClientAllowRules     ClientAllowRuleSlice    `boil:"ClientAllowRules" json:"ClientAllowRules" toml:"ClientAllowRules" yaml:"ClientAllowRules"`
 	ClientScopes         ClientScopeSlice        `boil:"ClientScopes" json:"ClientScopes" toml:"ClientScopes" yaml:"ClientScopes"`
 	LoginClientHistories LoginClientHistorySlice `boil:"LoginClientHistories" json:"LoginClientHistories" toml:"LoginClientHistories" yaml:"LoginClientHistories"`
 	OauthSessions        OauthSessionSlice       `boil:"OauthSessions" json:"OauthSessions" toml:"OauthSessions" yaml:"OauthSessions"`
@@ -149,11 +149,11 @@ func (r *clientR) GetOwnerUser() *User {
 	return r.OwnerUser
 }
 
-func (r *clientR) GetClientAllowRule() *ClientAllowRule {
+func (r *clientR) GetClientAllowRules() ClientAllowRuleSlice {
 	if r == nil {
 		return nil
 	}
-	return r.ClientAllowRule
+	return r.ClientAllowRules
 }
 
 func (r *clientR) GetClientScopes() ClientScopeSlice {
@@ -477,13 +477,16 @@ func (o *Client) OwnerUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
-// ClientAllowRule pointed to by the foreign key.
-func (o *Client) ClientAllowRule(mods ...qm.QueryMod) clientAllowRuleQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`client_id` = ?", o.ClientID),
+// ClientAllowRules retrieves all the client_allow_rule's ClientAllowRules with an executor.
+func (o *Client) ClientAllowRules(mods ...qm.QueryMod) clientAllowRuleQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
 	}
 
-	queryMods = append(queryMods, mods...)
+	queryMods = append(queryMods,
+		qm.Where("`client_allow_rule`.`client_id`=?", o.ClientID),
+	)
 
 	return ClientAllowRules(queryMods...)
 }
@@ -650,9 +653,9 @@ func (clientL) LoadOwnerUser(ctx context.Context, e boil.ContextExecutor, singul
 	return nil
 }
 
-// LoadClientAllowRule allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-1 relationship.
-func (clientL) LoadClientAllowRule(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
+// LoadClientAllowRules allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (clientL) LoadClientAllowRules(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
 	var slice []*Client
 	var object *Client
 
@@ -715,16 +718,16 @@ func (clientL) LoadClientAllowRule(ctx context.Context, e boil.ContextExecutor, 
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load ClientAllowRule")
+		return errors.Wrap(err, "failed to eager load client_allow_rule")
 	}
 
 	var resultSlice []*ClientAllowRule
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice ClientAllowRule")
+		return errors.Wrap(err, "failed to bind eager loaded slice client_allow_rule")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for client_allow_rule")
+		return errors.Wrap(err, "failed to close results in eager load on client_allow_rule")
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for client_allow_rule")
@@ -737,24 +740,21 @@ func (clientL) LoadClientAllowRule(ctx context.Context, e boil.ContextExecutor, 
 			}
 		}
 	}
-
-	if len(resultSlice) == 0 {
+	if singular {
+		object.R.ClientAllowRules = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &clientAllowRuleR{}
+			}
+			foreign.R.Client = object
+		}
 		return nil
 	}
 
-	if singular {
-		foreign := resultSlice[0]
-		object.R.ClientAllowRule = foreign
-		if foreign.R == nil {
-			foreign.R = &clientAllowRuleR{}
-		}
-		foreign.R.Client = object
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
 			if local.ClientID == foreign.ClientID {
-				local.R.ClientAllowRule = foreign
+				local.R.ClientAllowRules = append(local.R.ClientAllowRules, foreign)
 				if foreign.R == nil {
 					foreign.R = &clientAllowRuleR{}
 				}
@@ -1156,52 +1156,55 @@ func (o *Client) SetOwnerUser(ctx context.Context, exec boil.ContextExecutor, in
 	return nil
 }
 
-// SetClientAllowRule of the client to the related item.
-// Sets o.R.ClientAllowRule to related.
-// Adds o to related.R.Client.
-func (o *Client) SetClientAllowRule(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ClientAllowRule) error {
+// AddClientAllowRules adds the given related objects to the existing relationships
+// of the client, optionally inserting them as new records.
+// Appends related to o.R.ClientAllowRules.
+// Sets related.R.Client appropriately.
+func (o *Client) AddClientAllowRules(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*ClientAllowRule) error {
 	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ClientID = o.ClientID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `client_allow_rule` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+				strmangle.WhereClause("`", "`", 0, clientAllowRulePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClientID, rel.ID}
 
-	if insert {
-		related.ClientID = o.ClientID
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
 
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
+			rel.ClientID = o.ClientID
 		}
-	} else {
-		updateQuery := fmt.Sprintf(
-			"UPDATE `client_allow_rule` SET %s WHERE %s",
-			strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
-			strmangle.WhereClause("`", "`", 0, clientAllowRulePrimaryKeyColumns),
-		)
-		values := []interface{}{o.ClientID, related.ClientID}
-
-		if boil.IsDebug(ctx) {
-			writer := boil.DebugWriterFrom(ctx)
-			fmt.Fprintln(writer, updateQuery)
-			fmt.Fprintln(writer, values)
-		}
-		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-			return errors.Wrap(err, "failed to update foreign table")
-		}
-
-		related.ClientID = o.ClientID
 	}
 
 	if o.R == nil {
 		o.R = &clientR{
-			ClientAllowRule: related,
+			ClientAllowRules: related,
 		}
 	} else {
-		o.R.ClientAllowRule = related
+		o.R.ClientAllowRules = append(o.R.ClientAllowRules, related...)
 	}
 
-	if related.R == nil {
-		related.R = &clientAllowRuleR{
-			Client: o,
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &clientAllowRuleR{
+				Client: o,
+			}
+		} else {
+			rel.R.Client = o
 		}
-	} else {
-		related.R.Client = o
 	}
 	return nil
 }
