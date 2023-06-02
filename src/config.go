@@ -109,6 +109,9 @@ type Config struct {
 
 	ClientSessionPeriod time.Duration
 	ClientRefreshPeriod time.Duration
+
+	// クライアントの最大作成数
+	ClientMaxCreated int
 }
 
 // Cookieの設定
@@ -278,6 +281,8 @@ var LocalConfig = &Config{
 
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
+
+	ClientMaxCreated: 10,
 }
 
 var CloudRunConfig = &Config{
@@ -429,6 +434,8 @@ var CloudRunConfig = &Config{
 
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
+
+	ClientMaxCreated: 10,
 }
 
 var CloudRunStagingConfig = &Config{
@@ -581,6 +588,8 @@ var CloudRunStagingConfig = &Config{
 
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
+
+	ClientMaxCreated: 10,
 }
 
 var TestConfig = &Config{
@@ -715,6 +724,8 @@ var TestConfig = &Config{
 
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
+
+	ClientMaxCreated: 10,
 }
 
 func InitConfig(mode string) *Config {

@@ -115,6 +115,11 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.PUT("/brand", h.AdminBrandUpdateHandler)
 	admin.DELETE("/brand", h.AdminBrandDeleteHandler)
 
+	admin.GET("/org", h.Root)    // TODO
+	admin.POST("/org", h.Root)   // TODO
+	admin.PUT("/org", h.Root)    // TODO
+	admin.DELETE("/org", h.Root) // TODO
+
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
 	internal := version.Group("/internal")

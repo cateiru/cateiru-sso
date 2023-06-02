@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -35,7 +36,7 @@ type ClientResponse struct {
 }
 
 type ClientAllowUserRuleResponse struct {
-	Id string `json:"id"`
+	Id uint `json:"id"`
 
 	UserId      null.String `json:"user_id,omitempty"`
 	EmailDomain null.String `json:"email_domain,omitempty"`
@@ -83,10 +84,9 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 		return c.JSON(http.StatusOK, response)
 	}
 
-	// 一旦最大100件としておく
 	clients, err := models.Clients(
 		models.ClientWhere.OwnerUserID.EQ(u.ID),
-		qm.Limit(100),
+		qm.Limit(h.C.ClientMaxCreated),
 		qm.OrderBy("updated_at DESC"),
 	).All(ctx, h.DB)
 	if err != nil {
@@ -121,7 +121,6 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 // - is_allow: ホワイトリスト使うか
 // - prompt: ログイン求めたりするやつ
 // - scopes: スコープ
-// TODO: スコープ作成する
 func (h *Handler) ClientCreateHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -164,12 +163,28 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 	if len(scopes) == 0 && scopes[0] != "" {
 		return NewHTTPError(http.StatusBadRequest, "scope is invalid")
 	}
+	for _, s := range scopes {
+		if lib.ValidateScope(s) {
+			return NewHTTPError(http.StatusBadRequest, "scope is invalid")
+		}
+	}
 
 	// -- チェック終わり --
 
 	u, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
+	}
+
+	clientCount, err := models.Clients(
+		models.ClientWhere.OwnerUserID.EQ(u.ID),
+	).Count(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	// 新規作成するので現在あるクライアント数が上限-1以上であればエラー
+	if (clientCount) >= int64(h.C.ClientMaxCreated-1) {
+		return NewHTTPError(http.StatusBadRequest, "too many clients")
 	}
 
 	clientId, err := lib.RandomStr(32)
@@ -214,20 +229,38 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		image = null.NewString(url.String(), true)
 	}
 
-	client := models.Client{
-		ClientID: clientId,
+	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+		client := models.Client{
+			ClientID: clientId,
 
-		Name:        name,
-		Description: null.NewString(description, description != ""),
-		Image:       image,
-		IsAllow:     isAllow,
-		Prompt:      null.NewString(prompt, prompt != ""),
+			Name:        name,
+			Description: null.NewString(description, description != ""),
+			Image:       image,
+			IsAllow:     isAllow,
+			Prompt:      null.NewString(prompt, prompt != ""),
 
-		OwnerUserID: u.ID,
+			OwnerUserID: u.ID,
 
-		ClientSecret: clientSecret,
-	}
-	if err := client.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			ClientSecret: clientSecret,
+		}
+		if err := client.Insert(ctx, tx, boil.Infer()); err != nil {
+			return err
+		}
+
+		// FIXME: Bulk InsertしたいけどSQLBoilerにはないので
+		for _, scope := range scopes {
+			clientScope := models.ClientScope{
+				ClientID: clientId,
+				Scope:    scope,
+			}
+			if err := clientScope.Insert(ctx, tx, boil.Infer()); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
 		return err
 	}
 
@@ -316,6 +349,11 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 	if len(scopes) == 0 && scopes[0] != "" {
 		return NewHTTPError(http.StatusBadRequest, "scope is invalid")
 	}
+	for _, s := range scopes {
+		if lib.ValidateScope(s) {
+			return NewHTTPError(http.StatusBadRequest, "scope is invalid")
+		}
+	}
 
 	// -- チェック終わり --
 
@@ -324,18 +362,20 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 		return err
 	}
 
-	client, err := models.Clients(
+	// 画像をアップロードする前に一度、clientIdのクライアントが存在するかを確認する
+	existClient, err := models.Clients(
 		models.ClientWhere.ClientID.EQ(clientId),
 		models.ClientWhere.OwnerUserID.EQ(u.ID),
-	).One(ctx, h.DB)
-	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "client not found")
-	}
+	).Exists(ctx, h.DB)
 	if err != nil {
 		return err
 	}
+	if !existClient {
+		return NewHTTPError(http.StatusNotFound, "client not found")
+	}
 
 	// 画像をアップロードする（ある場合）
+	image := null.NewString("", false)
 	if imageHeader != nil {
 		file, err := imageHeader.Open()
 		if err != nil {
@@ -364,26 +404,60 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 			return err
 		}
 
-		image := null.NewString(url.String(), true)
-
-		// 画像更新
-		client.Image = image
+		image = null.NewString(url.String(), true)
 	}
 
-	if updateSecret {
-		clientSecret, err := lib.RandomStr(63)
+	// トランザクション
+	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+			models.ClientWhere.OwnerUserID.EQ(u.ID),
+		).One(ctx, tx)
+		if errors.Is(err, sql.ErrNoRows) {
+			return NewHTTPError(http.StatusNotFound, "client not found")
+		}
 		if err != nil {
 			return err
 		}
-		client.ClientSecret = clientSecret
-	}
 
-	client.Name = name
-	client.Description = null.NewString(description, description != "")
-	client.IsAllow = isAllow
-	client.Prompt = null.NewString(prompt, prompt != "")
+		if updateSecret {
+			clientSecret, err := lib.RandomStr(63)
+			if err != nil {
+				return err
+			}
+			client.ClientSecret = clientSecret
+		}
 
-	if _, err := client.Update(ctx, h.DB, boil.Infer()); err != nil {
+		client.Image = image
+		client.Name = name
+		client.Description = null.NewString(description, description != "")
+		client.IsAllow = isAllow
+		client.Prompt = null.NewString(prompt, prompt != "")
+
+		if _, err := client.Update(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+
+		// スコープを一度すべて削除してから追加する
+		if _, err := client.ClientScopes(
+			models.ClientScopeWhere.ClientID.EQ(clientId),
+		).DeleteAll(ctx, h.DB); err != nil {
+			return err
+		}
+		// FIXME: Bulk InsertしたいけどSQLBoilerにはないので
+		for _, scope := range scopes {
+			clientScope := models.ClientScope{
+				ClientID: clientId,
+				Scope:    scope,
+			}
+			if err := clientScope.Insert(ctx, tx, boil.Infer()); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
 		return err
 	}
 
@@ -553,6 +627,7 @@ func (h *Handler) ClientDeleteImageHandler(c echo.Context) error {
 	return nil
 }
 
+// AllowUserを返す
 func (h *Handler) ClientAllowUserHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -566,10 +641,24 @@ func (h *Handler) ClientAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
+	client, err := models.Clients(
+		models.ClientWhere.ClientID.EQ(clientId),
+		models.ClientWhere.OwnerUserID.EQ(u.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !client {
+		return NewHTTPError(http.StatusNotFound, "client not found")
+	}
+
 	rules, err := models.ClientAllowRules(
 		models.ClientAllowRuleWhere.ClientID.EQ(clientId),
-		models.ClientAllowRuleWhere.ClientID.EQ(u.ID),
+		qm.Limit(100),
 	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
 
 	roleResponse := make([]*ClientAllowUserRuleResponse, 0, len(rules))
 	for i, rule := range rules {
@@ -586,15 +675,103 @@ func (h *Handler) ClientAllowUserHandler(c echo.Context) error {
 
 // ホワイトリストにユーザーを追加する
 func (h *Handler) ClientAddAllowUserHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	clientId := c.FormValue("client_id")
+	if clientId == "" {
+		return NewHTTPError(http.StatusBadRequest, "client_id is required")
+	}
+
+	userId := c.FormValue("user_id")
+	emailDomain := c.FormValue("email_domain")
+	// どちらか必須
+	if userId != "" || emailDomain != "" {
+		return NewHTTPError(http.StatusBadRequest, "user_id or email_domain is required")
+	}
+	// 片方しか設定できない
+	if userId == emailDomain {
+		return NewHTTPError(http.StatusBadRequest, "user_id and email_domain cannot be set at the same time")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	// クライアントのis_allowがfalseでもホワイトリストに追加削除はできる
+	existClient, err := models.Clients(
+		models.ClientWhere.ClientID.EQ(clientId),
+		models.ClientWhere.OwnerUserID.EQ(u.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !existClient {
+		return NewHTTPError(http.StatusNotFound, "client not found")
+	}
+
+	clientAllowRule := &models.ClientAllowRule{
+		ClientID: clientId,
+
+		UserID:      null.NewString(userId, userId != ""),
+		EmailDomain: null.NewString(emailDomain, emailDomain != ""),
+	}
+	if err := clientAllowRule.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // ホワイトリストからユーザーを削除する
 func (h *Handler) ClientDeleteAllowUserHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	id := c.QueryParam("id")
+	if id == "" {
+		return NewHTTPError(http.StatusBadRequest, "id is required")
+	}
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return NewHTTPError(http.StatusBadRequest, "id is invalid")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	allowRule, err := models.ClientAllowRules(
+		models.ClientAllowRuleWhere.ID.EQ(uint(idInt)),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "allow rule not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	client, err := models.Clients(
+		models.ClientWhere.ClientID.EQ(allowRule.ClientID),
+	).One(ctx, h.DB)
+	if err != nil {
+		// レコードが存在しないことは無いのですべてエラーにする
+		return err
+	}
+
+	if client.OwnerUserID != u.ID {
+		return NewHTTPError(http.StatusForbidden, "you are not owner")
+	}
+
+	if _, err := allowRule.Delete(ctx, h.DB); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // クライアントにログインしているユーザー一覧を返す
+// TODO: クライアントのセッション実装したらやる
 func (h *Handler) ClientLoginUsersHandler(c echo.Context) error {
 	return nil
 }
