@@ -1,15 +1,114 @@
 package src_test
 
-import "testing"
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"testing"
+
+	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
+	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/cateiru/go-http-easy-test/v2/easy"
+	"github.com/stretchr/testify/require"
+)
 
 func TestClientHandler(t *testing.T) {
-	t.Run("成功: client_idを指定するとそのクライアントを取得できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: client_idを指定しないと自分のすべてのクライアントを取得できる", func(t *testing.T) {})
+	SessionTest(t, h.ClientHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	})
 
-	t.Run("失敗: client_idが存在しない値", func(t *testing.T) {})
+	t.Run("成功: client_idを指定するとそのクライアントを取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: client_idが指定するクライアントが自分のものではない", func(t *testing.T) {})
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.NoError(t, err)
+
+		response := src.ClientResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.ClientID, clientId)
+	})
+
+	t.Run("成功: client_idを指定しないと自分のすべてのクライアントを取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterClient(t, ctx, &u, "openid", "profile")
+		RegisterClient(t, ctx, &u, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.NoError(t, err)
+
+		response := []src.ClientResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 2)
+	})
+
+	t.Run("失敗: client_idが存在しない値", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		noExistClientId, err := lib.RandomStr(32)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", noExistClientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
+
+	t.Run("失敗: client_idが指定するクライアントが自分のものではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		clientId, _ := RegisterClient(t, ctx, &u2, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
 }
 
 func TestClientCreateHandler(t *testing.T) {
