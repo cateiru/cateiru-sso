@@ -687,7 +687,7 @@ func testClientReferrersSelect(t *testing.T) {
 }
 
 var (
-	clientReferrerDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `URL`: `text`, `CreatedAt`: `datetime`}
+	clientReferrerDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `Host`: `varchar`, `URL`: `text`, `CreatedAt`: `datetime`}
 	_                     = bytes.MinRead
 )
 

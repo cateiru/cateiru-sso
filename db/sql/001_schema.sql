@@ -492,6 +492,7 @@ CREATE TABLE `client_redirect` (
     -- クライアントのID
     `client_id` VARCHAR(31) NOT NULL,
 
+    `host` VARCHAR(128) NOT NULL,
     `url` TEXT NOT NULL,
 
     -- 管理用
@@ -510,6 +511,7 @@ CREATE TABLE `client_referrer` (
     -- クライアントのID
     `client_id` VARCHAR(31) NOT NULL,
 
+    `host` VARCHAR(128) NOT NULL,
     `url` TEXT NOT NULL,
 
     -- 管理用

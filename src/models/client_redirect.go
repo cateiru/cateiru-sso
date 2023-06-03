@@ -25,6 +25,7 @@ import (
 type ClientRedirect struct {
 	ID        uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	ClientID  string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	Host      string    `boil:"host" json:"host" toml:"host" yaml:"host"`
 	URL       string    `boil:"url" json:"url" toml:"url" yaml:"url"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
@@ -35,11 +36,13 @@ type ClientRedirect struct {
 var ClientRedirectColumns = struct {
 	ID        string
 	ClientID  string
+	Host      string
 	URL       string
 	CreatedAt string
 }{
 	ID:        "id",
 	ClientID:  "client_id",
+	Host:      "host",
 	URL:       "url",
 	CreatedAt: "created_at",
 }
@@ -47,11 +50,13 @@ var ClientRedirectColumns = struct {
 var ClientRedirectTableColumns = struct {
 	ID        string
 	ClientID  string
+	Host      string
 	URL       string
 	CreatedAt string
 }{
 	ID:        "client_redirect.id",
 	ClientID:  "client_redirect.client_id",
+	Host:      "client_redirect.host",
 	URL:       "client_redirect.url",
 	CreatedAt: "client_redirect.created_at",
 }
@@ -61,11 +66,13 @@ var ClientRedirectTableColumns = struct {
 var ClientRedirectWhere = struct {
 	ID        whereHelperuint
 	ClientID  whereHelperstring
+	Host      whereHelperstring
 	URL       whereHelperstring
 	CreatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperuint{field: "`client_redirect`.`id`"},
 	ClientID:  whereHelperstring{field: "`client_redirect`.`client_id`"},
+	Host:      whereHelperstring{field: "`client_redirect`.`host`"},
 	URL:       whereHelperstring{field: "`client_redirect`.`url`"},
 	CreatedAt: whereHelpertime_Time{field: "`client_redirect`.`created_at`"},
 }
@@ -98,8 +105,8 @@ func (r *clientRedirectR) GetClient() *Client {
 type clientRedirectL struct{}
 
 var (
-	clientRedirectAllColumns            = []string{"id", "client_id", "url", "created_at"}
-	clientRedirectColumnsWithoutDefault = []string{"client_id", "url"}
+	clientRedirectAllColumns            = []string{"id", "client_id", "host", "url", "created_at"}
+	clientRedirectColumnsWithoutDefault = []string{"client_id", "host", "url"}
 	clientRedirectColumnsWithDefault    = []string{"id", "created_at"}
 	clientRedirectPrimaryKeyColumns     = []string{"id"}
 	clientRedirectGeneratedColumns      = []string{}

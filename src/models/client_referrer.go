@@ -25,6 +25,7 @@ import (
 type ClientReferrer struct {
 	ID        uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	ClientID  string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	Host      string    `boil:"host" json:"host" toml:"host" yaml:"host"`
 	URL       string    `boil:"url" json:"url" toml:"url" yaml:"url"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
@@ -35,11 +36,13 @@ type ClientReferrer struct {
 var ClientReferrerColumns = struct {
 	ID        string
 	ClientID  string
+	Host      string
 	URL       string
 	CreatedAt string
 }{
 	ID:        "id",
 	ClientID:  "client_id",
+	Host:      "host",
 	URL:       "url",
 	CreatedAt: "created_at",
 }
@@ -47,11 +50,13 @@ var ClientReferrerColumns = struct {
 var ClientReferrerTableColumns = struct {
 	ID        string
 	ClientID  string
+	Host      string
 	URL       string
 	CreatedAt string
 }{
 	ID:        "client_referrer.id",
 	ClientID:  "client_referrer.client_id",
+	Host:      "client_referrer.host",
 	URL:       "client_referrer.url",
 	CreatedAt: "client_referrer.created_at",
 }
@@ -61,11 +66,13 @@ var ClientReferrerTableColumns = struct {
 var ClientReferrerWhere = struct {
 	ID        whereHelperuint
 	ClientID  whereHelperstring
+	Host      whereHelperstring
 	URL       whereHelperstring
 	CreatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperuint{field: "`client_referrer`.`id`"},
 	ClientID:  whereHelperstring{field: "`client_referrer`.`client_id`"},
+	Host:      whereHelperstring{field: "`client_referrer`.`host`"},
 	URL:       whereHelperstring{field: "`client_referrer`.`url`"},
 	CreatedAt: whereHelpertime_Time{field: "`client_referrer`.`created_at`"},
 }
@@ -98,8 +105,8 @@ func (r *clientReferrerR) GetClient() *Client {
 type clientReferrerL struct{}
 
 var (
-	clientReferrerAllColumns            = []string{"id", "client_id", "url", "created_at"}
-	clientReferrerColumnsWithoutDefault = []string{"client_id", "url"}
+	clientReferrerAllColumns            = []string{"id", "client_id", "host", "url", "created_at"}
+	clientReferrerColumnsWithoutDefault = []string{"client_id", "host", "url"}
 	clientReferrerColumnsWithDefault    = []string{"id", "created_at"}
 	clientReferrerPrimaryKeyColumns     = []string{"id"}
 	clientReferrerGeneratedColumns      = []string{}

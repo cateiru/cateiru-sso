@@ -687,7 +687,7 @@ func testClientRedirectsSelect(t *testing.T) {
 }
 
 var (
-	clientRedirectDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `URL`: `text`, `CreatedAt`: `datetime`}
+	clientRedirectDBTypes = map[string]string{`ID`: `int`, `ClientID`: `varchar`, `Host`: `varchar`, `URL`: `text`, `CreatedAt`: `datetime`}
 	_                     = bytes.MinRead
 )
 
