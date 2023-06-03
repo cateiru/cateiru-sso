@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/go-http-easy-test/v2/easy"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,5 +54,201 @@ func TestParseUA(t *testing.T) {
 		require.Equal(t, d.Device, "")
 		require.Equal(t, d.OS, "Windows")
 		require.False(t, d.IsMobile)
+	})
+}
+
+func TestFormValues(t *testing.T) {
+	h := NewTestHandler(t)
+
+	t.Run("成功: required", func(t *testing.T) {
+		key := "key"
+
+		handler := func(c echo.Context) error {
+			values, err := h.FormValues(c, key)
+			if err != nil {
+				return err
+			}
+
+			require.Len(t, values, 3)
+
+			return nil
+		}
+
+		form := easy.NewMultipart()
+		form.Insert("key_count", "3")
+		form.Insert("key_0", "value_0")
+		form.Insert("key_1", "value_1")
+		form.Insert("key_2", "value_2")
+		form.Insert("key_3", "value_3")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = handler(c)
+		require.NoError(t, err)
+	})
+
+	t.Run("成功: optional", func(t *testing.T) {
+		key := "key"
+
+		handler := func(c echo.Context) error {
+			values, err := h.FormValues(c, key, true)
+			if err != nil {
+				return err
+			}
+
+			require.Len(t, values, 0)
+
+			return nil
+		}
+
+		form := easy.NewMultipart()
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = handler(c)
+		require.NoError(t, err)
+	})
+
+	t.Run("失敗: requiredなのに存在しない", func(t *testing.T) {
+		key := "key"
+
+		handler := func(c echo.Context) error {
+			_, err := h.FormValues(c, key)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+
+		form := easy.NewMultipart()
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = handler(c)
+		require.EqualError(t, err, "code=400, message=key_count is required")
+	})
+
+	t.Run("失敗: _countはあるけど_[index]がすべて存在しない", func(t *testing.T) {
+		key := "key"
+
+		handler := func(c echo.Context) error {
+			values, err := h.FormValues(c, key)
+			if err != nil {
+				return err
+			}
+
+			require.Len(t, values, 3)
+
+			return nil
+		}
+
+		form := easy.NewMultipart()
+		form.Insert("key_count", "3")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = handler(c)
+		require.EqualError(t, err, "code=400, message=key_0 is required")
+	})
+
+	t.Run("失敗: _countはあるけど_[index]が1つ存在しない", func(t *testing.T) {
+		key := "key"
+
+		handler := func(c echo.Context) error {
+			values, err := h.FormValues(c, key)
+			if err != nil {
+				return err
+			}
+
+			require.Len(t, values, 3)
+
+			return nil
+		}
+
+		form := easy.NewMultipart()
+		form.Insert("key_count", "3")
+		form.Insert("key_0", "value_0")
+		form.Insert("key_1", "value_1")
+		form.Insert("key_3", "value_3")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = handler(c)
+		require.EqualError(t, err, "code=400, message=key_2 is required")
+	})
+
+	t.Run("失敗: _[index]はあるけど_countは無い", func(t *testing.T) {
+		key := "key"
+
+		handler := func(c echo.Context) error {
+			values, err := h.FormValues(c, key)
+			if err != nil {
+				return err
+			}
+
+			require.Len(t, values, 3)
+
+			return nil
+		}
+
+		form := easy.NewMultipart()
+		form.Insert("key_0", "value_0")
+		form.Insert("key_1", "value_1")
+		form.Insert("key_2", "value_2")
+		form.Insert("key_3", "value_3")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = handler(c)
+		require.EqualError(t, err, "code=400, message=key_count is required")
+	})
+
+	t.Run("失敗: _[index]のどれかが空", func(t *testing.T) {
+		key := "key"
+
+		handler := func(c echo.Context) error {
+			values, err := h.FormValues(c, key)
+			if err != nil {
+				return err
+			}
+
+			require.Len(t, values, 3)
+
+			return nil
+		}
+
+		form := easy.NewMultipart()
+		form.Insert("key_count", "3")
+		form.Insert("key_0", "value_0")
+		form.Insert("key_1", "value_1")
+		form.Insert("key_2", "")
+		form.Insert("key_3", "value_3")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = handler(c)
+		require.EqualError(t, err, "code=400, message=key_2 is required")
 	})
 }

@@ -2,9 +2,11 @@ package src
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	goclienthints "github.com/cateiru/go-client-hints/v2"
@@ -115,6 +117,40 @@ func (h *Handler) ParseUA(r *http.Request) (*UserData, error) {
 		Device:   ua.Device,
 		IsMobile: ua.Mobile,
 	}, nil
+}
+
+// 複数のフォームを取得する
+// `[key]_count`を取得し、その数だけ`[key]_0`から`[key]_[count-1]`までの値を取得する
+func (h *Handler) FormValues(c echo.Context, key string, optional ...bool) ([]string, error) {
+	optionalFlag := false
+	if len(optional) > 0 {
+		optionalFlag = optional[0]
+	}
+
+	keyName := fmt.Sprintf("%s_count", key)
+	count := c.FormValue(keyName)
+	if count == "" {
+		if optionalFlag {
+			return []string{}, nil
+		}
+		return nil, NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s is required", keyName))
+	}
+	countInt, err := strconv.Atoi(count)
+	if err != nil {
+		return nil, NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s is invalid", keyName))
+	}
+
+	values := make([]string, countInt)
+	for i := 0; i < countInt; i++ {
+		itemKey := fmt.Sprintf("%s_%d", key, i)
+		v := c.FormValue(itemKey)
+		if v == "" {
+			return nil, NewHTTPError(http.StatusBadRequest, itemKey+" is required")
+		}
+		values[i] = v
+	}
+
+	return values, nil
 }
 
 // ローカル環境ではメールを送信したくないのでモックする
