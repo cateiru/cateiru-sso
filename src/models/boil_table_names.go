@@ -10,6 +10,8 @@ var TableNames = struct {
 	CertificateSession            string
 	Client                        string
 	ClientAllowRule               string
+	ClientRedirect                string
+	ClientReferrer                string
 	ClientRefresh                 string
 	ClientScope                   string
 	ClientSession                 string
@@ -40,6 +42,8 @@ var TableNames = struct {
 	CertificateSession:            "certificate_session",
 	Client:                        "client",
 	ClientAllowRule:               "client_allow_rule",
+	ClientRedirect:                "client_redirect",
+	ClientReferrer:                "client_referrer",
 	ClientRefresh:                 "client_refresh",
 	ClientScope:                   "client_scope",
 	ClientSession:                 "client_session",

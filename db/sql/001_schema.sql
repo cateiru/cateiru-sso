@@ -485,6 +485,42 @@ CREATE TABLE `client` (
     INDEX `client_owner_user_id_client_id` (`owner_user_id`, `client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
+-- クライアントのリダイレクトURLを設定するテーブル
+CREATE TABLE `client_redirect` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    `url` TEXT NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `client_redirect_client_id` (`client_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- クライアントのリファラーURLを設定するテーブル
+CREATE TABLE `client_referrer` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    `url` TEXT NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `client_redirect_client_id` (`client_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
 -- OAuthで接続したときのセッション
 -- nonceとかを保存しておく
 CREATE TABLE `oauth_session` (

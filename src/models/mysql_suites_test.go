@@ -18,6 +18,10 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("ClientAllowRules", testClientAllowRulesUpsert)
 
+	t.Run("ClientRedirects", testClientRedirectsUpsert)
+
+	t.Run("ClientReferrers", testClientReferrersUpsert)
+
 	t.Run("ClientRefreshes", testClientRefreshesUpsert)
 
 	t.Run("ClientScopes", testClientScopesUpsert)

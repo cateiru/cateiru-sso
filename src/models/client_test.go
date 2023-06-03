@@ -572,6 +572,162 @@ func testClientToManyClientAllowRules(t *testing.T) {
 	}
 }
 
+func testClientToManyClientRedirects(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c ClientRedirect
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, true, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, clientRedirectDBTypes, false, clientRedirectColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, clientRedirectDBTypes, false, clientRedirectColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.ClientID = a.ClientID
+	c.ClientID = a.ClientID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.ClientRedirects().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.ClientID == b.ClientID {
+			bFound = true
+		}
+		if v.ClientID == c.ClientID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := ClientSlice{&a}
+	if err = a.L.LoadClientRedirects(ctx, tx, false, (*[]*Client)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.ClientRedirects); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.ClientRedirects = nil
+	if err = a.L.LoadClientRedirects(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.ClientRedirects); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testClientToManyClientReferrers(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c ClientReferrer
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, true, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, clientReferrerDBTypes, false, clientReferrerColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, clientReferrerDBTypes, false, clientReferrerColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.ClientID = a.ClientID
+	c.ClientID = a.ClientID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.ClientReferrers().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.ClientID == b.ClientID {
+			bFound = true
+		}
+		if v.ClientID == c.ClientID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := ClientSlice{&a}
+	if err = a.L.LoadClientReferrers(ctx, tx, false, (*[]*Client)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.ClientReferrers); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.ClientReferrers = nil
+	if err = a.L.LoadClientReferrers(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.ClientReferrers); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
 func testClientToManyClientScopes(t *testing.T) {
 	var err error
 	ctx := context.Background()
@@ -873,6 +1029,156 @@ func testClientToManyAddOpClientAllowRules(t *testing.T) {
 		}
 
 		count, err := a.ClientAllowRules().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testClientToManyAddOpClientRedirects(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c, d, e ClientRedirect
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*ClientRedirect{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, clientRedirectDBTypes, false, strmangle.SetComplement(clientRedirectPrimaryKeyColumns, clientRedirectColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*ClientRedirect{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddClientRedirects(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ClientID != first.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, first.ClientID)
+		}
+		if a.ClientID != second.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, second.ClientID)
+		}
+
+		if first.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.ClientRedirects[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.ClientRedirects[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.ClientRedirects().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testClientToManyAddOpClientReferrers(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c, d, e ClientReferrer
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*ClientReferrer{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, clientReferrerDBTypes, false, strmangle.SetComplement(clientReferrerPrimaryKeyColumns, clientReferrerColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*ClientReferrer{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddClientReferrers(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ClientID != first.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, first.ClientID)
+		}
+		if a.ClientID != second.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, second.ClientID)
+		}
+
+		if first.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.ClientReferrers[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.ClientReferrers[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.ClientReferrers().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
