@@ -4,14 +4,19 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestClientHandler(t *testing.T) {
@@ -1085,13 +1090,130 @@ func TestClientDeleteHandler(t *testing.T) {
 }
 
 func TestClientDeleteImageHandler(t *testing.T) {
-	t.Run("成功: 画像を削除できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {})
+	s := lib.NewCloudStorage(C.StorageBucketName)
 
-	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {})
+	t.Run("成功: 画像を削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: クライアントは存在するがオーナーではない", func(t *testing.T) {})
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		path := filepath.Join("client_icon", clientId)
+		url := &url.URL{
+			Scheme: C.CDNHost.Scheme,
+			Host:   C.CDNHost.Host,
+			Path:   path,
+		}
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		err = s.Write(ctx, path, image, "image/png")
+		require.NoError(t, err)
+
+		time.Sleep(1 * time.Second)
+
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		client.Image = null.NewString(url.String(), true)
+
+		_, err = client.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteImageHandler(c)
+		require.NoError(t, err)
+
+		client, err = models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.False(t, client.Image.Valid)
+	})
+
+	t.Run("失敗: そもそも画像が設定されていない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteImageHandler(c)
+		require.EqualError(t, err, "code=404, message=image is not set")
+	})
+
+	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteImageHandler(c)
+		require.EqualError(t, err, "code=400, message=client_id is required")
+	})
+
+	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?client_id=aaaaaa", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteImageHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
+
+	t.Run("失敗: クライアントは存在するがオーナーではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u2)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteImageHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
 }
 
 func TestClientAllowUserHandler(t *testing.T) {
