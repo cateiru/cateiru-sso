@@ -1,6 +1,7 @@
 package src
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -37,6 +38,17 @@ type ClientResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type ClientDetailResponse struct {
+	ClientSecret string `json:"client_secret"`
+
+	RedirectUrls []string `json:"redirect_urls"`
+	ReferrerUrls []string `json:"referrer_urls"`
+
+	Scopes []string `json:"scopes"`
+
+	ClientResponse
+}
+
 type ClientAllowUserRuleResponse struct {
 	Id uint `json:"id"`
 
@@ -58,29 +70,9 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 
 	// client_idが指定されている場合はそのIDのクライアントを返す
 	if clientId != "" {
-		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
-			models.ClientWhere.OwnerUserID.EQ(u.ID),
-		).One(ctx, h.DB)
-		if errors.Is(err, sql.ErrNoRows) {
-			return echo.NewHTTPError(http.StatusNotFound, "client not found")
-		}
+		response, err := getClientDetails(ctx, h.DB, clientId, u)
 		if err != nil {
 			return err
-		}
-
-		response := &ClientResponse{
-			ClientID: client.ClientID,
-
-			Name:        client.Name,
-			Description: client.Description,
-			Image:       client.Image,
-
-			IsAllow: client.IsAllow,
-			Prompt:  client.Prompt,
-
-			CreatedAt: client.CreatedAt,
-			UpdatedAt: client.UpdatedAt,
 		}
 
 		return c.JSON(http.StatusOK, response)
@@ -113,6 +105,76 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response)
+}
+
+// クライアントの詳細を取得する
+func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *models.User) (*ClientDetailResponse, error) {
+	client, err := models.Clients(
+		models.ClientWhere.ClientID.EQ(clientId),
+		models.ClientWhere.OwnerUserID.EQ(u.ID),
+	).One(ctx, db)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, echo.NewHTTPError(http.StatusNotFound, "client not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	redirectUrlRecords, err := models.ClientRedirects(
+		models.ClientRedirectWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	redirectUrls := make([]string, len(redirectUrlRecords))
+	for i, redirect := range redirectUrlRecords {
+		redirectUrls[i] = redirect.URL
+	}
+
+	referrerUrlRecords, err := models.ClientReferrers(
+		models.ClientReferrerWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	referrerUrls := make([]string, len(referrerUrlRecords))
+	for i, referrer := range referrerUrlRecords {
+		// referrerはホストのみを見るので
+		referrerUrls[i] = referrer.Host
+	}
+
+	scopesRecords, err := models.ClientScopes(
+		models.ClientScopeWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	scopes := make([]string, len(scopesRecords))
+	for i, scope := range scopesRecords {
+		scopes[i] = scope.Scope
+	}
+
+	return &ClientDetailResponse{
+		ClientSecret: client.ClientSecret,
+
+		RedirectUrls: redirectUrls,
+		ReferrerUrls: referrerUrls,
+		Scopes:       scopes,
+
+		ClientResponse: ClientResponse{
+			ClientID: client.ClientID,
+
+			Name:        client.Name,
+			Description: client.Description,
+			Image:       client.Image,
+
+			IsAllow: client.IsAllow,
+			Prompt:  client.Prompt,
+
+			CreatedAt: client.CreatedAt,
+			UpdatedAt: client.UpdatedAt,
+		},
+	}, nil
 }
 
 // クライアントを作成する
@@ -328,25 +390,9 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		return err
 	}
 
-	currentClient, err := models.Clients(
-		models.ClientWhere.ClientID.EQ(clientId.String()),
-	).One(ctx, h.DB)
+	response, err := getClientDetails(ctx, h.DB, clientId.String(), u)
 	if err != nil {
 		return err
-	}
-
-	response := &ClientResponse{
-		ClientID: currentClient.ClientID,
-
-		Name:        currentClient.Name,
-		Description: currentClient.Description,
-		Image:       currentClient.Image,
-
-		IsAllow: currentClient.IsAllow,
-		Prompt:  currentClient.Prompt,
-
-		CreatedAt: currentClient.CreatedAt,
-		UpdatedAt: currentClient.UpdatedAt,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -600,25 +646,9 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 		return err
 	}
 
-	currentClient, err := models.Clients(
-		models.ClientWhere.ClientID.EQ(clientId),
-	).One(ctx, h.DB)
+	response, err := getClientDetails(ctx, h.DB, clientId, u)
 	if err != nil {
 		return err
-	}
-
-	response := &ClientResponse{
-		ClientID: currentClient.ClientID,
-
-		Name:        currentClient.Name,
-		Description: currentClient.Description,
-		Image:       currentClient.Image,
-
-		IsAllow: currentClient.IsAllow,
-		Prompt:  currentClient.Prompt,
-
-		CreatedAt: currentClient.CreatedAt,
-		UpdatedAt: currentClient.UpdatedAt,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -670,6 +700,20 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 		// ホワイトリストルールを削除する
 		if _, err := models.ClientAllowRules(
 			models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
+		).DeleteAll(ctx, tx); err != nil {
+			return err
+		}
+
+		// リダイレクトURLを削除する
+		if _, err := models.ClientRedirects(
+			models.ClientRedirectWhere.ClientID.EQ(client.ClientID),
+		).DeleteAll(ctx, tx); err != nil {
+			return err
+		}
+
+		// リファラーURLを削除する
+		if _, err := models.ClientReferrers(
+			models.ClientReferrerWhere.ClientID.EQ(client.ClientID),
 		).DeleteAll(ctx, tx); err != nil {
 			return err
 		}

@@ -29,11 +29,11 @@ func TestClientHandler(t *testing.T) {
 		return m
 	})
 
-	t.Run("成功: client_idを指定するとそのクライアントを取得できる", func(t *testing.T) {
+	t.Run("成功: client_idを指定するとそのクライアントの詳細を取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		clientId, clientSecret := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -46,10 +46,15 @@ func TestClientHandler(t *testing.T) {
 		err = h.ClientHandler(c)
 		require.NoError(t, err)
 
-		response := src.ClientResponse{}
+		response := src.ClientDetailResponse{}
 		require.NoError(t, m.Json(&response))
 
 		require.Equal(t, response.ClientID, clientId)
+
+		require.Len(t, response.RedirectUrls, 0)
+		require.Len(t, response.ReferrerUrls, 0)
+		require.Len(t, response.Scopes, 2)
+		require.Equal(t, response.ClientSecret, clientSecret)
 	})
 
 	t.Run("成功: client_idを指定しないと自分のすべてのクライアントを取得できる", func(t *testing.T) {
@@ -149,7 +154,7 @@ func TestClientCreateHandler(t *testing.T) {
 
 		// チェック
 
-		response := src.ClientResponse{}
+		response := src.ClientDetailResponse{}
 		require.NoError(t, m.Json(&response))
 
 		require.Equal(t, response.Name, "test")
@@ -527,7 +532,7 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		clientId, clientSecret := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -553,10 +558,11 @@ func TestClientUpdateHandler(t *testing.T) {
 		err = h.ClientUpdateHandler(c)
 		require.NoError(t, err)
 
-		response := src.ClientResponse{}
+		response := src.ClientDetailResponse{}
 		require.NoError(t, m.Json(&response))
 
 		require.Equal(t, "new!!! name", response.Name)
+		require.Equal(t, response.ClientSecret, clientSecret)
 
 		// スコープ
 		scopes, err := models.ClientScopes(
@@ -1033,6 +1039,30 @@ func TestClientDeleteHandler(t *testing.T) {
 		).Exists(ctx, h.DB)
 		require.NoError(t, err)
 		require.False(t, clientExists)
+
+		scopes, err := models.ClientScopes(
+			models.ClientScopeWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, scopes)
+
+		redirects, err := models.ClientRedirects(
+			models.ClientRedirectWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, redirects)
+
+		referrers, err := models.ClientReferrers(
+			models.ClientReferrerWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, referrers)
+
+		allows, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, allows)
 	})
 
 	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {
