@@ -364,6 +364,13 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 // - prompt: ログイン求めたりするやつ
 // - scopes: スコープ
 // - update_secret: クライアントシークレットを更新するか
+// - redirect_url: リダイレクトURL
+//   - redirect_url_count: リダイレクトURLの数
+//   - redirect_url_[index]: リダイレクトURL
+//
+// - referrer_url?: リファラURL
+//   - referrer_url_count: リファラURLの数
+//   - referrer_url_[index]: リファラURL
 func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -374,6 +381,15 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 	prompt := c.FormValue("prompt")
 	scope := c.FormValue("scopes")
 
+	redirectUrlForms, err := h.FormValues(c, "redirect_url")
+	if err != nil {
+		return err
+	}
+	referrerUrlForms, err := h.FormValues(c, "referrer_url", true)
+	if err != nil {
+		return err
+	}
+
 	updateSecretForm := c.FormValue("update_secret")
 
 	if clientId == "" {
@@ -381,7 +397,7 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 	}
 
 	imageHeader, err := c.FormFile("image")
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrMissingFile) {
 		return NewHTTPError(http.StatusBadRequest, err)
 	}
 
@@ -392,7 +408,7 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 	isAllow := isAllowForm == "true"
 	updateSecret := updateSecretForm == "true"
 
-	if prompt == "" {
+	if prompt != "" {
 		// promptの値が正しいかどうかチェックする
 		promptOk := false
 		for _, p := range PromptEMUNS {
@@ -414,9 +430,33 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "scope is invalid")
 	}
 	for _, s := range scopes {
-		if lib.ValidateScope(s) {
+		if !lib.ValidateScope(s) {
 			return NewHTTPError(http.StatusBadRequest, "scope is invalid")
 		}
+	}
+
+	if len(redirectUrlForms) > h.C.ClientRedirectURLMaxCreated {
+		return NewHTTPError(http.StatusBadRequest, "too many redirect urls")
+	}
+	if len(referrerUrlForms) > h.C.ClientReferrerURLMaxCreated {
+		return NewHTTPError(http.StatusBadRequest, "too many referrer urls")
+	}
+
+	redirectUrls := make([]url.URL, len(redirectUrlForms))
+	for i, redirectUrlForm := range redirectUrlForms {
+		redirectUrl, err := url.ParseRequestURI(redirectUrlForm)
+		if err != nil {
+			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("referrer_url `%s` is invalid", redirectUrlForm))
+		}
+		redirectUrls[i] = *redirectUrl
+	}
+	referrerUrls := make([]url.URL, len(referrerUrlForms))
+	for i, referrerUrlForm := range referrerUrlForms {
+		referrerUrl, err := url.ParseRequestURI(referrerUrlForm)
+		if err != nil {
+			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("referrer_url `%s` is invalid", referrerUrlForm))
+		}
+		referrerUrls[i] = *referrerUrl
 	}
 
 	// -- チェック終わり --
@@ -515,6 +555,41 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 				Scope:    scope,
 			}
 			if err := clientScope.Insert(ctx, tx, boil.Infer()); err != nil {
+				return err
+			}
+		}
+
+		// リダイレクトURLを一度すべて削除してから追加する
+		if _, err := client.ClientRedirects(
+			models.ClientRedirectWhere.ClientID.EQ(clientId),
+		).DeleteAll(ctx, h.DB); err != nil {
+			return err
+		}
+		for _, redirectUrl := range redirectUrls {
+			clientRedirectUrl := models.ClientRedirect{
+				ClientID: clientId,
+				URL:      redirectUrl.String(),
+				Host:     redirectUrl.Host,
+			}
+			if err := clientRedirectUrl.Insert(ctx, tx, boil.Infer()); err != nil {
+				return err
+			}
+		}
+
+		// リダイレクトURLを一度すべて削除してから追加する
+		if _, err := client.ClientReferrers(
+			models.ClientReferrerWhere.ClientID.EQ(clientId),
+		).DeleteAll(ctx, h.DB); err != nil {
+			return err
+		}
+		// リファラーURLはOptionalなのである場合のみ
+		for _, referrerUrl := range referrerUrls {
+			clientReferrerUrl := models.ClientReferrer{
+				ClientID: clientId,
+				URL:      referrerUrl.String(),
+				Host:     referrerUrl.Host,
+			}
+			if err := clientReferrerUrl.Insert(ctx, tx, boil.Infer()); err != nil {
 				return err
 			}
 		}
