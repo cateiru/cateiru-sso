@@ -1003,13 +1003,85 @@ func TestClientUpdateHandler(t *testing.T) {
 }
 
 func TestClientDeleteHandler(t *testing.T) {
-	t.Run("成功: クライアントを削除できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {})
+	t.Run("成功: クライアントを削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {})
+		clientId, _ := RegisterClient(t, ctx, &u)
 
-	t.Run("失敗: クライアントは存在するがオーナーではない", func(t *testing.T) {})
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteHandler(c)
+		require.NoError(t, err)
+
+		clientExists, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, clientExists)
+	})
+
+	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteHandler(c)
+		require.EqualError(t, err, "code=400, message=client_id is required")
+	})
+
+	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?client_id=invalid", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
+
+	t.Run("失敗: クライアントは存在するがオーナーではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u2)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
 }
 
 func TestClientDeleteImageHandler(t *testing.T) {
