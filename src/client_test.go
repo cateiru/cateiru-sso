@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
@@ -112,17 +113,405 @@ func TestClientHandler(t *testing.T) {
 }
 
 func TestClientCreateHandler(t *testing.T) {
-	t.Run("成功: クライアントを新規作成できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: スコープを複数設定して新規作成", func(t *testing.T) {})
+	t.Run("成功: クライアントを新規作成できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("成功: 画像を設定して新規作成", func(t *testing.T) {})
+		cookie := RegisterSession(t, ctx, &u)
 
-	t.Run("失敗: promptの値が不正", func(t *testing.T) {})
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
 
-	t.Run("失敗: スコープの値が不正", func(t *testing.T) {})
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
 
-	t.Run("失敗: クライアントの作成上限が超えている", func(t *testing.T) {})
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.NoError(t, err)
+
+		// チェック
+
+		response := src.ClientResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.Name, "test")
+		require.Equal(t, response.IsAllow, false)
+
+		// クライアント
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(response.ClientID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, client.Name, "test")
+		require.Equal(t, client.IsAllow, false)
+
+		// スコープ
+		scopes, err := models.ClientScopes(
+			models.ClientScopeWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, scopes, 2)
+
+		// リダイレクトURL
+		redirectUrls, err := models.ClientRedirects(
+			models.ClientRedirectWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, redirectUrls, 2)
+
+		// リファラーURL
+		referrerUrls, err := models.ClientReferrers(
+			models.ClientReferrerWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, referrerUrls, 2)
+	})
+
+	t.Run("成功: 画像を設定して新規作成", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form.InsertFile("image", image)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.NoError(t, err)
+
+		// チェック
+
+		response := src.ClientResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.Name, "test")
+		require.Equal(t, response.IsAllow, false)
+
+		// クライアント
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(response.ClientID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, client.Name, "test")
+		require.Equal(t, client.IsAllow, false)
+
+		// 画像のリンクが入っている
+		require.True(t, client.Image.Valid)
+
+		// スコープ
+		scopes, err := models.ClientScopes(
+			models.ClientScopeWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, scopes, 2)
+
+		// リダイレクトURL
+		redirectUrls, err := models.ClientRedirects(
+			models.ClientRedirectWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, redirectUrls, 2)
+
+		// リファラーURL
+		referrerUrls, err := models.ClientReferrers(
+			models.ClientReferrerWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, referrerUrls, 2)
+	})
+
+	t.Run("失敗: promptの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		form.Insert("prompt", "hogehoge")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=prompt is invalid")
+	})
+
+	t.Run("失敗: スコープの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile hogehoge")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=scope `hogehoge` is invalid")
+	})
+
+	t.Run("失敗: クライアントの作成上限が超えている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		for i := 0; i <= C.ClientMaxCreated; i++ {
+			RegisterClient(t, ctx, &u)
+		}
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=too many clients")
+	})
+
+	t.Run("失敗: リダイレクトURLが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "nyancat")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=referrer_url `nyancat` is invalid")
+	})
+
+	t.Run("失敗: リダイレクトURLのForm指定が違う", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "3")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=redirect_url_2 is required")
+	})
+
+	t.Run("失敗: リダイレクトURLの作成上限が超えている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		form.Insert("redirect_url_count", fmt.Sprint(C.ClientRedirectURLMaxCreated+2))
+		for i := 0; i <= C.ClientRedirectURLMaxCreated+2; i++ {
+			form.Insert(fmt.Sprintf("redirect_url_%d", i), "https://aaaa.test")
+		}
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=too many redirect urls")
+	})
+
+	t.Run("失敗: リファラーURLが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "nyancat")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=referrer_url `nyancat` is invalid")
+	})
+
+	t.Run("失敗: リファラーURLのForm指定が違う", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "3")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=referrer_url_2 is required")
+	})
+
+	t.Run("失敗: リファラーURLの作成上限が超えている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+
+		form.Insert("referrer_url_count", fmt.Sprint(C.ClientReferrerURLMaxCreated+2))
+		for i := 0; i <= C.ClientReferrerURLMaxCreated+2; i++ {
+			form.Insert(fmt.Sprintf("referrer_url_%d", i), "https://aaaa.test")
+		}
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=too many referrer urls")
+	})
 }
 
 func TestClientUpdateHandler(t *testing.T) {
@@ -143,6 +532,18 @@ func TestClientUpdateHandler(t *testing.T) {
 	t.Run("失敗: promptの値が不正", func(t *testing.T) {})
 
 	t.Run("失敗: スコープの値が不正", func(t *testing.T) {})
+
+	t.Run("失敗: リダイレクトURLが不正", func(t *testing.T) {})
+
+	t.Run("失敗: リダイレクトURLのForm指定が違う", func(t *testing.T) {})
+
+	t.Run("失敗: リダイレクトURLの作成上限が超えている", func(t *testing.T) {})
+
+	t.Run("失敗: リファラーURLが不正", func(t *testing.T) {})
+
+	t.Run("失敗: リファラーURLのForm指定が違う", func(t *testing.T) {})
+
+	t.Run("失敗: リファラーURLの作成上限が超えている", func(t *testing.T) {})
 }
 
 func TestClientDeleteHandler(t *testing.T) {

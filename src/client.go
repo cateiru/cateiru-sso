@@ -3,6 +3,7 @@ package src
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -13,6 +14,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
+	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -116,11 +118,18 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 // クライアントを作成する
 // フォーム要素:
 // - name: クライアント名
-// - description: クライアントの説明
+// - description?: クライアントの説明
 // - image?: クライアントのアイコン
 // - is_allow: ホワイトリスト使うか
-// - prompt: ログイン求めたりするやつ
+// - prompt?: ログイン求めたりするやつ
 // - scopes: スコープ
+// - redirect_url: リダイレクトURL
+//   - redirect_url_count: リダイレクトURLの数
+//   - redirect_url_[index]: リダイレクトURL
+//
+// - referrer_url?: リファラURL
+//   - referrer_url_count: リファラURLの数
+//   - referrer_url_[index]: リファラURL
 func (h *Handler) ClientCreateHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -130,9 +139,17 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 	prompt := c.FormValue("prompt")
 	scope := c.FormValue("scopes")
 
-	image := null.NewString("", false)
-	imageHeader, err := c.FormFile("image")
+	redirectUrlForms, err := h.FormValues(c, "redirect_url")
 	if err != nil {
+		return err
+	}
+	referrerUrlForms, err := h.FormValues(c, "referrer_url", true)
+	if err != nil {
+		return err
+	}
+
+	imageHeader, err := c.FormFile("image")
+	if err != nil && !errors.Is(err, http.ErrMissingFile) {
 		return NewHTTPError(http.StatusBadRequest, err)
 	}
 
@@ -142,7 +159,7 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 
 	isAllow := isAllowForm == "true"
 
-	if prompt == "" {
+	if prompt != "" {
 		// promptの値が正しいかどうかチェックする
 		promptOk := false
 		for _, p := range PromptEMUNS {
@@ -160,13 +177,37 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "scope is required")
 	}
 	scopes := strings.Split(scope, " ")
-	if len(scopes) == 0 && scopes[0] != "" {
+	if len(scopes) == 0 || scopes[0] == "" {
 		return NewHTTPError(http.StatusBadRequest, "scope is invalid")
 	}
 	for _, s := range scopes {
-		if lib.ValidateScope(s) {
-			return NewHTTPError(http.StatusBadRequest, "scope is invalid")
+		if !lib.ValidateScope(s) {
+			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("scope `%s` is invalid", s))
 		}
+	}
+
+	if len(redirectUrlForms) > h.C.ClientRedirectURLMaxCreated {
+		return NewHTTPError(http.StatusBadRequest, "too many redirect urls")
+	}
+	if len(referrerUrlForms) > h.C.ClientReferrerURLMaxCreated {
+		return NewHTTPError(http.StatusBadRequest, "too many referrer urls")
+	}
+
+	redirectUrls := make([]url.URL, len(redirectUrlForms))
+	for i, redirectUrlForm := range redirectUrlForms {
+		redirectUrl, err := url.ParseRequestURI(redirectUrlForm)
+		if err != nil {
+			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("referrer_url `%s` is invalid", redirectUrlForm))
+		}
+		redirectUrls[i] = *redirectUrl
+	}
+	referrerUrls := make([]url.URL, len(referrerUrlForms))
+	for i, referrerUrlForm := range referrerUrlForms {
+		referrerUrl, err := url.ParseRequestURI(referrerUrlForm)
+		if err != nil {
+			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("referrer_url `%s` is invalid", referrerUrlForm))
+		}
+		referrerUrls[i] = *referrerUrl
 	}
 
 	// -- チェック終わり --
@@ -187,14 +228,14 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "too many clients")
 	}
 
-	clientId, err := lib.RandomStr(32)
-	if err != nil {
-		return err
-	}
+	clientId := ulid.Make()
+
 	clientSecret, err := lib.RandomStr(63)
 	if err != nil {
 		return err
 	}
+
+	image := null.NewString("", false)
 
 	// 画像をアップロードする（ある場合）
 	if imageHeader != nil {
@@ -206,7 +247,7 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		if !lib.ValidateContentType(contentType) {
 			return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
 		}
-		path := filepath.Join("client_icon", clientId)
+		path := filepath.Join("client_icon", clientId.String())
 		if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
 			return err
 		}
@@ -231,7 +272,7 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		client := models.Client{
-			ClientID: clientId,
+			ClientID: clientId.String(),
 
 			Name:        name,
 			Description: null.NewString(description, description != ""),
@@ -250,10 +291,33 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		// FIXME: Bulk InsertしたいけどSQLBoilerにはないので
 		for _, scope := range scopes {
 			clientScope := models.ClientScope{
-				ClientID: clientId,
+				ClientID: clientId.String(),
 				Scope:    scope,
 			}
 			if err := clientScope.Insert(ctx, tx, boil.Infer()); err != nil {
+				return err
+			}
+		}
+
+		for _, redirectUrl := range redirectUrls {
+			clientRedirectUrl := models.ClientRedirect{
+				ClientID: clientId.String(),
+				URL:      redirectUrl.String(),
+				Host:     redirectUrl.Host,
+			}
+			if err := clientRedirectUrl.Insert(ctx, tx, boil.Infer()); err != nil {
+				return err
+			}
+		}
+
+		// リファラーURLはOptionalなのである場合のみ
+		for _, referrerUrl := range referrerUrls {
+			clientReferrerUrl := models.ClientReferrer{
+				ClientID: clientId.String(),
+				URL:      referrerUrl.String(),
+				Host:     referrerUrl.Host,
+			}
+			if err := clientReferrerUrl.Insert(ctx, tx, boil.Infer()); err != nil {
 				return err
 			}
 		}
@@ -265,7 +329,7 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 	}
 
 	currentClient, err := models.Clients(
-		models.ClientWhere.ClientID.EQ(clientId),
+		models.ClientWhere.ClientID.EQ(clientId.String()),
 	).One(ctx, h.DB)
 	if err != nil {
 		return err

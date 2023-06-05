@@ -36,6 +36,8 @@ var _ = flag.String("test.config", "", "Overrides the default config")
 func TestMain(m *testing.M) {
 	src.InitLogging("test")
 
+	os.Setenv("STORAGE_EMULATOR_HOST", "localhost:4443")
+
 	C = src.TestConfig
 
 	ctx := context.Background()
