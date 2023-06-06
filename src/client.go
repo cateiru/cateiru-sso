@@ -868,11 +868,11 @@ func (h *Handler) ClientAddAllowUserHandler(c echo.Context) error {
 	userId := c.FormValue("user_id")
 	emailDomain := c.FormValue("email_domain")
 	// どちらか必須
-	if userId != "" || emailDomain != "" {
+	if userId == "" && emailDomain == "" {
 		return NewHTTPError(http.StatusBadRequest, "user_id or email_domain is required")
 	}
 	// 片方しか設定できない
-	if userId == emailDomain {
+	if (userId != "") == (emailDomain != "") {
 		return NewHTTPError(http.StatusBadRequest, "user_id and email_domain cannot be set at the same time")
 	}
 

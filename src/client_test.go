@@ -1332,19 +1332,176 @@ func TestClientAllowUserHandler(t *testing.T) {
 }
 
 func TestClientAddAllowUserHandler(t *testing.T) {
-	t.Run("成功: ルールにユーザーIDを指定して追加できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("成功: ルールにメールアドレスのドメインを指定して追加できる", func(t *testing.T) {})
+	t.Run("成功: ルールにユーザーIDを指定して追加できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {})
+		clientId, _ := RegisterClient(t, ctx, &u)
 
-	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {})
+		cookie := RegisterSession(t, ctx, &u)
 
-	t.Run("失敗: クライアントは存在するがオーナーではない", func(t *testing.T) {})
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("user_id", "test")
 
-	t.Run("失敗: user_idとemail_domainどちらも指定しない", func(t *testing.T) {})
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
 
-	t.Run("失敗: user_idとemail_domainどちらも指定してしまっている", func(t *testing.T) {})
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.NoError(t, err)
+
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.Equal(t, rule.UserID.String, "test")
+		require.False(t, rule.EmailDomain.Valid)
+	})
+
+	t.Run("成功: ルールにメールアドレスのドメインを指定して追加できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("email_domain", "cateiru.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.NoError(t, err)
+
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.False(t, rule.UserID.Valid)
+		require.Equal(t, rule.EmailDomain.String, "cateiru.test")
+	})
+
+	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("email_domain", "cateiru.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=400, message=client_id is required")
+	})
+
+	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", "invalid")
+		form.Insert("email_domain", "cateiru.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
+
+	t.Run("失敗: クライアントは存在するがオーナーではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u2)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("email_domain", "cateiru.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
+
+	t.Run("失敗: user_idとemail_domainどちらも指定しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=400, message=user_id or email_domain is required")
+	})
+
+	t.Run("失敗: user_idとemail_domainどちらも指定してしまっている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("user_id", "test")
+		form.Insert("email_domain", "cateiru.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=400, message=user_id and email_domain cannot be set at the same time")
+	})
 }
 
 func TestClientDeleteAllowUserHandler(t *testing.T) {
