@@ -70,8 +70,5 @@
     "storybook": "^7.0.12",
     "storybook-addon-mock": "^4.0.0",
     "typescript": "^5.0.4"
-  },
-  "msw": {
-    "workerDirectory": "public"
   }
 }

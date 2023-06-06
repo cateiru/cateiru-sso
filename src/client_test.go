@@ -1247,13 +1247,88 @@ func TestClientDeleteImageHandler(t *testing.T) {
 }
 
 func TestClientAllowUserHandler(t *testing.T) {
-	t.Run("成功: ルールを取得できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {})
+	t.Run("成功: ルールを取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {})
+		clientId, _ := RegisterClient(t, ctx, &u)
 
-	t.Run("失敗: クライアントは存在するがオーナーではない", func(t *testing.T) {})
+		for i := 0; i < 2; i++ {
+			RegisterAllowRules(t, ctx, clientId, false, fmt.Sprintf("%daaa.test", i))
+		}
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAllowUserHandler(c)
+		require.NoError(t, err)
+
+		response := []src.ClientAllowUserRuleResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 2)
+	})
+
+	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAllowUserHandler(c)
+		require.EqualError(t, err, "code=400, message=client_id is required")
+	})
+
+	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?client_id=invalid", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAllowUserHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
+
+	t.Run("失敗: クライアントは存在するがオーナーではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u2)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAllowUserHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
 }
 
 func TestClientAddAllowUserHandler(t *testing.T) {

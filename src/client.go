@@ -56,57 +56,6 @@ type ClientAllowUserRuleResponse struct {
 	EmailDomain null.String `json:"email_domain,omitempty"`
 }
 
-// クライアントの一覧を返す
-// client_idを指定するとそのクライアントを返す
-func (h *Handler) ClientHandler(c echo.Context) error {
-	ctx := c.Request().Context()
-
-	clientId := c.QueryParam("client_id")
-
-	u, err := h.Session.SimpleLogin(ctx, c)
-	if err != nil {
-		return err
-	}
-
-	// client_idが指定されている場合はそのIDのクライアントを返す
-	if clientId != "" {
-		response, err := getClientDetails(ctx, h.DB, clientId, u)
-		if err != nil {
-			return err
-		}
-
-		return c.JSON(http.StatusOK, response)
-	}
-
-	clients, err := models.Clients(
-		models.ClientWhere.OwnerUserID.EQ(u.ID),
-		qm.Limit(h.C.ClientMaxCreated),
-		qm.OrderBy("updated_at DESC"),
-	).All(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-
-	response := make([]*ClientResponse, len(clients))
-	for i, client := range clients {
-		response[i] = &ClientResponse{
-			ClientID: client.ClientID,
-
-			Name:        client.Name,
-			Description: client.Description,
-			Image:       client.Image,
-
-			IsAllow: client.IsAllow,
-			Prompt:  client.Prompt,
-
-			CreatedAt: client.CreatedAt,
-			UpdatedAt: client.UpdatedAt,
-		}
-	}
-
-	return c.JSON(http.StatusOK, response)
-}
-
 // クライアントの詳細を取得する
 func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *models.User) (*ClientDetailResponse, error) {
 	client, err := models.Clients(
@@ -175,6 +124,57 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 			UpdatedAt: client.UpdatedAt,
 		},
 	}, nil
+}
+
+// クライアントの一覧を返す
+// client_idを指定するとそのクライアントを返す
+func (h *Handler) ClientHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	clientId := c.QueryParam("client_id")
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	// client_idが指定されている場合はそのIDのクライアントを返す
+	if clientId != "" {
+		response, err := getClientDetails(ctx, h.DB, clientId, u)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(http.StatusOK, response)
+	}
+
+	clients, err := models.Clients(
+		models.ClientWhere.OwnerUserID.EQ(u.ID),
+		qm.Limit(h.C.ClientMaxCreated),
+		qm.OrderBy("updated_at DESC"),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	response := make([]*ClientResponse, len(clients))
+	for i, client := range clients {
+		response[i] = &ClientResponse{
+			ClientID: client.ClientID,
+
+			Name:        client.Name,
+			Description: client.Description,
+			Image:       client.Image,
+
+			IsAllow: client.IsAllow,
+			Prompt:  client.Prompt,
+
+			CreatedAt: client.CreatedAt,
+			UpdatedAt: client.UpdatedAt,
+		}
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 // クライアントを作成する
@@ -843,9 +843,9 @@ func (h *Handler) ClientAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
-	roleResponse := make([]*ClientAllowUserRuleResponse, 0, len(rules))
+	roleResponse := make([]ClientAllowUserRuleResponse, len(rules))
 	for i, rule := range rules {
-		roleResponse[i] = &ClientAllowUserRuleResponse{
+		roleResponse[i] = ClientAllowUserRuleResponse{
 			Id: rule.ID,
 
 			UserId:      rule.UserID,
