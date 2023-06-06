@@ -78,6 +78,7 @@ CREATE TABLE `brand` (
 
 CREATE TABLE `user_brand` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
     `user_id` VARCHAR(32) NOT NULL,
 
     -- ブランドID
@@ -90,7 +91,9 @@ CREATE TABLE `user_brand` (
     FOREIGN KEY (`brand_id`) REFERENCES `brand` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`id`),
-    INDEX `brand_user_id` (`user_id`)
+    INDEX `brand_user_id` (`user_id`),
+    INDEX `brand_brand_id` (`brand_id`),
+    UNIQUE INDEX `brand_user_brand` (`user_id`, `brand_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- スタッフテーブル
@@ -181,7 +184,8 @@ CREATE TABLE `otp_backup` (
     FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (`id`),
-    INDEX `otp_backup_user_id` (`user_id`)
+    INDEX `otp_backup_user_id` (`user_id`),
+    UNIQUE INDEX `otp_backup_user_code` (`user_id`, `code`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- アカウント登録時に使用するセッションを保存するテーブル
@@ -589,8 +593,9 @@ CREATE TABLE `client_allow_rule` (
 
     PRIMARY KEY (`id`),
     INDEX `client_allow_rule_client_id` (`client_id`),
-    INDEX `client_allow_rule_user_id` (`user_id`),
-    INDEX `client_allow_rule_client_id_user_id` (`client_id`, `user_id`)
+    UNIQUE INDEX `client_allow_rule_user_id_client_id` (`client_id`, `user_id`),
+    UNIQUE INDEX `client_allow_rule_email_domain_client_id` (`client_id`, `email_domain`),
+    UNIQUE INDEX `client_allow_rule_user_id_email_domain_client_id` (`client_id`, `user_id`, `email_domain`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- 過去にログインしたSSOクライアントのテーブル
@@ -616,7 +621,8 @@ CREATE TABLE `login_client_history` (
 
     PRIMARY KEY (`id`),
     INDEX `login_client_history_client_id` (`client_id`),
-    INDEX `login_client_history_user_id` (`user_id`)
+    INDEX `login_client_history_user_id` (`user_id`),
+    INDEX `login_client_history_client_id_user_id` (`client_id`, `user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- ログイン履歴
@@ -708,5 +714,44 @@ CREATE TABLE `broadcast_notice` (
     PRIMARY KEY (`id`),
     INDEX `broadcast_notice_entry_id` (`entry_id`),
     INDEX `broadcast_notice_user_id` (`user_id`),
-    INDEX `broadcast_notice_user_id_is_read` (`user_id`, `is_read`)
+    INDEX `broadcast_notice_user_id_is_read` (`user_id`, `is_read`),
+    UNIQUE INDEX `broadcast_notice_entry_id_user_id` (`entry_id`, `user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 組織
+CREATE TABLE `organization` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    -- 組織名
+    `name` VARCHAR(128) NOT NULL,
+    `image` TEXT DEFAULT NULL,
+    `link` TEXT DEFAULT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 組織に所属するユーザー
+CREATE TABLE `organization_user` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `organization_id` INT UNSIGNED NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    `role` ENUM('owner', 'member', 'guest') NOT NULL DEFAULT 'guest',
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`organization_id`) REFERENCES `organization` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `organization_user_organization_id` (`organization_id`),
+    INDEX `organization_user_user_id` (`user_id`),
+    UNIQUE INDEX `organization_user_organization_id_user_id` (`organization_id`, `user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;

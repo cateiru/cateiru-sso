@@ -38,6 +38,10 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("OauthSessions", testOauthSessionsUpsert)
 
+	t.Run("Organizations", testOrganizationsUpsert)
+
+	t.Run("OrganizationUsers", testOrganizationUsersUpsert)
+
 	t.Run("Otps", testOtpsUpsert)
 
 	t.Run("OtpBackups", testOtpBackupsUpsert)

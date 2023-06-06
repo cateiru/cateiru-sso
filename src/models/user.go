@@ -167,6 +167,7 @@ var UserRels = struct {
 	LoginHistories       string
 	LoginTryHistories    string
 	OauthSessions        string
+	OrganizationUsers    string
 	OtpBackups           string
 	OtpSessions          string
 	Refreshes            string
@@ -189,6 +190,7 @@ var UserRels = struct {
 	LoginHistories:       "LoginHistories",
 	LoginTryHistories:    "LoginTryHistories",
 	OauthSessions:        "OauthSessions",
+	OrganizationUsers:    "OrganizationUsers",
 	OtpBackups:           "OtpBackups",
 	OtpSessions:          "OtpSessions",
 	Refreshes:            "Refreshes",
@@ -214,6 +216,7 @@ type userR struct {
 	LoginHistories       LoginHistorySlice       `boil:"LoginHistories" json:"LoginHistories" toml:"LoginHistories" yaml:"LoginHistories"`
 	LoginTryHistories    LoginTryHistorySlice    `boil:"LoginTryHistories" json:"LoginTryHistories" toml:"LoginTryHistories" yaml:"LoginTryHistories"`
 	OauthSessions        OauthSessionSlice       `boil:"OauthSessions" json:"OauthSessions" toml:"OauthSessions" yaml:"OauthSessions"`
+	OrganizationUsers    OrganizationUserSlice   `boil:"OrganizationUsers" json:"OrganizationUsers" toml:"OrganizationUsers" yaml:"OrganizationUsers"`
 	OtpBackups           OtpBackupSlice          `boil:"OtpBackups" json:"OtpBackups" toml:"OtpBackups" yaml:"OtpBackups"`
 	OtpSessions          OtpSessionSlice         `boil:"OtpSessions" json:"OtpSessions" toml:"OtpSessions" yaml:"OtpSessions"`
 	Refreshes            RefreshSlice            `boil:"Refreshes" json:"Refreshes" toml:"Refreshes" yaml:"Refreshes"`
@@ -324,6 +327,13 @@ func (r *userR) GetOauthSessions() OauthSessionSlice {
 		return nil
 	}
 	return r.OauthSessions
+}
+
+func (r *userR) GetOrganizationUsers() OrganizationUserSlice {
+	if r == nil {
+		return nil
+	}
+	return r.OrganizationUsers
 }
 
 func (r *userR) GetOtpBackups() OtpBackupSlice {
@@ -846,6 +856,20 @@ func (o *User) OauthSessions(mods ...qm.QueryMod) oauthSessionQuery {
 	)
 
 	return OauthSessions(queryMods...)
+}
+
+// OrganizationUsers retrieves all the organization_user's OrganizationUsers with an executor.
+func (o *User) OrganizationUsers(mods ...qm.QueryMod) organizationUserQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`organization_user`.`user_id`=?", o.ID),
+	)
+
+	return OrganizationUsers(queryMods...)
 }
 
 // OtpBackups retrieves all the otp_backup's OtpBackups with an executor.
@@ -2554,6 +2578,120 @@ func (userL) LoadOauthSessions(ctx context.Context, e boil.ContextExecutor, sing
 	return nil
 }
 
+// LoadOrganizationUsers allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadOrganizationUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`organization_user`),
+		qm.WhereIn(`organization_user.user_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load organization_user")
+	}
+
+	var resultSlice []*OrganizationUser
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice organization_user")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on organization_user")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for organization_user")
+	}
+
+	if len(organizationUserAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.OrganizationUsers = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &organizationUserR{}
+			}
+			foreign.R.User = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.UserID {
+				local.R.OrganizationUsers = append(local.R.OrganizationUsers, foreign)
+				if foreign.R == nil {
+					foreign.R = &organizationUserR{}
+				}
+				foreign.R.User = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadOtpBackups allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (userL) LoadOtpBackups(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
@@ -4073,6 +4211,59 @@ func (o *User) AddOauthSessions(ctx context.Context, exec boil.ContextExecutor, 
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &oauthSessionR{
+				User: o,
+			}
+		} else {
+			rel.R.User = o
+		}
+	}
+	return nil
+}
+
+// AddOrganizationUsers adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.OrganizationUsers.
+// Sets related.R.User appropriately.
+func (o *User) AddOrganizationUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OrganizationUser) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.UserID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `organization_user` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"user_id"}),
+				strmangle.WhereClause("`", "`", 0, organizationUserPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.UserID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			OrganizationUsers: related,
+		}
+	} else {
+		o.R.OrganizationUsers = append(o.R.OrganizationUsers, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &organizationUserR{
 				User: o,
 			}
 		} else {

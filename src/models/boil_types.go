@@ -63,3 +63,18 @@ func AllClientPrompt() []string {
 		ClientPrompt2faLogin,
 	}
 }
+
+// Enum values for OrganizationUserRole
+const (
+	OrganizationUserRoleOwner  string = "owner"
+	OrganizationUserRoleMember string = "member"
+	OrganizationUserRoleGuest  string = "guest"
+)
+
+func AllOrganizationUserRole() []string {
+	return []string{
+		OrganizationUserRoleOwner,
+		OrganizationUserRoleMember,
+		OrganizationUserRoleGuest,
+	}
+}
