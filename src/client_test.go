@@ -1505,13 +1505,97 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 }
 
 func TestClientDeleteAllowUserHandler(t *testing.T) {
-	t.Run("成功: ルールからIDを指定して削除できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: idが不正", func(t *testing.T) {})
+	t.Run("成功: ルールからIDを指定して削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: idが空", func(t *testing.T) {})
+		clientId, _ := RegisterClient(t, ctx, &u)
 
-	t.Run("失敗: そのルールのクライアントのオーナーではない", func(t *testing.T) {})
+		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?id=%d", rule.ID), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteAllowUserHandler(c)
+		require.NoError(t, err)
+
+		existRule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ID.EQ(rule.ID),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, existRule)
+	})
+
+	t.Run("失敗: idが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?id=invalid", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteAllowUserHandler(c)
+		require.EqualError(t, err, "code=400, message=id is invalid")
+	})
+
+	t.Run("失敗: idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteAllowUserHandler(c)
+		require.EqualError(t, err, "code=400, message=id is required")
+	})
+
+	t.Run("失敗: そのルールのクライアントのオーナーではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u2)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?id=%d", rule.ID), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteAllowUserHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not owner")
+	})
 }
 
 func TestClientLoginUsersHandler(t *testing.T) {
