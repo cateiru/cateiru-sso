@@ -24,7 +24,7 @@ import (
 // OrganizationUser is an object representing the database table.
 type OrganizationUser struct {
 	ID             uint      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	OrganizationID uint      `boil:"organization_id" json:"organization_id" toml:"organization_id" yaml:"organization_id"`
+	OrganizationID string    `boil:"organization_id" json:"organization_id" toml:"organization_id" yaml:"organization_id"`
 	UserID         string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Role           string    `boil:"role" json:"role" toml:"role" yaml:"role"`
 	CreatedAt      time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -70,14 +70,14 @@ var OrganizationUserTableColumns = struct {
 
 var OrganizationUserWhere = struct {
 	ID             whereHelperuint
-	OrganizationID whereHelperuint
+	OrganizationID whereHelperstring
 	UserID         whereHelperstring
 	Role           whereHelperstring
 	CreatedAt      whereHelpertime_Time
 	UpdatedAt      whereHelpertime_Time
 }{
 	ID:             whereHelperuint{field: "`organization_user`.`id`"},
-	OrganizationID: whereHelperuint{field: "`organization_user`.`organization_id`"},
+	OrganizationID: whereHelperstring{field: "`organization_user`.`organization_id`"},
 	UserID:         whereHelperstring{field: "`organization_user`.`user_id`"},
 	Role:           whereHelperstring{field: "`organization_user`.`role`"},
 	CreatedAt:      whereHelpertime_Time{field: "`organization_user`.`created_at`"},

@@ -722,7 +722,7 @@ func testOrganizationsSelect(t *testing.T) {
 }
 
 var (
-	organizationDBTypes = map[string]string{`ID`: `int`, `Name`: `varchar`, `Image`: `text`, `Link`: `text`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	organizationDBTypes = map[string]string{`ID`: `varchar`, `Name`: `varchar`, `Image`: `text`, `Link`: `text`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_                   = bytes.MinRead
 )
 

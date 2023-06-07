@@ -468,11 +468,19 @@ CREATE TABLE `client` (
     -- クライアントのイメージ
     `image` TEXT DEFAULT NULL,
 
+    -- orgで作成したものであれば、ここにorgのIDが入る
+    -- 個人で作成したものはnullになる
+    `org_id` VARCHAR(32) DEFAULT NULL,
+
+    -- org_idが設定されている場合にこのフラグがtrueだと、orgのメンバーのみが利用できるようになる
+    `org_member_only` BOOLEAN NOT NULL DEFAULT 0,
+
     -- ホワイトリストを使用するかどうか
     `is_allow` BOOLEAN NOT NULL DEFAULT 0,
     -- OAuthの認証リクエスト時にログイン、2faログインを求めることを強制する
     `prompt` ENUM('login', '2fa_login') DEFAULT NULL,
 
+    -- 作成者
     `owner_user_id` VARCHAR(32) NOT NULL,
 
     -- OAuth2.0のClient Secret
@@ -486,7 +494,10 @@ CREATE TABLE `client` (
 
     PRIMARY KEY (`client_id`),
     INDEX `client_owner_user_id` (`owner_user_id`),
-    INDEX `client_owner_user_id_client_id` (`owner_user_id`, `client_id`)
+    INDEX `client_owner_user_id_client_id` (`owner_user_id`, `client_id`),
+    INDEX `client_org_id` (`org_id`),
+    INDEX `client_org_id_client_id` (`org_id`, `client_id`),
+    INDEX `client_org_id_client_id_owner_user_id` (`org_id`, `client_id`, `owner_user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
 -- クライアントのリダイレクトURLを設定するテーブル
@@ -720,7 +731,7 @@ CREATE TABLE `broadcast_notice` (
 
 -- 組織
 CREATE TABLE `organization` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `id` VARCHAR(32) NOT NULL,
 
     -- 組織名
     `name` VARCHAR(128) NOT NULL,
@@ -738,7 +749,7 @@ CREATE TABLE `organization` (
 CREATE TABLE `organization_user` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-    `organization_id` INT UNSIGNED NOT NULL,
+    `organization_id` VARCHAR(32) NOT NULL,
     `user_id` VARCHAR(32) NOT NULL,
 
     `role` ENUM('owner', 'member', 'guest') NOT NULL DEFAULT 'guest',

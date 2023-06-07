@@ -805,7 +805,7 @@ func testOrganizationUsersSelect(t *testing.T) {
 }
 
 var (
-	organizationUserDBTypes = map[string]string{`ID`: `int`, `OrganizationID`: `int`, `UserID`: `varchar`, `Role`: `enum('owner','member','guest')`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	organizationUserDBTypes = map[string]string{`ID`: `int`, `OrganizationID`: `varchar`, `UserID`: `varchar`, `Role`: `enum('owner','member','guest')`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_                       = bytes.MinRead
 )
 

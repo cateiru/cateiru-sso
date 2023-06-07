@@ -24,7 +24,7 @@ import (
 
 // Organization is an object representing the database table.
 type Organization struct {
-	ID        uint        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID        string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name      string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Image     null.String `boil:"image" json:"image,omitempty" toml:"image" yaml:"image,omitempty"`
 	Link      null.String `boil:"link" json:"link,omitempty" toml:"link" yaml:"link,omitempty"`
@@ -70,14 +70,14 @@ var OrganizationTableColumns = struct {
 // Generated where
 
 var OrganizationWhere = struct {
-	ID        whereHelperuint
+	ID        whereHelperstring
 	Name      whereHelperstring
 	Image     whereHelpernull_String
 	Link      whereHelpernull_String
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
-	ID:        whereHelperuint{field: "`organization`.`id`"},
+	ID:        whereHelperstring{field: "`organization`.`id`"},
 	Name:      whereHelperstring{field: "`organization`.`name`"},
 	Image:     whereHelpernull_String{field: "`organization`.`image`"},
 	Link:      whereHelpernull_String{field: "`organization`.`link`"},
@@ -114,8 +114,8 @@ type organizationL struct{}
 
 var (
 	organizationAllColumns            = []string{"id", "name", "image", "link", "created_at", "updated_at"}
-	organizationColumnsWithoutDefault = []string{"name", "image", "link"}
-	organizationColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
+	organizationColumnsWithoutDefault = []string{"id", "name", "image", "link"}
+	organizationColumnsWithDefault    = []string{"created_at", "updated_at"}
 	organizationPrimaryKeyColumns     = []string{"id"}
 	organizationGeneratedColumns      = []string{}
 )
@@ -592,7 +592,7 @@ func Organizations(mods ...qm.QueryMod) organizationQuery {
 
 // FindOrganization retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindOrganization(ctx context.Context, exec boil.ContextExecutor, iD uint, selectCols ...string) (*Organization, error) {
+func FindOrganization(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Organization, error) {
 	organizationObj := &Organization{}
 
 	sel := "*"
@@ -689,26 +689,15 @@ func (o *Organization) Insert(ctx context.Context, exec boil.ContextExecutor, co
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to insert into organization")
 	}
 
-	var lastID int64
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == organizationMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -977,27 +966,16 @@ func (o *Organization) Upsert(ctx context.Context, exec boil.ContextExecutor, up
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	result, err := exec.ExecContext(ctx, cache.query, vals...)
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
 
 	if err != nil {
 		return errors.Wrap(err, "models: unable to upsert for organization")
 	}
 
-	var lastID int64
 	var uniqueMap []uint64
 	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-		goto CacheNoHooks
-	}
-
-	lastID, err = result.LastInsertId()
-	if err != nil {
-		return ErrSyncFail
-	}
-
-	o.ID = uint(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == organizationMapping["id"] {
 		goto CacheNoHooks
 	}
 
@@ -1175,7 +1153,7 @@ func (o *OrganizationSlice) ReloadAll(ctx context.Context, exec boil.ContextExec
 }
 
 // OrganizationExists checks if the Organization row exists.
-func OrganizationExists(ctx context.Context, exec boil.ContextExecutor, iD uint) (bool, error) {
+func OrganizationExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from `organization` where `id`=? limit 1)"
 
