@@ -91,6 +91,14 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	client.DELETE("/allow_user", h.ClientDeleteAllowUserHandler)
 	client.GET("/login_users", h.ClientLoginUsersHandler) // ログインしているユーザ一覧
 
+	org := version.Group("/org")
+	org.GET("/", h.OrgGetHandler)
+	org.GET("/client", h.OrgClientGetHandler)
+	org.GET("/member", h.OrgGetMemberHandler)
+	org.POST("/member", h.OrgPostMemberHandler)
+	org.PUT("/member", h.OrgUpdateMemberHandler)
+	org.DELETE("/member", h.OrgDeleteMemberHandler)
+
 	// OIDC
 	oidc := version.Group("/oidc")
 	oidc.POST("/require", h.Root)
@@ -115,10 +123,10 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.PUT("/brand", h.AdminBrandUpdateHandler)
 	admin.DELETE("/brand", h.AdminBrandDeleteHandler)
 
-	admin.GET("/org", h.Root)    // TODO
-	admin.POST("/org", h.Root)   // TODO
-	admin.PUT("/org", h.Root)    // TODO
-	admin.DELETE("/org", h.Root) // TODO
+	admin.GET("/org", h.AdminOrgHandler)
+	admin.POST("/org", h.AdminOrgCreateHandler)
+	admin.PUT("/org", h.AdminOrgUpdateHandler)
+	admin.DELETE("/org", h.AdminOrgDeleteHandler)
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う

@@ -4,11 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"net/url"
+	"path/filepath"
 	"strconv"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
+	"github.com/oklog/ulid/v2"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -426,5 +429,106 @@ func (h *Handler) AdminBrandDeleteHandler(c echo.Context) error {
 		return err
 	}
 
+	return nil
+}
+
+// org取得
+func (h *Handler) AdminOrgHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	orgs, err := models.Organizations(
+		qm.OrderBy(models.OrganizationColumns.UpdatedAt),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, orgs)
+}
+
+// org作成
+func (h *Handler) AdminOrgCreateHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	name := c.FormValue("name")
+	link := c.FormValue("link")
+
+	imageHeader, err := c.FormFile("image")
+	if err != nil && !errors.Is(err, http.ErrMissingFile) {
+		return NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	if name == "" {
+		return NewHTTPError(http.StatusBadRequest, "name is required")
+	}
+
+	parsedLink := null.NewString("", false)
+	if link != "" {
+		u, ok := lib.ValidateURL(link)
+		if !ok {
+			return NewHTTPError(http.StatusBadRequest, "invalid link")
+		}
+		parsedLink = null.NewString(u.String(), true)
+	}
+
+	orgId := ulid.Make()
+
+	org := models.Organization{
+		ID:   orgId.String(),
+		Name: name,
+		Link: parsedLink,
+	}
+
+	// 画像をアップロードする（ある場合）
+	if imageHeader != nil {
+		file, err := imageHeader.Open()
+		if err != nil {
+			return err
+		}
+		contentType := imageHeader.Header.Get("Content-Type")
+		if !lib.ValidateContentType(contentType) {
+			return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
+		}
+		path := filepath.Join("org", orgId.String())
+		if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+			return err
+		}
+
+		// ローカル環境では /[bucket-name]/avatar/[image] となるので
+		p, err := url.JoinPath(h.C.CDNHost.Path, path)
+		if err != nil {
+			return err
+		}
+
+		url := &url.URL{
+			Scheme: h.C.CDNHost.Scheme,
+			Host:   h.C.CDNHost.Host,
+			Path:   p,
+		}
+		if err := h.CDN.Purge(url.String()); err != nil {
+			return err
+		}
+
+		org.Image = null.NewString(url.String(), true)
+	}
+
+	return nil
+}
+
+// org更新
+func (h *Handler) AdminOrgUpdateHandler(c echo.Context) error {
+	return nil
+}
+
+// org削除
+func (h *Handler) AdminOrgDeleteHandler(c echo.Context) error {
 	return nil
 }
