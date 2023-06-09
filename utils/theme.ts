@@ -104,14 +104,14 @@ export const theme = extendTheme({
         overflow: 'overlay',
       },
       body: {
-        // background: mode(
-        //   colorTheme.lightBackground,
-        //   colorTheme.darkBackground
-        // )(props),
-        // color:
-        //   props.colorMode === 'dark'
-        //     ? colorTheme.darkText
-        //     : colorTheme.lightText,
+        background: mode(
+          colorTheme.lightBackground,
+          colorTheme.darkBackground
+        )(props),
+        color:
+          props.colorMode === 'dark'
+            ? colorTheme.darkText
+            : colorTheme.lightText,
       },
       ':root': {
         '--background-color':
