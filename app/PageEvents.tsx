@@ -44,9 +44,35 @@ nprogress.configure({showSpinner: false, speed: 400, minimum: 0.25});
 //   // }, [router.events]);
 // };
 
+const routeChangeStart = () => {
+  console.log('routeChangeStart');
+  nprogress.start();
+};
+const routeChangeError = () => {
+  nprogress.done();
+};
+const routeChangeEnd = () => {
+  console.log('routeChangeEnd');
+  nprogress.done();
+};
+
 export const PageEventsImplementation: React.FC = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // まだChromeにしか対応していないが無いよりまし
+  // ref. https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigate_event
+  React.useEffect(() => {
+    window.addEventListener('navigate', routeChangeStart);
+    window.addEventListener('navigateerror', routeChangeError);
+    window.addEventListener('navigatesuccess', routeChangeEnd);
+    return () => {
+      window.removeEventListener('navigate', routeChangeStart);
+      window.removeEventListener('navigateerror', routeChangeError);
+      window.removeEventListener('navigatesuccess', routeChangeEnd);
+    };
+  }, []);
+
   // TODO: 一時的対応。router.eventsが復活したら削除
   React.useEffect(() => {
     const url = pathname + searchParams.toString();

@@ -17,7 +17,11 @@ export const hawManyDaysAgo = (date: Date): string => {
   const now = new Date();
   const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffSec < 3600) {
+  if (diffSec < 0) {
+    return '0秒前';
+  } else if (diffSec < 60) {
+    return `${diffSec}秒前`;
+  } else if (diffSec < 3600) {
     return `${Math.floor(diffSec / 60)}分前`;
   } else if (diffSec < 86400) {
     return `${Math.floor(diffSec / 3600)}時間前`;
