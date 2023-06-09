@@ -257,16 +257,16 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 
 	redirectUrls := make([]url.URL, len(redirectUrlForms))
 	for i, redirectUrlForm := range redirectUrlForms {
-		redirectUrl, err := url.ParseRequestURI(redirectUrlForm)
-		if err != nil {
+		redirectUrl, ok := lib.ValidateURL(redirectUrlForm)
+		if !ok {
 			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("referrer_url `%s` is invalid", redirectUrlForm))
 		}
 		redirectUrls[i] = *redirectUrl
 	}
 	referrerUrls := make([]url.URL, len(referrerUrlForms))
 	for i, referrerUrlForm := range referrerUrlForms {
-		referrerUrl, err := url.ParseRequestURI(referrerUrlForm)
-		if err != nil {
+		referrerUrl, ok := lib.ValidateURL(referrerUrlForm)
+		if !ok {
 			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("referrer_url `%s` is invalid", referrerUrlForm))
 		}
 		referrerUrls[i] = *referrerUrl
@@ -490,16 +490,16 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 
 	redirectUrls := make([]url.URL, len(redirectUrlForms))
 	for i, redirectUrlForm := range redirectUrlForms {
-		redirectUrl, err := url.ParseRequestURI(redirectUrlForm)
-		if err != nil {
+		redirectUrl, ok := lib.ValidateURL(redirectUrlForm)
+		if !ok {
 			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("referrer_url `%s` is invalid", redirectUrlForm))
 		}
 		redirectUrls[i] = *redirectUrl
 	}
 	referrerUrls := make([]url.URL, len(referrerUrlForms))
 	for i, referrerUrlForm := range referrerUrlForms {
-		referrerUrl, err := url.ParseRequestURI(referrerUrlForm)
-		if err != nil {
+		referrerUrl, ok := lib.ValidateURL(referrerUrlForm)
+		if !ok {
 			return NewHTTPError(http.StatusBadRequest, fmt.Sprintf("referrer_url `%s` is invalid", referrerUrlForm))
 		}
 		referrerUrls[i] = *referrerUrl

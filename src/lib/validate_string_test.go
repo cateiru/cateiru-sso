@@ -263,3 +263,39 @@ func TestValidateScope(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateURL(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		urls := []string{
+			"https://example.com",
+			"https://example.com/path/to",
+			"https://example.com/path/to?query=string",
+			"https://example.com/path/to?query=string#fragment",
+			"https://example.com:8080",
+			"https://example.com:8080/path/to",
+			"https://example.com:8080/path/to?q",
+			"https://example.com:8080/path/to?q#f",
+		}
+
+		for _, u := range urls {
+			parsedURL, ok := lib.ValidateURL(u)
+			require.True(t, ok, u)
+			require.NotNil(t, parsedURL, u)
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		urls := []string{
+			"example.com",
+			"example.com/path/to",
+			"example.com:8080",
+			"hogehoge",
+		}
+
+		for _, u := range urls {
+			parsedURL, ok := lib.ValidateURL(u)
+			require.False(t, ok, u)
+			require.Nil(t, parsedURL, u)
+		}
+	})
+}

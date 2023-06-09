@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"net/url"
 	"regexp"
 	"time"
 	"unicode/utf8"
@@ -129,4 +130,19 @@ func ValidateScope(s string) bool {
 		}
 	}
 	return false
+}
+
+func ValidateURL(s string) (*url.URL, bool) {
+	u, err := url.ParseRequestURI(s)
+	if err != nil {
+		return nil, false
+	}
+
+	// スキームがHTTP/Sかどうかを見る
+	scheme := u.Scheme
+	if scheme != "http" && scheme != "https" {
+		return nil, false
+	}
+
+	return u, true
 }
