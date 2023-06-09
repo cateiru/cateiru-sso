@@ -8,7 +8,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/net/http2"
 
 	_ "time/tzdata"
@@ -26,6 +28,17 @@ func Main(mode string) {
 		panic(err)
 	}
 	time.Local = jst
+
+	if config.DBDebugLog {
+		stdOutLogger, err := zap.NewStdLogAt(L, zapcore.DebugLevel)
+		if err != nil {
+			panic(err)
+		}
+
+		// SQLBoilerのログも出力する
+		boil.DebugMode = true
+		boil.DebugWriter = stdOutLogger.Writer()
+	}
 
 	// CloudStorageのために環境変数を設定する
 	if config.StorageEmulatorHost.IsValid {

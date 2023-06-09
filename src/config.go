@@ -25,6 +25,7 @@ type Config struct {
 
 	// MySQLの設定
 	DatabaseConfig *mysql.Config
+	DBDebugLog     bool
 
 	// APIのホスト
 	Host *url.URL
@@ -150,6 +151,8 @@ var LocalConfig = &Config{
 		Loc:                  time.FixedZone("Asia/Tokyo", 9*60*60),
 		AllowNativePasswords: true,
 	},
+	DBDebugLog: true,
+
 	Host: &url.URL{
 		Host:   "sso.cateiru.test:8080",
 		Scheme: "http",
@@ -305,6 +308,7 @@ var CloudRunConfig = &Config{
 		ParseTime:            true,
 		AllowNativePasswords: true,
 	},
+	DBDebugLog: false,
 
 	Host: &url.URL{
 		Host:   "api.sso.cateiru.com",
@@ -460,6 +464,7 @@ var CloudRunStagingConfig = &Config{
 		ParseTime:            true,
 		AllowNativePasswords: true,
 	},
+	DBDebugLog: false,
 
 	Host: &url.URL{
 		Host:   "api.sso-staging.cateiru.com",
@@ -617,6 +622,8 @@ var TestConfig = &Config{
 		Loc:                  time.FixedZone("Asia/Tokyo", 9*60*60),
 		AllowNativePasswords: true,
 	},
+	DBDebugLog: false,
+
 	Host: &url.URL{
 		Host:   "localhost:8080",
 		Scheme: "http",
