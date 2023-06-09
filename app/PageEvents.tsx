@@ -60,16 +60,22 @@ export const PageEventsImplementation: React.FC = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // まだChromeにしか対応していないが無いよりまし
-  // ref. https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigate_event
+  // Chromiumのみ対応
   React.useEffect(() => {
-    window.addEventListener('navigate', routeChangeStart);
-    window.addEventListener('navigateerror', routeChangeError);
-    window.addEventListener('navigatesuccess', routeChangeEnd);
+    // まだ試験的機能なので型情報がない。そのため、一旦anyにしてしまう
+    // mdn: https://developer.mozilla.org/en-US/docs/Web/API/Window/navigation
+    const {navigation} = window as any;
+    if (!navigation) {
+      return;
+    }
+
+    navigation.addEventListener('navigate', routeChangeStart);
+    navigation.addEventListener('navigateerror', routeChangeError);
+    navigation.addEventListener('navigatesuccess', routeChangeEnd);
     return () => {
-      window.removeEventListener('navigate', routeChangeStart);
-      window.removeEventListener('navigateerror', routeChangeError);
-      window.removeEventListener('navigatesuccess', routeChangeEnd);
+      navigation.removeEventListener('navigate', routeChangeStart);
+      navigation.removeEventListener('navigateerror', routeChangeError);
+      navigation.removeEventListener('navigatesuccess', routeChangeEnd);
     };
   }, []);
 
