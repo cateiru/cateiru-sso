@@ -90,6 +90,8 @@ func resetDBTable(ctx context.Context, db *sql.DB) error {
 	return nil
 }
 
+// ----- 以下、テスト用便利メソッド -------
+
 // ランダムなEmailを作成する
 func RandomEmail(t *testing.T) string {
 	r, err := lib.RandomStr(10)
@@ -235,8 +237,10 @@ func NewTestHandler(t *testing.T) *src.Handler {
 		},
 		Session:  s,
 		Password: C.Password,
-		Storage:  storage,
-		CDN:      &CDNMock{},
+		Storage: &StorageMock{
+			S: storage,
+		},
+		CDN: &CDNMock{},
 	}
 }
 
@@ -438,6 +442,7 @@ func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx co
 	})
 }
 
+// そのHandlerがスタッフ限定かどうかをテストする
 func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler) {
 	ctx := context.Background()
 
