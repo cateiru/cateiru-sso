@@ -317,7 +317,7 @@ func TestAccountDeleteHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountLogoutHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+	SessionTest(t, h.AccountDeleteHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		m, err := easy.NewMock("/", http.MethodHead, "")
 		require.NoError(t, err)
 		return m
@@ -333,7 +333,7 @@ func TestAccountDeleteHandler(t *testing.T) {
 		m.Cookie(session)
 		c := m.Echo()
 
-		err = h.AccountLogoutHandler(c)
+		err = h.AccountDeleteHandler(c)
 		require.NoError(t, err)
 
 		// すべてのCookieが削除されている
@@ -1284,7 +1284,7 @@ func TestAccountWebauthnHandler(t *testing.T) {
 		return webauthnSessionId
 	}
 
-	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+	SessionTest(t, h.AccountWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		session := registerWebauthnSession(u)
 		sessionCookie := &http.Cookie{
 			Name:  C.WebAuthnSessionCookie.Name,
@@ -1607,7 +1607,7 @@ func TestAccountCertificatesHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	SessionTest(t, h.AccountBeginWebauthnHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+	SessionTest(t, h.AccountCertificatesHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		RegisterPassword(t, ctx, u)
 
 		m, err := easy.NewMock("/", http.MethodGet, "")

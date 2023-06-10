@@ -1024,6 +1024,18 @@ func TestUserAvatarHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.UserAvatarHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form := easy.NewMultipart()
+		form.InsertFile("image", image)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: アバターを新規作成できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1143,6 +1155,24 @@ func TestUserDeleteAvatarHandler(t *testing.T) {
 
 	s := lib.NewCloudStorage(C.StorageBucketName)
 
+	SessionTest(t, h.UserDeleteAvatarHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		path := filepath.Join("avatar", u.ID)
+		url := &url.URL{
+			Scheme: C.CDNHost.Scheme,
+			Host:   C.CDNHost.Host,
+			Path:   path,
+		}
+
+		u.Avatar = null.NewString(url.String(), true)
+		_, err := u.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock("/", http.MethodPost, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: アバターが削除されている", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1153,16 +1183,9 @@ func TestUserDeleteAvatarHandler(t *testing.T) {
 			Host:   C.CDNHost.Host,
 			Path:   path,
 		}
-		image, err := os.Open("./test_sample_image.png")
-		require.NoError(t, err)
-		defer image.Close()
-		err = s.Write(ctx, path, image, "image/png")
-		require.NoError(t, err)
-
-		time.Sleep(1 * time.Second)
 
 		u.Avatar = null.NewString(url.String(), true)
-		_, err = u.Update(ctx, DB, boil.Infer())
+		_, err := u.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
 		cookies := RegisterSession(t, ctx, &u)

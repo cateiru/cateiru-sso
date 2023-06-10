@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
@@ -125,6 +124,24 @@ func TestClientHandler(t *testing.T) {
 func TestClientCreateHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.ClientCreateHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: クライアントを新規作成できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -527,6 +544,28 @@ func TestClientCreateHandler(t *testing.T) {
 func TestClientUpdateHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.ClientUpdateHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		clientId, _ := RegisterClient(t, ctx, u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+
+		form.Insert("name", "new!!! name")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile email")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: クライアントを更新できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -1017,6 +1056,15 @@ func TestClientDeleteHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.ClientDeleteHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		clientId, _ := RegisterClient(t, ctx, u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: クライアントを削除できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1123,7 +1171,31 @@ func TestClientDeleteImageHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	s := lib.NewCloudStorage(C.StorageBucketName)
+	SessionTest(t, h.ClientDeleteImageHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		clientId, _ := RegisterClient(t, ctx, u)
+
+		path := filepath.Join("client_icon", clientId)
+		url := &url.URL{
+			Scheme: C.CDNHost.Scheme,
+			Host:   C.CDNHost.Host,
+			Path:   path,
+		}
+
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		client.Image = null.NewString(url.String(), true)
+
+		_, err = client.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: 画像を削除できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -1137,13 +1209,6 @@ func TestClientDeleteImageHandler(t *testing.T) {
 			Host:   C.CDNHost.Host,
 			Path:   path,
 		}
-		image, err := os.Open("./test_sample_image.png")
-		require.NoError(t, err)
-		defer image.Close()
-		err = s.Write(ctx, path, image, "image/png")
-		require.NoError(t, err)
-
-		time.Sleep(1 * time.Second)
 
 		client, err := models.Clients(
 			models.ClientWhere.ClientID.EQ(clientId),
@@ -1250,6 +1315,15 @@ func TestClientAllowUserHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.ClientAllowUserHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		clientId, _ := RegisterClient(t, ctx, u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: ルールを取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1334,6 +1408,19 @@ func TestClientAllowUserHandler(t *testing.T) {
 func TestClientAddAllowUserHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.ClientAddAllowUserHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		clientId, _ := RegisterClient(t, ctx, u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("user_id", "test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: ルールにユーザーIDを指定して追加できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -1507,6 +1594,21 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 func TestClientDeleteAllowUserHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.ClientDeleteAllowUserHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		clientId, _ := RegisterClient(t, ctx, u)
+
+		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?id=%d", rule.ID), http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: ルールからIDを指定して削除できる", func(t *testing.T) {
 		email := RandomEmail(t)

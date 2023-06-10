@@ -48,6 +48,16 @@ func TestHistoryClientLoginHandler(t *testing.T) {
 		return id
 	}
 
+	SessionTest(t, h.HistoryClientLoginHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		clientId, _ := RegisterClient(t, ctx, u)
+		registerClientRefresh(clientId, u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: ログインしているクライアントが返る", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -146,6 +156,15 @@ func TestHistoryClientHandler(t *testing.T) {
 
 	clientId, _ := RegisterClient(t, ctx, &adminUser)
 
+	SessionTest(t, h.HistoryClientHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		registerClientLoginHistory(clientId, u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: ログイン履歴が返る", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -198,6 +217,13 @@ func TestHistoryClientHandler(t *testing.T) {
 func TestHistoryLoginDeviceHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.HistoryLoginDeviceHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: ログインしているデバイスを取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -253,6 +279,24 @@ func TestHistoryLoginHistoryHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.HistoryLoginHistoryHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		refreshId, err := lib.RandomBytes(16)
+		require.NoError(t, err)
+		history := models.LoginHistory{
+			UserID:    u.ID,
+			RefreshID: refreshId,
+
+			IP: net.ParseIP("10.0.0.1"),
+		}
+		err = history.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: ログイン履歴を取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -288,6 +332,21 @@ func TestHistoryLoginHistoryHandler(t *testing.T) {
 func TestHistoryLoginTryHistoryHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.HistoryLoginTryHistoryHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		loginTryHistory := models.LoginTryHistory{
+			UserID: u.ID,
+
+			IP: net.ParseIP("10.0.0.1"),
+		}
+		err := loginTryHistory.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: ログイントライ履歴を取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
