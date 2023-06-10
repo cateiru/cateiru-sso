@@ -454,9 +454,21 @@ func (h *Handler) AdminOrgHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, orgs)
 }
 
-// org作成
+// org作成（管理者用）
+// args:
+// - name: 組織名
+// - link?: 組織の外部リンク（HPとか）
+// - image?: 組織の画像
 func (h *Handler) AdminOrgCreateHandler(c echo.Context) error {
 	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
 
 	name := c.FormValue("name")
 	link := c.FormValue("link")
@@ -502,7 +514,7 @@ func (h *Handler) AdminOrgCreateHandler(c echo.Context) error {
 			return err
 		}
 
-		// ローカル環境では /[bucket-name]/avatar/[image] となるので
+		// ローカル環境では /[bucket-name]/org/[image] となるので
 		p, err := url.JoinPath(h.C.CDNHost.Path, path)
 		if err != nil {
 			return err
@@ -520,15 +532,197 @@ func (h *Handler) AdminOrgCreateHandler(c echo.Context) error {
 		org.Image = null.NewString(url.String(), true)
 	}
 
+	if err := org.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// org更新
+// org更新（管理者用）
+// args:
+// - name: 組織名
+// - link?: 組織の外部リンク（HPとか）
+// - image?: 組織の画像。指定しないと変更しない
 func (h *Handler) AdminOrgUpdateHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	orgId := c.FormValue("org_id")
+	name := c.FormValue("name")
+	link := c.FormValue("link")
+
+	imageHeader, err := c.FormFile("image")
+	if err != nil && !errors.Is(err, http.ErrMissingFile) {
+		return NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	if orgId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_id is required")
+	}
+	if name == "" {
+		return NewHTTPError(http.StatusBadRequest, "name is required")
+	}
+
+	parsedLink := null.NewString("", false)
+	if link != "" {
+		u, ok := lib.ValidateURL(link)
+		if !ok {
+			return NewHTTPError(http.StatusBadRequest, "invalid link")
+		}
+		parsedLink = null.NewString(u.String(), true)
+	}
+
+	org, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	org.Name = name
+	org.Link = parsedLink
+
+	// 画像をアップロードする（ある場合）
+	if imageHeader != nil {
+		file, err := imageHeader.Open()
+		if err != nil {
+			return err
+		}
+		contentType := imageHeader.Header.Get("Content-Type")
+		if !lib.ValidateContentType(contentType) {
+			return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
+		}
+		path := filepath.Join("org", orgId)
+		if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+			return err
+		}
+
+		// ローカル環境では /[bucket-name]/org/[image] となるので
+		p, err := url.JoinPath(h.C.CDNHost.Path, path)
+		if err != nil {
+			return err
+		}
+
+		url := &url.URL{
+			Scheme: h.C.CDNHost.Scheme,
+			Host:   h.C.CDNHost.Host,
+			Path:   p,
+		}
+		if err := h.CDN.Purge(url.String()); err != nil {
+			return err
+		}
+
+		org.Image = null.NewString(url.String(), true)
+	}
+
+	if _, err := org.Update(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// org削除
+// org削除（管理者用）
 func (h *Handler) AdminOrgDeleteHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	orgId := c.QueryParam("org_id")
+	if orgId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_id is required")
+	}
+
+	org, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	if _, err := org.Delete(ctx, h.DB); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// org画像の削除
+func (h *Handler) AdminOrgDeleteImageHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	orgId := c.QueryParam("org_id")
+	if orgId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_id is required")
+	}
+
+	org, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	if !org.Image.Valid {
+		return NewHTTPError(http.StatusBadRequest, "image is not set")
+	}
+
+	path := filepath.Join("org", orgId)
+	if err := h.Storage.Delete(ctx, path); err != nil {
+		return err
+	}
+
+	// ローカル環境では /[bucket-name]/org/[image] となるので
+	p, err := url.JoinPath(h.C.CDNHost.Path, path)
+	if err != nil {
+		return err
+	}
+
+	url := &url.URL{
+		Scheme: h.C.CDNHost.Scheme,
+		Host:   h.C.CDNHost.Host,
+		Path:   p,
+	}
+	if err := h.CDN.Purge(url.String()); err != nil {
+		return err
+	}
+
+	org.Image = null.NewString("", false)
+
+	if _, err := org.Update(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -127,6 +127,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.POST("/org", h.AdminOrgCreateHandler)
 	admin.PUT("/org", h.AdminOrgUpdateHandler)
 	admin.DELETE("/org", h.AdminOrgDeleteHandler)
+	admin.DELETE("/org/image", h.AdminOrgDeleteImageHandler)
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う

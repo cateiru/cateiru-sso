@@ -695,3 +695,19 @@ func TestAdminBrandDeleteHandler(t *testing.T) {
 		require.False(t, existBrand)
 	})
 }
+
+func TestAdminOrgCreateHandler(t *testing.T) {
+
+}
+
+func TestAdminOrgUpdateHandler(t *testing.T) {
+
+}
+
+func TestAdminOrgDeleteHandler(t *testing.T) {
+
+}
+
+func TestAdminOrgDeleteImageHandler(t *testing.T) {
+
+}
