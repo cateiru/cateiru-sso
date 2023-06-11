@@ -482,6 +482,30 @@ func TestUserUserNameHandler(t *testing.T) {
 		require.True(t, response.Ok)
 		require.Equal(t, response.UserName, userName)
 	})
+
+	t.Run("ユーザー名は存在しないが、不正な値", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_name", "a")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUserNameHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserUserNameResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.False(t, response.Ok)
+		require.Equal(t, response.UserName, "a")
+	})
 }
 
 func TestUserUpdateSettingHandler(t *testing.T) {
