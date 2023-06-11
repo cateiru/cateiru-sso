@@ -5,6 +5,9 @@ module.exports = withInterceptStdout(
   {
     reactStrictMode: true,
     output: 'standalone',
+    experimental: {
+        scrollRestoration: true,
+    },
   },
   text => (text.includes('Duplicate atom key') ? '' : text)
 );

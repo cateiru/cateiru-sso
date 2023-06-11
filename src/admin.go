@@ -536,7 +536,14 @@ func (h *Handler) AdminOrgCreateHandler(c echo.Context) error {
 		return err
 	}
 
-	return nil
+	dbOrg, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId.String()),
+	).One(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, dbOrg)
 }
 
 // org更新（管理者用）
@@ -630,7 +637,14 @@ func (h *Handler) AdminOrgUpdateHandler(c echo.Context) error {
 		return err
 	}
 
-	return nil
+	dbOrg, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).One(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, dbOrg)
 }
 
 // org削除（管理者用）

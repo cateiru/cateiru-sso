@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
@@ -27,11 +28,7 @@ func TestAdminUsersHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -53,11 +50,7 @@ func TestAdminUsersHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -98,11 +91,7 @@ func TestAdminUserDetailHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -125,11 +114,7 @@ func TestAdminUserDetailHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -147,11 +132,7 @@ func TestAdminUserDetailHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -185,11 +166,7 @@ func TestAdminUserBrandHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -216,11 +193,7 @@ func TestAdminUserBrandHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -241,11 +214,7 @@ func TestAdminUserBrandHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -279,11 +248,7 @@ func TestAdminUserBrandDeleteHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -309,11 +274,7 @@ func TestAdminUserBrandDeleteHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -348,11 +309,7 @@ func TestAdminStaffHandler(t *testing.T) {
 		email2 := RandomEmail(t)
 		u2 := RegisterUser(t, ctx, email2)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -380,16 +337,8 @@ func TestAdminStaffHandler(t *testing.T) {
 		email2 := RandomEmail(t)
 		u2 := RegisterUser(t, ctx, email2)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
-		staff2 := models.Staff{
-			UserID: u2.ID,
-		}
-		err = staff2.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
+		ToStaff(t, ctx, &u2)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -415,11 +364,7 @@ func TestAdminStaffHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -436,6 +381,7 @@ func TestAdminStaffHandler(t *testing.T) {
 	})
 }
 
+// TODO
 func TestAdminBroadcastHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
@@ -450,7 +396,7 @@ func TestAdminBrandHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	StaffAndSessionTest(t, h.AdminBroadcastHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+	StaffAndSessionTest(t, h.AdminBrandHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		return m
@@ -462,11 +408,7 @@ func TestAdminBrandHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -488,11 +430,7 @@ func TestAdminBrandHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -517,11 +455,7 @@ func TestAdminBrandHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -552,11 +486,7 @@ func TestAdminBrandCreateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -598,11 +528,7 @@ func TestAdminBrandUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -631,11 +557,7 @@ func TestAdminBrandUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -669,11 +591,7 @@ func TestAdminBrandDeleteHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: u.ID,
-		}
-		err := staff.Insert(ctx, h.DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -696,18 +614,262 @@ func TestAdminBrandDeleteHandler(t *testing.T) {
 	})
 }
 
-func TestAdminOrgCreateHandler(t *testing.T) {
+func TestAdminOrgHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
+	StaffAndSessionTest(t, h.AdminOrgHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("すべてのorgを取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		for i := 0; i < 3; i++ {
+			RegisterOrg(t, ctx)
+		}
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgHandler(c)
+		require.NoError(t, err)
+
+		response := []models.Organization{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 3)
+	})
+}
+
+func TestAdminOrgCreateHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminOrgCreateHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		form := easy.NewMultipart()
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "https://example.com")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("成功: orgを作成できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "https://example.com")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgCreateHandler(c)
+		require.NoError(t, err)
+
+		response := models.Organization{}
+		require.NoError(t, m.Json(&response))
+
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(response.ID),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.Equal(t, org.Name, "aaaaa")
+		require.Equal(t, org.Link.String, "https://example.com")
+		require.False(t, org.Image.Valid)
+	})
+
+	t.Run("成功: 画像を指定して作成できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "https://example.com")
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form.InsertFile("image", image)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgCreateHandler(c)
+		require.NoError(t, err)
+
+		response := models.Organization{}
+		require.NoError(t, m.Json(&response))
+
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(response.ID),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.Equal(t, org.Name, "aaaaa")
+		require.Equal(t, org.Link.String, "https://example.com")
+
+		// 画像のリンクが入っている
+		require.True(t, org.Image.Valid)
+	})
+
+	t.Run("失敗: nameがない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("link", "https://example.com")
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form.InsertFile("image", image)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=name is required")
+	})
+
+	t.Run("失敗: linkのURLが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "hogehoge")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid link")
+	})
 }
 
 func TestAdminOrgUpdateHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
+	StaffAndSessionTest(t, h.AdminOrgUpdateHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "https://example.com")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("成功: orgを更新できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "https://example.com/aaaa")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgUpdateHandler(c)
+		require.NoError(t, err)
+
+		response := models.Organization{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.ID, orgId)
+
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.Equal(t, org.Name, "aaaaa")
+		require.Equal(t, org.Link.String, "https://example.com/aaaa")
+	})
+
+	t.Run("成功: 画像を指定して更新できる", func(t *testing.T) {})
+
+	t.Run("失敗: org_idが無い", func(t *testing.T) {})
+
+	t.Run("失敗: org_idが存在しない", func(t *testing.T) {})
+
+	t.Run("失敗: nameがない", func(t *testing.T) {})
+
+	t.Run("失敗: linkのURLが不正", func(t *testing.T) {})
 }
 
 func TestAdminOrgDeleteHandler(t *testing.T) {
+	t.Run("成功: orgを削除できる", func(t *testing.T) {})
 
+	t.Run("失敗: org_idが無い", func(t *testing.T) {})
+
+	t.Run("失敗: org_idが存在しない", func(t *testing.T) {})
 }
 
 func TestAdminOrgDeleteImageHandler(t *testing.T) {
+	t.Run("成功: orgの画像を削除できる", func(t *testing.T) {})
 
+	t.Run("失敗: org_idが無い", func(t *testing.T) {})
+
+	t.Run("失敗: org_idが存在しない", func(t *testing.T) {})
 }

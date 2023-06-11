@@ -177,6 +177,13 @@ func (h *Handler) UserUserNameHandler(c echo.Context) error {
 		})
 	}
 
+	if !lib.ValidateUsername(userName) {
+		return c.JSON(http.StatusOK, &UserUserNameResponse{
+			UserName: userName,
+			Ok:       false,
+		})
+	}
+
 	existUser, err := models.Users(
 		models.UserWhere.UserName.EQ(userName),
 	).Exists(ctx, h.DB)

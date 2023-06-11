@@ -752,6 +752,9 @@ CREATE TABLE `organization_user` (
     `organization_id` VARCHAR(32) NOT NULL,
     `user_id` VARCHAR(32) NOT NULL,
 
+    -- owner: 管理者。このユーザーは組織から脱退することができない。
+    -- member: クライアントの作成・編集が可能なユーザー
+    -- guest: クライアントにログインすることのみが可能なユーザー
     `role` ENUM('owner', 'member', 'guest') NOT NULL DEFAULT 'guest',
 
     -- 管理用

@@ -50,6 +50,11 @@ func TestMain(m *testing.M) {
 
 	err = resetDBTable(ctx, db)
 	if err != nil {
+		fmt.Print("-----------------------------\n")
+		fmt.Print("データベースに接続できません。\n\n")
+		fmt.Println("* データベースを立ち上げる場合は`./scripts/docker-compose-db.sh up -d`を実行してください。")
+		fmt.Println("* すでにデータベースを立ち上げている場合は`src/config.go`の設定を見直してください。")
+		fmt.Print("-----------------------------\n\n")
 		panic(err)
 	}
 
@@ -117,6 +122,15 @@ func RegisterUser(t *testing.T, ctx context.Context, email string) models.User {
 	require.NoError(t, err)
 
 	return *dbU
+}
+
+// ユーザーをスタッフにする
+func ToStaff(t *testing.T, ctx context.Context, u *models.User) {
+	staff := models.Staff{
+		UserID: u.ID,
+	}
+	err := staff.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
 }
 
 // UserAgentを設定する
@@ -457,11 +471,7 @@ func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock fun
 		email := RandomEmail(t)
 		user := RegisterUser(t, ctx, email)
 
-		staff := models.Staff{
-			UserID: user.ID,
-		}
-		err := staff.Insert(ctx, DB, boil.Infer())
-		require.NoError(t, err)
+		ToStaff(t, ctx, &user)
 
 		staffSessionCookies := RegisterSession(t, ctx, &user)
 
@@ -469,7 +479,7 @@ func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock fun
 		m.Cookie(staffSessionCookies)
 		c := m.Echo()
 
-		err = h(c)
+		err := h(c)
 		require.NoError(t, err)
 	})
 
@@ -489,4 +499,42 @@ func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock fun
 		err := h(c)
 		require.EqualError(t, err, "code=403, message=require staff")
 	})
+}
+
+// Organizationを作成する
+func RegisterOrg(t *testing.T, ctx context.Context, ownerUsers ...*models.User) string {
+	id := ulid.Make()
+
+	org := models.Organization{
+		ID:   id.String(),
+		Name: "test",
+	}
+	err := org.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+
+	for _, u := range ownerUsers {
+		orgUser := models.OrganizationUser{
+			OrganizationID: org.ID,
+			UserID:         u.ID,
+
+			Role: "owner",
+		}
+		err = orgUser.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	}
+
+	return id.String()
+}
+
+// Organizationにユーザーを招待する
+// roleは`owner`, `member`, `guest`
+func InviteUserInOrg(t *testing.T, ctx context.Context, orgId string, u *models.User, role string) {
+	orgUser := models.OrganizationUser{
+		OrganizationID: orgId,
+		UserID:         u.ID,
+
+		Role: role,
+	}
+	err := orgUser.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
 }
