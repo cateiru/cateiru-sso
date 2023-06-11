@@ -6,7 +6,6 @@ import {
   InputGroup,
   InputLeftAddon,
   InputRightElement,
-  Spinner,
   useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -14,6 +13,7 @@ import {useFormContext} from 'react-hook-form';
 import {TbCheck, TbX} from 'react-icons/tb';
 import {UserUserName} from '../../../utils/types/user';
 import {Tooltip} from '../Chakra/Tooltip';
+import {Spinner} from '../Icons/Spinner';
 import {useRequest} from '../useRequest';
 
 export interface UserNameFormData {
