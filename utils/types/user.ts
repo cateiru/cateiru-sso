@@ -42,5 +42,6 @@ export type UserAvatar = z.infer<typeof UserAvatarSchema>;
 export const UserUserName = z.object({
   user_name: z.string(),
   ok: z.boolean(),
+  message: z.string(),
 });
 export type UserUserName = z.infer<typeof UserUserName>;

@@ -36,6 +36,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
   } = useFormContext<UserNameFormData>();
 
   const [ok, setOk] = React.useState<boolean | null>(null);
+  const [message, setMessage] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [name, setName] = React.useState('');
 
@@ -68,12 +69,14 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
       const data = UserUserName.safeParse(await res.json());
       if (data.success) {
         setOk(data.data.ok);
+        setMessage(data.data.message);
+
         if (data.data.ok) {
           clearErrors('user_name');
         } else {
           setError('user_name', {
             type: 'manual',
-            message: 'このユーザー名は既に使用されています',
+            message: data.data.message,
           });
         }
       } else {
@@ -97,7 +100,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
 
     if (ok) {
       return (
-        <Tooltip label="このユーザー名は使用可能です">
+        <Tooltip label={message}>
           <InputRightElement>
             <TbCheck
               size="30px"
@@ -109,7 +112,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
       );
     }
     return (
-      <Tooltip label="このユーザー名はすでに使用されています">
+      <Tooltip label={message}>
         <InputRightElement>
           <TbX size="30px" strokeWidth="3px" color={checkMarkNoSuccessColor} />
         </InputRightElement>
@@ -121,7 +124,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
     <FormControl isInvalid={!!errors.user_name} mt="1rem">
       <FormLabel htmlFor="user_name">ユーザー名</FormLabel>
       <InputGroup size="md">
-        <InputLeftAddon>@</InputLeftAddon>
+        <InputLeftAddon fontWeight="bold">@</InputLeftAddon>
         <Input
           id="user_name"
           type="text"

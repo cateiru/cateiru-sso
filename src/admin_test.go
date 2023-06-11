@@ -381,7 +381,7 @@ func TestAdminStaffHandler(t *testing.T) {
 	})
 }
 
-// TODO
+// TODO: ブロードキャスト通知は後で実装する
 func TestAdminBroadcastHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
@@ -847,6 +847,7 @@ func TestAdminOrgUpdateHandler(t *testing.T) {
 		require.Equal(t, org.Link.String, "https://example.com/aaaa")
 	})
 
+	// TODO
 	t.Run("成功: 画像を指定して更新できる", func(t *testing.T) {})
 
 	t.Run("失敗: org_idが無い", func(t *testing.T) {})

@@ -28,6 +28,7 @@ type UserMeResponse struct {
 type UserUserNameResponse struct {
 	UserName string `json:"user_name"`
 	Ok       bool   `json:"ok"`
+	Message  string `json:"message"`
 }
 
 type UserBrandResponse struct {
@@ -174,6 +175,7 @@ func (h *Handler) UserUserNameHandler(c echo.Context) error {
 		return c.JSON(http.StatusOK, &UserUserNameResponse{
 			UserName: "",
 			Ok:       false,
+			Message:  "ユーザー名が指定されていません",
 		})
 	}
 
@@ -181,6 +183,7 @@ func (h *Handler) UserUserNameHandler(c echo.Context) error {
 		return c.JSON(http.StatusOK, &UserUserNameResponse{
 			UserName: userName,
 			Ok:       false,
+			Message:  "ユーザー名は3文字以上15文字以下で半角英数字と'_'のみ使用できます",
 		})
 	}
 
@@ -191,9 +194,15 @@ func (h *Handler) UserUserNameHandler(c echo.Context) error {
 		return err
 	}
 
+	message := "ユーザー名は使用可能です"
+	if existUser {
+		message = "ユーザー名は既に使用されています"
+	}
+
 	return c.JSON(http.StatusOK, &UserUserNameResponse{
 		UserName: userName,
 		Ok:       !existUser,
+		Message:  message,
 	})
 }
 
