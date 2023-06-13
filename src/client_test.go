@@ -461,6 +461,81 @@ func TestClientCreateHandler(t *testing.T) {
 		require.Len(t, referrerUrls, 2)
 	})
 
+	t.Run("成功: org_idを指定して新規作成", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		form.Insert("org_id", orgId)
+		form.Insert("org_member_only", "true")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.NoError(t, err)
+
+		// チェック
+
+		response := src.ClientDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.Name, "test")
+		require.Equal(t, response.IsAllow, false)
+
+		// クライアント
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(response.ClientID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, client.Name, "test")
+		require.Equal(t, client.IsAllow, false)
+		require.Equal(t, client.OrgID.String, orgId)
+		require.Equal(t, client.OrgMemberOnly, true)
+
+		// スコープ
+		scopes, err := models.ClientScopes(
+			models.ClientScopeWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, scopes, 2)
+
+		// リダイレクトURL
+		redirectUrls, err := models.ClientRedirects(
+			models.ClientRedirectWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, redirectUrls, 2)
+
+		// リファラーURL
+		referrerUrls, err := models.ClientReferrers(
+			models.ClientReferrerWhere.ClientID.EQ(response.ClientID),
+		).All(ctx, DB)
+		require.NoError(t, err)
+
+		require.Len(t, referrerUrls, 2)
+	})
+
 	t.Run("失敗: promptの値が不正", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -712,6 +787,138 @@ func TestClientCreateHandler(t *testing.T) {
 
 		err = h.ClientCreateHandler(c)
 		require.EqualError(t, err, "code=400, message=too many referrer urls")
+	})
+
+	t.Run("失敗: org_idが存在しない値", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		form.Insert("org_id", "aaaaa")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: ユーザーはorgのメンバーではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		form.Insert("org_id", orgId)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: ユーザーはorgの権限が無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		form.Insert("org_id", orgId)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: orgの作成上限を超えている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		for i := 0; i <= C.OrgClientMaxCreated; i++ {
+			RegisterOrgClient(t, ctx, orgId, false, &u)
+		}
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "test")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		form.Insert("org_id", orgId)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientCreateHandler(c)
+		require.EqualError(t, err, "code=400, message=too many clients")
 	})
 }
 

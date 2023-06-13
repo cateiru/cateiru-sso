@@ -113,6 +113,7 @@ type Config struct {
 
 	// クライアントの最大作成数
 	ClientMaxCreated            int
+	OrgClientMaxCreated         int
 	ClientRedirectURLMaxCreated int
 	ClientReferrerURLMaxCreated int
 }
@@ -288,6 +289,7 @@ var LocalConfig = &Config{
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
 
 	ClientMaxCreated:            10,
+	OrgClientMaxCreated:         100,
 	ClientRedirectURLMaxCreated: 10,
 	ClientReferrerURLMaxCreated: 10,
 }
@@ -444,6 +446,7 @@ var CloudRunConfig = &Config{
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
 
 	ClientMaxCreated:            10,
+	OrgClientMaxCreated:         100,
 	ClientRedirectURLMaxCreated: 10,
 	ClientReferrerURLMaxCreated: 10,
 }
@@ -601,6 +604,7 @@ var CloudRunStagingConfig = &Config{
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
 
 	ClientMaxCreated:            10,
+	OrgClientMaxCreated:         100,
 	ClientRedirectURLMaxCreated: 10,
 	ClientReferrerURLMaxCreated: 10,
 }
@@ -740,9 +744,10 @@ var TestConfig = &Config{
 	ClientSessionPeriod: 1 * time.Hour,  // 1hour
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
 
-	ClientMaxCreated:            10,
-	ClientRedirectURLMaxCreated: 10,
-	ClientReferrerURLMaxCreated: 10,
+	ClientMaxCreated:            5, // テスト時のinsertを削減するために小さくしている
+	OrgClientMaxCreated:         5,
+	ClientRedirectURLMaxCreated: 5,
+	ClientReferrerURLMaxCreated: 5,
 }
 
 func InitConfig(mode string) *Config {

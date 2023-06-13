@@ -236,6 +236,8 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 // - is_allow: ホワイトリスト使うか
 // - prompt?: ログイン求めたりするやつ
 // - scopes: スコープ
+// - org_id?: 組織ID
+// - org_member_only? ログイン組織メンバーのみに限定するかどうか（org_idが必要）
 // - redirect_url: リダイレクトURL
 //   - redirect_url_count: リダイレクトURLの数
 //   - redirect_url_[index]: リダイレクトURL
@@ -250,6 +252,8 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 	description := c.FormValue("description")
 	isAllowForm := c.FormValue("is_allow")
 	prompt := c.FormValue("prompt")
+	orgId := c.FormValue("org_id")
+	orgMemberOnlyForm := c.FormValue("org_member_only")
 	scope := c.FormValue("scopes")
 
 	redirectUrlForms, err := h.FormValues(c, "redirect_url")
@@ -330,15 +334,43 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		return err
 	}
 
-	clientCount, err := models.Clients(
-		models.ClientWhere.OwnerUserID.EQ(u.ID),
-	).Count(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	// 新規作成するので現在あるクライアント数が上限-1以上であればエラー
-	if (clientCount) >= int64(h.C.ClientMaxCreated-1) {
-		return NewHTTPError(http.StatusBadRequest, "too many clients")
+	// org_idが設定されている場合、そのユーザは作成できる権限を持っているかを確認する
+	if orgId != "" {
+		userExist, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+			models.OrganizationUserWhere.UserID.EQ(u.ID),
+			qm.AndIn("role IN ?", "owner", "member"), // roleはownerかmemberのみ
+		).Exists(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		if !userExist {
+			return NewHTTPError(http.StatusForbidden, "you are not member of this org")
+		}
+
+		orgClientCount, err := models.Clients(
+			models.ClientWhere.OrgID.EQ(null.NewString(orgId, true)),
+		).Count(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		// 新規作成するので現在あるクライアント数が上限-1以上であればエラー（org version）
+		if orgClientCount >= int64(h.C.OrgClientMaxCreated) {
+			return NewHTTPError(http.StatusBadRequest, "too many clients")
+		}
+
+	} else {
+		// 個人で作成する場合
+		clientCount, err := models.Clients(
+			models.ClientWhere.OwnerUserID.EQ(u.ID),
+		).Count(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		// 新規作成するので現在あるクライアント数が上限-1以上であればエラー
+		if clientCount >= int64(h.C.ClientMaxCreated-1) {
+			return NewHTTPError(http.StatusBadRequest, "too many clients")
+		}
 	}
 
 	clientId := ulid.Make()
@@ -394,6 +426,9 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 			Prompt:      null.NewString(prompt, prompt != ""),
 
 			OwnerUserID: u.ID,
+
+			OrgID:         null.NewString(orgId, orgId != ""),
+			OrgMemberOnly: orgMemberOnlyForm == "true",
 
 			ClientSecret: clientSecret,
 		}
