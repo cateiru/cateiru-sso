@@ -11,6 +11,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -1005,17 +1006,163 @@ func TestAdminOrgUpdateHandler(t *testing.T) {
 }
 
 func TestAdminOrgDeleteHandler(t *testing.T) {
-	t.Run("成功: orgを削除できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: org_idが無い", func(t *testing.T) {})
+	t.Run("成功: orgを削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: org_idが存在しない", func(t *testing.T) {})
+		orgId := RegisterOrg(t, ctx, &u)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDeleteHandler(c)
+		require.NoError(t, err)
+
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, org)
+	})
+
+	t.Run("失敗: org_idが無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDeleteHandler(c)
+		require.EqualError(t, err, "code=400, message=org_id is required")
+	})
+
+	t.Run("失敗: org_idが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?org_id=aaaa", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDeleteHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
 }
 
 func TestAdminOrgDeleteImageHandler(t *testing.T) {
-	t.Run("成功: orgの画像を削除できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: org_idが無い", func(t *testing.T) {})
+	t.Run("成功: orgの画像を削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: org_idが存在しない", func(t *testing.T) {})
+		orgId := RegisterOrg(t, ctx, &u)
+		ToStaff(t, ctx, &u)
+
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		org.Image = null.NewString("https://example.com/aaaa", true)
+
+		_, err = org.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDeleteImageHandler(c)
+		require.NoError(t, err)
+
+		afterOrg, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.False(t, afterOrg.Image.Valid)
+	})
+
+	t.Run("失敗: 画像を設定していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDeleteImageHandler(c)
+		require.EqualError(t, err, "code=400, message=image is not set")
+	})
+
+	t.Run("失敗: org_idが無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDeleteImageHandler(c)
+		require.EqualError(t, err, "code=400, message=org_id is required")
+	})
+
+	t.Run("失敗: org_idが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?org_id=aaaaa", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDeleteImageHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
 }
