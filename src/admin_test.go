@@ -845,18 +845,163 @@ func TestAdminOrgUpdateHandler(t *testing.T) {
 
 		require.Equal(t, org.Name, "aaaaa")
 		require.Equal(t, org.Link.String, "https://example.com/aaaa")
+		require.False(t, org.Image.Valid)
 	})
 
-	// TODO
-	t.Run("成功: 画像を指定して更新できる", func(t *testing.T) {})
+	t.Run("成功: 画像を指定して更新できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: org_idが無い", func(t *testing.T) {})
+		orgId := RegisterOrg(t, ctx, &u)
+		ToStaff(t, ctx, &u)
 
-	t.Run("失敗: org_idが存在しない", func(t *testing.T) {})
+		cookie := RegisterSession(t, ctx, &u)
 
-	t.Run("失敗: nameがない", func(t *testing.T) {})
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "https://example.com/aaaa")
 
-	t.Run("失敗: linkのURLが不正", func(t *testing.T) {})
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form.InsertFile("image", image)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgUpdateHandler(c)
+		require.NoError(t, err)
+
+		response := models.Organization{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.ID, orgId)
+
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.Equal(t, org.Name, "aaaaa")
+		require.Equal(t, org.Link.String, "https://example.com/aaaa")
+		require.True(t, org.Image.Valid)
+	})
+
+	t.Run("失敗: org_idが無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "https://example.com/aaaa")
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form.InsertFile("image", image)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgUpdateHandler(c)
+		require.EqualError(t, err, "code=400, message=org_id is required")
+	})
+
+	t.Run("失敗: org_idが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "https://example.com/aaaa")
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form.InsertFile("image", image)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgUpdateHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: nameがない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("link", "https://example.com/aaaa")
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form.InsertFile("image", image)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgUpdateHandler(c)
+		require.EqualError(t, err, "code=400, message=name is required")
+	})
+
+	t.Run("失敗: linkのURLが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("name", "aaaaa")
+		form.Insert("link", "aaaa")
+
+		image, err := os.Open("./test_sample_image.png")
+		require.NoError(t, err)
+		defer image.Close()
+		form.InsertFile("image", image)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgUpdateHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid link")
+	})
 }
 
 func TestAdminOrgDeleteHandler(t *testing.T) {
