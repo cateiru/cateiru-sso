@@ -46,6 +46,8 @@ type ClientDetailResponse struct {
 
 	Scopes []string `json:"scopes"`
 
+	OrgMemberOnly bool `json:"org_member_only,omitempty"`
+
 	ClientResponse
 }
 
@@ -60,13 +62,34 @@ type ClientAllowUserRuleResponse struct {
 func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *models.User) (*ClientDetailResponse, error) {
 	client, err := models.Clients(
 		models.ClientWhere.ClientID.EQ(clientId),
-		models.ClientWhere.OwnerUserID.EQ(u.ID),
 	).One(ctx, db)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, echo.NewHTTPError(http.StatusNotFound, "client not found")
 	}
 	if err != nil {
 		return nil, err
+	}
+
+	if client.OrgID.Valid {
+		// orgが設定されている場合
+		userExist, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.OrganizationID.EQ(client.OrgID.String),
+			models.OrganizationUserWhere.UserID.EQ(u.ID),
+			qm.AndIn("role IN ?", "owner", "member"), // roleはownerかmemberのみ
+		).Exists(ctx, db)
+		if err != nil {
+			return nil, err
+		}
+
+		// orgのアクセス権限がない場合
+		if !userExist {
+			return nil, echo.NewHTTPError(http.StatusForbidden, "you are not member of this org")
+		}
+	} else {
+		// orgが設定されていない場合は、clientの作成者のみがアクセス可能
+		if client.OwnerUserID != u.ID {
+			return nil, echo.NewHTTPError(http.StatusForbidden, "you are not owner of this client")
+		}
 	}
 
 	redirectUrlRecords, err := models.ClientRedirects(
@@ -106,9 +129,10 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 	return &ClientDetailResponse{
 		ClientSecret: client.ClientSecret,
 
-		RedirectUrls: redirectUrls,
-		ReferrerUrls: referrerUrls,
-		Scopes:       scopes,
+		RedirectUrls:  redirectUrls,
+		ReferrerUrls:  referrerUrls,
+		Scopes:        scopes,
+		OrgMemberOnly: client.OrgMemberOnly,
 
 		ClientResponse: ClientResponse{
 			ClientID: client.ClientID,
@@ -132,6 +156,7 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	clientId := c.QueryParam("client_id")
+	orgId := c.QueryParam("org_id")
 
 	u, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
@@ -148,13 +173,39 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 		return c.JSON(http.StatusOK, response)
 	}
 
-	clients, err := models.Clients(
-		models.ClientWhere.OwnerUserID.EQ(u.ID),
-		qm.Limit(h.C.ClientMaxCreated),
-		qm.OrderBy("updated_at DESC"),
-	).All(ctx, h.DB)
-	if err != nil {
-		return err
+	// orgIdが指定されている場合はそのorgのクライアントを返す
+	var clients models.ClientSlice
+	if orgId != "" {
+		// orgにユーザーがいるかどうかを見る
+		existOrgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+			models.OrganizationUserWhere.UserID.EQ(u.ID),
+			qm.AndIn("role IN ?", "owner", "member"),
+		).Exists(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		if !existOrgUser {
+			return echo.NewHTTPError(http.StatusForbidden, "you are not member of this org")
+		}
+
+		clients, err = models.Clients(
+			models.ClientWhere.OrgID.EQ(null.NewString(orgId, true)),
+			qm.Limit(h.C.ClientMaxCreated),
+			qm.OrderBy("updated_at DESC"),
+		).All(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+	} else {
+		clients, err = models.Clients(
+			models.ClientWhere.OwnerUserID.EQ(u.ID),
+			qm.Limit(h.C.ClientMaxCreated),
+			qm.OrderBy("updated_at DESC"),
+		).All(ctx, h.DB)
+		if err != nil {
+			return err
+		}
 	}
 
 	response := make([]*ClientResponse, len(clients))

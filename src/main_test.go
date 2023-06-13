@@ -60,6 +60,11 @@ func TestMain(m *testing.M) {
 
 	flag.Parse()
 
+	if C.DBDebugLog {
+		// SQLBoilerのログを出力する
+		boil.DebugMode = true
+	}
+
 	code := m.Run()
 	os.Exit(code)
 }
@@ -72,13 +77,13 @@ func resetDBTable(ctx context.Context, db *sql.DB) error {
 	}
 	defer rows.Close()
 
+	if _, err := queries.Raw("SET FOREIGN_KEY_CHECKS = 0").ExecContext(ctx, db); err != nil {
+		return err
+	}
+
 	for rows.Next() {
 		table := ""
 		if err := rows.Scan(&table); err != nil {
-			return err
-		}
-
-		if _, err := queries.Raw("SET FOREIGN_KEY_CHECKS = 0").ExecContext(ctx, db); err != nil {
 			return err
 		}
 
@@ -366,6 +371,38 @@ func RegisterClient(t *testing.T, ctx context.Context, u *models.User, scopes ..
 
 		OwnerUserID:  u.ID,
 		ClientSecret: secret,
+	}
+	err = client.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+
+	for _, scope := range scopes {
+		clientScope := models.ClientScope{
+			ClientID: clientID.String(),
+			Scope:    scope,
+		}
+		err = clientScope.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	}
+
+	return clientID.String(), secret
+}
+
+func RegisterOrgClient(t *testing.T, ctx context.Context, orgId string, memberOnly bool, u *models.User, scopes ...string) (string, string) {
+	clientID := ulid.Make()
+
+	secret, err := lib.RandomStr(63)
+	require.NoError(t, err)
+
+	client := models.Client{
+		ClientID: clientID.String(),
+
+		Name: "test",
+
+		OwnerUserID:  u.ID,
+		ClientSecret: secret,
+
+		OrgID:         null.NewString(orgId, true),
+		OrgMemberOnly: memberOnly,
 	}
 	err = client.Insert(ctx, DB, boil.Infer())
 	require.NoError(t, err)

@@ -80,6 +80,68 @@ func TestClientHandler(t *testing.T) {
 		require.Len(t, response, 2)
 	})
 
+	t.Run("成功: orgIdを指定するとその組織のすべてのクライアントを取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		RegisterClient(t, ctx, &u, "openid", "profile") // 1つだけ個人のクライアントを作る
+		RegisterOrgClient(t, ctx, orgId, false, &u, "openid", "profile")
+		RegisterOrgClient(t, ctx, orgId, false, &u, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.NoError(t, err)
+
+		response := []src.ClientResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 2, "orgのクライアントのみ取得できる")
+	})
+
+	t.Run("成功: clientがorgの場合、client_idを指定して取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		// u2でorgを作る
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		clientId, clientSecret := RegisterOrgClient(t, ctx, orgId, false, &u, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.NoError(t, err)
+
+		response := src.ClientDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.ClientID, clientId)
+
+		require.Len(t, response.RedirectUrls, 0)
+		require.Len(t, response.ReferrerUrls, 0)
+		require.Len(t, response.Scopes, 2)
+		require.Equal(t, response.ClientSecret, clientSecret)
+	})
+
 	t.Run("失敗: client_idが存在しない値", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -117,7 +179,119 @@ func TestClientHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientHandler(c)
-		require.EqualError(t, err, "code=404, message=client not found")
+		require.EqualError(t, err, "code=403, message=you are not owner of this client")
+	})
+
+	t.Run("失敗: orgIdが存在しない値", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?org_id=aaaa", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: org_idをしたけどユーザーはorgのメンバーではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		RegisterClient(t, ctx, &u2, "openid", "profile") // 1つだけ個人のクライアントを作る
+		RegisterOrgClient(t, ctx, orgId, false, &u2, "openid", "profile")
+		RegisterOrgClient(t, ctx, orgId, false, &u2, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: org_idをしたけどユーザーはorgのメンバーだけど権限が無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		InviteUserInOrg(t, ctx, orgId, &u, "guest") // ゲストにする
+
+		RegisterClient(t, ctx, &u2, "openid", "profile") // 1つだけ個人のクライアントを作る
+		RegisterOrgClient(t, ctx, orgId, false, &u2, "openid", "profile")
+		RegisterOrgClient(t, ctx, orgId, false, &u2, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: client_idをしたけどユーザーはorgのメンバーではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: client_idをしたけどユーザーはorgのメンバーだけど権限が無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		InviteUserInOrg(t, ctx, orgId, &u, "guest") // ゲストにする
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
 	})
 }
 

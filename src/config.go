@@ -622,14 +622,14 @@ var TestConfig = &Config{
 		Loc:                  time.FixedZone("Asia/Tokyo", 9*60*60),
 		AllowNativePasswords: true,
 	},
-	DBDebugLog: false,
+	DBDebugLog: false, // テストで詰まったときにtrueにすると便利。常にtrueにするとログが崩壊するので注意
 
 	Host: &url.URL{
 		Host:   "localhost:8080",
 		Scheme: "http",
 	},
 	SiteHost: &url.URL{
-		Host:   "localhost:3000",
+		Host:   "cateiru.test",
 		Scheme: "http",
 	},
 
