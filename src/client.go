@@ -855,7 +855,7 @@ func (h *Handler) ClientDeleteImageHandler(c echo.Context) error {
 		return err
 	}
 
-	TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		client, err := models.Clients(
 			models.ClientWhere.ClientID.EQ(clientId),
 			models.ClientWhere.OwnerUserID.EQ(u.ID),
@@ -900,6 +900,9 @@ func (h *Handler) ClientDeleteImageHandler(c echo.Context) error {
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

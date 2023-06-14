@@ -1087,6 +1087,71 @@ func TestClientUpdateHandler(t *testing.T) {
 		// とりあえずエラーにならなかったらOKとしておく
 	})
 
+	t.Run("成功: ユーザーはorgに入っているので更新ができる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのメンバー
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		clientId, clientSecret := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+
+		form.Insert("name", "new!!! name")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile email")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientUpdateHandler(c)
+		require.NoError(t, err)
+
+		response := src.ClientDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, "new!!! name", response.Name)
+		require.Equal(t, response.ClientSecret, clientSecret)
+
+		// スコープ
+		scopes, err := models.ClientScopes(
+			models.ClientScopeWhere.ClientID.EQ(clientId),
+		).Count(ctx, h.DB)
+		require.NoError(t, err)
+		require.Equal(t, 3, int(scopes))
+
+		// リダイレクトURL
+		redirectUrls, err := models.ClientRedirects(
+			models.ClientRedirectWhere.ClientID.EQ(clientId),
+		).Count(ctx, h.DB)
+		require.NoError(t, err)
+		require.Equal(t, 2, int(redirectUrls))
+
+		// リファラーURL
+		referrerUrls, err := models.ClientReferrers(
+			models.ClientReferrerWhere.ClientID.EQ(clientId),
+		).Count(ctx, h.DB)
+		require.NoError(t, err)
+		require.Equal(t, 2, int(referrerUrls))
+	})
+
 	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1176,6 +1241,79 @@ func TestClientUpdateHandler(t *testing.T) {
 
 		err = h.ClientUpdateHandler(c)
 		require.EqualError(t, err, "code=403, message=you are not owner of this client")
+	})
+
+	t.Run("失敗: orgに入っていない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+
+		form.Insert("name", "new!!! name")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile email")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientUpdateHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: orgに入っているが権限が無い", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのゲスト
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+
+		form.Insert("name", "new!!! name")
+		form.Insert("is_allow", "false")
+		form.Insert("scopes", "openid profile email")
+		form.Insert("redirect_url_count", "2")
+		form.Insert("redirect_url_0", "https://aaaa.test")
+		form.Insert("redirect_url_1", "https://bbbb.test")
+		form.Insert("referrer_url_count", "2")
+		form.Insert("referrer_url_0", "https://aaaa.test")
+		form.Insert("referrer_url_1", "https://bbbb.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientUpdateHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
 	})
 
 	t.Run("失敗: promptの値が不正", func(t *testing.T) {
