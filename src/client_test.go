@@ -1175,7 +1175,7 @@ func TestClientUpdateHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientUpdateHandler(c)
-		require.EqualError(t, err, "code=404, message=client not found")
+		require.EqualError(t, err, "code=403, message=you are not owner of this client")
 	})
 
 	t.Run("失敗: promptの値が不正", func(t *testing.T) {

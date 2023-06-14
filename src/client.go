@@ -64,7 +64,7 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 		models.ClientWhere.ClientID.EQ(clientId),
 	).One(ctx, db)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, echo.NewHTTPError(http.StatusNotFound, "client not found")
+		return nil, NewHTTPError(http.StatusNotFound, "client not found")
 	}
 	if err != nil {
 		return nil, err
@@ -83,12 +83,12 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 
 		// orgのアクセス権限がない場合
 		if !userExist {
-			return nil, echo.NewHTTPError(http.StatusForbidden, "you are not member of this org")
+			return nil, NewHTTPError(http.StatusForbidden, "you are not member of this org")
 		}
 	} else {
 		// orgが設定されていない場合は、clientの作成者のみがアクセス可能
 		if client.OwnerUserID != u.ID {
-			return nil, echo.NewHTTPError(http.StatusForbidden, "you are not owner of this client")
+			return nil, NewHTTPError(http.StatusForbidden, "you are not owner of this client")
 		}
 	}
 
@@ -186,7 +186,7 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 			return err
 		}
 		if !existOrgUser {
-			return echo.NewHTTPError(http.StatusForbidden, "you are not member of this org")
+			return NewHTTPError(http.StatusForbidden, "you are not member of this org")
 		}
 
 		clients, err = models.Clients(
@@ -484,6 +484,7 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// TODO: org実装
 // Clientを更新する
 // フォーム要素:
 // - client_id: クライアントID
@@ -598,62 +599,72 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 		return err
 	}
 
-	// 画像をアップロードする前に一度、clientIdのクライアントが存在するかを確認する
-	existClient, err := models.Clients(
-		models.ClientWhere.ClientID.EQ(clientId),
-		models.ClientWhere.OwnerUserID.EQ(u.ID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	if !existClient {
-		return NewHTTPError(http.StatusNotFound, "client not found")
-	}
-
-	// 画像をアップロードする（ある場合）
-	image := null.NewString("", false)
-	if imageHeader != nil {
-		file, err := imageHeader.Open()
-		if err != nil {
-			return err
-		}
-		contentType := imageHeader.Header.Get("Content-Type")
-		if !lib.ValidateContentType(contentType) {
-			return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
-		}
-		path := filepath.Join("client_icon", clientId)
-		if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
-			return err
-		}
-		// ローカル環境では /[bucket-name]/avatar/[image] となるので
-		p, err := url.JoinPath(h.C.CDNHost.Path, path)
-		if err != nil {
-			return err
-		}
-
-		url := &url.URL{
-			Scheme: h.C.CDNHost.Scheme,
-			Host:   h.C.CDNHost.Host,
-			Path:   p,
-		}
-		if err := h.CDN.Purge(url.String()); err != nil {
-			return err
-		}
-
-		image = null.NewString(url.String(), true)
-	}
-
 	// トランザクション
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		client, err := models.Clients(
 			models.ClientWhere.ClientID.EQ(clientId),
-			models.ClientWhere.OwnerUserID.EQ(u.ID),
 		).One(ctx, tx)
 		if errors.Is(err, sql.ErrNoRows) {
 			return NewHTTPError(http.StatusNotFound, "client not found")
 		}
 		if err != nil {
 			return err
+		}
+
+		if client.OrgID.Valid {
+			// orgが設定されている場合
+			userExist, err := models.OrganizationUsers(
+				models.OrganizationUserWhere.OrganizationID.EQ(client.OrgID.String),
+				models.OrganizationUserWhere.UserID.EQ(u.ID),
+				qm.AndIn("role IN ?", "owner", "member"), // roleはownerかmemberのみ
+			).Exists(ctx, tx)
+			if err != nil {
+				return err
+			}
+
+			// orgのアクセス権限がない場合
+			if !userExist {
+				return NewHTTPError(http.StatusForbidden, "you are not member of this org")
+			}
+		} else {
+			// orgが設定されていない場合は、clientの作成者のみがアクセス可能
+			if client.OwnerUserID != u.ID {
+				return NewHTTPError(http.StatusForbidden, "you are not owner of this client")
+			}
+		}
+
+		// 画像をアップロードする（ある場合）
+		if imageHeader != nil {
+			file, err := imageHeader.Open()
+			if err != nil {
+				return err
+			}
+			contentType := imageHeader.Header.Get("Content-Type")
+			if !lib.ValidateContentType(contentType) {
+				return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
+			}
+			path := filepath.Join("client_icon", clientId)
+			if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+				return err
+			}
+			// ローカル環境では /[bucket-name]/avatar/[image] となるので
+			p, err := url.JoinPath(h.C.CDNHost.Path, path)
+			if err != nil {
+				return err
+			}
+
+			url := &url.URL{
+				Scheme: h.C.CDNHost.Scheme,
+				Host:   h.C.CDNHost.Host,
+				Path:   p,
+			}
+			if err := h.CDN.Purge(url.String()); err != nil {
+				return err
+			}
+
+			client.Image = null.NewString(url.String(), true)
+		} else {
+			client.Image = null.NewString("", false)
 		}
 
 		if updateSecret {
@@ -664,7 +675,6 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 			client.ClientSecret = clientSecret
 		}
 
-		client.Image = image
 		client.Name = name
 		client.Description = null.NewString(description, description != "")
 		client.IsAllow = isAllow
@@ -754,8 +764,6 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 		return err
 	}
 
-	setImage := false
-
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		client, err := models.Clients(
 			models.ClientWhere.ClientID.EQ(clientId),
@@ -768,8 +776,28 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 			return err
 		}
 
+		// 画像が設定されている場合は削除する
 		if client.Image.Valid {
-			setImage = true
+			path := filepath.Join("client_icon", clientId)
+			if err := h.Storage.Delete(ctx, path); err != nil {
+				return err
+			}
+
+			// ローカル環境では /[bucket-name]/avatar/[image] となるので
+			p, err := url.JoinPath(h.C.CDNHost.Path, path)
+			if err != nil {
+				return err
+			}
+
+			// CDNをパージ
+			url := &url.URL{
+				Scheme: h.C.CDNHost.Scheme,
+				Host:   h.C.CDNHost.Host,
+				Path:   p,
+			}
+			if err := h.CDN.Purge(url.String()); err != nil {
+				return err
+			}
 		}
 
 		if _, err := client.Delete(ctx, tx); err != nil {
@@ -810,9 +838,40 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 		return err
 	}
 
-	// 画像が設定されている場合は削除する
-	if setImage {
-		path := filepath.Join("client_icon", clientId)
+	return nil
+}
+
+// クライアント画像の削除
+func (h *Handler) ClientDeleteImageHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	clientId := c.QueryParam("client_id")
+	if clientId == "" {
+		return NewHTTPError(http.StatusBadRequest, "client_id is required")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+			models.ClientWhere.OwnerUserID.EQ(u.ID),
+		).One(ctx, tx)
+		if errors.Is(err, sql.ErrNoRows) {
+			return NewHTTPError(http.StatusNotFound, "client not found")
+		}
+		if err != nil {
+			return err
+		}
+
+		if !client.Image.Valid {
+			return NewHTTPError(http.StatusNotFound, "image is not set")
+		}
+
+		path := filepath.Join("client_icon", client.ClientID)
 		if err := h.Storage.Delete(ctx, path); err != nil {
 			return err
 		}
@@ -832,66 +891,15 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 		if err := h.CDN.Purge(url.String()); err != nil {
 			return err
 		}
-	}
 
-	return nil
-}
+		client.Image = null.NewString("", false)
 
-// クライアント画像の削除
-func (h *Handler) ClientDeleteImageHandler(c echo.Context) error {
-	ctx := c.Request().Context()
+		if _, err := client.Update(ctx, tx, boil.Infer()); err != nil {
+			return err
+		}
 
-	clientId := c.QueryParam("client_id")
-	if clientId == "" {
-		return NewHTTPError(http.StatusBadRequest, "client_id is required")
-	}
-
-	u, err := h.Session.SimpleLogin(ctx, c)
-	if err != nil {
-		return err
-	}
-
-	client, err := models.Clients(
-		models.ClientWhere.ClientID.EQ(clientId),
-		models.ClientWhere.OwnerUserID.EQ(u.ID),
-	).One(ctx, h.DB)
-	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "client not found")
-	}
-	if err != nil {
-		return err
-	}
-
-	if !client.Image.Valid {
-		return NewHTTPError(http.StatusNotFound, "image is not set")
-	}
-
-	path := filepath.Join("client_icon", client.ClientID)
-	if err := h.Storage.Delete(ctx, path); err != nil {
-		return err
-	}
-
-	// ローカル環境では /[bucket-name]/avatar/[image] となるので
-	p, err := url.JoinPath(h.C.CDNHost.Path, path)
-	if err != nil {
-		return err
-	}
-
-	// CDNをパージ
-	url := &url.URL{
-		Scheme: h.C.CDNHost.Scheme,
-		Host:   h.C.CDNHost.Host,
-		Path:   p,
-	}
-	if err := h.CDN.Purge(url.String()); err != nil {
-		return err
-	}
-
-	client.Image = null.NewString("", false)
-
-	if _, err := client.Update(ctx, h.DB, boil.Infer()); err != nil {
-		return err
-	}
+		return nil
+	})
 
 	return nil
 }
