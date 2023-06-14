@@ -1632,6 +1632,62 @@ func TestClientDeleteHandler(t *testing.T) {
 		require.False(t, allows)
 	})
 
+	t.Run("成功: ユーザーはorgに入っているので削除ができる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのメンバー
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteHandler(c)
+		require.NoError(t, err)
+
+		clientExists, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, clientExists)
+
+		scopes, err := models.ClientScopes(
+			models.ClientScopeWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, scopes)
+
+		redirects, err := models.ClientRedirects(
+			models.ClientRedirectWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, redirects)
+
+		referrers, err := models.ClientReferrers(
+			models.ClientReferrerWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, referrers)
+
+		allows, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, allows)
+	})
+
 	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1682,7 +1738,55 @@ func TestClientDeleteHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientDeleteHandler(c)
-		require.EqualError(t, err, "code=404, message=client not found")
+		require.EqualError(t, err, "code=403, message=you are not owner of this client")
+	})
+
+	t.Run("失敗: orgに入っていないので削除できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: orgに入っているが権限が無いので削除できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
 	})
 }
 
@@ -1721,6 +1825,56 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		clientId, _ := RegisterClient(t, ctx, &u)
+
+		path := filepath.Join("client_icon", clientId)
+		url := &url.URL{
+			Scheme: C.CDNHost.Scheme,
+			Host:   C.CDNHost.Host,
+			Path:   path,
+		}
+
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		client.Image = null.NewString(url.String(), true)
+
+		_, err = client.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteImageHandler(c)
+		require.NoError(t, err)
+
+		client, err = models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.False(t, client.Image.Valid)
+	})
+
+	t.Run("成功: ユーザーはorgに入っているので削除ができる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのメンバー
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
 
 		path := filepath.Join("client_icon", clientId)
 		url := &url.URL{
@@ -1826,7 +1980,89 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientDeleteImageHandler(c)
-		require.EqualError(t, err, "code=404, message=client not found")
+		require.EqualError(t, err, "code=403, message=you are not owner of this client")
+	})
+
+	t.Run("失敗: orgに入っていないので削除できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		path := filepath.Join("client_icon", clientId)
+		url := &url.URL{
+			Scheme: C.CDNHost.Scheme,
+			Host:   C.CDNHost.Host,
+			Path:   path,
+		}
+
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		client.Image = null.NewString(url.String(), true)
+
+		_, err = client.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteImageHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: orgに入っているが権限が無いので削除できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		path := filepath.Join("client_icon", clientId)
+		url := &url.URL{
+			Scheme: C.CDNHost.Scheme,
+			Host:   C.CDNHost.Host,
+			Path:   path,
+		}
+
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		client.Image = null.NewString(url.String(), true)
+
+		_, err = client.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteImageHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
 	})
 }
 
@@ -1848,6 +2084,41 @@ func TestClientAllowUserHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		clientId, _ := RegisterClient(t, ctx, &u)
+
+		for i := 0; i < 2; i++ {
+			RegisterAllowRules(t, ctx, clientId, false, fmt.Sprintf("%daaa.test", i))
+		}
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAllowUserHandler(c)
+		require.NoError(t, err)
+
+		response := []src.ClientAllowUserRuleResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 2)
+	})
+
+	t.Run("成功: ユーザーはorgに入っているの取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのメンバー
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
 
 		for i := 0; i < 2; i++ {
 			RegisterAllowRules(t, ctx, clientId, false, fmt.Sprintf("%daaa.test", i))
@@ -1920,7 +2191,63 @@ func TestClientAllowUserHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientAllowUserHandler(c)
-		require.EqualError(t, err, "code=404, message=client not found")
+		require.EqualError(t, err, "code=403, message=you are not owner of this client")
+	})
+
+	t.Run("失敗: orgに入っていないので取得できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		for i := 0; i < 2; i++ {
+			RegisterAllowRules(t, ctx, clientId, false, fmt.Sprintf("%daaa.test", i))
+		}
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAllowUserHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: orgに入っているが権限が無いので取得できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		for i := 0; i < 2; i++ {
+			RegisterAllowRules(t, ctx, clientId, false, fmt.Sprintf("%daaa.test", i))
+		}
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAllowUserHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
 	})
 }
 
@@ -2001,6 +2328,44 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		require.Equal(t, rule.EmailDomain.String, "cateiru.test")
 	})
 
+	t.Run("成功: ユーザーはorgに入っているの追加できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのメンバー
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("user_id", "test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.NoError(t, err)
+
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.Equal(t, rule.UserID.String, "test")
+		require.False(t, rule.EmailDomain.Valid)
+	})
+
 	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -2062,7 +2427,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientAddAllowUserHandler(c)
-		require.EqualError(t, err, "code=404, message=client not found")
+		require.EqualError(t, err, "code=403, message=you are not owner of this client")
 	})
 
 	t.Run("失敗: user_idとemail_domainどちらも指定しない", func(t *testing.T) {
@@ -2108,6 +2473,63 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		err = h.ClientAddAllowUserHandler(c)
 		require.EqualError(t, err, "code=400, message=user_id and email_domain cannot be set at the same time")
 	})
+
+	t.Run("失敗: orgに入っていないので追加できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("user_id", "test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: orgに入っているが権限が無いので追加できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのメンバー
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("user_id", "test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
 }
 
 func TestClientDeleteAllowUserHandler(t *testing.T) {
@@ -2134,6 +2556,44 @@ func TestClientDeleteAllowUserHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 
 		clientId, _ := RegisterClient(t, ctx, &u)
+
+		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?id=%d", rule.ID), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteAllowUserHandler(c)
+		require.NoError(t, err)
+
+		existRule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ID.EQ(rule.ID),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, existRule)
+	})
+
+	t.Run("成功: ユーザーはorgに入っているので削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのメンバー
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
 
 		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
 		rule, err := models.ClientAllowRules(
@@ -2215,7 +2675,68 @@ func TestClientDeleteAllowUserHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientDeleteAllowUserHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not owner")
+		require.EqualError(t, err, "code=403, message=you are not owner of this client")
+	})
+
+	t.Run("失敗: orgに入っていないので削除できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?id=%d", rule.ID), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteAllowUserHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
+	})
+
+	t.Run("失敗: orgに入っているが権限が無いので削除できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx, &u2)
+
+		// uはorgのメンバー
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2)
+
+		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		rule, err := models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?id=%d", rule.ID), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientDeleteAllowUserHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this org")
 	})
 }
 

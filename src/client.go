@@ -58,6 +58,32 @@ type ClientAllowUserRuleResponse struct {
 	EmailDomain null.String `json:"email_domain,omitempty"`
 }
 
+// そのユーザーはクライアントにアクセスできる権限を持っているか見る
+func validateClient(ctx context.Context, db boil.ContextExecutor, client *models.Client, u *models.User) error {
+	if client.OrgID.Valid {
+		// orgが設定されている場合
+		userExist, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.OrganizationID.EQ(client.OrgID.String),
+			models.OrganizationUserWhere.UserID.EQ(u.ID),
+			qm.AndIn("role IN ?", "owner", "member"), // roleはownerかmemberのみ
+		).Exists(ctx, db)
+		if err != nil {
+			return err
+		}
+
+		// orgのアクセス権限がない場合
+		if !userExist {
+			return NewHTTPError(http.StatusForbidden, "you are not member of this org")
+		}
+	} else {
+		// orgが設定されていない場合は、clientの作成者のみがアクセス可能
+		if client.OwnerUserID != u.ID {
+			return NewHTTPError(http.StatusForbidden, "you are not owner of this client")
+		}
+	}
+	return nil
+}
+
 // クライアントの詳細を取得する
 func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *models.User) (*ClientDetailResponse, error) {
 	client, err := models.Clients(
@@ -70,26 +96,8 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 		return nil, err
 	}
 
-	if client.OrgID.Valid {
-		// orgが設定されている場合
-		userExist, err := models.OrganizationUsers(
-			models.OrganizationUserWhere.OrganizationID.EQ(client.OrgID.String),
-			models.OrganizationUserWhere.UserID.EQ(u.ID),
-			qm.AndIn("role IN ?", "owner", "member"), // roleはownerかmemberのみ
-		).Exists(ctx, db)
-		if err != nil {
-			return nil, err
-		}
-
-		// orgのアクセス権限がない場合
-		if !userExist {
-			return nil, NewHTTPError(http.StatusForbidden, "you are not member of this org")
-		}
-	} else {
-		// orgが設定されていない場合は、clientの作成者のみがアクセス可能
-		if client.OwnerUserID != u.ID {
-			return nil, NewHTTPError(http.StatusForbidden, "you are not owner of this client")
-		}
+	if err := validateClient(ctx, db, client, u); err != nil {
+		return nil, err
 	}
 
 	redirectUrlRecords, err := models.ClientRedirects(
@@ -611,26 +619,8 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 			return err
 		}
 
-		if client.OrgID.Valid {
-			// orgが設定されている場合
-			userExist, err := models.OrganizationUsers(
-				models.OrganizationUserWhere.OrganizationID.EQ(client.OrgID.String),
-				models.OrganizationUserWhere.UserID.EQ(u.ID),
-				qm.AndIn("role IN ?", "owner", "member"), // roleはownerかmemberのみ
-			).Exists(ctx, tx)
-			if err != nil {
-				return err
-			}
-
-			// orgのアクセス権限がない場合
-			if !userExist {
-				return NewHTTPError(http.StatusForbidden, "you are not member of this org")
-			}
-		} else {
-			// orgが設定されていない場合は、clientの作成者のみがアクセス可能
-			if client.OwnerUserID != u.ID {
-				return NewHTTPError(http.StatusForbidden, "you are not owner of this client")
-			}
+		if err := validateClient(ctx, tx, client, u); err != nil {
+			return err
 		}
 
 		// 画像をアップロードする（ある場合）
@@ -767,12 +757,15 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		client, err := models.Clients(
 			models.ClientWhere.ClientID.EQ(clientId),
-			models.ClientWhere.OwnerUserID.EQ(u.ID),
 		).One(ctx, tx)
 		if errors.Is(err, sql.ErrNoRows) {
 			return NewHTTPError(http.StatusNotFound, "client not found")
 		}
 		if err != nil {
+			return err
+		}
+
+		if err := validateClient(ctx, tx, client, u); err != nil {
 			return err
 		}
 
@@ -858,12 +851,15 @@ func (h *Handler) ClientDeleteImageHandler(c echo.Context) error {
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		client, err := models.Clients(
 			models.ClientWhere.ClientID.EQ(clientId),
-			models.ClientWhere.OwnerUserID.EQ(u.ID),
 		).One(ctx, tx)
 		if errors.Is(err, sql.ErrNoRows) {
 			return NewHTTPError(http.StatusNotFound, "client not found")
 		}
 		if err != nil {
+			return err
+		}
+
+		if err := validateClient(ctx, tx, client, u); err != nil {
 			return err
 		}
 
@@ -923,13 +919,16 @@ func (h *Handler) ClientAllowUserHandler(c echo.Context) error {
 
 	client, err := models.Clients(
 		models.ClientWhere.ClientID.EQ(clientId),
-		models.ClientWhere.OwnerUserID.EQ(u.ID),
-	).Exists(ctx, h.DB)
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "client not found")
+	}
 	if err != nil {
 		return err
 	}
-	if !client {
-		return NewHTTPError(http.StatusNotFound, "client not found")
+
+	if err := validateClient(ctx, h.DB, client, u); err != nil {
+		return err
 	}
 
 	rules, err := models.ClientAllowRules(
@@ -979,15 +978,18 @@ func (h *Handler) ClientAddAllowUserHandler(c echo.Context) error {
 	}
 
 	// クライアントのis_allowがfalseでもホワイトリストに追加削除はできる
-	existClient, err := models.Clients(
+	client, err := models.Clients(
 		models.ClientWhere.ClientID.EQ(clientId),
-		models.ClientWhere.OwnerUserID.EQ(u.ID),
-	).Exists(ctx, h.DB)
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "client not found")
+	}
 	if err != nil {
 		return err
 	}
-	if !existClient {
-		return NewHTTPError(http.StatusNotFound, "client not found")
+
+	if err := validateClient(ctx, h.DB, client, u); err != nil {
+		return err
 	}
 
 	clientAllowRule := &models.ClientAllowRule{
@@ -1039,8 +1041,8 @@ func (h *Handler) ClientDeleteAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
-	if client.OwnerUserID != u.ID {
-		return NewHTTPError(http.StatusForbidden, "you are not owner")
+	if err := validateClient(ctx, h.DB, client, u); err != nil {
+		return err
 	}
 
 	if _, err := allowRule.Delete(ctx, h.DB); err != nil {
