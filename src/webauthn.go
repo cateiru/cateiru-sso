@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src/models"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 )
 
@@ -262,6 +263,11 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 	}
 
 	_, err = h.WebAuthn.FinishLogin(handler, *session, response)
+	if protocolError, ok := err.(*protocol.Error); ok {
+		if protocolError.Details == "Failed to lookup Client-side Discoverable Credential" {
+			return nil, NewHTTPUniqueError(http.StatusBadRequest, ErrLoginFailed, "Failed to lookup Client-side Discoverable Credential")
+		}
+	}
 	if err != nil {
 		return nil, NewHTTPError(http.StatusForbidden, err)
 	}
