@@ -14,6 +14,7 @@ export const ColorButton = () => {
           aria-label="to dark"
           icon={<TbSun size="25px" />}
           variant="ghost"
+          borderRadius="50%"
         />
       </Tooltip>
     );
@@ -26,6 +27,7 @@ export const ColorButton = () => {
         aria-label="to light"
         icon={<TbMoon size="25px" />}
         variant="ghost"
+        borderRadius="50%"
       />
     </Tooltip>
   );

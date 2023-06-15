@@ -39,7 +39,7 @@ export const Header = React.memo(() => {
 
     return (
       <>
-        <Skeleton w="25px" h="25px" borderRadius="15%" mr="1rem" />
+        <Skeleton w="25px" h="25px" borderRadius="50%" mr="1rem" />
         <Skeleton w="32px" h="32px" borderRadius="50%" />
       </>
     );

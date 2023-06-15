@@ -10,7 +10,7 @@ export const SettingCard: React.FC<Props> = props => {
   const borderColor = useColorModeValue('gray.300', 'gray.600');
 
   return (
-    <Box w="100%" margin="auto" my="3rem" minH="120px">
+    <Box w="100%" margin="auto" my="4rem" minH="120px">
       <Text
         fontWeight="bold"
         fontSize="1.2rem"

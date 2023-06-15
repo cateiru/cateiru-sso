@@ -1,4 +1,10 @@
-import {IconButton, Text, useColorModeValue} from '@chakra-ui/react';
+import {
+  Flex,
+  IconButton,
+  Spacer,
+  Text,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import React from 'react';
 import {TbEye, TbEyeOff} from 'react-icons/tb';
 import {hideEmail} from '../../utils/hide';
@@ -12,7 +18,7 @@ export const EmailView: React.FC<{email: string}> = ({email}) => {
   }, [email]);
 
   return (
-    <>
+    <Flex w="150px" alignItems="center">
       <IconButton
         mr=".1rem"
         icon={
@@ -27,7 +33,8 @@ export const EmailView: React.FC<{email: string}> = ({email}) => {
         size="sm"
         variant="ghost"
       />
+      <Spacer />
       <Text color={color}>{show ? email : hide()}</Text>
-    </>
+    </Flex>
   );
 };
