@@ -48,8 +48,7 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
       beginData.signal = abort.signal;
 
       // See also: https://github.com/w3c/webauthn/wiki/Explainer:-WebAuthn-Conditional-UI
-      // W3C上ではConditional UIはdraftなので一旦anyで型を無視している
-      (beginData as any).mediation = 'conditional';
+      beginData.mediation = 'conditional';
 
       let credential: Credential;
       try {
@@ -60,9 +59,9 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
 
         // 1passwordの拡張機能は`credentials.get`をモックするが、Conditional UIに対応しておらず、
         // TypeErrorが発生する。そのため、その場合は一時的にパスキーログイン用のボタンを出現させる
-        if(e instanceof TypeError) {
-          setIsConditionSupported(false)
-          return
+        if (e instanceof TypeError) {
+          setIsConditionSupported(false);
+          return;
         }
 
         console.error(e);

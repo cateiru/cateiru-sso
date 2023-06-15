@@ -1,19 +1,17 @@
 build/
-server.js
 next.config.js
 .data/
 .github/
 .next/
 .storage/
 .swc/
-certificates/
 src/
 db/
 scripts/
 public/
 storybook-static/
 
-!stories/**
+!stories/**/*.stories.tsx
 
 # app以下は.well-knownなどデフォルトでignoreされてしまう場合があるので、明示的にignoreしないようにする
-!app/**
+!app/**/*.tsx
