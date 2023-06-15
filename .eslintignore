@@ -12,3 +12,8 @@ db/
 scripts/
 public/
 storybook-static/
+
+!stories/**
+
+# app以下は.well-knownなどデフォルトでignoreされてしまう場合があるので、明示的にignoreしないようにする
+!app/**
