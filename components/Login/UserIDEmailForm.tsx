@@ -38,6 +38,7 @@ export const UserIDEmailForm: React.FC<Props> = ({
   const {
     handleSubmit,
     register,
+    setError,
     formState: {errors, isSubmitting},
   } = methods;
 
@@ -47,6 +48,17 @@ export const UserIDEmailForm: React.FC<Props> = ({
   const {request} = useRequest('/v2/login/user', {
     errorCallback: () => {
       setUser(null);
+    },
+
+    customError: e => {
+      if (e.unique_code === 10) {
+        setError('user_id_email', {
+          message: 'このユーザーは存在しません',
+        });
+        setUser(null);
+      }
+
+      // TODO: エラーハンドリング
     },
   });
 
