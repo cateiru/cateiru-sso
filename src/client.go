@@ -59,7 +59,7 @@ type ClientAllowUserRuleResponse struct {
 }
 
 // そのユーザーはクライアントにアクセスできる権限を持っているか見る
-func validateClient(ctx context.Context, db boil.ContextExecutor, client *models.Client, u *models.User) error {
+func checkCanAccessToClient(ctx context.Context, db boil.ContextExecutor, client *models.Client, u *models.User) error {
 	if client.OrgID.Valid {
 		// orgが設定されている場合
 		userExist, err := models.OrganizationUsers(
@@ -96,7 +96,7 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 		return nil, err
 	}
 
-	if err := validateClient(ctx, db, client, u); err != nil {
+	if err := checkCanAccessToClient(ctx, db, client, u); err != nil {
 		return nil, err
 	}
 
@@ -492,7 +492,6 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-// TODO: org実装
 // Clientを更新する
 // フォーム要素:
 // - client_id: クライアントID
@@ -619,7 +618,7 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 			return err
 		}
 
-		if err := validateClient(ctx, tx, client, u); err != nil {
+		if err := checkCanAccessToClient(ctx, tx, client, u); err != nil {
 			return err
 		}
 
@@ -765,7 +764,7 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 			return err
 		}
 
-		if err := validateClient(ctx, tx, client, u); err != nil {
+		if err := checkCanAccessToClient(ctx, tx, client, u); err != nil {
 			return err
 		}
 
@@ -859,7 +858,7 @@ func (h *Handler) ClientDeleteImageHandler(c echo.Context) error {
 			return err
 		}
 
-		if err := validateClient(ctx, tx, client, u); err != nil {
+		if err := checkCanAccessToClient(ctx, tx, client, u); err != nil {
 			return err
 		}
 
@@ -927,7 +926,7 @@ func (h *Handler) ClientAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
-	if err := validateClient(ctx, h.DB, client, u); err != nil {
+	if err := checkCanAccessToClient(ctx, h.DB, client, u); err != nil {
 		return err
 	}
 
@@ -988,7 +987,7 @@ func (h *Handler) ClientAddAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
-	if err := validateClient(ctx, h.DB, client, u); err != nil {
+	if err := checkCanAccessToClient(ctx, h.DB, client, u); err != nil {
 		return err
 	}
 
@@ -1041,7 +1040,7 @@ func (h *Handler) ClientDeleteAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
-	if err := validateClient(ctx, h.DB, client, u); err != nil {
+	if err := checkCanAccessToClient(ctx, h.DB, client, u); err != nil {
 		return err
 	}
 
