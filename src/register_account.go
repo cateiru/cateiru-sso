@@ -742,8 +742,8 @@ func (h *Handler) RegisterInviteRegisterSession(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "email is empty")
 	}
 
-	inviteEmailSession, err := models.InviteEmailSessions(
-		models.InviteEmailSessionWhere.ID.EQ(inviteToken),
+	inviteOrgSession, err := models.InviteOrgSessions(
+		models.InviteOrgSessionWhere.Token.EQ(inviteToken),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
 		return NewHTTPError(http.StatusBadRequest, "invalid invite_token")
@@ -752,14 +752,14 @@ func (h *Handler) RegisterInviteRegisterSession(c echo.Context) error {
 		return err
 	}
 
-	if email != inviteEmailSession.Email {
+	if email != inviteOrgSession.Email {
 		return NewHTTPError(http.StatusBadRequest, "invalid email")
 	}
 
 	// セッションが有効期限切れの場合
-	if time.Now().After(inviteEmailSession.Period) {
+	if time.Now().After(inviteOrgSession.Period) {
 		// セッションは削除
-		if _, err := inviteEmailSession.Delete(ctx, h.DB); err != nil {
+		if _, err := inviteOrgSession.Delete(ctx, h.DB); err != nil {
 			return err
 		}
 		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
@@ -797,7 +797,7 @@ func (h *Handler) RegisterInviteRegisterSession(c echo.Context) error {
 
 	// orgの存在確認をする
 	orgExists, err := models.Organizations(
-		models.OrganizationWhere.ID.EQ(inviteEmailSession.OrgID),
+		models.OrganizationWhere.ID.EQ(inviteOrgSession.OrgID),
 	).Exists(ctx, h.DB)
 	if err != nil {
 		return err
@@ -815,11 +815,11 @@ func (h *Handler) RegisterInviteRegisterSession(c echo.Context) error {
 		registerSession := &models.RegisterSession{
 			ID: session,
 
-			Email:         inviteEmailSession.Email,
+			Email:         inviteOrgSession.Email,
 			EmailVerified: true,     // 対象のメールアドレスに送信するため、確認済みとする
 			VerifyCode:    "000000", // 使用しないので
 
-			OrgID: null.NewString(inviteEmailSession.OrgID, true),
+			OrgID: null.NewString(inviteOrgSession.OrgID, true),
 
 			Period: time.Now().Add(h.C.RegisterSessionPeriod),
 		}
@@ -827,8 +827,8 @@ func (h *Handler) RegisterInviteRegisterSession(c echo.Context) error {
 			return err
 		}
 
-		// inviteEmailSessionは削除する
-		if _, err := inviteEmailSession.Delete(ctx, tx); err != nil {
+		// inviteOrgSessionは削除する
+		if _, err := inviteOrgSession.Delete(ctx, tx); err != nil {
 			return err
 		}
 

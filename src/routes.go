@@ -99,7 +99,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	org.PUT("/member", h.OrgUpdateMemberHandler)
 	org.DELETE("/member", h.OrgDeleteMemberHandler)
 	org.GET("/member/invite", h.OrgInvitedMemberHandler)
-	org.POST("/member/invite", h.OrgInviteNewMemberHandler) // orgの招待。アカウント登録していないユーザーに対して
+	org.POST("/member/invite", h.OrgInviteNewMemberHandler)      // orgの招待。アカウント登録していないユーザーに対して
+	org.DELETE("/member/invite", h.OrgInviteMemberDeleteHandler) // 招待のキャンセル
 
 	// OIDC
 	oidc := version.Group("/oidc")

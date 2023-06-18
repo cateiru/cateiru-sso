@@ -37,13 +37,13 @@ type OrgUserResponse struct {
 }
 
 type OrgInviteMemberResponse struct {
-	ID    string `json:"id"`
+	ID    uint   `json:"id"`
 	Email string `json:"email"`
 
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type InviteEmailSessionTemplate struct {
+type InviteOrgSessionTemplate struct {
 	Token            string
 	Email            string
 	Now              time.Time
@@ -329,6 +329,10 @@ func (h *Handler) OrgUpdateMemberHandler(c echo.Context) error {
 	if orgUserOwner.Role != "owner" {
 		return NewHTTPError(http.StatusForbidden, "you are not owner")
 	}
+	// 自分自身は変更不可
+	if orgUserOwner.ID == orgUser.ID {
+		return NewHTTPError(http.StatusForbidden, "you can't change your role")
+	}
 
 	// 権限を変更する
 	orgUser.Role = role
@@ -388,6 +392,10 @@ func (h *Handler) OrgDeleteMemberHandler(c echo.Context) error {
 	if orgUserOwner.Role != "owner" {
 		return NewHTTPError(http.StatusForbidden, "you are not owner")
 	}
+	// 自分自身は削除不可
+	if orgUserOwner.ID == orgUser.ID {
+		return NewHTTPError(http.StatusForbidden, "you can't delete yourself")
+	}
 
 	// メンバーを削除する
 	if _, err := orgUser.Delete(ctx, h.DB); err != nil {
@@ -436,8 +444,8 @@ func (h *Handler) OrgInvitedMemberHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusForbidden, "you are not owner")
 	}
 
-	inviteEmailSessions, err := models.InviteEmailSessions(
-		models.InviteEmailSessionWhere.OrgID.EQ(orgId),
+	inviteOrgSessions, err := models.InviteOrgSessions(
+		models.InviteOrgSessionWhere.OrgID.EQ(orgId),
 		qm.And("period > NOW()"),
 		qm.OrderBy("created_at DESC"),
 	).All(ctx, h.DB)
@@ -445,12 +453,12 @@ func (h *Handler) OrgInvitedMemberHandler(c echo.Context) error {
 		return err
 	}
 
-	response := make([]OrgInviteMemberResponse, len(inviteEmailSessions))
-	for i, inviteEmailSession := range inviteEmailSessions {
+	response := make([]OrgInviteMemberResponse, len(inviteOrgSessions))
+	for i, inviteOrgSession := range inviteOrgSessions {
 		response[i] = OrgInviteMemberResponse{
-			ID:        inviteEmailSession.ID,
-			Email:     inviteEmailSession.Email,
-			CreatedAt: inviteEmailSession.CreatedAt,
+			ID:        inviteOrgSession.ID,
+			Email:     inviteOrgSession.Email,
+			CreatedAt: inviteOrgSession.CreatedAt,
 		}
 	}
 
@@ -519,14 +527,14 @@ func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
 		return err
 	}
 
-	inviteEmailSession := models.InviteEmailSession{
-		ID:     token,
+	inviteOrgSession := models.InviteOrgSession{
+		Token:  token,
 		Email:  email,
-		Period: time.Now().Add(h.C.InviteEmailSessionPeriod),
+		Period: time.Now().Add(h.C.InviteOrgSessionPeriod),
 
 		OrgID: orgId,
 	}
-	if err := inviteEmailSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
+	if err := inviteOrgSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 
@@ -537,11 +545,11 @@ func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
 	ip := c.RealIP()
 
 	// 対象のメールアドレスにメールを送信する
-	r := InviteEmailSessionTemplate{
+	r := InviteOrgSessionTemplate{
 		Token:            token,
 		Email:            email,
 		Now:              time.Now(),
-		Period:           time.Now().Add(h.C.InviteEmailSessionPeriod),
+		Period:           time.Now().Add(h.C.InviteOrgSessionPeriod),
 		UserData:         userData,
 		OrganizationName: organization.Name,
 	}
@@ -580,5 +588,11 @@ func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
 		zap.Bool("IsMobile", userData.IsMobile),
 	)
 
+	return nil
+}
+
+// 招待のキャンセル
+// すでに招待済みの場合
+func (h *Handler) OrgInviteMemberDeleteHandler(c echo.Context) error {
 	return nil
 }

@@ -1298,13 +1298,13 @@ func TestRegisterInviteRegisterSession(t *testing.T) {
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
 
-		s := models.InviteEmailSession{
-			ID:    token,
+		s := models.InviteOrgSession{
+			Token: token,
 			Email: email,
 
 			OrgID: orgId,
 
-			Period: time.Now().Add(h.C.InviteEmailSessionPeriod),
+			Period: time.Now().Add(h.C.InviteOrgSessionPeriod),
 		}
 		err = s.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
@@ -1344,8 +1344,8 @@ func TestRegisterInviteRegisterSession(t *testing.T) {
 		require.Equal(t, s.OrgID.String, orgId)
 
 		// invite_email_sessionは削除される
-		inviteEmailSessionExist, err := models.InviteEmailSessions(
-			models.InviteEmailSessionWhere.ID.EQ(token),
+		inviteEmailSessionExist, err := models.InviteOrgSessions(
+			models.InviteOrgSessionWhere.Token.EQ(token),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.False(t, inviteEmailSessionExist)
@@ -1396,8 +1396,8 @@ func TestRegisterInviteRegisterSession(t *testing.T) {
 		require.Equal(t, s.OrgID.String, orgId)
 
 		// invite_email_sessionは削除される
-		inviteEmailSessionExist, err := models.InviteEmailSessions(
-			models.InviteEmailSessionWhere.ID.EQ(token),
+		inviteEmailSessionExist, err := models.InviteOrgSessions(
+			models.InviteOrgSessionWhere.Token.EQ(token),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.False(t, inviteEmailSessionExist)
@@ -1504,8 +1504,8 @@ func TestRegisterInviteRegisterSession(t *testing.T) {
 		token := inviteSession(t, orgId, email)
 
 		// invite_email_sessionの有効期限を切らす
-		inviteEmailSession, err := models.InviteEmailSessions(
-			models.InviteEmailSessionWhere.ID.EQ(token),
+		inviteEmailSession, err := models.InviteOrgSessions(
+			models.InviteOrgSessionWhere.Token.EQ(token),
 		).One(ctx, DB)
 		require.NoError(t, err)
 		inviteEmailSession.Period = time.Now().Add(-1 * time.Hour)
