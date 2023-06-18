@@ -16,7 +16,7 @@ var TableNames = struct {
 	ClientScope                   string
 	ClientSession                 string
 	EmailVerifySession            string
-	InviteEmailSession            string
+	InviteOrgSession              string
 	LoginClientHistory            string
 	LoginHistory                  string
 	LoginTryHistory               string
@@ -51,7 +51,7 @@ var TableNames = struct {
 	ClientScope:                   "client_scope",
 	ClientSession:                 "client_session",
 	EmailVerifySession:            "email_verify_session",
-	InviteEmailSession:            "invite_email_session",
+	InviteOrgSession:              "invite_org_session",
 	LoginClientHistory:            "login_client_history",
 	LoginHistory:                  "login_history",
 	LoginTryHistory:               "login_try_history",

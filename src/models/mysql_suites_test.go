@@ -30,7 +30,7 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("EmailVerifySessions", testEmailVerifySessionsUpsert)
 
-	t.Run("InviteEmailSessions", testInviteEmailSessionsUpsert)
+	t.Run("InviteOrgSessions", testInviteOrgSessionsUpsert)
 
 	t.Run("LoginClientHistories", testLoginClientHistoriesUpsert)
 
