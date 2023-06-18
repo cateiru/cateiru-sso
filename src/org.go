@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"go.uber.org/zap"
 )
 
 type OrgResponse struct {
@@ -32,6 +34,22 @@ type OrgUserResponse struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type OrgInviteMemberResponse struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type InviteEmailSessionTemplate struct {
+	Token            string
+	Email            string
+	Now              time.Time
+	Period           time.Time
+	UserData         *UserData
+	OrganizationName string
 }
 
 func getOrgUser(ctx context.Context, db *sql.DB, userId string, orgId string) (*OrgUserResponse, error) {
@@ -379,7 +397,188 @@ func (h *Handler) OrgDeleteMemberHandler(c echo.Context) error {
 	return nil
 }
 
+// 招待中の情報を取得する
+func (h *Handler) OrgInvitedMemberHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	orgId := c.QueryParam("org_id")
+	if orgId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_id is required")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	organizationExist, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !organizationExist {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+
+	// ユーザーがownerかどうかを見る
+	orgUser, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+		models.OrganizationUserWhere.UserID.EQ(u.ID),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+	if err != nil {
+		return err
+	}
+	if orgUser.Role != "owner" {
+		return NewHTTPError(http.StatusForbidden, "you are not owner")
+	}
+
+	inviteEmailSessions, err := models.InviteEmailSessions(
+		models.InviteEmailSessionWhere.OrgID.EQ(orgId),
+		qm.And("period > NOW()"),
+		qm.OrderBy("created_at DESC"),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	response := make([]OrgInviteMemberResponse, len(inviteEmailSessions))
+	for i, inviteEmailSession := range inviteEmailSessions {
+		response[i] = OrgInviteMemberResponse{
+			ID:        inviteEmailSession.ID,
+			Email:     inviteEmailSession.Email,
+			CreatedAt: inviteEmailSession.CreatedAt,
+		}
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 // アカウントを持っていない人に対してメールアドレスに招待メールを送信する
-func (h *Handler) OrgInviteMemberHandler(c echo.Context) error {
+func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	orgId := c.FormValue("org_id")
+	if orgId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_id is required")
+	}
+	email := c.FormValue("email")
+	if email == "" {
+		return NewHTTPError(http.StatusBadRequest, "email is required")
+	}
+	if !lib.ValidateEmail(email) {
+		return NewHTTPError(http.StatusBadRequest, "invalid email")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	organization, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	// ユーザーがownerかどうかを見る
+	orgUser, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+		models.OrganizationUserWhere.UserID.EQ(u.ID),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+	if err != nil {
+		return err
+	}
+	if orgUser.Role != "owner" {
+		return NewHTTPError(http.StatusForbidden, "you are not owner")
+	}
+
+	// そのEmailのアカウントが存在しているかを見る
+	userExist, err := models.Users(
+		models.UserWhere.Email.EQ(email),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if userExist {
+		return NewHTTPError(http.StatusBadRequest, "user already exists")
+	}
+
+	token, err := lib.RandomStr(31)
+	if err != nil {
+		return err
+	}
+
+	inviteEmailSession := models.InviteEmailSession{
+		ID:     token,
+		Email:  email,
+		Period: time.Now().Add(h.C.InviteEmailSessionPeriod),
+
+		OrgID: orgId,
+	}
+	if err := inviteEmailSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	userData, err := h.ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+	ip := c.RealIP()
+
+	// 対象のメールアドレスにメールを送信する
+	r := InviteEmailSessionTemplate{
+		Token:            token,
+		Email:            email,
+		Now:              time.Now(),
+		Period:           time.Now().Add(h.C.InviteEmailSessionPeriod),
+		UserData:         userData,
+		OrganizationName: organization.Name,
+	}
+	m := &lib.MailBody{
+		EmailAddress:      email,
+		Subject:           fmt.Sprintf("%sに招待されています", organization.Name),
+		Data:              r,
+		PlainTextFileName: "invite_org.gtpl",
+		HTMLTextFileName:  "invite_org.html",
+	}
+	msg, id, err := h.Sender.Send(m)
+	if err != nil {
+		L.Error("mail",
+			zap.String("Email", email),
+			zap.String("Subject", m.Subject),
+			zap.Error(err),
+			zap.String("IP", ip),
+			zap.String("Device", userData.Device),
+			zap.String("Browser", userData.Browser),
+			zap.String("OS", userData.OS),
+			zap.Bool("IsMobile", userData.IsMobile),
+		)
+		return err
+	}
+
+	// メールを送信したのでログを出す
+	L.Info("mail",
+		zap.String("Email", email),
+		zap.String("Subject", m.Subject),
+		zap.String("MailGunMessage", msg),
+		zap.String("MailGunID", id),
+		zap.String("IP", ip),
+		zap.String("Device", userData.Device),
+		zap.String("Browser", userData.Browser),
+		zap.String("OS", userData.OS),
+		zap.Bool("IsMobile", userData.IsMobile),
+	)
+
 	return nil
 }
