@@ -299,3 +299,29 @@ func TestValidateURL(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateRole(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
+		roles := []string{
+			"owner",
+			"member",
+			"guest",
+		}
+
+		for _, r := range roles {
+			require.True(t, lib.ValidateRole(r), r)
+		}
+	})
+
+	t.Run("失敗", func(t *testing.T) {
+		roles := []string{
+			"admin",
+			"staff",
+			"OWNER",
+		}
+
+		for _, r := range roles {
+			require.False(t, lib.ValidateRole(r), r)
+		}
+	})
+}

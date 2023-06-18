@@ -27,6 +27,13 @@ var allowScopes = []string{
 	"email",
 }
 
+// orgのロール
+var roles = []string{
+	"owner",
+	"member",
+	"guest",
+}
+
 // Emailの形式が正しいかを検証する
 // 1~255文字まで & 正規表現
 func ValidateEmail(e string) bool {
@@ -145,4 +152,13 @@ func ValidateURL(s string) (*url.URL, bool) {
 	}
 
 	return u, true
+}
+
+func ValidateRole(s string) bool {
+	for _, allow := range roles {
+		if allow == s {
+			return true
+		}
+	}
+	return false
 }

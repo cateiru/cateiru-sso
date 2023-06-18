@@ -204,6 +204,9 @@ CREATE TABLE `register_session` (
     -- コードを入力した回数
     `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
 
+    -- orgの招待を受けてアカウントを作成する場合に使用する
+    `org_id` VARCHAR(32) DEFAULT NULL,
+
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

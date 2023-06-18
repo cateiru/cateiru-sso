@@ -406,6 +406,7 @@ func (h *Handler) AdminBrandUpdateHandler(c echo.Context) error {
 	return nil
 }
 
+// ブランドを削除する
 func (h *Handler) AdminBrandDeleteHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 

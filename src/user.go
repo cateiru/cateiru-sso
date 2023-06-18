@@ -59,6 +59,13 @@ type UserAvatarResponse struct {
 	Avatar string `json:"avatar"`
 }
 
+// 他の人に公開可能な情報
+type PublicUserResponse struct {
+	ID       string      `json:"id"`
+	UserName string      `json:"user_name"`
+	Avatar   null.String `json:"avatar,omitempty"`
+}
+
 func (h *Handler) UserMeHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 

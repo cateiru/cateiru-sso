@@ -34,6 +34,8 @@ type ClientResponse struct {
 	IsAllow bool        `json:"is_allow"`
 	Prompt  null.String `json:"prompt,omitempty"`
 
+	OrgMemberOnly bool `json:"org_member_only,omitempty"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -152,6 +154,8 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 			IsAllow: client.IsAllow,
 			Prompt:  client.Prompt,
 
+			OrgMemberOnly: client.OrgMemberOnly,
+
 			CreatedAt: client.CreatedAt,
 			UpdatedAt: client.UpdatedAt,
 		},
@@ -227,6 +231,8 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 
 			IsAllow: client.IsAllow,
 			Prompt:  client.Prompt,
+
+			OrgMemberOnly: client.OrgMemberOnly,
 
 			CreatedAt: client.CreatedAt,
 			UpdatedAt: client.UpdatedAt,
