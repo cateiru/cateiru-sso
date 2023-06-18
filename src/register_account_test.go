@@ -622,9 +622,14 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	// セッションを作成する
-	createSession := func(email string, verified bool) *models.RegisterSession {
+	createSession := func(email string, verified bool, orgIds ...string) *models.RegisterSession {
 		session, err := lib.RandomStr(31)
 		require.NoError(t, err)
+
+		orgId := ""
+		if len(orgIds) > 0 {
+			orgId = orgIds[0]
+		}
 
 		sessionDB := models.RegisterSession{
 			ID:            session,
@@ -632,6 +637,8 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 			EmailVerified: verified,
 			VerifyCode:    "123456",
 			RetryCount:    1,
+
+			OrgID: null.NewString(orgId, orgId != ""),
 
 			Period: time.Now().Add(h.C.RegisterSessionPeriod),
 		}
@@ -734,6 +741,89 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		existsRegisterSession, err := models.RegisterSessionExists(ctx, DB, s.ID)
 		require.NoError(t, err)
 		require.False(t, existsRegisterSession)
+	})
+
+	t.Run("成功: org_idが設定されていてorgが存在している場合はそのorgに所属される", func(t *testing.T) {
+		// orgを作成する
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		orgId := RegisterOrg(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+
+		s := createSession(email2, true, orgId)
+		webauthnSession := registerWebauthnSession(email2, 1)
+
+		m, err := easy.NewJson("/", http.MethodPost, "")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthnHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		responseUser := new(models.User)
+		require.NoError(t, m.Json(responseUser))
+		require.NotNil(t, responseUser)
+
+		// orgに所属されているか
+		orgUserExists, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(responseUser.ID),
+			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, orgUserExists)
+	})
+
+	t.Run("成功: org_idが設定されているが、そのorgが存在しない場合はorgには所属されない", func(t *testing.T) {
+		// orgを作成する
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		orgId := RegisterOrg(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+
+		s := createSession(email2, true, orgId)
+		webauthnSession := registerWebauthnSession(email2, 1)
+
+		// ここでorgを削除する
+		_, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).DeleteAll(ctx, DB)
+		require.NoError(t, err)
+
+		m, err := easy.NewJson("/", http.MethodPost, "")
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+
+		c := m.Echo()
+
+		err = h.RegisterWebAuthnHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		responseUser := new(models.User)
+		require.NoError(t, m.Json(responseUser))
+		require.NotNil(t, responseUser)
+
+		// orgは削除されているので所属されない
+		orgUserExists, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(responseUser.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, orgUserExists)
 	})
 
 	t.Run("失敗: X-Register-Tokenがない", func(t *testing.T) {
@@ -935,9 +1025,14 @@ func TestRegisterPasswordHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	// セッションを作成する
-	createSession := func(email string, verified bool) *models.RegisterSession {
+	createSession := func(email string, verified bool, orgIds ...string) *models.RegisterSession {
 		session, err := lib.RandomStr(31)
 		require.NoError(t, err)
+
+		orgId := ""
+		if len(orgIds) > 0 {
+			orgId = orgIds[0]
+		}
 
 		sessionDB := models.RegisterSession{
 			ID:            session,
@@ -945,6 +1040,7 @@ func TestRegisterPasswordHandler(t *testing.T) {
 			EmailVerified: verified,
 			VerifyCode:    "123456",
 			RetryCount:    1,
+			OrgID:         null.NewString(orgId, orgId != ""),
 
 			Period: time.Now().Add(h.C.RegisterSessionPeriod),
 		}
@@ -1012,6 +1108,83 @@ func TestRegisterPasswordHandler(t *testing.T) {
 		existsRegisterSession, err := models.RegisterSessionExists(ctx, DB, s.ID)
 		require.NoError(t, err)
 		require.False(t, existsRegisterSession)
+	})
+
+	t.Run("成功: org_idが設定されていてorgが存在している場合はそのorgに所属される", func(t *testing.T) {
+		// orgを作成する
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		orgId := RegisterOrg(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		s := createSession(email2, true, orgId)
+
+		password := "password123456789"
+
+		form := easy.NewMultipart()
+		form.Insert("password", password)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+
+		c := m.Echo()
+
+		err = h.RegisterPasswordHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		responseUser := &models.User{}
+		require.NoError(t, m.Json(responseUser))
+		require.NotNil(t, responseUser)
+
+		// orgに所属されているか
+		orgUserExists, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(responseUser.ID),
+			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, orgUserExists)
+	})
+
+	t.Run("成功: org_idが設定されているが、そのorgが存在しない場合はorgには所属されない", func(t *testing.T) {
+		// orgを作成する
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		orgId := RegisterOrg(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		s := createSession(email2, true, orgId)
+
+		password := "password123456789"
+
+		// ここでorgを削除する
+		_, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).DeleteAll(ctx, DB)
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("password", password)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Register-Token", s.ID)
+
+		c := m.Echo()
+
+		err = h.RegisterPasswordHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		responseUser := &models.User{}
+		require.NoError(t, m.Json(responseUser))
+		require.NotNil(t, responseUser)
+
+		// orgは削除されているので所属されない
+		orgUserExists, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(responseUser.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, orgUserExists)
 	})
 
 	t.Run("失敗: X-Register-Tokenが無い", func(t *testing.T) {

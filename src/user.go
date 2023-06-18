@@ -566,7 +566,7 @@ func (h *Handler) UserLogoutClientHandler(c echo.Context) error {
 
 // ユーザを新規に作成する
 // 最初は、ユーザ名などの情報はデフォルト値に設定する（ユーザ登録フローの簡略化のため）
-func RegisterUser(ctx context.Context, db *sql.DB, email string, ids ...string) (*models.User, error) {
+func RegisterUser(ctx context.Context, db boil.ContextExecutor, email string, ids ...string) (*models.User, error) {
 	// もう一度Emailが登録されていないか確認する
 	exist, err := models.Users(models.UserWhere.Email.EQ(email)).Exists(ctx, db)
 	if err != nil {

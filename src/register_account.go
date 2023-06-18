@@ -516,40 +516,82 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 		return err
 	}
 
-	// 登録フロー
-	user, err := RegisterUser(ctx, h.DB, registerSession.Email, string(webauthnUser.WebAuthnID()))
-	if err != nil {
-		return err
-	}
 	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
 	ip := c.RealIP()
 
-	// 認証を追加
-	rowCredential := types.JSON{}
-	if err := rowCredential.Marshal(credential); err != nil {
+	var user *models.User
+
+	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+		// 登録フロー
+		user, err = RegisterUser(ctx, h.DB, registerSession.Email, string(webauthnUser.WebAuthnID()))
+		if err != nil {
+			return err
+		}
+
+		// 認証を追加
+		rowCredential := types.JSON{}
+		if err := rowCredential.Marshal(credential); err != nil {
+			return err
+		}
+		passkey := models.Webauthn{
+			UserID:     user.ID,
+			Credential: rowCredential,
+
+			Device:   null.NewString(ua.Device, true),
+			Os:       null.NewString(ua.OS, true),
+			Browser:  null.NewString(ua.Browser, true),
+			IsMobile: null.NewBool(ua.IsMobile, true),
+
+			IP: net.ParseIP(ip),
+		}
+		if err := passkey.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+
+		// registerSessionは削除する
+		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+
+		// org_idが設定されている場合は、orgに所属させる
+		if registerSession.OrgID.Valid {
+			orgExist, err := models.Organizations(
+				models.OrganizationWhere.ID.EQ(registerSession.OrgID.String),
+			).Exists(ctx, tx)
+			if err != nil {
+				return err
+			}
+			// orgが存在している場合のみ招待する
+			if orgExist {
+				orgUser := models.OrganizationUser{
+					OrganizationID: registerSession.OrgID.String,
+					UserID:         user.ID,
+
+					Role: "guest", // ゲストで登録する
+				}
+				if err := orgUser.Insert(ctx, tx, boil.Infer()); err != nil {
+					return err
+				}
+			} else {
+				L.Error("org not found",
+					zap.String("org_id", registerSession.OrgID.String),
+					zap.String("email", registerSession.Email),
+					zap.String("user_id", user.ID),
+				)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
 		return err
 	}
-	passkey := models.Webauthn{
-		UserID:     user.ID,
-		Credential: rowCredential,
 
-		Device:   null.NewString(ua.Device, true),
-		Os:       null.NewString(ua.OS, true),
-		Browser:  null.NewString(ua.Browser, true),
-		IsMobile: null.NewBool(ua.IsMobile, true),
-
-		IP: net.ParseIP(ip),
-	}
-	if err := passkey.Insert(ctx, h.DB, boil.Infer()); err != nil {
-		return err
-	}
-
-	// registerSessionは削除する
-	if _, err := registerSession.Delete(ctx, h.DB); err != nil {
-		return err
+	if user == nil {
+		return NewHTTPError(http.StatusInternalServerError, "user is nil")
 	}
 
 	register, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
@@ -610,23 +652,64 @@ func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	user, err := RegisterUser(ctx, h.DB, registerSession.Email)
+	var user *models.User
+
+	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+		user, err = RegisterUser(ctx, tx, registerSession.Email)
+		if err != nil {
+			return err
+		}
+
+		passwordModel := models.Password{
+			UserID: user.ID,
+			Salt:   salt,
+			Hash:   hashedPassword,
+		}
+		if err := passwordModel.Insert(ctx, tx, boil.Infer()); err != nil {
+			return err
+		}
+
+		// registerSessionは削除する
+		if _, err := registerSession.Delete(ctx, tx); err != nil {
+			return err
+		}
+
+		// org_idが設定されている場合は、orgに所属させる
+		if registerSession.OrgID.Valid {
+			orgExist, err := models.Organizations(
+				models.OrganizationWhere.ID.EQ(registerSession.OrgID.String),
+			).Exists(ctx, tx)
+			if err != nil {
+				return err
+			}
+			// orgが存在している場合のみ招待する
+			if orgExist {
+				orgUser := models.OrganizationUser{
+					OrganizationID: registerSession.OrgID.String,
+					UserID:         user.ID,
+
+					Role: "guest", // ゲストで登録する
+				}
+				if err := orgUser.Insert(ctx, tx, boil.Infer()); err != nil {
+					return err
+				}
+			} else {
+				L.Error("org not found",
+					zap.String("org_id", registerSession.OrgID.String),
+					zap.String("email", registerSession.Email),
+					zap.String("user_id", user.ID),
+				)
+			}
+		}
+
+		return nil
+	})
 	if err != nil {
 		return err
 	}
 
-	passwordModel := models.Password{
-		UserID: user.ID,
-		Salt:   salt,
-		Hash:   hashedPassword,
-	}
-	if err := passwordModel.Insert(ctx, h.DB, boil.Infer()); err != nil {
-		return err
-	}
-
-	// registerSessionは削除する
-	if _, err := registerSession.Delete(ctx, h.DB); err != nil {
-		return err
+	if user == nil {
+		return NewHTTPError(http.StatusInternalServerError, "user is nil")
 	}
 
 	ua, err := h.ParseUA(c.Request())
