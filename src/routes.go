@@ -22,6 +22,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	register.POST("/begin_webauthn", h.RegisterBeginWebAuthnHandler) // Passkeyの前処理
 	register.POST("/webauthn", h.RegisterWebAuthnHandler)
 	register.POST("/password", h.RegisterPasswordHandler)
+	register.POST("/invite_generate_session", h.RegisterInviteRegisterSession) // 招待メールからアカウント作成セッションを構築する
 
 	// ログイン
 	login := version.Group("/login")

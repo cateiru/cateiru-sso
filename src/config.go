@@ -48,6 +48,8 @@ type Config struct {
 	RegisterSessionRetryLimit uint8
 	RegisterEmailSendLimit    uint8
 
+	InviteEmailSessionPeriod time.Duration
+
 	// webAuthn(passkeyの共通設定)
 	// ref. https://github.com/go-webauthn/webauthn
 	WebAuthnConfig        *webauthn.Config
@@ -179,6 +181,8 @@ var LocalConfig = &Config{
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
+
+	InviteEmailSessionPeriod: 24 * time.Hour,
 
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO Local",
@@ -338,6 +342,8 @@ var CloudRunConfig = &Config{
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
 
+	InviteEmailSessionPeriod: 24 * time.Hour,
+
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO",
 		RPID:          "sso.cateiru.com",
@@ -495,6 +501,8 @@ var CloudRunStagingConfig = &Config{
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
 
+	InviteEmailSessionPeriod: 24 * time.Hour,
+
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO Staging",
 		RPID:          "sso-staging.cateiru.com",
@@ -648,6 +656,8 @@ var TestConfig = &Config{
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
 	RegisterEmailSendLimit:    3,
+
+	InviteEmailSessionPeriod: 24 * time.Hour,
 
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO",

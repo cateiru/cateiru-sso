@@ -1289,3 +1289,260 @@ func TestRegisterPasswordHandler(t *testing.T) {
 		require.EqualError(t, err, "code=400, message=bad password")
 	})
 }
+
+func TestRegisterInviteRegisterSession(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	inviteSession := func(t *testing.T, orgId string, email string) string {
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		s := models.InviteEmailSession{
+			ID:    token,
+			Email: email,
+
+			OrgID: orgId,
+
+			Period: time.Now().Add(h.C.InviteEmailSessionPeriod),
+		}
+		err = s.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		return token
+	}
+
+	t.Run("成功", func(t *testing.T) {
+		orgId := RegisterOrg(t, ctx)
+		email := RandomEmail(t)
+
+		token := inviteSession(t, orgId, email)
+
+		form := easy.NewMultipart()
+		form.Insert("invite_token", token)
+		form.Insert("email", email)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.NoError(t, err)
+
+		resp := &src.RegisterEmailResponse{}
+		require.NoError(t, m.Json(resp))
+		require.NotNil(t, resp.Token)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.Email.EQ(email),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, s.ID, resp.Token)
+		require.Equal(t, s.RetryCount, uint8(0))
+		require.True(t, s.EmailVerified)
+		require.Equal(t, s.VerifyCode, "000000")
+		require.Equal(t, s.OrgID.String, orgId)
+
+		// invite_email_sessionは削除される
+		inviteEmailSessionExist, err := models.InviteEmailSessions(
+			models.InviteEmailSessionWhere.ID.EQ(token),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, inviteEmailSessionExist)
+	})
+
+	t.Run("成功: すでにセッションテーブルにEmailが存在していても有効期限が切れている場合は成功する", func(t *testing.T) {
+		orgId := RegisterOrg(t, ctx)
+		email := RandomEmail(t)
+
+		token := inviteSession(t, orgId, email)
+
+		// 有効期限切れのregister_sessionを作成する
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		sessionDB := models.RegisterSession{
+			ID:         session,
+			Email:      email,
+			VerifyCode: "123456",
+
+			Period: time.Now().Add(-10 * time.Hour),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("invite_token", token)
+		form.Insert("email", email)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.NoError(t, err)
+
+		resp := &src.RegisterEmailResponse{}
+		require.NoError(t, m.Json(resp))
+		require.NotNil(t, resp.Token)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.Email.EQ(email),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, s.ID, resp.Token)
+		require.Equal(t, s.RetryCount, uint8(0))
+		require.True(t, s.EmailVerified)
+		require.Equal(t, s.VerifyCode, "000000")
+		require.Equal(t, s.OrgID.String, orgId)
+
+		// invite_email_sessionは削除される
+		inviteEmailSessionExist, err := models.InviteEmailSessions(
+			models.InviteEmailSessionWhere.ID.EQ(token),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, inviteEmailSessionExist)
+	})
+
+	t.Run("失敗: すでにセッションテーブルにEmailが存在している", func(t *testing.T) {
+		orgId := RegisterOrg(t, ctx)
+		email := RandomEmail(t)
+
+		token := inviteSession(t, orgId, email)
+
+		// 有効期限切れのregister_sessionを作成する
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		sessionDB := models.RegisterSession{
+			ID:         session,
+			Email:      email,
+			VerifyCode: "123456",
+
+			Period: time.Now().Add(10 * time.Hour), // 有効期限はまだ切れていない
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("invite_token", token)
+		form.Insert("email", email)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.EqualError(t, err, "code=400, message=session exists, unique=2")
+	})
+
+	t.Run("失敗: すでにメールアドレスが登録されている", func(t *testing.T) {
+		orgId := RegisterOrg(t, ctx)
+		email := RandomEmail(t)
+
+		// emailのユーザ作る
+		RegisterUser(t, ctx, email)
+
+		token := inviteSession(t, orgId, email)
+
+		form := easy.NewMultipart()
+		form.Insert("invite_token", token)
+		form.Insert("email", email)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.EqualError(t, err, "code=400, message=impossible register, unique=3")
+	})
+
+	t.Run("失敗: invite_tokenが空", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		form := easy.NewMultipart()
+		form.Insert("email", email)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.EqualError(t, err, "code=400, message=invite_token is empty")
+	})
+
+	t.Run("失敗: invite_tokenが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+
+		form := easy.NewMultipart()
+		form.Insert("email", email)
+		form.Insert("invite_token", "invalid")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.EqualError(t, err, "code=400, message=invalid invite_token")
+	})
+
+	t.Run("失敗: emailが不正", func(t *testing.T) {
+		orgId := RegisterOrg(t, ctx)
+		email := RandomEmail(t)
+
+		token := inviteSession(t, orgId, email)
+
+		form := easy.NewMultipart()
+		form.Insert("invite_token", token)
+		form.Insert("email", "invalid")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.EqualError(t, err, "code=400, message=invalid email")
+	})
+
+	t.Run("失敗: inviteEmailSessionが有効期限切れ", func(t *testing.T) {
+		orgId := RegisterOrg(t, ctx)
+		email := RandomEmail(t)
+
+		token := inviteSession(t, orgId, email)
+
+		// invite_email_sessionの有効期限を切らす
+		inviteEmailSession, err := models.InviteEmailSessions(
+			models.InviteEmailSessionWhere.ID.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		inviteEmailSession.Period = time.Now().Add(-1 * time.Hour)
+		_, err = inviteEmailSession.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("invite_token", token)
+		form.Insert("email", email)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.EqualError(t, err, "code=403, message=expired token, unique=5")
+	})
+
+	t.Run("失敗: orgが存在していない", func(t *testing.T) {
+		orgId := RegisterOrg(t, ctx)
+		email := RandomEmail(t)
+
+		token := inviteSession(t, orgId, email)
+
+		// orgを削除する
+		_, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).DeleteAll(ctx, DB)
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("invite_token", token)
+		form.Insert("email", email)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.RegisterInviteRegisterSession(c)
+		require.EqualError(t, err, "code=400, message=invalid invite_token")
+	})
+}
