@@ -100,3 +100,15 @@ func TestOrgInviteNewMemberHandler(t *testing.T) {
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {})
 }
+
+func TestOrgInviteMemberDeleteHandler(t *testing.T) {
+	t.Run("成功: 招待をキャンセルできる", func(t *testing.T) {})
+
+	t.Run("失敗:invite_idが空", func(t *testing.T) {})
+
+	t.Run("失敗:invite_idの値が不正", func(t *testing.T) {})
+
+	t.Run("失敗: orgに所属していない", func(t *testing.T) {})
+
+	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {})
+}

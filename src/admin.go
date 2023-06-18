@@ -665,17 +665,38 @@ func (h *Handler) AdminOrgDeleteHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "org_id is required")
 	}
 
-	org, err := models.Organizations(
-		models.OrganizationWhere.ID.EQ(orgId),
-	).One(ctx, h.DB)
-	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "organization not found")
-	}
-	if err != nil {
-		return err
-	}
+	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).One(ctx, tx)
+		if errors.Is(err, sql.ErrNoRows) {
+			return NewHTTPError(http.StatusNotFound, "organization not found")
+		}
+		if err != nil {
+			return err
+		}
 
-	if _, err := org.Delete(ctx, h.DB); err != nil {
+		if _, err := org.Delete(ctx, tx); err != nil {
+			return err
+		}
+
+		_, err = models.OrganizationUsers(
+			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+		).DeleteAll(ctx, tx)
+		if err != nil {
+			return err
+		}
+
+		_, err = models.InviteOrgSessions(
+			models.InviteOrgSessionWhere.OrgID.EQ(orgId),
+		).DeleteAll(ctx, tx)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
 		return err
 	}
 

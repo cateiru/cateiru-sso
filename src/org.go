@@ -594,5 +594,60 @@ func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
 // 招待のキャンセル
 // すでに招待済みの場合
 func (h *Handler) OrgInviteMemberDeleteHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	inviteId := c.QueryParam("invite_id")
+	if inviteId == "" {
+		return NewHTTPError(http.StatusBadRequest, "invite_id is required")
+	}
+	inviteIdInt, err := strconv.Atoi(inviteId)
+	if err != nil {
+		return NewHTTPError(http.StatusBadRequest, "invite_id is invalid")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	inviteOrgSession, err := models.InviteOrgSessions(
+		models.InviteOrgSessionWhere.ID.EQ(uint(inviteIdInt)),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "invite not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	organizationExist, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(inviteOrgSession.OrgID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !organizationExist {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+
+	// ユーザーがownerかどうかを見る
+	orgUser, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.OrganizationID.EQ(inviteOrgSession.OrgID),
+		models.OrganizationUserWhere.UserID.EQ(u.ID),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+	if err != nil {
+		return err
+	}
+	if orgUser.Role != "owner" {
+		return NewHTTPError(http.StatusForbidden, "you are not owner")
+	}
+
+	if _, err := inviteOrgSession.Delete(ctx, h.DB); err != nil {
+		return err
+	}
+
 	return nil
 }
