@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -23,15 +24,16 @@ import (
 
 // RegisterSession is an object representing the database table.
 type RegisterSession struct {
-	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Email         string    `boil:"email" json:"email" toml:"email" yaml:"email"`
-	EmailVerified bool      `boil:"email_verified" json:"email_verified" toml:"email_verified" yaml:"email_verified"`
-	SendCount     uint8     `boil:"send_count" json:"send_count" toml:"send_count" yaml:"send_count"`
-	VerifyCode    string    `boil:"verify_code" json:"verify_code" toml:"verify_code" yaml:"verify_code"`
-	RetryCount    uint8     `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
-	Period        time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
-	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt     time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Email         string      `boil:"email" json:"email" toml:"email" yaml:"email"`
+	EmailVerified bool        `boil:"email_verified" json:"email_verified" toml:"email_verified" yaml:"email_verified"`
+	SendCount     uint8       `boil:"send_count" json:"send_count" toml:"send_count" yaml:"send_count"`
+	VerifyCode    string      `boil:"verify_code" json:"verify_code" toml:"verify_code" yaml:"verify_code"`
+	RetryCount    uint8       `boil:"retry_count" json:"retry_count" toml:"retry_count" yaml:"retry_count"`
+	OrgID         null.String `boil:"org_id" json:"org_id,omitempty" toml:"org_id" yaml:"org_id,omitempty"`
+	Period        time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
+	CreatedAt     time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt     time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *registerSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L registerSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -44,6 +46,7 @@ var RegisterSessionColumns = struct {
 	SendCount     string
 	VerifyCode    string
 	RetryCount    string
+	OrgID         string
 	Period        string
 	CreatedAt     string
 	UpdatedAt     string
@@ -54,6 +57,7 @@ var RegisterSessionColumns = struct {
 	SendCount:     "send_count",
 	VerifyCode:    "verify_code",
 	RetryCount:    "retry_count",
+	OrgID:         "org_id",
 	Period:        "period",
 	CreatedAt:     "created_at",
 	UpdatedAt:     "updated_at",
@@ -66,6 +70,7 @@ var RegisterSessionTableColumns = struct {
 	SendCount     string
 	VerifyCode    string
 	RetryCount    string
+	OrgID         string
 	Period        string
 	CreatedAt     string
 	UpdatedAt     string
@@ -76,6 +81,7 @@ var RegisterSessionTableColumns = struct {
 	SendCount:     "register_session.send_count",
 	VerifyCode:    "register_session.verify_code",
 	RetryCount:    "register_session.retry_count",
+	OrgID:         "register_session.org_id",
 	Period:        "register_session.period",
 	CreatedAt:     "register_session.created_at",
 	UpdatedAt:     "register_session.updated_at",
@@ -90,6 +96,7 @@ var RegisterSessionWhere = struct {
 	SendCount     whereHelperuint8
 	VerifyCode    whereHelperstring
 	RetryCount    whereHelperuint8
+	OrgID         whereHelpernull_String
 	Period        whereHelpertime_Time
 	CreatedAt     whereHelpertime_Time
 	UpdatedAt     whereHelpertime_Time
@@ -100,6 +107,7 @@ var RegisterSessionWhere = struct {
 	SendCount:     whereHelperuint8{field: "`register_session`.`send_count`"},
 	VerifyCode:    whereHelperstring{field: "`register_session`.`verify_code`"},
 	RetryCount:    whereHelperuint8{field: "`register_session`.`retry_count`"},
+	OrgID:         whereHelpernull_String{field: "`register_session`.`org_id`"},
 	Period:        whereHelpertime_Time{field: "`register_session`.`period`"},
 	CreatedAt:     whereHelpertime_Time{field: "`register_session`.`created_at`"},
 	UpdatedAt:     whereHelpertime_Time{field: "`register_session`.`updated_at`"},
@@ -122,8 +130,8 @@ func (*registerSessionR) NewStruct() *registerSessionR {
 type registerSessionL struct{}
 
 var (
-	registerSessionAllColumns            = []string{"id", "email", "email_verified", "send_count", "verify_code", "retry_count", "period", "created_at", "updated_at"}
-	registerSessionColumnsWithoutDefault = []string{"id", "email", "verify_code"}
+	registerSessionAllColumns            = []string{"id", "email", "email_verified", "send_count", "verify_code", "retry_count", "org_id", "period", "created_at", "updated_at"}
+	registerSessionColumnsWithoutDefault = []string{"id", "email", "verify_code", "org_id"}
 	registerSessionColumnsWithDefault    = []string{"email_verified", "send_count", "retry_count", "period", "created_at", "updated_at"}
 	registerSessionPrimaryKeyColumns     = []string{"id"}
 	registerSessionGeneratedColumns      = []string{}

@@ -218,6 +218,27 @@ CREATE TABLE `register_session` (
     UNIQUE INDEX `register_session_email` (`email`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
+-- 招待メールのセッション
+CREATE TABLE `invite_email_session` (
+    `id` VARCHAR(31) NOT NULL,
+
+    `email` VARCHAR(255) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- orgの招待の場合はorg_idが付与される
+    -- 現状、orgの招待しかないのでNOT NULLにしている
+    `org_id` VARCHAR(32) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `register_session_email` (`email`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
 -- アプリを使用したOTPを新規に登録する際に使用するセッションテーブル
 CREATE TABLE `register_otp_session` (
     `id` VARCHAR(31) NOT NULL,
