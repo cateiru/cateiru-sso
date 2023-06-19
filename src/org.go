@@ -97,16 +97,16 @@ func (h *Handler) OrgGetHandler(c echo.Context) error {
 	orgs, err := models.Organizations(
 		qm.InnerJoin("organization_user ON organization_user.organization_id = organization.id"),
 		qm.Where("organization_user.user_id = ?", u.ID),
-		qm.WhereIn("organization_user.role IN ?", []string{"owner", "member", "guest"}),
+		qm.WhereIn("organization_user.role IN ?", []any{"owner", "member", "guest"}...),
 		qm.OrderBy("organization.name ASC"),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
 	}
 
-	response := make([]*OrgResponse, len(orgs))
+	response := make([]OrgResponse, len(orgs))
 	for i, org := range orgs {
-		response[i] = &OrgResponse{
+		response[i] = OrgResponse{
 			ID:    org.ID,
 			Name:  org.Name,
 			Image: org.Image,
@@ -122,7 +122,7 @@ func (h *Handler) OrgGetHandler(c echo.Context) error {
 func (h *Handler) OrgGetMemberHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	orgId := c.Param("org_id")
+	orgId := c.QueryParam("org_id")
 	if orgId == "" {
 		return NewHTTPError(http.StatusBadRequest, "org_id is required")
 	}
@@ -148,7 +148,7 @@ func (h *Handler) OrgGetMemberHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "organization not found")
+		return NewHTTPError(http.StatusForbidden, "you are not owner")
 	}
 	if err != nil {
 		return err
@@ -160,14 +160,15 @@ func (h *Handler) OrgGetMemberHandler(c echo.Context) error {
 	orgUsers, err := models.OrganizationUsers(
 		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
 		qm.Load(models.OrganizationUserRels.User),
+		qm.OrderBy("created_at ASC"),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
 	}
 
-	response := make([]*OrgUserResponse, len(orgUsers))
+	response := make([]OrgUserResponse, len(orgUsers))
 	for i, orgUser := range orgUsers {
-		response[i] = &OrgUserResponse{
+		response[i] = OrgUserResponse{
 			ID: orgUser.ID,
 
 			User: PublicUserResponse{
@@ -195,9 +196,9 @@ func (h *Handler) OrgPostMemberHandler(c echo.Context) error {
 	if orgId == "" {
 		return NewHTTPError(http.StatusBadRequest, "org_id is required")
 	}
-	userId := c.FormValue("user_id")
-	if userId == "" {
-		return NewHTTPError(http.StatusBadRequest, "user_id is required")
+	userNameOrEmail := c.FormValue("user_name_or_email")
+	if userNameOrEmail == "" {
+		return NewHTTPError(http.StatusBadRequest, "user_name_or_email is required")
 	}
 	role := c.FormValue("role")
 	if role == "" {
@@ -213,14 +214,9 @@ func (h *Handler) OrgPostMemberHandler(c echo.Context) error {
 		return err
 	}
 
-	inviteUserExist, err := models.Users(
-		models.UserWhere.ID.EQ(userId),
-	).Exists(ctx, h.DB)
+	user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
 	if err != nil {
 		return err
-	}
-	if !inviteUserExist {
-		return NewHTTPError(http.StatusNotFound, "user not found")
 	}
 
 	organizationExist, err := models.Organizations(
@@ -239,7 +235,7 @@ func (h *Handler) OrgPostMemberHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "organization not found")
+		return NewHTTPError(http.StatusForbidden, "you are not owner")
 	}
 	if err != nil {
 		return err
@@ -251,7 +247,7 @@ func (h *Handler) OrgPostMemberHandler(c echo.Context) error {
 	// すでにメンバーになっているかどうかを見る
 	orgUserExist, err := models.OrganizationUsers(
 		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
-		models.OrganizationUserWhere.UserID.EQ(userId),
+		models.OrganizationUserWhere.UserID.EQ(user.ID),
 	).Exists(ctx, h.DB)
 	if err != nil {
 		return err
@@ -263,14 +259,14 @@ func (h *Handler) OrgPostMemberHandler(c echo.Context) error {
 	// メンバーに追加する
 	newOrgUser := &models.OrganizationUser{
 		OrganizationID: orgId,
-		UserID:         userId,
+		UserID:         user.ID,
 		Role:           role,
 	}
 	if err := newOrgUser.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 
-	dbOrgUser, err := getOrgUser(ctx, h.DB, userId, orgId)
+	dbOrgUser, err := getOrgUser(ctx, h.DB, user.ID, orgId)
 	if err != nil {
 		return err
 	}

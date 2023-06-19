@@ -41,9 +41,6 @@ func (h *Handler) LoginUserHandler(c echo.Context) error {
 	}
 
 	user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
-	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrNotFoundUser, "user not found")
-	}
 	if err != nil {
 		return err
 	}
@@ -191,9 +188,6 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 
 	user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
-	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrNotFoundUser, "user not found")
-	}
 	if err != nil {
 		return err
 	}

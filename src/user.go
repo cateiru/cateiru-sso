@@ -607,7 +607,11 @@ func FindUserByUserNameOrEmail(ctx context.Context, db *sql.DB, userNameOrEmail 
 			models.UserWhere.Email.EQ(userNameOrEmail),
 		).One(ctx, db)
 	}
-	return models.Users(
+	u, err := models.Users(
 		models.UserWhere.UserName.EQ(userNameOrEmail),
 	).One(ctx, db)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, NewHTTPUniqueError(http.StatusNotFound, ErrNotFoundUser, "user not found")
+	}
+	return u, err
 }

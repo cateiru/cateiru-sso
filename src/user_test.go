@@ -1303,8 +1303,8 @@ func TestFindUserByUserNameOrEmail(t *testing.T) {
 		require.Equal(t, user.ID, u.ID)
 	})
 
-	t.Run("失敗", func(t *testing.T) {
+	t.Run("失敗: ユーザーが存在しない", func(t *testing.T) {
 		_, err := src.FindUserByUserNameOrEmail(ctx, DB, "aaaaaa")
-		require.Error(t, err)
+		require.EqualError(t, err, "code=404, message=user not found, unique=10")
 	})
 }
