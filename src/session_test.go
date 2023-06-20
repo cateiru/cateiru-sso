@@ -1019,3 +1019,27 @@ func TestRequireStaff(t *testing.T) {
 		require.EqualError(t, err, "code=403, message=require staff")
 	})
 }
+
+func TestIsLoggedIn(t *testing.T) {
+	ctx := context.Background()
+	s := src.NewSession(C, DB)
+
+	email1 := RandomEmail(t)
+	u1 := RegisterUser(t, ctx, email1)
+	email2 := RandomEmail(t)
+	u2 := RegisterUser(t, ctx, email2)
+
+	t.Run("すでにログインしている", func(t *testing.T) {
+		cookies := RegisterSession(t, ctx, &u1)
+
+		ok := s.IsLoggedIn(ctx, cookies, &u1)
+		require.True(t, ok)
+	})
+
+	t.Run("ログイン可能", func(t *testing.T) {
+		cookies := RegisterSession(t, ctx, &u1)
+
+		ok := s.IsLoggedIn(ctx, cookies, &u2)
+		require.False(t, ok)
+	})
+}

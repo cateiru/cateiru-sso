@@ -788,3 +788,18 @@ func (s *Session) RequireStaff(ctx context.Context, user *models.User) error {
 	}
 	return nil
 }
+
+// 現在ログイン中かどうかを見る
+func (s *Session) IsLoggedIn(ctx context.Context, cookies []*http.Cookie, u *models.User) bool {
+	refreshTokenName := fmt.Sprintf("%s-%s", s.RefreshCookie.Name, u.ID)
+
+	var refreshToken *http.Cookie
+	for _, cookie := range cookies {
+		if cookie.Name == refreshTokenName {
+			refreshToken = cookie
+			break
+		}
+	}
+
+	return refreshToken != nil
+}
