@@ -184,7 +184,7 @@ func TestOrgGetMemberHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgGetMemberHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member")
+		require.EqualError(t, err, "code=403, message=you are not owner")
 	})
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {

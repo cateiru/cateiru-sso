@@ -129,7 +129,7 @@ func TestLoginUserHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.LoginUserHandler(c)
-		require.EqualError(t, err, "code=400, message=user not found, unique=10")
+		require.EqualError(t, err, "code=404, message=user not found, unique=10")
 	})
 }
 
@@ -500,7 +500,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.LoginPasswordHandler(c)
-		require.EqualError(t, err, "code=400, message=user not found, unique=10")
+		require.EqualError(t, err, "code=404, message=user not found, unique=10")
 	})
 }
 
