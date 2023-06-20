@@ -298,6 +298,24 @@ func TestUserUpdateHandler(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("自分のユーザー名は更新可能", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_name", u.UserName)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateHandler(c)
+		require.NoError(t, err)
+	})
+
 	t.Run("失敗: ユーザ名が不正", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -436,6 +454,33 @@ func TestUserUserNameHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_name", u2.UserName)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUserNameHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserUserNameResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.False(t, response.Ok)
+		require.Equal(t, response.UserName, u2.UserName)
+	})
+
+	t.Run("自分のユーザー名はOK", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
 		cookies := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
@@ -452,7 +497,7 @@ func TestUserUserNameHandler(t *testing.T) {
 		response := src.UserUserNameResponse{}
 		require.NoError(t, m.Json(&response))
 
-		require.False(t, response.Ok)
+		require.True(t, response.Ok)
 		require.Equal(t, response.UserName, u.UserName)
 	})
 

@@ -119,6 +119,7 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 		}
 		existUser, err := models.Users(
 			models.UserWhere.UserName.EQ(userName),
+			models.UserWhere.ID.NEQ(user.ID),
 		).Exists(ctx, h.DB)
 		if err != nil {
 			return err
@@ -172,7 +173,7 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 func (h *Handler) UserUserNameHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	_, err := h.Session.SimpleLogin(ctx, c)
+	u, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -196,6 +197,7 @@ func (h *Handler) UserUserNameHandler(c echo.Context) error {
 
 	existUser, err := models.Users(
 		models.UserWhere.UserName.EQ(userName),
+		models.UserWhere.ID.NEQ(u.ID),
 	).Exists(ctx, h.DB)
 	if err != nil {
 		return err
