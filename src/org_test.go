@@ -521,19 +521,199 @@ func TestOrgPostMemberHandler(t *testing.T) {
 }
 
 func TestOrgUpdateMemberHandler(t *testing.T) {
-	t.Run("成功: roleを変更できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: org_user_idが空", func(t *testing.T) {})
+	t.Run("成功: roleを変更できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: org_user_idの値が不正", func(t *testing.T) {})
+		orgId := RegisterOrg(t, ctx, &u)
 
-	t.Run("失敗: orgに所属していない", func(t *testing.T) {})
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
 
-	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {})
+		cookie := RegisterSession(t, ctx, &u)
 
-	t.Run("失敗: roleが不正", func(t *testing.T) {})
+		form := easy.NewMultipart()
+		form.Insert("org_user_id", fmt.Sprint(orgUser.ID))
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
 
-	t.Run("失敗: 自分自身のroleは変更できない", func(t *testing.T) {})
+		c := m.Echo()
+
+		err = h.OrgUpdateMemberHandler(c)
+		require.NoError(t, err)
+
+		response := &src.OrgUserResponse{}
+		require.NoError(t, m.Json(response))
+
+		dbOrgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		require.Equal(t, dbOrgUser.Role, "member")
+	})
+
+	t.Run("失敗: org_user_idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgUpdateMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=org_user_id is required")
+	})
+
+	t.Run("失敗: org_user_idの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_user_id", "invalid")
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgUpdateMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid org_user_id")
+
+	})
+
+	t.Run("失敗: orgに所属していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_user_id", fmt.Sprint(orgUser.ID))
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgUpdateMemberHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_user_id", fmt.Sprint(orgUser.ID))
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgUpdateMemberHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not owner")
+	})
+
+	t.Run("失敗: roleが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_user_id", fmt.Sprint(orgUser.ID))
+		form.Insert("role", "aaaa")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgUpdateMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid role")
+	})
+
+	t.Run("失敗: 自分自身のroleは変更できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterOrg(t, ctx, &u)
+
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_user_id", fmt.Sprint(orgUser.ID))
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgUpdateMemberHandler(c)
+		require.EqualError(t, err, "code=403, message=you can't change your role")
+	})
 }
 
 func TestOrgDeleteMemberHandler(t *testing.T) {
