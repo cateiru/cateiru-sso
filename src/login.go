@@ -121,10 +121,6 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
-	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
-	}
-
 	// ログイントライ履歴を追加する
 	loginTryHistory := models.LoginTryHistory{
 		UserID:   user.ID,
@@ -138,6 +134,10 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 	}
 	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
+	}
+
+	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
 	}
 
 	session, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
@@ -196,10 +196,6 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
-	}
-
 	// ログイントライ履歴を保存する
 	loginTryHistory := models.LoginTryHistory{
 		UserID:   user.ID,
@@ -213,6 +209,10 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
+	}
+
+	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
 	}
 
 	p, err := models.Passwords(
