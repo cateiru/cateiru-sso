@@ -45,4 +45,4 @@ services:
     depends_on:
       - db
       - gcs
-    command: yarn --frozen-lockfile && yarn dev
+    command: sh -c "yarn --frozen-lockfile && yarn dev"
