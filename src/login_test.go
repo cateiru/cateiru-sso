@@ -349,7 +349,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.LoginWebauthnHandler(c)
-		require.EqualError(t, err, "code=400, message=already logged in")
+		require.EqualError(t, err, "code=400, message=already logged in, unique=15")
 	})
 }
 
@@ -545,7 +545,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.LoginPasswordHandler(c)
-		require.EqualError(t, err, "code=400, message=already logged in")
+		require.EqualError(t, err, "code=400, message=already logged in, unique=15")
 	})
 }
 

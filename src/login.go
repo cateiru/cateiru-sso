@@ -122,7 +122,7 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 	}
 
 	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
-		return NewHTTPError(http.StatusBadRequest, "already logged in")
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
 	}
 
 	// ログイントライ履歴を追加する
@@ -197,7 +197,7 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 
 	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
-		return NewHTTPError(http.StatusBadRequest, "already logged in")
+		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
 	}
 
 	// ログイントライ履歴を保存する
