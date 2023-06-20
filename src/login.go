@@ -121,6 +121,10 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
+	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
+		return NewHTTPError(http.StatusBadRequest, "already logged in")
+	}
+
 	// ログイントライ履歴を追加する
 	loginTryHistory := models.LoginTryHistory{
 		UserID:   user.ID,
@@ -190,6 +194,10 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
 	if err != nil {
 		return err
+	}
+
+	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
+		return NewHTTPError(http.StatusBadRequest, "already logged in")
 	}
 
 	// ログイントライ履歴を保存する

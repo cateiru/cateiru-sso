@@ -97,21 +97,26 @@ func (a *WebAuthnMock) ParseLogin(body io.Reader) (pcc *protocol.ParsedCredentia
 	return &protocol.ParsedCredentialAssertionData{}, nil
 }
 
+var TestWebAuthnUser *models.User = nil
+
 func (a *WebAuthnMock) FinishLogin(handler webauthn.DiscoverableUserHandler, session webauthn.SessionData, response *protocol.ParsedCredentialAssertionData) (*webauthn.Credential, error) {
 	ctx := context.Background()
 
-	r, err := lib.RandomStr(10)
-	if err != nil {
-		return nil, err
-	}
-	id := ulid.Make()
+	u := TestWebAuthnUser
+	if u == nil {
+		r, err := lib.RandomStr(10)
+		if err != nil {
+			return nil, err
+		}
+		id := ulid.Make()
 
-	u := models.User{
-		ID:    id.String(),
-		Email: fmt.Sprintf("%s@exmaple.com", r),
-	}
-	if err := u.Insert(ctx, DB, boil.Infer()); err != nil {
-		return nil, err
+		u = &models.User{
+			ID:    id.String(),
+			Email: fmt.Sprintf("%s@exmaple.com", r),
+		}
+		if err := u.Insert(ctx, DB, boil.Infer()); err != nil {
+			return nil, err
+		}
 	}
 
 	if _, err := handler([]byte{}, []byte(u.ID)); err != nil {

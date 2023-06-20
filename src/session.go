@@ -27,6 +27,7 @@ type SessionInterface interface {
 	SwitchAccount(ctx context.Context, cookies []*http.Cookie, userID string) ([]*http.Cookie, error)
 	LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) ([]*models.User, error)
 	RequireStaff(ctx context.Context, user *models.User) error
+	IsLoggedIn(ctx context.Context, cookies []*http.Cookie, u *models.User) bool
 }
 
 type RegisterSession struct {

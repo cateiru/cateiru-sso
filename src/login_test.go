@@ -327,6 +327,30 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		err = h.LoginWebauthnHandler(c)
 		require.EqualError(t, err, "code=403, message=invalid webauthn token")
 	})
+
+	t.Run("すでにログイン済み", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		TestWebAuthnUser = &u
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		webauthnSession := registerWebauthnSession(2)
+
+		m, err := easy.NewJson("/", http.MethodPost, "")
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		m.Cookie(cookies)
+		m.R.Header.Add("User-Agent", `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36`)
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.EqualError(t, err, "code=400, message=already logged in")
+	})
 }
 
 func TestLoginPasswordHandler(t *testing.T) {
@@ -501,6 +525,27 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		err = h.LoginPasswordHandler(c)
 		require.EqualError(t, err, "code=404, message=user not found, unique=10")
+	})
+
+	t.Run("失敗: すでにログインしている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterPassword(t, ctx, &u, "password123ABC123123")
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.EqualError(t, err, "code=400, message=already logged in")
 	})
 }
 
