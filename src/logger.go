@@ -1,8 +1,6 @@
 package src
 
 import (
-	"fmt"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -37,29 +35,8 @@ func newProductionEncoderConfig() zapcore.EncoderConfig {
 	return cfg
 }
 
-func InitLogging(mode string) {
-	var logConfig zap.Config
-
-	switch mode {
-	case "test":
-		logConfig = zap.NewDevelopmentConfig()
-		logConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	case "local":
-		logConfig = zap.NewDevelopmentConfig()
-		logConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	case "cloudrun":
-		logConfig = zap.NewProductionConfig()
-		// Cloud Loggerに対応するための設定
-		logConfig.EncoderConfig = newProductionEncoderConfig()
-	case "cloudrun-staging":
-		logConfig = zap.NewProductionConfig()
-		// ステージングではDebugLevel以上のログを出力する
-		logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-		// Cloud Loggerに対応するための設定
-		logConfig.EncoderConfig = newProductionEncoderConfig()
-	default:
-		panic(fmt.Sprintf("Unknown mode: %s", mode))
-	}
+func InitLogging(mode string, config *Config) {
+	logConfig := config.LogConfig()
 
 	logger, err := logConfig.Build()
 	if err != nil {

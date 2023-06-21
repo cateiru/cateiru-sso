@@ -13,10 +13,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
 	Mode string
+
+	LogConfig func() zap.Config
 
 	// reCAPTCHAを使用するかどうか
 	UseReCaptcha        bool
@@ -120,6 +123,13 @@ type Config struct {
 	ClientReferrerURLMaxCreated int
 }
 
+var configs = []*Config{
+	LocalConfig,
+	CloudRunConfig,
+	CloudRunStagingConfig,
+	TestConfig,
+}
+
 // Cookieの設定
 // http.Cookieの一部
 // Domainなどは別途設定するため存在しない
@@ -138,6 +148,12 @@ type CookieConfig struct {
 
 var LocalConfig = &Config{
 	Mode: "local",
+
+	LogConfig: func() zap.Config {
+		logConfig := zap.NewDevelopmentConfig()
+		logConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		return logConfig
+	},
 
 	// ローカル環境はreCAPTCHA使わない
 	UseReCaptcha:        false,
@@ -301,6 +317,13 @@ var LocalConfig = &Config{
 var CloudRunConfig = &Config{
 	Mode: "cloudrun",
 
+	LogConfig: func() zap.Config {
+		logConfig := zap.NewProductionConfig()
+		// Cloud Loggerに対応するための設定
+		logConfig.EncoderConfig = newProductionEncoderConfig()
+		return logConfig
+	},
+
 	UseReCaptcha:        true,
 	ReCaptchaSecret:     os.Getenv("RECAPTCHA_SECRET"),
 	ReCaptchaAllowScore: 50,
@@ -459,6 +482,15 @@ var CloudRunConfig = &Config{
 
 var CloudRunStagingConfig = &Config{
 	Mode: "cloudrun-staging",
+
+	LogConfig: func() zap.Config {
+		logConfig := zap.NewProductionConfig()
+		// ステージングではDebugLevel以上のログを出力する
+		logConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+		// Cloud Loggerに対応するための設定
+		logConfig.EncoderConfig = newProductionEncoderConfig()
+		return logConfig
+	},
 
 	UseReCaptcha:        false, // NOTE: ステージングなのでfalse
 	ReCaptchaSecret:     "secret",
@@ -620,6 +652,12 @@ var CloudRunStagingConfig = &Config{
 var TestConfig = &Config{
 	Mode: "test",
 
+	LogConfig: func() zap.Config {
+		logConfig := zap.NewDevelopmentConfig()
+		logConfig.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		return logConfig
+	},
+
 	UseReCaptcha:        true, // mockするので問題なし
 	ReCaptchaSecret:     "secret",
 	ReCaptchaAllowScore: 50,
@@ -761,18 +799,10 @@ var TestConfig = &Config{
 }
 
 func InitConfig(mode string) *Config {
-	L.Info("mode", zap.String("mode", mode))
-
-	switch mode {
-	case "test":
-		return TestConfig
-	case "local":
-		return LocalConfig
-	case "cloudrun":
-		return CloudRunConfig
-	case "cloudrun-staging":
-		return CloudRunStagingConfig
-	default:
-		return TestConfig
+	for _, c := range configs {
+		if c.Mode == mode {
+			return c
+		}
 	}
+	return TestConfig
 }

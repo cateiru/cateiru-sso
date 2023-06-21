@@ -34,11 +34,11 @@ var _ = flag.Bool("test.sqldebug", false, "Turns on debug mode for SQL statement
 var _ = flag.String("test.config", "", "Overrides the default config")
 
 func TestMain(m *testing.M) {
-	src.InitLogging("test")
+	C = src.TestConfig
+
+	src.InitLogging("test", C)
 
 	os.Setenv("STORAGE_EMULATOR_HOST", "localhost:4443")
-
-	C = src.TestConfig
 
 	ctx := context.Background()
 	db, err := sql.Open("mysql", C.DatabaseConfig.FormatDSN())
