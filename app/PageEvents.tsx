@@ -45,14 +45,12 @@ nprogress.configure({showSpinner: false, speed: 400, minimum: 0.25});
 // };
 
 const routeChangeStart = () => {
-  console.log('routeChangeStart');
   nprogress.start();
 };
 const routeChangeError = () => {
   nprogress.done();
 };
 const routeChangeEnd = () => {
-  console.log('routeChangeEnd');
   nprogress.done();
 };
 

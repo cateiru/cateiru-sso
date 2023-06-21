@@ -57,14 +57,14 @@ export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
         // シグナルがAbortされたらエラー出さないでReturn
         if (abort.signal.aborted) return;
 
+        console.error(e);
+
         // 1passwordの拡張機能は`credentials.get`をモックするが、Conditional UIに対応しておらず、
         // TypeErrorが発生する。そのため、その場合は一時的にパスキーログイン用のボタンを出現させる
         if (e instanceof TypeError) {
           setIsConditionSupported(false);
           return;
         }
-
-        console.error(e);
         toast({
           title: 'WebAuthnエラー',
           status: 'error',
