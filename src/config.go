@@ -19,6 +19,7 @@ import (
 type Config struct {
 	Mode string
 
+	// ログ設定
 	LogConfig func() zap.Config
 
 	// reCAPTCHAを使用するかどうか
@@ -28,7 +29,8 @@ type Config struct {
 
 	// MySQLの設定
 	DatabaseConfig *mysql.Config
-	DBDebugLog     bool
+	// sqlboilerのデバッグログを出力するかどうか
+	DBDebugLog bool
 
 	// APIのホスト
 	Host *url.URL
@@ -39,31 +41,42 @@ type Config struct {
 	CorsConfig *middleware.CORSConfig
 
 	// 送信メール設定
-	FromDomain        string
-	MailgunSecret     string
+	// 送信するメールアドレスドメイン
+	FromDomain string
+	// Mailgunのシークレットトークン
+	MailgunSecret string
+	// メール送信者名
 	SenderMailAddress string
 
 	// メールを送信するかどうか
 	SendMail bool
 
 	// アカウント登録時に使用するセッションの有効期限
-	RegisterSessionPeriod     time.Duration
+	RegisterSessionPeriod time.Duration
+	// アカウント登録時の確認番号の試行上限
 	RegisterSessionRetryLimit uint8
-	RegisterEmailSendLimit    uint8
+	// アカウント登録時のメール再送上限
+	RegisterEmailSendLimit uint8
 
+	// Org招待時のトークン有効期限
 	InviteOrgSessionPeriod time.Duration
 
 	// webAuthn(passkeyの共通設定)
 	// ref. https://github.com/go-webauthn/webauthn
-	WebAuthnConfig        *webauthn.Config
+	WebAuthnConfig *webauthn.Config
+	// WebAuthnのセッション有効期限
 	WebAuthnSessionPeriod time.Duration
+	// WebAuthnのセッションクッキー設定
 	WebAuthnSessionCookie CookieConfig
 
-	// ログインセッション
+	// セッショントークンのデータベース有効期限
 	SessionDBPeriod time.Duration
-	SessionCookie   CookieConfig
+	// セッションクッキー設定
+	SessionCookie CookieConfig
+	// リフレッシュトークンのデータベース有効期限
 	RefreshDBPeriod time.Duration
-	RefreshCookie   CookieConfig
+	// リフレッシュトークンのクッキー設定
+	RefreshCookie CookieConfig
 	// 現在ログインしているセッション
 	LoginUserCookie CookieConfig
 	// ログイン状態をJSで見れるようにするCookie
@@ -92,17 +105,21 @@ type Config struct {
 
 	// メールアドレス更新のセッション有効期限
 	UpdateEmailSessionPeriod time.Duration
-	UpdateEmailRetryCount    uint8
+	// メールアドレス更新の確認番号入力の試行上限
+	UpdateEmailRetryCount uint8
 
 	// Internal エンドポイントのBasic Auth
 	InternalBasicAuthUserName string
 	InternalBasicAuthPassword string
 
+	// CDNを使用するかどうか
+	UseCDN bool
 	// CDNのホスト
-	UseCDN         bool
-	CDNHost        *url.URL
+	CDNHost *url.URL
+	// FastlyのAPIトークン
 	FastlyApiToken string
 
+	// CloudStorageのBucket名
 	StorageBucketName string
 
 	// CloudStorageのエミュレータホスト
@@ -113,13 +130,18 @@ type Config struct {
 
 	// ---- Clientの設定
 
+	// クライアントのセッション有効期限お
 	ClientSessionPeriod time.Duration
+	// クライアントのリフレッシュトークン有効期限
 	ClientRefreshPeriod time.Duration
 
 	// クライアントの最大作成数
-	ClientMaxCreated            int
-	OrgClientMaxCreated         int
+	ClientMaxCreated int
+	// Orgでのクライアント最大作成数
+	OrgClientMaxCreated int
+	// クライアントのリダイレクトURL最大数
 	ClientRedirectURLMaxCreated int
+	// クライアントのリファラーURL最大数
 	ClientReferrerURLMaxCreated int
 }
 
