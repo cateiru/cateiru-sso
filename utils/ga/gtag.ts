@@ -1,11 +1,11 @@
-export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID ?? '';
+import {config} from '../config';
 
 /**
  * @param {string} url Path to the page. When overriding, the value must be prefixed with a slash "/".
  */
 export function pageview(url: string) {
-  if (GA_TRACKING_ID) {
-    window.gtag('config', GA_TRACKING_ID, {
+  if (config.gaTracingId) {
+    window.gtag('config', config.gaTracingId, {
       page_path: url,
     });
   }

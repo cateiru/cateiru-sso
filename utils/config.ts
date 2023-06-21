@@ -6,6 +6,8 @@ interface Config {
   title: string;
   revision: string;
   branchName?: string;
+  reCaptchaKey?: string;
+  gaTracingId?: string;
 }
 
 export const config: Config = {
@@ -20,4 +22,6 @@ export const config: Config = {
   }`,
   revision: process.env.NEXT_PUBLIC_REVISION ?? 'unknown',
   branchName: process.env.NEXT_PUBLIC_BRANCH_NAME,
+  reCaptchaKey: process.env.NEXT_PUBLIC_RE_CAPTCHA,
+  gaTracingId: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID,
 };

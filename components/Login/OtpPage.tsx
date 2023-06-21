@@ -1,12 +1,12 @@
 import {Center, Text, useColorModeValue, useToast} from '@chakra-ui/react';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Margin} from '../Common/Margin';
+import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {LoginStep, type DefaultPageProps} from './Login';
 import {OtpForm, OtpFormData} from './OtpForm';
@@ -21,7 +21,7 @@ export const OtpPage: React.FC<Props> = props => {
   const accentColor = useColorModeValue('my.primary', 'my.secondary');
 
   const setUser = useSetRecoilState(UserState);
-  const {executeRecaptcha} = useGoogleReCaptcha();
+  const {getRecaptchaToken} = useRecaptcha();
   const toast = useToast();
 
   const {request} = useRequest('/v2/login/otp', {
@@ -46,27 +46,15 @@ export const OtpPage: React.FC<Props> = props => {
   });
 
   const onSubmit = async (data: OtpFormData, reset: () => void) => {
-    if (!executeRecaptcha) {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
-      return;
-    }
-
     const form = new FormData();
     form.append('otp_session', props.otpToken);
     form.append('code', data.otp);
 
-    try {
-      form.append('recaptcha', await executeRecaptcha());
-    } catch {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
+    const recaptchaToken = await getRecaptchaToken();
+    if (typeof recaptchaToken === 'undefined') {
       return;
     }
+    form.append('recaptcha', recaptchaToken);
 
     const res = await request({
       method: 'POST',

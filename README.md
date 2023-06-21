@@ -6,8 +6,6 @@ Cateiru's Single Sign On
 
 - require
   - docker
-- 注意点
-  - `NEXT_PUBLIC_RE_CAPTCHA`を設定しないとアカウント作成などができないことに注意してください。
 
 ```bash
 ./docker-compose up
@@ -39,7 +37,7 @@ yarn storybook
 ## Environments
 
 - Goは[./src/config.go](./src/config.go)に`os.Getenv`があります。
-- Next.jsは`process.env`で検索します。
+- Next.jsは[./utils/config.ts](./utils/config.ts)に`process.env`があります。
 
 ```env
 # APIのホスト

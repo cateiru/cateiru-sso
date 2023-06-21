@@ -1,14 +1,14 @@
 'use client';
 
-import {Center, Heading, useToast} from '@chakra-ui/react';
+import {Center, Heading} from '@chakra-ui/react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {AccountReRegisterPasswordIsSessionSchema} from '../../utils/types/login';
 import {RegisterPasswordForm} from '../Common/Form/RegisterPasswordForm';
 import type {RegisterPasswordFormContextData} from '../Common/Form/RegisterPasswordFormContext';
 import {Spinner} from '../Common/Icons/Spinner';
 import {Margin} from '../Common/Margin';
+import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 
 export const ReregistrationPassword = () => {
@@ -20,8 +20,7 @@ export const ReregistrationPassword = () => {
   const {request: updatePassword} = useRequest(
     '/v2/account/reregistration/password'
   );
-  const {executeRecaptcha} = useGoogleReCaptcha();
-  const toast = useToast();
+  const {getRecaptchaToken} = useRecaptcha();
 
   const [token, setToken] = React.useState<string | undefined | null>(
     undefined
@@ -76,28 +75,17 @@ export const ReregistrationPassword = () => {
   const onSubmit = async (data: RegisterPasswordFormContextData) => {
     if (typeof token !== 'string') return;
     if (email === '') return;
-    if (!executeRecaptcha) {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
-      return;
-    }
 
     const form = new FormData();
     form.append('email', email);
     form.append('reregister_token', token);
     form.append('new_password', data.new_password);
 
-    try {
-      form.append('recaptcha', await executeRecaptcha());
-    } catch {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
+    const recaptchaToken = await getRecaptchaToken();
+    if (typeof recaptchaToken === 'undefined') {
       return;
     }
+    form.append('recaptcha', recaptchaToken);
 
     const res = await updatePassword({
       method: 'POST',

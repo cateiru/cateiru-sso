@@ -1,15 +1,9 @@
 'use client';
 
-import {
-  Center,
-  Heading,
-  Text,
-  useColorModeValue,
-  useToast,
-} from '@chakra-ui/react';
+import {Center, Heading, Text, useColorModeValue} from '@chakra-ui/react';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {Margin} from '../Common/Margin';
+import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {ForgetForm, type ForgetFormData} from './ForgetForm';
 import {SendMainSuccess} from './SendMailSuccess';
@@ -17,33 +11,20 @@ import {SendMainSuccess} from './SendMailSuccess';
 export const Forget = () => {
   const descriptionColor = useColorModeValue('gray.500', 'gray.400');
   const {request} = useRequest('/v2/account/forget/password');
-  const {executeRecaptcha} = useGoogleReCaptcha();
-  const toast = useToast();
+  const {getRecaptchaToken} = useRecaptcha();
 
   const [isSuccess, setIsSuccess] = React.useState(false);
   const [email, setEmail] = React.useState('');
 
   const onSubmit = async (data: ForgetFormData) => {
-    if (!executeRecaptcha) {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
-      return;
-    }
-
     const form = new FormData();
     form.append('email', data.email);
 
-    try {
-      form.append('recaptcha', await executeRecaptcha());
-    } catch {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
+    const recaptchaToken = await getRecaptchaToken();
+    if (typeof recaptchaToken === 'undefined') {
       return;
     }
+    form.append('recaptcha', recaptchaToken);
 
     const res = await request({
       method: 'POST',

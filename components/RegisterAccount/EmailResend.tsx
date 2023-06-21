@@ -1,6 +1,6 @@
 import {Button, useToast} from '@chakra-ui/react';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
+import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 
 interface Props {
@@ -9,31 +9,20 @@ interface Props {
 
 export const EmailResend: React.FC<Props> = props => {
   const toast = useToast();
-  const {executeRecaptcha} = useGoogleReCaptcha();
+  const {getRecaptchaToken} = useRecaptcha();
   const [isDisabled, setIsDisabled] = React.useState(false);
   const {request} = useRequest('/v2/register/email/resend', {
     errorCallback: () => {},
   });
 
-  const onClickHandler = async () => {
-    if (!executeRecaptcha) {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
-      return;
-    }
+  const form = new FormData();
 
-    const form = new FormData();
-    try {
-      form.append('recaptcha', await executeRecaptcha());
-    } catch {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
+  const onClickHandler = async () => {
+    const recaptchaToken = await getRecaptchaToken();
+    if (typeof recaptchaToken === 'undefined') {
       return;
     }
+    form.append('recaptcha', recaptchaToken);
 
     const res = await request({
       method: 'POST',

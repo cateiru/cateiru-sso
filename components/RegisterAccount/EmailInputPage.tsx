@@ -1,8 +1,7 @@
-import {useToast} from '@chakra-ui/react';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {CreateAccountRegisterEmailResponseSchema} from '../../utils/types/createAccount';
 import {Margin} from '../Common/Margin';
+import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {type EmailForm, EmailInputForm} from './EmailInputForm';
 import {DefaultPageProps} from './RegisterAccount';
@@ -12,8 +11,7 @@ interface Props extends DefaultPageProps {
 }
 
 export const EmailInputPage: React.FC<Props> = props => {
-  const toast = useToast();
-  const {executeRecaptcha} = useGoogleReCaptcha();
+  const {getRecaptchaToken} = useRecaptcha();
   const {request} = useRequest('/v2/register/email/send', {
     errorCallback: () => {
       props.setStatus('error');
@@ -21,29 +19,16 @@ export const EmailInputPage: React.FC<Props> = props => {
   });
 
   const onSubmit = async (data: EmailForm) => {
-    if (!executeRecaptcha) {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
-      return;
-    }
-
     props.setStatus('loading');
 
     const form = new FormData();
     form.append('email', data.email);
 
-    try {
-      form.append('recaptcha', await executeRecaptcha());
-    } catch {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
-      props.setStatus('error');
+    const recaptchaToken = await getRecaptchaToken();
+    if (typeof recaptchaToken === 'undefined') {
       return;
     }
+    form.append('recaptcha', recaptchaToken);
 
     const res = await request({
       method: 'POST',

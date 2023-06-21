@@ -7,12 +7,12 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
 import {Margin} from '../Common/Margin';
+import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {type DefaultPageProps, LoginStep} from './Login';
 import {UserIDEmailForm} from './UserIDEmailForm';
@@ -27,7 +27,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
   const buttonColor = useColorModeValue('gray.500', 'gray.400');
 
   const setUser = useSetRecoilState(UserState);
-  const {executeRecaptcha} = useGoogleReCaptcha();
+  const {getRecaptchaToken} = useRecaptcha();
   const toast = useToast();
 
   const {request} = useRequest('/v2/login/password', {
@@ -61,27 +61,15 @@ export const UserIDEmailPage: React.FC<Props> = props => {
   });
 
   const onSubmit = async (data: UserIDEmailForm) => {
-    if (!executeRecaptcha) {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
-      return;
-    }
-
     const form = new FormData();
     form.append('username_or_email', data.user_id_email);
     form.append('password', data.password);
 
-    try {
-      form.append('recaptcha', await executeRecaptcha());
-    } catch {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
+    const recaptchaToken = await getRecaptchaToken();
+    if (typeof recaptchaToken === 'undefined') {
       return;
     }
+    form.append('recaptcha', recaptchaToken);
 
     const res = await request({
       method: 'POST',

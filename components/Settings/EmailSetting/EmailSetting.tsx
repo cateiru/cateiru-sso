@@ -2,7 +2,6 @@
 
 import {Box, useToast} from '@chakra-ui/react';
 import React from 'react';
-import {useGoogleReCaptcha} from 'react-google-recaptcha-v3';
 import {useRecoilState} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../../utils/types/error';
@@ -11,13 +10,14 @@ import {
   UserUpdateEmailScheme,
 } from '../../../utils/types/settings';
 import {EmailVerifyForm} from '../../Common/Form/EmailVerifyForm';
+import {useRecaptcha} from '../../Common/useRecaptcha';
 import {useRequest} from '../../Common/useRequest';
 import {EmailFormData, EmailSettingForm} from './EmailSettingForm';
 import {EmailSettingVerifyForm} from './EmailSettingVerifyForm';
 
 export const EmailSetting = () => {
   const [user, setUser] = useRecoilState(UserState);
-  const {executeRecaptcha} = useGoogleReCaptcha();
+  const {getRecaptchaToken} = useRecaptcha();
   const toast = useToast();
 
   const [disabled, setDisabled] = React.useState(false);
@@ -43,26 +43,14 @@ export const EmailSetting = () => {
   });
 
   const onSubmit = async (data: EmailFormData) => {
-    if (!executeRecaptcha) {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
-      return;
-    }
-
     const form = new FormData();
     form.append('new_email', data.new_email);
 
-    try {
-      form.append('recaptcha', await executeRecaptcha());
-    } catch {
-      toast({
-        title: 'reCAPTCHAの読み込みに失敗しました',
-        status: 'error',
-      });
+    const recaptchaToken = await getRecaptchaToken();
+    if (typeof recaptchaToken === 'undefined') {
       return;
     }
+    form.append('recaptcha', recaptchaToken);
 
     const res = await updateEmail({
       method: 'POST',
