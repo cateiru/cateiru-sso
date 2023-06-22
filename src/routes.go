@@ -16,28 +16,28 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// 2. `/v2/register/email/verify`に確認コードを入力してEmailを認証
 	// 3. `/v2/register/webauthn`か`/v2/register/password`で認証を追加
 	register := version.Group("/register")
-	register.POST("/email/send", h.SendEmailVerifyHandler)
-	register.POST("/email/resend", h.ReSendVerifyEmailHandler) // メールの再送信
-	register.POST("/email/verify", h.RegisterVerifyEmailHandler)
-	register.POST("/begin_webauthn", h.RegisterBeginWebAuthnHandler) // Passkeyの前処理
-	register.POST("/webauthn", h.RegisterWebAuthnHandler)
-	register.POST("/password", h.RegisterPasswordHandler)
+	register.POST("/email/send", h.SendEmailVerifyHandler)                     // 確認コードを送信
+	register.POST("/email/resend", h.ReSendVerifyEmailHandler)                 // メールの再送信
+	register.POST("/email/verify", h.RegisterVerifyEmailHandler)               // Emailの認証
+	register.POST("/begin_webauthn", h.RegisterBeginWebAuthnHandler)           // Passkeyの前処理
+	register.POST("/webauthn", h.RegisterWebAuthnHandler)                      // Webauthnでアカウント作成
+	register.POST("/password", h.RegisterPasswordHandler)                      // パスワードでアカウント作成
 	register.POST("/invite_generate_session", h.RegisterInviteRegisterSession) // 招待メールからアカウント作成セッションを構築する
 
 	// ログイン
 	login := version.Group("/login")
 	login.POST("/user", h.LoginUserHandler)                    // emailでユーザのアバターとuser nameを返す
 	login.POST("/begin_webauthn", h.LoginBeginWebauthnHandler) // Passkeyの前処理
-	login.POST("/webathn", h.LoginWebauthnHandler)
-	login.POST("/password", h.LoginPasswordHandler)
-	login.POST("/otp", h.LoginOTPHandler)
+	login.POST("/webathn", h.LoginWebauthnHandler)             // WebAuthnでログイン
+	login.POST("/password", h.LoginPasswordHandler)            // パスワードでログイン
+	login.POST("/otp", h.LoginOTPHandler)                      // OTPで認証。設定している場合、/passwordでトークンが返るのでそれと一緒に送信する
 
 	// アカウントの認証周り操作
 	account := version.Group("/account")
-	account.GET("/list", h.AccountListHandler)
-	account.POST("/switch", h.AccountSwitchHandler) // ログインアカウントの変更
-	account.POST("/logout", h.AccountLogoutHandler)
-	account.POST("/delete", h.AccountDeleteHandler)
+	account.GET("/list", h.AccountListHandler)                      // ログインしているアカウント一覧
+	account.POST("/switch", h.AccountSwitchHandler)                 // ログインアカウントの変更
+	account.POST("/logout", h.AccountLogoutHandler)                 // ログアウト
+	account.POST("/delete", h.AccountDeleteHandler)                 // アカウント削除
 	account.GET("/otp", h.AccountOTPPublicKeyHandler)               // OTPのpublic keyを返す
 	account.POST("/otp", h.AccountOTPHandler)                       // OTP設定
 	account.POST("/otp/delete", h.AccountDeleteOTPHandler)          // OTP削除
@@ -98,6 +98,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	org.POST("/member", h.OrgPostMemberHandler) // 招待。アカウント登録しているユーザーに対して
 	org.PUT("/member", h.OrgUpdateMemberHandler)
 	org.DELETE("/member", h.OrgDeleteMemberHandler)
+
 	org.GET("/member/invite", h.OrgInvitedMemberHandler)
 	org.POST("/member/invite", h.OrgInviteNewMemberHandler)      // orgの招待。アカウント登録していないユーザーに対して
 	org.DELETE("/member/invite", h.OrgInviteMemberDeleteHandler) // 招待のキャンセル
@@ -126,11 +127,11 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.PUT("/brand", h.AdminBrandUpdateHandler)
 	admin.DELETE("/brand", h.AdminBrandDeleteHandler)
 
-	admin.GET("/org", h.AdminOrgHandler)
-	admin.POST("/org", h.AdminOrgCreateHandler)
-	admin.PUT("/org", h.AdminOrgUpdateHandler)
-	admin.DELETE("/org", h.AdminOrgDeleteHandler)
-	admin.DELETE("/org/image", h.AdminOrgDeleteImageHandler)
+	admin.GET("/org", h.AdminOrgHandler)                     // 全org参照
+	admin.POST("/org", h.AdminOrgCreateHandler)              // org作成
+	admin.PUT("/org", h.AdminOrgUpdateHandler)               // org編集
+	admin.DELETE("/org", h.AdminOrgDeleteHandler)            // org削除
+	admin.DELETE("/org/image", h.AdminOrgDeleteImageHandler) // orgの画像削除
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
