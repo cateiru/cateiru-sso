@@ -779,6 +779,7 @@ CREATE TABLE `invite_org_session` (
 
     `token` VARCHAR(31) NOT NULL,
 
+    -- 同一ユーザーに複数メールを送信できるようにUNIQUEではない
     `email` VARCHAR(255) NOT NULL,
 
     -- 有効期限

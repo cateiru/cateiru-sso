@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // TODO: セッションのテスト
@@ -717,57 +720,604 @@ func TestOrgUpdateMemberHandler(t *testing.T) {
 }
 
 func TestOrgDeleteMemberHandler(t *testing.T) {
-	t.Run("成功: orgからユーザーを削除できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: org_user_idが空", func(t *testing.T) {})
+	t.Run("成功: orgからユーザーを削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: org_user_idの値が不正", func(t *testing.T) {})
+		orgId := RegisterOrg(t, ctx, &u)
 
-	t.Run("失敗: orgに所属していない", func(t *testing.T) {})
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
 
-	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {})
+		cookie := RegisterSession(t, ctx, &u)
 
-	t.Run("失敗: 自分自身は削除できない", func(t *testing.T) {})
+		m, err := easy.NewMock(fmt.Sprintf("/?org_user_id=%d", orgUser.ID), http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgDeleteMemberHandler(c)
+		require.NoError(t, err)
+
+		existOrgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.ID.EQ(orgUser.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existOrgUser)
+	})
+
+	t.Run("失敗: org_user_idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgDeleteMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=org_user_id is required")
+	})
+
+	t.Run("失敗: org_user_idの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?org_user_id=invalid", http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgDeleteMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid org_user_id")
+	})
+
+	t.Run("失敗: orgに所属していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_user_id=%d", orgUser.ID), http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgDeleteMemberHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_user_id=%d", orgUser.ID), http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgDeleteMemberHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not owner")
+	})
+
+	t.Run("失敗: 自分自身は削除できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterOrg(t, ctx, &u)
+
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_user_id=%d", orgUser.ID), http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgDeleteMemberHandler(c)
+		require.EqualError(t, err, "code=403, message=you can't delete yourself")
+	})
 }
 
 func TestOrgInvitedMemberHandler(t *testing.T) {
-	t.Run("成功: 招待中の一覧を取得できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: org_idが空", func(t *testing.T) {})
+	// OrgSessionを追加する
+	registerInviteOrgSession := func(email string, orgId string) {
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
 
-	t.Run("失敗: org_idの値が不正", func(t *testing.T) {})
+		inviteOrgSession := models.InviteOrgSession{
+			Token:  token,
+			Email:  email,
+			Period: time.Now().Add(h.C.InviteOrgSessionPeriod),
 
-	t.Run("失敗: orgに所属していない", func(t *testing.T) {})
+			OrgID: orgId,
+		}
+		err = inviteOrgSession.Insert(ctx, h.DB, boil.Infer())
+		require.NoError(t, err)
+	}
 
-	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {})
+	t.Run("成功: 招待中の一覧を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+		registerInviteOrgSession(sendEmail, orgId)
+
+		cookie := RegisterSession(t, ctx, &u)
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInvitedMemberHandler(c)
+		require.NoError(t, err)
+
+		response := []src.OrgInviteMemberResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 1)
+		require.Equal(t, sendEmail, response[0].Email)
+	})
+
+	t.Run("成功: 招待中のユーザーがいない場合はからの配列が返る", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInvitedMemberHandler(c)
+		require.NoError(t, err)
+
+		response := []src.OrgInviteMemberResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 0)
+	})
+
+	t.Run("失敗: org_idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInvitedMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=org_id is required")
+	})
+
+	t.Run("失敗: org_idの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+		m, err := easy.NewMock("/?org_id=invalid", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInvitedMemberHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: orgに所属していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		sendEmail := RandomEmail(t)
+		registerInviteOrgSession(sendEmail, orgId)
+
+		cookie := RegisterSession(t, ctx, &u)
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInvitedMemberHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		sendEmail := RandomEmail(t)
+		registerInviteOrgSession(sendEmail, orgId)
+
+		cookie := RegisterSession(t, ctx, &u)
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInvitedMemberHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not owner")
+	})
 }
 
 func TestOrgInviteNewMemberHandler(t *testing.T) {
-	t.Run("成功: 対象のEmailに対して招待できる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗: org_idが空", func(t *testing.T) {})
+	t.Run("成功: 対象のEmailに対して招待できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
 
-	t.Run("失敗: org_idの値が不正", func(t *testing.T) {})
+		orgId := RegisterOrg(t, ctx, &u)
 
-	t.Run("失敗: emailが空", func(t *testing.T) {})
+		cookie := RegisterSession(t, ctx, &u)
 
-	t.Run("失敗: emailの値が不正", func(t *testing.T) {})
+		sendEmail := RandomEmail(t)
 
-	t.Run("失敗: そのemailのユーザーはすでに存在している", func(t *testing.T) {})
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("email", sendEmail)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
 
-	t.Run("失敗: orgに所属していない", func(t *testing.T) {})
+		c := m.Echo()
 
-	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {})
+		err = h.OrgInviteNewMemberHandler(c)
+		require.NoError(t, err)
+
+		inviteSessionExist, err := models.InviteOrgSessions(
+			models.InviteOrgSessionWhere.Email.EQ(sendEmail),
+			models.InviteOrgSessionWhere.OrgID.EQ(orgId),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, inviteSessionExist)
+	})
+
+	t.Run("失敗: org_idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+
+		form := easy.NewMultipart()
+		form.Insert("email", sendEmail)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteNewMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=org_id is required")
+	})
+
+	t.Run("失敗: org_idの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", "invalid")
+		form.Insert("email", sendEmail)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteNewMemberHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: emailが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteNewMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=email is required")
+	})
+
+	t.Run("失敗: emailの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("email", "invalid")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteNewMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid email")
+	})
+
+	t.Run("失敗: そのemailのユーザーはすでに存在している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+		RegisterUser(t, ctx, sendEmail)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("email", sendEmail)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteNewMemberHandler(c)
+		require.EqualError(t, err, "code=400, message=user already exists")
+	})
+
+	t.Run("失敗: orgに所属していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("email", sendEmail)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteNewMemberHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("email", sendEmail)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteNewMemberHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not owner")
+	})
 }
 
 func TestOrgInviteMemberDeleteHandler(t *testing.T) {
-	t.Run("成功: 招待をキャンセルできる", func(t *testing.T) {})
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
-	t.Run("失敗:invite_idが空", func(t *testing.T) {})
+	registerInviteOrgSession := func(email string, orgId string) *models.InviteOrgSession {
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
 
-	t.Run("失敗:invite_idの値が不正", func(t *testing.T) {})
+		inviteOrgSession := models.InviteOrgSession{
+			Token:  token,
+			Email:  email,
+			Period: time.Now().Add(h.C.InviteOrgSessionPeriod),
 
-	t.Run("失敗: orgに所属していない", func(t *testing.T) {})
+			OrgID: orgId,
+		}
+		err = inviteOrgSession.Insert(ctx, h.DB, boil.Infer())
+		require.NoError(t, err)
 
-	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {})
+		// emailは複数存在できるが衝突しないという浅い考え
+		dbInviteOrgSession, err := models.InviteOrgSessions(
+			models.InviteOrgSessionWhere.Email.EQ(email),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		return dbInviteOrgSession
+	}
+
+	t.Run("成功: 招待をキャンセルできる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+		orgSession := registerInviteOrgSession(sendEmail, orgId)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?invite_id=%d", orgSession.ID), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteMemberDeleteHandler(c)
+		require.NoError(t, err)
+
+		existOrgSession, err := orgSession.Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, existOrgSession)
+	})
+
+	t.Run("失敗:invite_idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteMemberDeleteHandler(c)
+		require.EqualError(t, err, "code=400, message=invite_id is required")
+	})
+
+	t.Run("失敗:invite_idの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?invite_id=invalid", http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteMemberDeleteHandler(c)
+		require.EqualError(t, err, "code=400, message=invite_id is invalid")
+	})
+
+	t.Run("失敗: orgに所属していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+		orgSession := registerInviteOrgSession(sendEmail, orgId)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?invite_id=%d", orgSession.ID), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteMemberDeleteHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		sendEmail := RandomEmail(t)
+		orgSession := registerInviteOrgSession(sendEmail, orgId)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?invite_id=%d", orgSession.ID), http.MethodDelete, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgInviteMemberDeleteHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not owner")
+	})
 }
