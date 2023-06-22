@@ -15,10 +15,15 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// TODO: セッションのテスト
 func TestOrgGetHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.OrgGetHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	})
 
 	t.Run("成功", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -95,6 +100,14 @@ func TestOrgGetHandler(t *testing.T) {
 func TestOrgGetMemberHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.OrgGetMemberHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	})
 
 	t.Run("成功: orgのメンバー一覧が返る", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -218,6 +231,21 @@ func TestOrgGetMemberHandler(t *testing.T) {
 func TestOrgPostMemberHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.OrgPostMemberHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("user_name_or_email", u2.UserName)
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		return m
+	})
 
 	t.Run("成功: orgのメンバーを招待できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -527,6 +555,25 @@ func TestOrgUpdateMemberHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.OrgUpdateMemberHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+		form.Insert("org_user_id", fmt.Sprint(orgUser.ID))
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		return m
+	})
+
 	t.Run("成功: roleを変更できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -723,6 +770,22 @@ func TestOrgDeleteMemberHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.OrgDeleteMemberHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		InviteUserInOrg(t, ctx, orgId, &u2, "guest")
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_user_id=%d", orgUser.ID), http.MethodPost, "")
+		require.NoError(t, err)
+		return m
+	})
+
 	t.Run("成功: orgからユーザーを削除できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -884,6 +947,14 @@ func TestOrgInvitedMemberHandler(t *testing.T) {
 		require.NoError(t, err)
 	}
 
+	SessionTest(t, h.OrgInvitedMemberHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	})
+
 	t.Run("成功: 招待中の一覧を取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1007,6 +1078,19 @@ func TestOrgInvitedMemberHandler(t *testing.T) {
 func TestOrgInviteNewMemberHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	SessionTest(t, h.OrgInviteNewMemberHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		sendEmail := RandomEmail(t)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("email", sendEmail)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		return m
+	})
 
 	t.Run("成功: 対象のEmailに対して招待できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -1218,6 +1302,17 @@ func TestOrgInviteMemberDeleteHandler(t *testing.T) {
 
 		return dbInviteOrgSession
 	}
+
+	SessionTest(t, h.OrgInviteMemberDeleteHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		sendEmail := RandomEmail(t)
+		orgSession := registerInviteOrgSession(sendEmail, orgId)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?invite_id=%d", orgSession.ID), http.MethodDelete, "")
+		require.NoError(t, err)
+		return m
+	})
 
 	t.Run("成功: 招待をキャンセルできる", func(t *testing.T) {
 		email := RandomEmail(t)
