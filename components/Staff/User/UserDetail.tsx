@@ -161,7 +161,7 @@ export const UserDetail: React.FC<Props> = props => {
                 </Td>
                 <Td>
                   {data?.user.updated_at
-                    ? new Date(data?.user.created_at).toLocaleString()
+                    ? new Date(data?.user.updated_at).toLocaleString()
                     : ''}
                 </Td>
               </Tr>
