@@ -1,4 +1,4 @@
-import {Users} from '../../../components/Staff/Users';
+import {Users} from '../../../components/Staff/User/Users';
 
 const Page = () => {
   return <Users />;

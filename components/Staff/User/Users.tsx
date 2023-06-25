@@ -1,7 +1,7 @@
 'use client';
 
 import {Heading} from '@chakra-ui/react';
-import {Margin} from '../Common/Margin';
+import {Margin} from '../../Common/Margin';
 import {UsersTable} from './UsersTable';
 
 export const Users = () => {

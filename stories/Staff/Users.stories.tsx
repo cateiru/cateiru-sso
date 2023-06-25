@@ -1,6 +1,6 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {Users} from '../../components/Staff/Users';
+import {Users} from '../../components/Staff/User/Users';
 import {api} from '../../utils/api';
 import {StaffUsers} from '../../utils/types/staff';
 
