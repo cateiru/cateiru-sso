@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
@@ -17,13 +18,27 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
+type BrandUserBrandResponse struct {
+	ID        uint   `json:"id"`
+	BrandID   string `json:"brand_id"`
+	BrandName string `json:"brand_name"`
+
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type StaffClientResponse struct {
+	ClientID string      `json:"client_id"`
+	Name     string      `json:"name"`
+	Image    null.String `json:"image"`
+}
+
 type UserDetailResponse struct {
 	User *models.User `json:"user"`
 
-	Staff  *models.Staff   `json:"staff,omitempty"`
-	Brands []*models.Brand `json:"brand,omitempty"`
+	Staff      *models.Staff            `json:"staff,omitempty"`
+	UserBrands []BrandUserBrandResponse `json:"user_brands"`
 
-	Clients []*models.Client `json:"client,omitempty"`
+	Clients []StaffClientResponse `json:"clients"`
 }
 
 // すべてのユーザー一覧を取得する
@@ -98,16 +113,21 @@ func (h *Handler) AdminUserDetailHandler(c echo.Context) error {
 	}
 
 	// brand
-	// SELECT brand.* FROM brands
-	// INNER JOIN staffs ON staffs.brand_id = brands.id
-	// WHERE staffs.user_id = ?;
-	brands, err := models.Brands(
-		qm.Select("brand.*"),
-		qm.InnerJoin("user_brand ON brand.id = user_brand.brand_id"),
-		qm.Where("user_brand.user_id = ?", user.ID),
+	userBrands, err := models.UserBrands(
+		models.UserBrandWhere.UserID.EQ(user.ID),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
+	}
+	brandUserBrands := make([]BrandUserBrandResponse, len(userBrands))
+	for i, userBrand := range userBrands {
+		brandUserBrands[i] = BrandUserBrandResponse{
+			ID:        userBrand.ID,
+			BrandID:   userBrand.R.Brand.ID,
+			BrandName: userBrand.R.Brand.Name,
+
+			CreatedAt: userBrand.CreatedAt,
+		}
 	}
 
 	// userが作成したclient
@@ -117,14 +137,22 @@ func (h *Handler) AdminUserDetailHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	staffClients := make([]StaffClientResponse, len(clients))
+	for i, client := range clients {
+		staffClients[i] = StaffClientResponse{
+			ClientID: client.ClientID,
+			Name:     client.Name,
+			Image:    client.Image,
+		}
+	}
 
 	return c.JSON(http.StatusOK, UserDetailResponse{
 		User: user,
 
-		Staff:  staff,
-		Brands: brands,
+		Staff:      staff,
+		UserBrands: brandUserBrands,
 
-		Clients: clients,
+		Clients: staffClients,
 	})
 }
 

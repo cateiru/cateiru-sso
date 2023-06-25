@@ -9,6 +9,7 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
+import Link from 'next/link';
 import useSWR from 'swr';
 import {staffUsersFeather} from '../../../utils/swr/featcher';
 import {ErrorType} from '../../../utils/types/error';
@@ -55,7 +56,12 @@ export const UsersTable = () => {
                 </Td>
                 <Td>{v.email}</Td>
                 <Td>
-                  <Button size="sm" colorScheme="cateiru">
+                  <Button
+                    as={Link}
+                    href={`/staff/user/${v.id}`}
+                    size="sm"
+                    colorScheme="cateiru"
+                  >
                     詳細
                   </Button>
                 </Td>

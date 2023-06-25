@@ -29,6 +29,28 @@ export const Staff = () => {
           ユーザー一覧
         </Button>
       </StaffCard>
+      <StaffCard title="ブランド一覧">
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          href="/staff"
+        >
+          ブランド一覧
+        </Button>
+      </StaffCard>
+      <StaffCard title="クライアント一覧">
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          href="/staff"
+        >
+          クライアント一覧
+        </Button>
+      </StaffCard>
     </Margin>
   );
 };

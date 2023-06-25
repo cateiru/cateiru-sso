@@ -10,7 +10,7 @@ import {
   LoginDeviceListScheme,
   LoginTryHistoryListScheme,
 } from '../types/history';
-import {StaffUsers} from '../types/staff';
+import {StaffUsersSchema, UserDetailSchema} from '../types/staff';
 
 export async function accountUserFeather() {
   const res = await fetch(api('/v2/account/list'), {
@@ -142,7 +142,33 @@ export async function staffUsersFeather() {
     throw new HTTPError(data.error.message);
   }
 
-  const data = StaffUsers.safeParse(await res.json());
+  const data = StaffUsersSchema.safeParse(await res.json());
+  if (data.success) {
+    return data.data;
+  }
+  console.error(data.error);
+  throw new HTTPError(data.error.message);
+}
+
+export async function staffUserDetailFeather(id: string) {
+  const urlSearchParam = new URLSearchParams();
+  urlSearchParam.append('user_id', id);
+
+  const res = await fetch(api('/v2/admin/user_detail', urlSearchParam), {
+    credentials: 'include',
+    mode: 'cors',
+  });
+
+  if (!res.ok) {
+    const data = ErrorSchema.safeParse(await res.json());
+    if (data.success) {
+      throw data.data;
+    }
+    console.error(data.error.message);
+    throw new HTTPError(data.error.message);
+  }
+
+  const data = UserDetailSchema.safeParse(await res.json());
   if (data.success) {
     return data.data;
   }
