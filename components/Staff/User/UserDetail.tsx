@@ -135,7 +135,7 @@ export const UserDetail: React.FC<Props> = props => {
                 </Td>
                 <Td>
                   {data?.user.birthdate
-                    ? new Date(data?.user.birthdate).toLocaleString()
+                    ? new Date(data?.user.birthdate).toLocaleDateString()
                     : ''}
                 </Td>
               </Tr>
