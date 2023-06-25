@@ -2,7 +2,6 @@ package src
 
 import (
 	"database/sql"
-	"net/http"
 	"os"
 	"time"
 
@@ -89,37 +88,7 @@ func ServerMiddleWare(e *echo.Echo, c *Config) {
 
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			if v.Error != nil {
-				code := http.StatusInternalServerError
-				he, ok := v.Error.(*HTTPError)
-				echohe, eok := v.Error.(*echo.HTTPError)
-				if ok {
-					code = he.Code
-				} else if eok {
-					code = echohe.Code
-				}
-
-				// エラーコードが400番台の場合はInfo
-				if code >= 400 && code < 500 {
-					L.Info("request",
-						zap.String("URI", v.URI),
-						zap.String("method", v.Method),
-						zap.Int("status", code),
-						zap.String("host", v.Host),
-						zap.String("response_time", time.Since(v.StartTime).String()),
-						zap.String("ip", v.RemoteIP),
-						zap.String("error_message", v.Error.Error()),
-					)
-					return nil
-				}
-				L.Error("request",
-					zap.String("URI", v.URI),
-					zap.String("method", v.Method),
-					zap.Int("status", code),
-					zap.String("host", v.Host),
-					zap.String("response_time", time.Since(v.StartTime).String()),
-					zap.String("ip", v.RemoteIP),
-					zap.String("error_message", v.Error.Error()),
-				)
+				ErrorLog(v)
 			} else {
 				L.Info("request",
 					zap.String("URI", v.URI),

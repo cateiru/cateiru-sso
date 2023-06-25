@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 )
 
@@ -183,13 +185,6 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	// `HTTPError` の場合
 	he, ok := err.(*HTTPError)
 	if ok {
-
-		// 詳細のエラーをログに出力する
-		L.Error(he.Error(),
-			zap.String("file", he.File),
-			zap.Int("line", he.Line),
-		)
-
 		code = he.Code
 		c.JSON(code, he)
 		return
@@ -198,12 +193,6 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	// `OIDCError` の場合
 	oe, ok := err.(*OIDCError)
 	if ok {
-		// 詳細のエラーをログに出力する
-		L.Error(oe.Error(),
-			zap.String("file", oe.File),
-			zap.Int("line", oe.Line),
-		)
-
 		code = oe.Code
 		c.JSON(code, oe)
 		return
@@ -218,4 +207,58 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	}
 
 	c.String(code, err.Error())
+}
+
+func ErrorLog(v middleware.RequestLoggerValues) error {
+	code := http.StatusInternalServerError
+	line := 0
+	file := ""
+
+	he, ok := v.Error.(*HTTPError)
+	if ok {
+		line = he.Line
+		file = he.File
+		code = he.Code
+	}
+
+	oe, ok := v.Error.(*OIDCError)
+	if ok {
+		line = oe.Line
+		file = oe.File
+		code = oe.Code
+	}
+
+	echohe, ok := v.Error.(*echo.HTTPError)
+	if ok {
+		code = echohe.Code
+	}
+
+	// エラーコードが400番台の場合はInfo
+	if code >= 400 && code < 500 {
+		L.Info("request",
+			zap.String("URI", v.URI),
+			zap.String("method", v.Method),
+			zap.Int("status", code),
+			zap.String("host", v.Host),
+			zap.String("response_time", time.Since(v.StartTime).String()),
+			zap.String("ip", v.RemoteIP),
+			zap.String("file", file),
+			zap.Int("line", line),
+			zap.String("error_message", v.Error.Error()),
+		)
+		return nil
+	}
+	L.Error("request",
+		zap.String("URI", v.URI),
+		zap.String("method", v.Method),
+		zap.Int("status", code),
+		zap.String("host", v.Host),
+		zap.String("response_time", time.Since(v.StartTime).String()),
+		zap.String("ip", v.RemoteIP),
+		zap.String("file", file),
+		zap.Int("line", line),
+		zap.String("error_message", v.Error.Error()),
+	)
+
+	return nil
 }
