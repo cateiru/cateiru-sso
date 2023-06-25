@@ -115,6 +115,7 @@ func (h *Handler) AdminUserDetailHandler(c echo.Context) error {
 	// brand
 	userBrands, err := models.UserBrands(
 		models.UserBrandWhere.UserID.EQ(user.ID),
+		qm.Load(models.UserBrandRels.Brand),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
