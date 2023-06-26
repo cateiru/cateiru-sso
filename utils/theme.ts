@@ -54,6 +54,11 @@ export const theme = extendTheme({
         focusBorderColor: 'my.secondary',
       },
     },
+    Textarea: {
+      defaultProps: {
+        focusBorderColor: 'my.secondary',
+      },
+    },
   },
   colors: {
     cateiru: {

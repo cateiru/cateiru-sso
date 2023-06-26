@@ -1,23 +1,16 @@
 'use client';
 
-import {Button, Heading, Text, useColorModeValue} from '@chakra-ui/react';
+import {Button} from '@chakra-ui/react';
 import Link from 'next/link';
-import {config} from '../../utils/config';
-import {Margin} from '../Common/Margin';
 import {StaffCard} from './StaffCard';
+import {StaffFrame} from './StaffFrame';
 
 export const Staff = () => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
-
   return (
-    <Margin>
-      <Heading textAlign="center" mt="3rem">
-        スタッフ管理画面
-      </Heading>
-      <Text color={textColor} textAlign="center" mt=".5rem">
-        Revision: {config.revision}{' '}
-        {config.branchName && `/ Branch: ${config.branchName}`}
-      </Text>
+    <StaffFrame
+      title="スタッフ管理画面"
+      paths={[{pageName: 'スタッフ管理画面'}]}
+    >
       <StaffCard title="ユーザー一覧">
         <Button
           variant="outline"
@@ -51,6 +44,6 @@ export const Staff = () => {
           クライアント一覧
         </Button>
       </StaffCard>
-    </Margin>
+    </StaffFrame>
   );
 };

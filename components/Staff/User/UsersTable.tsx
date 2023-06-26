@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Button,
   Table,
@@ -34,7 +36,7 @@ export const UsersTable = () => {
   }
 
   return (
-    <TableContainer>
+    <TableContainer mt="2rem">
       <Table variant="simple">
         <Thead>
           <Tr>

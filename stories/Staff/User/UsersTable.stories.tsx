@@ -1,12 +1,12 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {Users} from '../../components/Staff/User/Users';
-import {api} from '../../utils/api';
-import {StaffUsers} from '../../utils/types/staff';
+import {UsersTable} from '../../../components/Staff/User/UsersTable';
+import {api} from '../../../utils/api';
+import {StaffUsers} from '../../../utils/types/staff';
 
-const meta: Meta<typeof Users> = {
-  title: 'CateiruSSO/Staff/Users',
-  component: Users,
+const meta: Meta<typeof UsersTable> = {
+  title: 'CateiruSSO/Staff/User/UsersTable',
+  component: UsersTable,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
@@ -14,7 +14,7 @@ const meta: Meta<typeof Users> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Users>;
+type Story = StoryObj<typeof UsersTable>;
 
 export const Default: Story = {
   parameters: {

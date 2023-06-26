@@ -15,8 +15,8 @@ export type Staff = z.infer<typeof StaffSchema>;
 
 export const UserBrandSchema = z.object({
   id: z.string(),
-  user_id: z.string(),
   brand_id: z.string(),
+  brand_name: z.string(),
 
   created_at: z.string().datetime({offset: true}),
 });
@@ -31,7 +31,7 @@ export const StaffClientSchema = z.object({
 export const UserDetailSchema = z.object({
   user: UserSchema,
 
-  staff: StaffSchema.nullable(),
+  staff: StaffSchema.optional(),
   user_brands: z.array(UserBrandSchema),
 
   clients: z.array(StaffClientSchema),
