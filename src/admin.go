@@ -260,6 +260,7 @@ func (h *Handler) AdminStaffHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "user_id is required")
 	}
 	memo := c.FormValue("memo")
+	isStaff := c.FormValue("is_staff")
 
 	u, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
@@ -270,21 +271,31 @@ func (h *Handler) AdminStaffHandler(c echo.Context) error {
 	}
 
 	// userが存在するかチェックする
-	existUser, err := models.Users(
+	toUser, err := models.Users(
 		models.UserWhere.ID.EQ(userId),
-	).Exists(ctx, h.DB)
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "user not found")
+	}
 	if err != nil {
 		return err
 	}
-	if !existUser {
-		return NewHTTPError(http.StatusNotFound, "user not found")
+	if toUser.ID == u.ID {
+		return NewHTTPError(http.StatusBadRequest, "can't change yourself")
 	}
 
 	staff, err := models.Staffs(
 		models.StaffWhere.UserID.EQ(userId),
 	).One(ctx, h.DB)
-	if errors.Is(err, sql.ErrNoRows) {
-		// 新規追加
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+
+	if isStaff == "true" {
+		// スタッフにする
+		if staff != nil {
+			return NewHTTPError(http.StatusBadRequest, "user is already staff")
+		}
 		newStaff := models.Staff{
 			UserID: userId,
 			Memo:   null.NewString(memo, memo != ""),
@@ -292,15 +303,15 @@ func (h *Handler) AdminStaffHandler(c echo.Context) error {
 		if err := newStaff.Insert(ctx, h.DB, boil.Infer()); err != nil {
 			return err
 		}
-		return nil
-	}
-	if err != nil {
-		return err
-	}
+	} else {
+		// スタッフを外す
+		if staff == nil {
+			return NewHTTPError(http.StatusBadRequest, "user is not staff")
+		}
 
-	// 削除
-	if _, err := staff.Delete(ctx, h.DB); err != nil {
-		return err
+		if _, err := staff.Delete(ctx, h.DB); err != nil {
+			return err
+		}
 	}
 
 	return nil

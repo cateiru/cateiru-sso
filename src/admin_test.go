@@ -297,8 +297,12 @@ func TestAdminStaffHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	StaffAndSessionTest(t, h.AdminStaffHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
 		form := easy.NewMultipart()
-		form.Insert("user_id", u.ID)
+		form.Insert("user_id", u2.ID)
+		form.Insert("is_staff", "true")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
@@ -316,6 +320,7 @@ func TestAdminStaffHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("user_id", u2.ID)
+		form.Insert("is_staff", "true")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookie)
@@ -345,6 +350,7 @@ func TestAdminStaffHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("user_id", u2.ID)
+		form.Insert("is_staff", "false")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookie)
@@ -371,6 +377,7 @@ func TestAdminStaffHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("user_id", "invalid")
+		form.Insert("is_staff", "true")
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookie)
@@ -379,6 +386,74 @@ func TestAdminStaffHandler(t *testing.T) {
 
 		err = h.AdminStaffHandler(c)
 		require.EqualError(t, err, "code=404, message=user not found")
+	})
+
+	t.Run("失敗: 自分自身は変更できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_id", u.ID)
+		form.Insert("is_staff", "true")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminStaffHandler(c)
+		require.EqualError(t, err, "code=400, message=can't change yourself")
+	})
+
+	t.Run("失敗: スタッフにしようとしたがすでにスタッフ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		ToStaff(t, ctx, &u)
+		ToStaff(t, ctx, &u2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_id", u2.ID)
+		form.Insert("is_staff", "true")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminStaffHandler(c)
+		require.EqualError(t, err, "code=400, message=user is already staff")
+	})
+
+	t.Run("失敗: スタッフを外そうとしたがスタッフではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_id", u2.ID)
+		form.Insert("is_staff", "false")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminStaffHandler(c)
+		require.EqualError(t, err, "code=400, message=user is not staff")
 	})
 }
 
