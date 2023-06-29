@@ -1,9 +1,41 @@
 'use client';
 
-import {Table, TableContainer, Tbody, Td, Tr} from '@chakra-ui/react';
+import {
+  Badge,
+  Link,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Tr,
+} from '@chakra-ui/react';
+import React from 'react';
 import {config} from '../../utils/config';
+import {useRequest} from '../Common/useRequest';
 
 export const DeployData = () => {
+  const [apiConnectOk, setSpiConnectOk] = React.useState(false);
+  const [apiMode, setApiMode] = React.useState('');
+
+  const {request} = useRequest('/');
+
+  React.useEffect(() => {
+    const f = async () => {
+      const res = await request({
+        credentials: 'include',
+        mode: 'cors',
+      });
+
+      if (res) {
+        const mode = (await res.json()).mode;
+        setApiMode(mode);
+        setSpiConnectOk(true);
+      }
+    };
+    f();
+  }, []);
+
   return (
     <TableContainer>
       <Table variant="simple">
@@ -11,6 +43,10 @@ export const DeployData = () => {
           <Tr>
             <Td fontWeight="bold">モード</Td>
             <Td>{config.mode}</Td>
+          </Tr>
+          <Tr>
+            <Td fontWeight="bold">APIモード</Td>
+            <Td>{apiMode}</Td>
           </Tr>
           <Tr>
             <Td fontWeight="bold">リビジョン</Td>
@@ -22,7 +58,22 @@ export const DeployData = () => {
           </Tr>
           <Tr>
             <Td fontWeight="bold">APIホスト</Td>
-            <Td>{config.apiHost}</Td>
+            <Td>
+              <Link isExternal href={config.apiHost}>
+                {config.apiHost}
+              </Link>
+              <Text ml="1rem" as="span">
+                {apiConnectOk ? (
+                  <Badge colorScheme="green" verticalAlign="top">
+                    Connected
+                  </Badge>
+                ) : (
+                  <Badge colorScheme="red" verticalAlign="top">
+                    Not Connect
+                  </Badge>
+                )}
+              </Text>
+            </Td>
           </Tr>
           <Tr>
             <Td fontWeight="bold">タイトル</Td>
