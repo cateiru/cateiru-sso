@@ -22,7 +22,9 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import {useForm} from 'react-hook-form';
+import {useRecoilValue} from 'recoil';
 import {useSWRConfig} from 'swr';
+import {UserState} from '../../../utils/state/atom';
 import {Staff} from '../../../utils/types/staff';
 import {useRequest} from '../../Common/useRequest';
 
@@ -40,6 +42,7 @@ export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
 
   const {request: staffRequest} = useRequest('/v2/admin/staff');
   const {mutate} = useSWRConfig();
+  const user = useRecoilValue(UserState);
 
   const {isOpen, onOpen, onClose} = useDisclosure();
 
@@ -133,21 +136,27 @@ export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
           </Tbody>
         </Table>
       </TableContainer>
-      <ButtonGroup mt="1rem" w="100%">
-        <Button
-          w="100%"
-          colorScheme="cateiru"
-          onClick={staff ? undefined : onOpen}
-        >
-          スタッフにする
-        </Button>
-        <Button
-          w="100%"
-          onClick={() => (staff ? onToggleStaff(false) : undefined)}
-        >
-          スタッフから外す
-        </Button>
-      </ButtonGroup>
+      {user?.user.id !== userId && (
+        <>
+          {staff ? (
+            <Button
+              w="100%"
+              onClick={() => (staff ? onToggleStaff(false) : undefined)}
+            >
+              スタッフから外す
+            </Button>
+          ) : (
+            <Button
+              w="100%"
+              colorScheme="cateiru"
+              onClick={staff ? undefined : onOpen}
+            >
+              スタッフにする
+            </Button>
+          )}
+        </>
+      )}
+
       <Modal
         isOpen={isOpen}
         onClose={() => {
