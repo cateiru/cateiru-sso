@@ -28,7 +28,7 @@ export const Staff = () => {
           colorScheme="cateiru"
           w="100%"
           as={Link}
-          href="/staff"
+          href="/staff/brands"
         >
           ブランド一覧
         </Button>
@@ -39,7 +39,7 @@ export const Staff = () => {
           colorScheme="cateiru"
           w="100%"
           as={Link}
-          href="/staff"
+          href="/staff/clients"
         >
           クライアント一覧
         </Button>
