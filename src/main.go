@@ -105,4 +105,23 @@ func ServerMiddleWare(e *echo.Echo, c *Config) {
 
 	// CORS設定
 	e.Use(middleware.CORSWithConfig(*c.CorsConfig))
+
+	// CSRF設定
+	if c.EnableCSRFMeasures {
+		e.Use(CSRFHandler)
+	}
+}
+
+// CSRF対策で`Sec-Fetch-Site`ヘッダを検証する
+func CSRFHandler(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		secFetchSiteHeader := c.Request().Header.Get("Sec-Fetch-Site")
+
+		// `same-origin`か`same-site`以外の場合はCSRFエラーを出す
+		if secFetchSiteHeader != "same-origin" && secFetchSiteHeader != "same-site" {
+			return NewHTTPError(403, "CSRF Error")
+		}
+
+		return next(c)
+	}
 }

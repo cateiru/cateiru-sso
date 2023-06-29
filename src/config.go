@@ -40,6 +40,10 @@ type Config struct {
 	// CORS設定
 	CorsConfig *middleware.CORSConfig
 
+	// CSRF対策
+	// `Sec-Fetch-Site` ヘッダを検証する
+	EnableCSRFMeasures bool
+
 	// 送信メール設定
 	// 送信するメールアドレスドメイン
 	FromDomain string
@@ -210,6 +214,8 @@ var LocalConfig = &Config{
 		AllowCredentials: true,
 	},
 
+	EnableCSRFMeasures: false, // crulから叩きたいケースがあるので無効化する
+
 	FromDomain:        "m.cateiru.test",
 	MailgunSecret:     "secret",
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.test>",
@@ -376,6 +382,8 @@ var CloudRunConfig = &Config{
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowCredentials: true,
 	},
+
+	EnableCSRFMeasures: true,
 
 	FromDomain:        "m.cateiru.com",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
@@ -545,6 +553,8 @@ var CloudRunStagingConfig = &Config{
 		AllowCredentials: true,
 	},
 
+	EnableCSRFMeasures: true,
+
 	FromDomain:        "m.cateiru.com",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
 	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
@@ -706,6 +716,8 @@ var TestConfig = &Config{
 	},
 
 	CorsConfig: &middleware.CORSConfig{},
+
+	EnableCSRFMeasures: false,
 
 	FromDomain:        "m.cateiru.com",
 	MailgunSecret:     "secret",
