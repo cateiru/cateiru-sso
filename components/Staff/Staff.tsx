@@ -44,6 +44,17 @@ export const Staff = () => {
           クライアント一覧
         </Button>
       </StaffCard>
+      <StaffCard title="デプロイデータ">
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          href="/staff/deploy_data"
+        >
+          デプロイデータ
+        </Button>
+      </StaffCard>
     </StaffFrame>
   );
 };
