@@ -8,13 +8,13 @@ import {
   Link,
   useColorModeValue,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import {userIdEmailRegex} from '../../utils/regex';
 import {type LoginUser, LoginUserSchema} from '../../utils/types/login';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {PasswordForm, type PasswordFormData} from '../Common/Form/PasswordForm';
+import {Link as NextLink} from '../Common/Next/Link';
 import {useRequest} from '../Common/useRequest';
 
 export interface UserIDEmailForm extends PasswordFormData {

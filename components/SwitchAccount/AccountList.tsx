@@ -10,7 +10,6 @@ import {
   Button,
   Center,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import React from 'react';
 import {TbCheck, TbUserPlus} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
@@ -22,6 +21,7 @@ import {ErrorType} from '../../utils/types/error';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
+import {Link} from '../Common/Next/Link';
 import {useSwitchAccount} from './useSwitchAccount';
 
 export const AccountList = () => {

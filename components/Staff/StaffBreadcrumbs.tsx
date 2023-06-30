@@ -4,8 +4,8 @@ import {
   Breadcrumb as ChakraBreadcrumb,
   useColorModeValue,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import React from 'react';
+import {Link} from '../Common/Next/Link';
 
 export interface Path {
   href?: string;

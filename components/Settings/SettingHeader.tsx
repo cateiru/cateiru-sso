@@ -1,10 +1,10 @@
 'use client';
 
 import {Box, Heading, Tab, TabList, Tabs} from '@chakra-ui/react';
-import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import React from 'react';
 import {Margin} from '../Common/Margin';
+import {Link} from '../Common/Next/Link';
 import {UserName} from '../Common/UserName';
 
 export const SettingHeader: React.FC<{children: React.ReactNode}> = ({

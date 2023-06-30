@@ -5,7 +5,6 @@ import {
   MenuItem,
   MenuList,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import React from 'react';
 import {
@@ -17,6 +16,7 @@ import {
   TbUserPlus,
   TbUsers,
 } from 'react-icons/tb';
+import {Link} from '../Next/Link';
 import {useLogout} from '../useLogout';
 
 const fontSize = {base: '1.2rem', sm: '1rem'};

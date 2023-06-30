@@ -11,11 +11,11 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import React from 'react';
 import {UserDetail} from '../../../utils/types/staff';
 import {validateGender} from '../../../utils/validate';
 import {Avatar} from '../../Common/Chakra/Avatar';
+import {Link} from '../../Common/Next/Link';
 import {UserDetailStaff} from './UserDetailStaff';
 
 interface Props {

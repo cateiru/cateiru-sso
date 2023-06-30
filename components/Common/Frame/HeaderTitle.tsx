@@ -1,9 +1,9 @@
 import {Flex, Text} from '@chakra-ui/react';
-import NextLink from 'next/link';
 import {useRecoilValue} from 'recoil';
 import {config} from '../../../utils/config';
 import {UserState} from '../../../utils/state/atom';
 import {Logo} from '../Icons/Logo';
+import {Link as NextLink} from '../Next/Link';
 
 export const HeaderTitle = () => {
   const user = useRecoilValue(UserState);

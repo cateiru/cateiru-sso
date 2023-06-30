@@ -1,7 +1,7 @@
 'use client';
 
 import {Button} from '@chakra-ui/react';
-import Link from 'next/link';
+import {Link} from '../Common/Next/Link';
 import {StaffCard} from './StaffCard';
 import {StaffFrame} from './StaffFrame';
 

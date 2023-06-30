@@ -5,13 +5,13 @@ import {
   useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import React from 'react';
 import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
 import {Margin} from '../Common/Margin';
+import {Link} from '../Common/Next/Link';
 import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {type DefaultPageProps, LoginStep} from './Login';

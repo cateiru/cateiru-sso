@@ -11,13 +11,13 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import useSWR from 'swr';
 import {staffUsersFeather} from '../../../utils/swr/featcher';
 import {ErrorType} from '../../../utils/types/error';
 import {StaffUsers} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';
 import {Error} from '../../Common/Error/Error';
+import {Link} from '../../Common/Next/Link';
 
 export const UsersTable = () => {
   const textColor = useColorModeValue('gray.500', 'gray.400');

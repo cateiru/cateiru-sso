@@ -9,12 +9,12 @@ import {
   Text,
   useColorModeValue,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import {TbAddressBook, TbHistory, TbSettings} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Margin} from '../Common/Margin';
+import {Link} from '../Common/Next/Link';
 import {LoginDevice} from '../Histories/LoginDevice';
 import {EmailView} from './EmailView';
 import {ProfileDatetime} from './ProfileDatetime';
