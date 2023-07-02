@@ -118,6 +118,9 @@ export const theme = extendTheme({
             ? colorTheme.darkText
             : colorTheme.lightText,
       },
+      pre: {
+        fontFamily: "'Noto Sans JP', sans-serif",
+      },
       ':root': {
         '--background-color':
           props.colorMode === 'dark'

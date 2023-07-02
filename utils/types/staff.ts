@@ -20,7 +20,7 @@ export const UserBrandSchema = z.object({
 
   created_at: z.string().datetime({offset: true}),
 });
-export type Brand = z.infer<typeof UserBrandSchema>;
+export type UserBrand = z.infer<typeof UserBrandSchema>;
 
 export const StaffClientSchema = z.object({
   client_id: z.string(),
@@ -37,3 +37,16 @@ export const UserDetailSchema = z.object({
   clients: z.array(StaffClientSchema),
 });
 export type UserDetail = z.infer<typeof UserDetailSchema>;
+
+export const BrandSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+
+  created_at: z.string().datetime({offset: true}),
+  updated_at: z.string().datetime({offset: true}),
+});
+export type Brand = z.infer<typeof BrandSchema>;
+
+export const BrandsSchema = z.array(BrandSchema);
+export type Brands = z.infer<typeof BrandsSchema>;

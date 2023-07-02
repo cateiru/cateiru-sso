@@ -22,7 +22,5 @@ export const UserDetail: React.FC<Props> = props => {
     return <Error {...error} />;
   }
 
-  console.log(data);
-
   return <UserDetailContent data={data} />;
 };

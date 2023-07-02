@@ -3,14 +3,10 @@
 import {Button} from '@chakra-ui/react';
 import {Link} from '../Common/Next/Link';
 import {StaffCard} from './StaffCard';
-import {StaffFrame} from './StaffFrame';
 
 export const Staff = () => {
   return (
-    <StaffFrame
-      title="スタッフ管理画面"
-      paths={[{pageName: 'スタッフ管理画面'}]}
-    >
+    <>
       <StaffCard title="ユーザー一覧">
         <Button
           variant="outline"
@@ -55,6 +51,6 @@ export const Staff = () => {
           デプロイデータ
         </Button>
       </StaffCard>
-    </StaffFrame>
+    </>
   );
 };

@@ -353,7 +353,9 @@ func (h *Handler) AdminBrandHandler(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-		return c.JSON(http.StatusOK, brands)
+		brandJson := make([]*models.Brand, len(brands))
+		copy(brandJson, brands)
+		return c.JSON(http.StatusOK, brandJson)
 	}
 
 	brand, err := models.Brands(
@@ -387,12 +389,10 @@ func (h *Handler) AdminBrandCreateHandler(c echo.Context) error {
 		return err
 	}
 
-	brandId, err := lib.RandomStr(31)
-	if err != nil {
-		return err
-	}
+	brandId := ulid.Make()
+
 	brand := models.Brand{
-		ID:   brandId,
+		ID:   brandId.String(),
 		Name: name,
 
 		Description: null.NewString(description, description != ""),
