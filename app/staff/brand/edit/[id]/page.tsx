@@ -1,4 +1,5 @@
 import React from 'react';
+import {EditBrand} from '../../../../../components/Staff/Brand/EditBrand';
 import {StaffFrame} from '../../../../../components/Staff/StaffFrame';
 
 interface Props {
@@ -18,7 +19,7 @@ const Page: React.FC<Props> = ({params}) => {
         {pageName: 'ブランド編集'},
       ]}
     >
-      <></>
+      <EditBrand id={params.id} />
     </StaffFrame>
   );
 };

@@ -9,26 +9,49 @@ import {
   Textarea,
 } from '@chakra-ui/react';
 import {useRouter} from 'next/navigation';
+import React from 'react';
 import {useForm} from 'react-hook-form';
-import {BrandSchema} from '../../../utils/types/staff';
+import useSWR from 'swr';
+import {brandFeather} from '../../../utils/swr/featcher';
+import {ErrorType} from '../../../utils/types/error';
+import {Brand} from '../../../utils/types/staff';
+import {Error} from '../../Common/Error/Error';
 import {useRequest} from '../../Common/useRequest';
 
-interface RegisterBrandFromData {
+interface Props {
+  id: string;
+}
+
+interface EditBrandFromData {
   name: string;
   description?: string;
 }
 
-export const RegisterBrand = () => {
+export const EditBrand: React.FC<Props> = ({id}) => {
+  const {data, error} = useSWR<Brand, ErrorType>(
+    `/v2/admin/brand?brand_id=${id}`,
+    () => brandFeather(id)
+  );
+
   const {
     handleSubmit,
     register,
+    setValue,
     formState: {errors, isSubmitting},
-  } = useForm<RegisterBrandFromData>();
+  } = useForm<EditBrandFromData>();
   const router = useRouter();
   const {request} = useRequest('/v2/admin/brand');
 
-  const onSubmit = async (data: RegisterBrandFromData) => {
+  React.useEffect(() => {
+    if (data) {
+      setValue('name', data.name);
+      setValue('description', data.description ?? '');
+    }
+  }, [data]);
+
+  const onSubmit = async (data: EditBrandFromData) => {
     const form = new FormData();
+    form.append('brand_id', id);
     form.append('name', data.name);
 
     if (data.description) {
@@ -36,21 +59,21 @@ export const RegisterBrand = () => {
     }
 
     const res = await request({
-      method: 'POST',
+      method: 'PUT',
       body: form,
       mode: 'cors',
       credentials: 'include',
     });
 
     if (res) {
-      const data = BrandSchema.safeParse(await res.json());
-      if (data.success) {
-        router.push(`/staff/brand/${data.data.id}`);
-        return;
-      }
-      console.error(data.error);
+      router.push(`/staff/brand/${id}`);
+      return;
     }
   };
+
+  if (error) {
+    return <Error {...error} />;
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -80,7 +103,7 @@ export const RegisterBrand = () => {
         type="submit"
         w="100%"
       >
-        ブランドを新規作成
+        ブランドを更新
       </Button>
     </form>
   );
