@@ -82,7 +82,7 @@ CREATE TABLE `user_brand` (
     `user_id` VARCHAR(32) NOT NULL,
 
     -- ブランドID
-    `brand_id` VARCHAR(31) NOT NULL,
+    `brand_id` VARCHAR(32) NOT NULL,
 
     -- 管理用
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

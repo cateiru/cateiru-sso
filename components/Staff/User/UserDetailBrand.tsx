@@ -1,6 +1,6 @@
 import {
   Button,
-  IconButton,
+  Center,
   Link,
   Table,
   TableContainer,
@@ -12,10 +12,12 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
-import {TbXboxX} from 'react-icons/tb';
+import React from 'react';
+import {TbPlugConnectedX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
 import {UserBrand} from '../../../utils/types/staff';
 import {Tooltip} from '../../Common/Chakra/Tooltip';
+import {Spinner} from '../../Common/Icons/Spinner';
 import {Link as NextLink} from '../../Common/Next/Link';
 import {useRequest} from '../../Common/useRequest';
 import {AddUser} from '../Brand/AddUser';
@@ -27,11 +29,18 @@ interface Props {
 
 export const UserDetailBrand: React.FC<Props> = props => {
   const textColor = useColorModeValue('gray.500', 'gray.400');
+  const defaultTrashColor = useColorModeValue('#CBD5E0', '#4A5568');
+  const hoverTrashColor = useColorModeValue('#F56565', '#C53030');
+
   const {mutate} = useSWRConfig();
   const {request} = useRequest('/v2/admin/user/brand');
 
+  const [hover, setHover] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
   const onDelete = (brandId: string) => {
     const f = async () => {
+      setLoading(true);
       const param = new URLSearchParams();
       param.append('user_id', props.userId);
       param.append('brand_id', brandId);
@@ -48,6 +57,7 @@ export const UserDetailBrand: React.FC<Props> = props => {
       if (res) {
         purge();
       }
+      setLoading(false);
     };
 
     f();
@@ -100,14 +110,24 @@ export const UserDetailBrand: React.FC<Props> = props => {
               return (
                 <Tr key={`brand-${brand.id}`}>
                   <Td>
-                    <Tooltip label="ユーザーからこのブランドを削除">
-                      <IconButton
-                        icon={<TbXboxX size="20px" />}
-                        variant="ghost"
-                        aria-label="delete"
-                        size="sm"
-                        onClick={() => onDelete(brand.brand_id)}
-                      />
+                    <Tooltip
+                      label="ユーザーからこのブランドを削除"
+                      placement="top"
+                    >
+                      <Center>
+                        {loading ? (
+                          <Spinner />
+                        ) : (
+                          <TbPlugConnectedX
+                            size="25px"
+                            color={hover ? hoverTrashColor : defaultTrashColor}
+                            onMouseOver={() => setHover(true)}
+                            onMouseOut={() => setHover(false)}
+                            onClick={() => onDelete(brand.brand_id)}
+                            style={{cursor: 'pointer'}}
+                          />
+                        )}
+                      </Center>
                     </Tooltip>
                   </Td>
                   <Td>{brand.brand_name}</Td>
