@@ -128,7 +128,7 @@ export const BrandDetailContent: React.FC<Props> = ({brand}) => {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{brand?.name}を削除しますか？</ModalHeader>
+          <ModalHeader>「{brand?.name}」を削除しますか？</ModalHeader>
           <ModalCloseButton size="lg" />
           <ModalBody my="1rem">
             <UnorderedList mb="1rem">
