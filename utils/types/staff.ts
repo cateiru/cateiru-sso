@@ -14,7 +14,7 @@ export const StaffSchema = z.object({
 export type Staff = z.infer<typeof StaffSchema>;
 
 export const UserBrandSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   brand_id: z.string(),
   brand_name: z.string(),
 

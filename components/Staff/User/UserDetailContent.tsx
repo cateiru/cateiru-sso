@@ -16,6 +16,7 @@ import {UserDetail} from '../../../utils/types/staff';
 import {validateGender} from '../../../utils/validate';
 import {Avatar} from '../../Common/Chakra/Avatar';
 import {Link} from '../../Common/Next/Link';
+import {UserDetailBrand} from './UserDetailBrand';
 import {UserDetailStaff} from './UserDetailStaff';
 
 interface Props {
@@ -130,46 +131,10 @@ export const UserDetailContent: React.FC<Props> = ({data}) => {
         </Table>
       </TableContainer>
       <UserDetailStaff staff={data?.staff} userId={data?.user.id} />
-      <Text
-        mt="2rem"
-        mb="1rem"
-        fontSize="1.5rem"
-        color={textColor}
-        fontWeight="bold"
-      >
-        ブランド情報
-      </Text>
-      <TableContainer>
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>ブランド名</Th>
-              <Th>加入日</Th>
-              <Th></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {data?.user_brands.map(brand => {
-              return (
-                <Tr key={`brand-${brand.id}`}>
-                  <Td>{brand.brand_name}</Td>
-                  <Td>{new Date(brand.created_at).toLocaleString()}</Td>
-                  <Td>
-                    <Button
-                      size="sm"
-                      colorScheme="cateiru"
-                      as={Link}
-                      href={`/staff/brand/${brand.id}`}
-                    >
-                      詳細
-                    </Button>
-                  </Td>
-                </Tr>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </TableContainer>
+      <UserDetailBrand
+        brands={data?.user_brands ?? []}
+        userId={data?.user.id ?? ''}
+      />
       <Text
         mt="2rem"
         mb="1rem"
