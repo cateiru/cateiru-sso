@@ -63,7 +63,7 @@ CREATE TABLE `setting` (
 
 -- ブランドテーブル
 CREATE TABLE `brand` (
-    `id` VARCHAR(31) NOT NULL,
+    `id` VARCHAR(32) NOT NULL,
 
     `name` TEXT NOT NULL,
 
