@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonGroup,
+  ListItem,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -13,6 +14,7 @@ import {
   Td,
   Text,
   Tr,
+  UnorderedList,
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
@@ -129,6 +131,10 @@ export const BrandDetailContent: React.FC<Props> = ({brand}) => {
           <ModalHeader>{brand?.name}を削除しますか？</ModalHeader>
           <ModalCloseButton size="lg" />
           <ModalBody my="1rem">
+            <UnorderedList mb="1rem">
+              <ListItem>この操作は元に戻せません。</ListItem>
+              <ListItem>削除すると、全ユーザーの加入が解除されます。</ListItem>
+            </UnorderedList>
             <Button
               w="100%"
               onClick={onDelete}
