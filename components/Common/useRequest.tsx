@@ -26,17 +26,25 @@ export const useRequest = (path: string, options?: Options): Returns => {
       const res = await fetch(api(path, urlParams), data);
 
       if (!res.ok) {
-        const error = ErrorSchema.parse(await res.json());
+        let message: string;
+        if (res.status >= 500 && res.status < 600) {
+          // サーバーエラーの場合はそのまま表示する
+          message = await res.text();
+        } else {
+          // クライアントエラーの場合はレスポンスからエラーを読む
+          const error = ErrorSchema.parse(await res.json());
 
-        // カスタムでエラーできる便利機能
-        if (options?.customError) {
-          options.customError(error);
-          return;
+          // カスタムでエラーできる便利機能
+          if (options?.customError) {
+            options.customError(error);
+            return;
+          }
+
+          message = error.unique_code
+            ? ErrorUniqueMessage[error.unique_code] ?? error.message
+            : error.message;
         }
 
-        const message = error.unique_code
-          ? ErrorUniqueMessage[error.unique_code] ?? error.message
-          : error.message;
         toast({
           title: message,
           status: 'error',
