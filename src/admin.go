@@ -280,9 +280,6 @@ func (h *Handler) AdminStaffHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if toUser.ID == u.ID {
-		return NewHTTPError(http.StatusBadRequest, "can't change yourself")
-	}
 
 	staff, err := models.Staffs(
 		models.StaffWhere.UserID.EQ(userId),
@@ -292,18 +289,29 @@ func (h *Handler) AdminStaffHandler(c echo.Context) error {
 	}
 
 	if isStaff == "true" {
-		// スタッフにする
+		// 本当はUpsert使いたいけど、なんかINSERTしかされないので存在しているかを見る
 		if staff != nil {
-			return NewHTTPError(http.StatusBadRequest, "user is already staff")
-		}
-		newStaff := models.Staff{
-			UserID: userId,
-			Memo:   null.NewString(memo, memo != ""),
-		}
-		if err := newStaff.Insert(ctx, h.DB, boil.Infer()); err != nil {
-			return err
+			// すでに存在している場合は更新
+			staff.Memo = null.NewString(memo, memo != "")
+			if _, err := staff.Update(ctx, h.DB, boil.Infer()); err != nil {
+				return err
+			}
+		} else {
+			// 存在していない場合は新規作成
+			newStaff := models.Staff{
+				UserID: userId,
+				Memo:   null.NewString(memo, memo != ""),
+			}
+			if err := newStaff.Insert(ctx, h.DB, boil.Infer()); err != nil {
+				return err
+			}
 		}
 	} else {
+		// 自分自身は削除できない
+		if toUser.ID == u.ID {
+			return NewHTTPError(http.StatusBadRequest, "can't change yourself")
+		}
+
 		// スタッフを外す
 		if staff == nil {
 			return NewHTTPError(http.StatusBadRequest, "user is not staff")

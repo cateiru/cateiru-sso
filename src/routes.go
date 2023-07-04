@@ -132,6 +132,9 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.DELETE("/org", h.AdminOrgDeleteHandler)            // org削除
 	admin.DELETE("/org/image", h.AdminOrgDeleteImageHandler) // orgの画像削除
 
+	admin.GET("/clients", h.Root)       // クライアント一覧
+	admin.GET("/client_detail", h.Root) // クライアント詳細
+
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
 	internal := version.Group("/internal")

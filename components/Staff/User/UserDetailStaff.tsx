@@ -139,27 +139,19 @@ export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
           </Tbody>
         </Table>
       </TableContainer>
-      {user?.user.id !== userId && (
-        <>
-          {staff ? (
-            <Button
-              w="100%"
-              onClick={() => (staff ? onToggleStaff(false) : undefined)}
-            >
-              スタッフから外す
-            </Button>
-          ) : (
-            <Button
-              w="100%"
-              colorScheme="cateiru"
-              onClick={staff ? undefined : onOpen}
-            >
-              スタッフにする
-            </Button>
-          )}
-        </>
-      )}
 
+      <Button w="100%" colorScheme="cateiru" onClick={onOpen}>
+        {staff ? 'スタッフを更新する' : 'スタッフにする'}
+      </Button>
+      {user?.user.id !== userId && staff && (
+        <Button
+          mt=".5rem"
+          w="100%"
+          onClick={() => (staff ? onToggleStaff(false) : undefined)}
+        >
+          スタッフから外す
+        </Button>
+      )}
       <Modal
         isOpen={isOpen}
         onClose={() => {
@@ -170,7 +162,9 @@ export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>スタッフにしますか？</ModalHeader>
+          <ModalHeader>
+            {staff ? 'スタッフを更新する' : 'スタッフにする'}
+          </ModalHeader>
           <ModalCloseButton size="lg" />
           <ModalBody>
             <form onSubmit={handleSubmit(onSubmitForm)}>
@@ -189,7 +183,7 @@ export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
                 type="submit"
                 w="100%"
               >
-                スタッフにする
+                {staff ? 'スタッフを更新する' : 'スタッフにする'}
               </Button>
             </form>
           </ModalBody>

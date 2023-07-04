@@ -50,6 +50,17 @@ export const Staff = () => {
           クライアント一覧
         </Button>
       </StaffCard>
+      <StaffCard title="組織">
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          href="/staff/orgs"
+        >
+          組織一覧
+        </Button>
+      </StaffCard>
       <StaffCard title="デプロイデータ">
         <Button
           variant="outline"
