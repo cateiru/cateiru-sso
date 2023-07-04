@@ -7,7 +7,7 @@ import {StaffCard} from './StaffCard';
 export const Staff = () => {
   return (
     <>
-      <StaffCard title="ユーザー一覧">
+      <StaffCard title="ユーザー">
         <Button
           variant="outline"
           colorScheme="cateiru"
@@ -18,7 +18,7 @@ export const Staff = () => {
           ユーザー一覧
         </Button>
       </StaffCard>
-      <StaffCard title="ブランド一覧">
+      <StaffCard title="ブランド">
         <Button
           variant="outline"
           colorScheme="cateiru"
@@ -28,8 +28,18 @@ export const Staff = () => {
         >
           ブランド一覧
         </Button>
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          href="/staff/brand/register"
+          mt="1rem"
+        >
+          ブランド新規作成
+        </Button>
       </StaffCard>
-      <StaffCard title="クライアント一覧">
+      <StaffCard title="クライアント">
         <Button
           variant="outline"
           colorScheme="cateiru"

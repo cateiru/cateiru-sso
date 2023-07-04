@@ -45,8 +45,8 @@ export const Default: Story = {
 
       user_brands: Array(faker.number.int({min: 1, max: 5}))
         .fill(0)
-        .map(() => ({
-          id: faker.string.uuid(),
+        .map((_, i) => ({
+          id: i,
           brand_id: faker.string.uuid(),
           brand_name: faker.internet.displayName(),
 
