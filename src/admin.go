@@ -198,6 +198,17 @@ func (h *Handler) AdminUserBrandHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusNotFound, "brand not found")
 	}
 
+	existUserBrand, err := models.UserBrands(
+		models.UserBrandWhere.UserID.EQ(user.ID),
+		models.UserBrandWhere.BrandID.EQ(brandId),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if existUserBrand {
+		return NewHTTPError(http.StatusConflict, "user brand already exists")
+	}
+
 	userBrand := models.UserBrand{
 		UserID:  user.ID,
 		BrandID: brandId,

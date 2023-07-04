@@ -231,6 +231,29 @@ func TestAdminUserBrandHandler(t *testing.T) {
 		err = h.AdminUserBrandHandler(c)
 		require.EqualError(t, err, "code=404, message=brand not found")
 	})
+
+	t.Run("失敗: すでにユーザーはそのブランドに入っている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		brandId := RegisterBrand(t, ctx, "test", "", &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_id", u.ID)
+		form.Insert("brand_id", brandId)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminUserBrandHandler(c)
+		require.EqualError(t, err, "code=409, message=user brand already exists")
+	})
 }
 
 func TestAdminUserBrandDeleteHandler(t *testing.T) {
