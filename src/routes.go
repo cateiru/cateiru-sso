@@ -126,7 +126,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.PUT("/brand", h.AdminBrandUpdateHandler)
 	admin.DELETE("/brand", h.AdminBrandDeleteHandler)
 
-	admin.GET("/org", h.AdminOrgHandler)                     // 全org参照
+	admin.GET("/orgs", h.AdminOrgHandler)                    // 全org参照
+	admin.GET("/org", h.AdminOrgDetailHandler)               // org詳細を取得
 	admin.POST("/org", h.AdminOrgCreateHandler)              // org作成
 	admin.PUT("/org", h.AdminOrgUpdateHandler)               // org編集
 	admin.DELETE("/org", h.AdminOrgDeleteHandler)            // org削除

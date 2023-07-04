@@ -787,6 +787,111 @@ func TestAdminOrgHandler(t *testing.T) {
 	})
 }
 
+func TestAdminOrgDetailHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminOrgHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx)
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("成功: orgの詳細を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgId := RegisterOrg(t, ctx)
+
+		InviteUserInOrg(t, ctx, orgId, &u2, "member")
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDetailHandler(c)
+		require.NoError(t, err)
+
+		response := src.OrgDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.Org.ID, orgId)
+		require.Len(t, response.Users, 1)
+	})
+
+	t.Run("成功: orgユーザーがいない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDetailHandler(c)
+		require.NoError(t, err)
+
+		response := src.OrgDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.Org.ID, orgId)
+		require.Len(t, response.Users, 0)
+	})
+
+	t.Run("失敗: org_idがない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDetailHandler(c)
+		require.EqualError(t, err, "code=400, message=org_id is required")
+	})
+
+	t.Run("失敗: org_idが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", "invalid"), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgDetailHandler(c)
+		require.EqualError(t, err, "code=404, message=org not found")
+	})
+}
+
 func TestAdminOrgCreateHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)

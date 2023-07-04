@@ -41,6 +41,11 @@ type UserDetailResponse struct {
 	Clients []StaffClientResponse `json:"clients"`
 }
 
+type OrgDetailResponse struct {
+	Org   *models.Organization `json:"org"`
+	Users []OrgUserResponse    `json:"users"`
+}
+
 // すべてのユーザー一覧を取得する
 // `?offset=0` 指定可能。
 // 一度に返すユーザーの件数は50件
@@ -512,6 +517,66 @@ func (h *Handler) AdminOrgHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, orgs)
+}
+
+func (h *Handler) AdminOrgDetailHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	orgId := c.QueryParam("org_id")
+	if orgId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_id is required")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	org, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "org not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	orgUsers, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+		qm.Load(models.OrganizationUserRels.User),
+		qm.OrderBy("created_at ASC"),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	users := make([]OrgUserResponse, len(orgUsers))
+	for i, orgUser := range orgUsers {
+		users[i] = OrgUserResponse{
+			ID: orgUser.ID,
+
+			User: PublicUserResponse{
+				ID:       orgUser.R.User.ID,
+				UserName: orgUser.R.User.UserName,
+				Avatar:   orgUser.R.User.Avatar,
+			},
+			Role: orgUser.Role,
+
+			CreatedAt: orgUser.CreatedAt,
+			UpdatedAt: orgUser.UpdatedAt,
+		}
+	}
+
+	response := &OrgDetailResponse{
+		Org:   org,
+		Users: users,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 // org作成（管理者用）
