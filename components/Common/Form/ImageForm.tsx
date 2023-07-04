@@ -88,8 +88,8 @@ export const ImageForm = () => {
           accept="image/*"
           onChange={handleChange}
         />
-        <InputRightElement w="5.5rem">
-          <Button h="1.75rem" size="sm" onClick={clearImage}>
+        <InputRightElement w="5.5rem" mr=".2rem">
+          <Button size="sm" onClick={clearImage}>
             画像を削除
           </Button>
         </InputRightElement>
