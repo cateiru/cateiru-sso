@@ -39,6 +39,7 @@ export const BrandsTable = () => {
         mt=".5rem"
         as={Link}
         href="/staff/brand/register"
+        size="sm"
       >
         新規作成
       </Button>

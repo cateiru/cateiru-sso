@@ -77,12 +77,17 @@ export const UserDetailBrand: React.FC<Props> = props => {
     <>
       <Text
         mt="2rem"
-        mb="1rem"
         fontSize="1.5rem"
         color={textColor}
         fontWeight="bold"
+        mb=".5rem"
       >
         ブランド情報
+      </Text>
+      <Text color={textColor} mb="1rem">
+        ブランドを使用することで、ユーザーに特殊な権限を与えたりグループ化することができます。
+        <br />
+        ユーザーにグループする権限を与えたりしたい場合は、orgを使用してください。
       </Text>
       <Link
         as={NextLink}

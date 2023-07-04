@@ -98,6 +98,9 @@ export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
       >
         スタッフ情報
       </Text>
+      <Text color={textColor} mb="1rem">
+        ユーザーをスタッフにすることで、ユーザーは管理画面にアクセスすることができます。
+      </Text>
       <TableContainer>
         <Table variant="simple">
           <Tbody>
