@@ -79,7 +79,10 @@ func (h *Handler) AdminUsersHandler(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, allUsers)
+	usersJson := make([]*models.User, len(allUsers))
+	copy(usersJson, allUsers)
+
+	return c.JSON(http.StatusOK, usersJson)
 }
 
 // 指定したユーザーの詳細を取得する
@@ -516,7 +519,10 @@ func (h *Handler) AdminOrgHandler(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, orgs)
+	orgsJson := make([]*models.Organization, len(orgs))
+	copy(orgsJson, orgs)
+
+	return c.JSON(http.StatusOK, orgsJson)
 }
 
 func (h *Handler) AdminOrgDetailHandler(c echo.Context) error {

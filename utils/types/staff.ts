@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {OrganizationUserSchema} from './organization';
 import {UserSchema} from './user';
 
 export const StaffUsersSchema = z.array(UserSchema);
@@ -50,3 +51,23 @@ export type Brand = z.infer<typeof BrandSchema>;
 
 export const BrandsSchema = z.array(BrandSchema);
 export type Brands = z.infer<typeof BrandsSchema>;
+
+export const OrganizationSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  image: z.string().nullable(),
+  link: z.string().nullable(),
+
+  created_at: z.string().datetime({offset: true}),
+  updated_at: z.string().datetime({offset: true}),
+});
+export type Organization = z.infer<typeof OrganizationSchema>;
+
+export const OrganizationsSchema = z.array(OrganizationSchema);
+export type Organizations = z.infer<typeof OrganizationsSchema>;
+
+export const OrganizationDetailSchema = z.object({
+  org: OrganizationSchema,
+  users: z.array(OrganizationUserSchema),
+});
+export type OrganizationDetail = z.infer<typeof OrganizationDetailSchema>;

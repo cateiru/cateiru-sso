@@ -22,8 +22,8 @@ export const UserSettingSchema = z.object({
   notice_email: z.boolean(),
   notice_webpush: z.boolean(),
 
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime(),
+  created_at: z.string().datetime({offset: true}),
+  updated_at: z.string().datetime({offset: true}),
 });
 export type UserSetting = z.infer<typeof UserSettingSchema>;
 
@@ -45,3 +45,10 @@ export const UserUserName = z.object({
   message: z.string(),
 });
 export type UserUserName = z.infer<typeof UserUserName>;
+
+export const PublicUserSchema = z.object({
+  id: z.string(),
+  user_name: z.string(),
+  avatar: z.string().nullable(),
+});
+export type PublicUser = z.infer<typeof PublicUserSchema>;
