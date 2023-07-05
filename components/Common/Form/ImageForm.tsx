@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Center,
+  Flex,
   Input,
   InputGroup,
   InputRightElement,
@@ -21,12 +22,18 @@ import {
 import React from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import {useFormContext} from 'react-hook-form';
+import {Avatar} from '../Chakra/Avatar';
+
+interface Props {
+  imageUrl?: string;
+  clearImage?: () => void;
+}
 
 export interface ImageFormValue {
   image?: File;
 }
 
-export const ImageForm = () => {
+export const ImageForm: React.FC<Props> = props => {
   const {setValue} = useFormContext<ImageFormValue>();
 
   const {isOpen, onOpen, onClose} = useDisclosure();
@@ -42,8 +49,16 @@ export const ImageForm = () => {
 
   const [image, setImage] = React.useState<File>(new File([], ''));
   const [zoom, setZoom] = React.useState(1);
+  const [imageUrl, setImageUrl] = React.useState('');
+
+  React.useEffect(() => {
+    if (props.imageUrl) {
+      setImageUrl(props.imageUrl);
+    }
+  }, [props.imageUrl]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.files);
     if (e.target.files) {
       setImage(e.target.files[0]);
       onOpen();
@@ -60,7 +75,10 @@ export const ImageForm = () => {
       inputRef.current.value = '';
     }
     setImage(new File([], ''));
+    setImageUrl('');
     setZoom(1);
+
+    props.clearImage && props.clearImage();
   };
 
   const apply = () => {
@@ -71,7 +89,9 @@ export const ImageForm = () => {
         if (blob) {
           const file = new File([blob], 'image', {type: 'image/png'});
 
+          setImageUrl(URL.createObjectURL(file));
           setValue('image', file);
+          setImage(new File([], ''));
           onClose();
         }
       }, 'image/png');
@@ -80,20 +100,23 @@ export const ImageForm = () => {
 
   return (
     <>
-      <InputGroup>
-        <Input
-          ref={inputRef}
-          id="filename"
-          type="file"
-          accept="image/*"
-          onChange={handleChange}
-        />
-        <InputRightElement w="5.5rem" mr=".2rem">
-          <Button size="sm" onClick={clearImage}>
-            画像を削除
-          </Button>
-        </InputRightElement>
-      </InputGroup>
+      <Flex alignItems="center">
+        <Avatar src={imageUrl} size="sm" mr=".5rem" />
+        <InputGroup>
+          <Input
+            ref={inputRef}
+            id="filename"
+            type="file"
+            accept="image/*"
+            onChange={handleChange}
+          />
+          <InputRightElement w="5.5rem" mr=".2rem">
+            <Button size="sm" onClick={clearImage}>
+              画像を削除
+            </Button>
+          </InputRightElement>
+        </InputGroup>
+      </Flex>
 
       <Modal isOpen={isOpen} onClose={closeModal} isCentered>
         <ModalOverlay />

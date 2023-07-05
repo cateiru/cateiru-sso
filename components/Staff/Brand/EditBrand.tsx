@@ -67,7 +67,6 @@ export const EditBrand: React.FC<Props> = ({id}) => {
 
     if (res) {
       router.push(`/staff/brand/${id}`);
-      return;
     }
   };
 

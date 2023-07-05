@@ -4,6 +4,13 @@ import {
   ButtonGroup,
   Center,
   Link,
+  ListItem,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
   Table,
   TableContainer,
   Tbody,
@@ -12,15 +19,48 @@ import {
   Th,
   Thead,
   Tr,
+  UnorderedList,
   useColorModeValue,
+  useDisclosure,
 } from '@chakra-ui/react';
+import {useRouter} from 'next/navigation';
 import React from 'react';
 import {OrganizationDetail} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';
 import {Link as NextLink} from '../../Common/Next/Link';
+import {useRequest} from '../../Common/useRequest';
 
 export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
   const textColor = useColorModeValue('gray.500', 'gray.400');
+  const deleteModal = useDisclosure();
+  const router = useRouter();
+
+  const [deleteLoad, setDeleteLoad] = React.useState(false);
+  const {request} = useRequest('/v2/admin/org');
+
+  const onDeleteOrg = () => {
+    const f = async () => {
+      setDeleteLoad(true);
+
+      const params = new URLSearchParams();
+      params.append('org_id', data.org.id);
+
+      const res = await request(
+        {
+          method: 'DELETE',
+          mode: 'cors',
+          credentials: 'include',
+        },
+        params
+      );
+
+      if (res) {
+        router.replace('/staff/orgs');
+        setDeleteLoad(false);
+      }
+    };
+    f();
+  };
 
   return (
     <>
@@ -89,8 +129,35 @@ export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
         >
           組織を編集
         </Button>
-        <Button w="100%">組織削除</Button>
+        <Button w="100%" onClick={deleteModal.onOpen}>
+          組織削除
+        </Button>
       </ButtonGroup>
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.onClose}
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>「{data.org.name}」を削除しますか？</ModalHeader>
+          <ModalCloseButton size="lg" />
+          <ModalBody my="1rem">
+            <UnorderedList mb="1rem">
+              <ListItem>この操作は元に戻せません。</ListItem>
+              <ListItem>削除すると、全ユーザーの加入が解除されます。</ListItem>
+            </UnorderedList>
+            <Button
+              w="100%"
+              onClick={onDeleteOrg}
+              isLoading={deleteLoad}
+              colorScheme="red"
+            >
+              削除
+            </Button>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
       <Text
         mt="2rem"
         mb="1rem"
