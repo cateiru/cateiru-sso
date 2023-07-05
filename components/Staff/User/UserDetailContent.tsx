@@ -31,9 +31,6 @@ export const UserDetailContent: React.FC<Props> = ({data}) => {
       <Center mt="3rem">
         <Avatar src={data?.user.avatar ?? ''} size="lg" />
       </Center>
-      <Text textAlign="center" mt=".5rem" color={textColor} fontWeight="bold">
-        {data?.user.user_name}
-      </Text>
       <Text
         mt="2rem"
         mb="1rem"
