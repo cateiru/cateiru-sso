@@ -565,7 +565,7 @@ func RegisterOrg(t *testing.T, ctx context.Context, ownerUsers ...*models.User) 
 
 // Organizationにユーザーを招待する
 // roleは`owner`, `member`, `guest`
-func InviteUserInOrg(t *testing.T, ctx context.Context, orgId string, u *models.User, role string) {
+func InviteUserInOrg(t *testing.T, ctx context.Context, orgId string, u *models.User, role string) uint {
 	orgUser := models.OrganizationUser{
 		OrganizationID: orgId,
 		UserID:         u.ID,
@@ -574,4 +574,6 @@ func InviteUserInOrg(t *testing.T, ctx context.Context, orgId string, u *models.
 	}
 	err := orgUser.Insert(ctx, DB, boil.Infer())
 	require.NoError(t, err)
+
+	return orgUser.ID
 }

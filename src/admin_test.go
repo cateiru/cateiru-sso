@@ -1247,6 +1247,15 @@ func TestAdminOrgDeleteHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	StaffAndSessionTest(t, h.AdminOrgDeleteHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodDelete, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: orgを削除できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -1312,6 +1321,25 @@ func TestAdminOrgDeleteHandler(t *testing.T) {
 func TestAdminOrgDeleteImageHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminOrgDeleteImageHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+
+		org.Image = null.NewString("https://example.com/aaaa", true)
+
+		_, err = org.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodDelete, "")
+		require.NoError(t, err)
+
+		return m
+	})
 
 	t.Run("成功: orgの画像を削除できる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -1402,5 +1430,336 @@ func TestAdminOrgDeleteImageHandler(t *testing.T) {
 
 		err = h.AdminOrgDeleteImageHandler(c)
 		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+}
+
+func TestAdminOrgMemberJoinHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminOrgMemberJoinHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("user_name_or_email", u2.UserName)
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("成功: orgにメンバーを追加できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("user_name_or_email", u2.UserName)
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.NoError(t, err)
+
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+		require.Equal(t, orgUser.Role, "member")
+	})
+
+	t.Run("成功: 成功: emailでも招待できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("user_name_or_email", u2.Email)
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.NoError(t, err)
+
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+		require.Equal(t, orgUser.Role, "member")
+	})
+
+	t.Run("成功: roleを指定しないとguest", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("user_name_or_email", u2.UserName)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.NoError(t, err)
+
+		orgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.UserID.EQ(u2.ID),
+		).One(ctx, h.DB)
+		require.NoError(t, err)
+		require.Equal(t, orgUser.Role, "guest")
+	})
+
+	t.Run("失敗: org_idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_name_or_email", u2.UserName)
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.EqualError(t, err, "code=400, message=org_id is required")
+	})
+
+	t.Run("失敗: org_idが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", "invalid")
+		form.Insert("user_name_or_email", u2.UserName)
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: user_name_or_emailが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		orgId := RegisterOrg(t, ctx)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.EqualError(t, err, "code=400, message=user_name_or_email is required")
+	})
+
+	t.Run("失敗: user_name_or_emailのユーザーが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		orgId := RegisterOrg(t, ctx)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("user_name_or_email", "invalid")
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.EqualError(t, err, "code=404, message=user not found, unique=10")
+	})
+
+	t.Run("失敗: roleが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("user_name_or_email", u2.UserName)
+		form.Insert("role", "aaaaa")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid role")
+	})
+
+	t.Run("失敗: ユーザーはすでにメンバーになっている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		InviteUserInOrg(t, ctx, orgId, &u2, "member")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("org_id", orgId)
+		form.Insert("user_name_or_email", u2.UserName)
+		form.Insert("role", "member")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberJoinHandler(c)
+		require.EqualError(t, err, "code=409, message=user already exists")
+	})
+}
+
+func TestAdminOrgMemberRemoveHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	t.Run("成功: orgからユーザーを削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgUserId := InviteUserInOrg(t, ctx, orgId, &u2, "member")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_user_id=%d", orgUserId), http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberRemoveHandler(c)
+		require.NoError(t, err)
+
+		existOrgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.ID.EQ(orgUserId),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, existOrgUser)
+	})
+
+	t.Run("失敗: org_user_idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberRemoveHandler(c)
+		require.EqualError(t, err, "code=400, message=org_user_id is required")
+	})
+
+	t.Run("失敗: org_user_idの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?org_user_id=invalid", http.MethodPost, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminOrgMemberRemoveHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid org_user_id")
 	})
 }

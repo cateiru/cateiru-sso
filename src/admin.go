@@ -892,3 +892,109 @@ func (h *Handler) AdminOrgDeleteImageHandler(c echo.Context) error {
 
 	return nil
 }
+
+func (h *Handler) AdminOrgMemberJoinHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	orgId := c.FormValue("org_id")
+	if orgId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_id is required")
+	}
+	userNameOrEmail := c.FormValue("user_name_or_email")
+	if userNameOrEmail == "" {
+		return NewHTTPError(http.StatusBadRequest, "user_name_or_email is required")
+	}
+	role := c.FormValue("role")
+	if role == "" {
+		// 指定しないとguest（一番下の権限）にする
+		role = "guest"
+	}
+	if !lib.ValidateRole(role) {
+		return NewHTTPError(http.StatusBadRequest, "invalid role")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
+	if err != nil {
+		return err
+	}
+
+	organizationExist, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !organizationExist {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+
+	// すでにメンバーになっているかどうかを見る
+	orgUserExist, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+		models.OrganizationUserWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if orgUserExist {
+		return NewHTTPError(http.StatusConflict, "user already exists")
+	}
+
+	// メンバーに追加する
+	newOrgUser := &models.OrganizationUser{
+		OrganizationID: orgId,
+		UserID:         user.ID,
+		Role:           role,
+	}
+	if err := newOrgUser.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Handler) AdminOrgMemberRemoveHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	orgUserId := c.QueryParam("org_user_id")
+	if orgUserId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_user_id is required")
+	}
+	orgUserIdInt, err := strconv.Atoi(orgUserId)
+	if err != nil {
+		return NewHTTPError(http.StatusBadRequest, "invalid org_user_id")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	orgUser, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.ID.EQ(uint(orgUserIdInt)),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization user not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	// メンバーを削除する
+	if _, err := orgUser.Delete(ctx, h.DB); err != nil {
+		return err
+	}
+
+	return nil
+}
