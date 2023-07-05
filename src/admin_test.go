@@ -1699,6 +1699,20 @@ func TestAdminOrgMemberRemoveHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	StaffAndSessionTest(t, h.AdminOrgMemberRemoveHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		orgUserId := InviteUserInOrg(t, ctx, orgId, &u2, "member")
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_user_id=%d", orgUserId), http.MethodPost, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
 	t.Run("成功: orgからユーザーを削除できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
