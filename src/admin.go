@@ -554,7 +554,7 @@ func (h *Handler) AdminOrgDetailHandler(c echo.Context) error {
 	orgUsers, err := models.OrganizationUsers(
 		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
 		qm.Load(models.OrganizationUserRels.User),
-		qm.OrderBy("created_at ASC"),
+		qm.OrderBy("role ASC, created_at ASC"),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
