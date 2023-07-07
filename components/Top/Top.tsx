@@ -1,6 +1,7 @@
 'use client';
 
-import {Box, Center, Heading} from '@chakra-ui/react';
+import {Box, Button, ButtonGroup, Center, Heading} from '@chakra-ui/react';
+import Link from 'next/link';
 import {config} from '../../utils/config';
 import {Logo} from '../Common/Icons/Logo';
 
@@ -19,6 +20,16 @@ export const Top = () => {
         >
           {config.title}
         </Heading>
+        <Center mt="1rem">
+          <ButtonGroup>
+            <Button colorScheme="cateiru" as={Link} href="/register">
+              アカウント作成
+            </Button>
+            <Button as={Link} href="/login">
+              ログイン
+            </Button>
+          </ButtonGroup>
+        </Center>
       </Box>
     </Center>
   );

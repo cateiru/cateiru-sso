@@ -1,8 +1,18 @@
-import {Button, Flex, MenuButton, Skeleton, Spacer} from '@chakra-ui/react';
+import {
+  Button,
+  Flex,
+  IconButton,
+  MenuButton,
+  Skeleton,
+  Spacer,
+} from '@chakra-ui/react';
+import Link from 'next/link';
 import React from 'react';
+import {TbLogin} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
 import {Avatar} from '../Chakra/Avatar';
+import {Tooltip} from '../Chakra/Tooltip';
 import {ColorButton} from './ColorButton';
 import {HeaderTitle} from './HeaderTitle';
 import {Menu} from './Menu';
@@ -12,7 +22,21 @@ export const Header = React.memo(() => {
 
   const HeaderTools = React.useCallback(() => {
     if (user === null) {
-      return <ColorButton />;
+      return (
+        <>
+          <ColorButton />
+          <Tooltip label="ログイン" placement="bottom-end">
+            <IconButton
+              as={Link}
+              href="/login"
+              icon={<TbLogin size="25px" />}
+              aria-label="login"
+              variant="ghost"
+              borderRadius="50%"
+            />
+          </Tooltip>
+        </>
+      );
     }
 
     if (typeof user !== 'undefined') {
@@ -39,7 +63,7 @@ export const Header = React.memo(() => {
 
     return (
       <>
-        <Skeleton w="25px" h="25px" borderRadius="50%" mr="1rem" />
+        <Skeleton w="32px" h="32px" borderRadius="50%" mr="1rem" />
         <Skeleton w="32px" h="32px" borderRadius="50%" />
       </>
     );

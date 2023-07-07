@@ -1,12 +1,7 @@
-import {Session} from '../components/Common/Session';
 import {Top} from '../components/Top/Top';
 
 const Page = () => {
-  return (
-    <Session isLoggedIn redirectTo="/profile">
-      <Top />
-    </Session>
-  );
+  return <Top />;
 };
 
 export default Page;
