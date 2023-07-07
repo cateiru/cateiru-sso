@@ -58,7 +58,6 @@ export const ImageForm: React.FC<Props> = props => {
   }, [props.imageUrl]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.files);
     if (e.target.files) {
       setImage(e.target.files[0]);
       onOpen();
