@@ -33,7 +33,7 @@ export const Default: Story = {
           user_name: faker.internet.userName(),
           avatar: faker.image.avatar(),
         },
-        role: 'admin',
+        role: 'owner',
 
         created_at: faker.date.past().toISOString(),
         updated_at: faker.date.past().toISOString(),

@@ -9,3 +9,4 @@ export const OrganizationUserSchema = z.object({
   created_at: z.string().datetime({offset: true}),
   updated_at: z.string().datetime({offset: true}),
 });
+export type OrganizationUser = z.infer<typeof OrganizationUserSchema>;
