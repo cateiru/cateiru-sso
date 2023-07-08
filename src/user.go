@@ -20,9 +20,10 @@ import (
 )
 
 type UserMeResponse struct {
-	UserInfo *models.User    `json:"user"`
-	Setting  *models.Setting `json:"setting,omitempty"`
-	IsStaff  bool            `json:"is_staff"`
+	UserInfo           *models.User    `json:"user"`
+	Setting            *models.Setting `json:"setting,omitempty"`
+	IsStaff            bool            `json:"is_staff"`
+	JoinedOrganization bool            `json:"joined_organization"`
 }
 
 type UserUserNameResponse struct {
@@ -88,10 +89,18 @@ func (h *Handler) UserMeHandler(c echo.Context) error {
 		return err
 	}
 
+	JoinedOrganization, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
 	return c.JSON(http.StatusOK, &UserMeResponse{
-		UserInfo: user,
-		Setting:  setting,
-		IsStaff:  isStaff,
+		UserInfo:           user,
+		Setting:            setting,
+		IsStaff:            isStaff,
+		JoinedOrganization: JoinedOrganization,
 	})
 }
 

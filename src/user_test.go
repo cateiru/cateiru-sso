@@ -66,6 +66,8 @@ func TestUserMeHandler(t *testing.T) {
 		require.Equal(t, response.Setting.NoticeEmail, false)
 
 		require.False(t, response.IsStaff)
+
+		require.False(t, response.JoinedOrganization)
 	})
 
 	t.Run("成功: 設定がない場合は空", func(t *testing.T) {
@@ -94,6 +96,8 @@ func TestUserMeHandler(t *testing.T) {
 		require.Nil(t, response.Setting)
 
 		require.False(t, response.IsStaff)
+
+		require.False(t, response.JoinedOrganization)
 	})
 
 	t.Run("スタッフの場合", func(t *testing.T) {
@@ -128,6 +132,50 @@ func TestUserMeHandler(t *testing.T) {
 		require.Nil(t, response.Setting)
 
 		require.True(t, response.IsStaff)
+
+		require.False(t, response.JoinedOrganization)
+	})
+
+	t.Run("組織に加入している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterOrg(t, ctx, &u)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		// 設定追加
+		setting := models.Setting{
+			UserID:        u.ID,
+			NoticeEmail:   false,
+			NoticeWebpush: true,
+		}
+		require.NoError(t, setting.Insert(ctx, DB, boil.Infer()))
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserMeHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserMeResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.NotNil(t, response.UserInfo)
+		require.Equal(t, response.UserInfo.ID, u.ID)
+		require.Equal(t, response.UserInfo.UserName, u.UserName)
+		require.Equal(t, response.UserInfo.Email, email)
+
+		require.NotNil(t, response.Setting)
+		require.Equal(t, response.Setting.UserID, u.ID)
+		require.Equal(t, response.Setting.NoticeEmail, false)
+
+		require.False(t, response.IsStaff)
+
+		require.True(t, response.JoinedOrganization)
 	})
 }
 
