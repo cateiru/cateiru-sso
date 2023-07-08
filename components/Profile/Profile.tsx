@@ -9,7 +9,13 @@ import {
   Text,
   useColorModeValue,
 } from '@chakra-ui/react';
-import {TbAddressBook, TbHistory, TbSettings, TbTool} from 'react-icons/tb';
+import {
+  TbAddressBook,
+  TbBuildingSkyscraper,
+  TbHistory,
+  TbSettings,
+  TbTool,
+} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {Tooltip} from '../Common/Chakra/Tooltip';
@@ -100,11 +106,25 @@ export const Profile = () => {
             href="/clients"
           />
         </Tooltip>
+        {user?.joined_organization && (
+          <Tooltip label="組織一覧">
+            <IconButton
+              aria-label="組織一覧"
+              icon={<TbBuildingSkyscraper size="25px" />}
+              borderRadius="50%"
+              as={Link}
+              href="/orgs"
+              ml=".5rem"
+            />
+          </Tooltip>
+        )}
         {user?.is_staff && (
           <Tooltip label="スッタフ管理画面">
             <IconButton
               aria-label="スッタフ管理画面"
               icon={<TbTool size="25px" />}
+              colorScheme="cateiru"
+              variant="outline"
               borderRadius="50%"
               as={Link}
               href="/staff"

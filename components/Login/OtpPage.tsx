@@ -71,7 +71,8 @@ export const OtpPage: React.FC<Props> = props => {
           // ログインする
           setUser({
             user: data.data.user,
-            is_staff: false,
+            is_staff: false, // TODO: サーバーから取得できるようにする
+            joined_organization: false,
           });
           props.setStep(LoginStep.CompleteLogin);
           return;
