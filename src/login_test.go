@@ -250,7 +250,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 
-		require.Equal(t, sessionUser.ID, response.User.ID)
+		require.Equal(t, sessionUser.ID, response.User.UserInfo.ID)
 
 		// ログイントライ履歴が保存されている
 		existsLoginTryHistory, err := models.LoginTryHistories(
@@ -263,6 +263,66 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		existsWebauthnSession, err := models.WebauthnSessionExists(ctx, DB, webauthnSession)
 		require.NoError(t, err)
 		require.False(t, existsWebauthnSession)
+	})
+
+	t.Run("成功: スタッフ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		TestWebAuthnUser = &u
+
+		webauthnSession := registerWebauthnSession(2)
+
+		m, err := easy.NewJson("/", http.MethodPost, "")
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		m.R.Header.Add("User-Agent", `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36`)
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		require.True(t, response.User.IsStaff)
+	})
+
+	t.Run("成功: orgに入っている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		RegisterOrg(t, ctx, &u)
+
+		TestWebAuthnUser = &u
+
+		webauthnSession := registerWebauthnSession(2)
+
+		m, err := easy.NewJson("/", http.MethodPost, "")
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		m.R.Header.Add("User-Agent", `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36`)
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		require.True(t, response.User.JoinedOrganization)
 	})
 
 	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {
@@ -396,7 +456,111 @@ func TestLoginPasswordHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 
-		require.Equal(t, sessionUser.ID, response.User.ID)
+		require.Equal(t, sessionUser.ID, response.User.UserInfo.ID)
+
+		// ログイントライ履歴が保存されている
+		existsLoginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existsLoginTryHistory)
+	})
+
+	t.Run("成功: パスワードのみスタッフ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		ToStaff(t, ctx, &u)
+		RegisterPassword(t, ctx, &u, "password123ABC123123")
+
+		form := easy.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		require.True(t, response.User.IsStaff)
+
+		// cookieは設定されているか（セッショントークンのみ見る）
+		var sessionCookie *http.Cookie = nil
+		for _, cookie := range m.Response().Cookies() {
+			if cookie.Name == C.SessionCookie.Name {
+				sessionCookie = cookie
+				break
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		// セッションはBodyのユーザと同じか
+		sessionUser, err := models.Users(
+			qm.InnerJoin("session on session.user_id = user.id"),
+			qm.Where("session.id = ?", sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionUser.ID, response.User.UserInfo.ID)
+
+		// ログイントライ履歴が保存されている
+		existsLoginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u.ID),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existsLoginTryHistory)
+	})
+
+	t.Run("成功: パスワードのみorg", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterOrg(t, ctx, &u)
+		RegisterPassword(t, ctx, &u, "password123ABC123123")
+
+		form := easy.NewMultipart()
+		form.Insert("username_or_email", u.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		require.True(t, response.User.JoinedOrganization)
+
+		// cookieは設定されているか（セッショントークンのみ見る）
+		var sessionCookie *http.Cookie = nil
+		for _, cookie := range m.Response().Cookies() {
+			if cookie.Name == C.SessionCookie.Name {
+				sessionCookie = cookie
+				break
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		// セッションはBodyのユーザと同じか
+		sessionUser, err := models.Users(
+			qm.InnerJoin("session on session.user_id = user.id"),
+			qm.Where("session.id = ?", sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionUser.ID, response.User.UserInfo.ID)
 
 		// ログイントライ履歴が保存されている
 		existsLoginTryHistory, err := models.LoginTryHistories(
@@ -609,7 +773,7 @@ func TestLoginOTPHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 
-		require.Equal(t, sessionUser.ID, response.User.ID)
+		require.Equal(t, sessionUser.ID, response.User.UserInfo.ID)
 
 		// OTPSessionは削除されている
 		existsOtpSession, err := models.OtpSessionExists(ctx, DB, otpSession)
@@ -658,7 +822,7 @@ func TestLoginOTPHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 
-		require.Equal(t, sessionUser.ID, response.User.ID)
+		require.Equal(t, sessionUser.ID, response.User.UserInfo.ID)
 
 		// OTPSessionは削除されている
 		existsOtpSession, err := models.OtpSessionExists(ctx, DB, otpSession)
@@ -671,6 +835,112 @@ func TestLoginOTPHandler(t *testing.T) {
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.False(t, existOtpBackup)
+	})
+
+	t.Run("成功: スタッフ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		secret, _ := RegisterOTP(t, ctx, &u)
+		code, err := totp.GenerateCode(secret, time.Now())
+		require.NoError(t, err)
+
+		otpSession := registerOTPSession(&u)
+
+		form := easy.NewMultipart()
+		form.Insert("otp_session", otpSession)
+		form.Insert("code", code)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginOTPHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		require.True(t, response.User.IsStaff)
+
+		// cookieは設定されているか（セッショントークンのみ見る）
+		var sessionCookie *http.Cookie = nil
+		for _, cookie := range m.Response().Cookies() {
+			if cookie.Name == C.SessionCookie.Name {
+				sessionCookie = cookie
+				break
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		// セッションはBodyのユーザと同じか
+		sessionUser, err := models.Users(
+			qm.InnerJoin("session on session.user_id = user.id"),
+			qm.Where("session.id = ?", sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionUser.ID, response.User.UserInfo.ID)
+
+		// OTPSessionは削除されている
+		existsOtpSession, err := models.OtpSessionExists(ctx, DB, otpSession)
+		require.NoError(t, err)
+		require.False(t, existsOtpSession)
+	})
+
+	t.Run("成功: org", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		RegisterOrg(t, ctx, &u)
+
+		secret, _ := RegisterOTP(t, ctx, &u)
+		code, err := totp.GenerateCode(secret, time.Now())
+		require.NoError(t, err)
+
+		otpSession := registerOTPSession(&u)
+
+		form := easy.NewMultipart()
+		form.Insert("otp_session", otpSession)
+		form.Insert("code", code)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.LoginOTPHandler(c)
+		require.NoError(t, err)
+
+		// userが返ってきているか
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		require.True(t, response.User.JoinedOrganization)
+
+		// cookieは設定されているか（セッショントークンのみ見る）
+		var sessionCookie *http.Cookie = nil
+		for _, cookie := range m.Response().Cookies() {
+			if cookie.Name == C.SessionCookie.Name {
+				sessionCookie = cookie
+				break
+			}
+		}
+		require.NotNil(t, sessionCookie)
+
+		// セッションはBodyのユーザと同じか
+		sessionUser, err := models.Users(
+			qm.InnerJoin("session on session.user_id = user.id"),
+			qm.Where("session.id = ?", sessionCookie.Value),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, sessionUser.ID, response.User.UserInfo.ID)
+
+		// OTPSessionは削除されている
+		existsOtpSession, err := models.OtpSessionExists(ctx, DB, otpSession)
+		require.NoError(t, err)
+		require.False(t, existsOtpSession)
 	})
 
 	t.Run("失敗: OTPが不正", func(t *testing.T) {

@@ -25,8 +25,8 @@ type OTP struct {
 }
 
 type LoginResponse struct {
-	User *models.User `json:"user,omitempty"`
-	OTP  *OTP         `json:"otp,omitempty"`
+	User *UserMeResponse `json:"user,omitempty"`
+	OTP  *OTP            `json:"otp,omitempty"`
 }
 
 // ユーザの情報を返す
@@ -148,8 +148,28 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		c.SetCookie(cookie)
 	}
 
+	isStaff, err := models.Staffs(
+		models.StaffWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	JoinedOrganization, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	userMe := UserMeResponse{
+		UserInfo:           user,
+		IsStaff:            isStaff,
+		JoinedOrganization: JoinedOrganization,
+	}
+
 	return c.JSON(http.StatusOK, LoginResponse{
-		User: user,
+		User: &userMe,
 		OTP:  nil,
 	})
 }
@@ -273,8 +293,28 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		c.SetCookie(cookie)
 	}
 
+	isStaff, err := models.Staffs(
+		models.StaffWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	JoinedOrganization, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	userMe := UserMeResponse{
+		UserInfo:           user,
+		IsStaff:            isStaff,
+		JoinedOrganization: JoinedOrganization,
+	}
+
 	return c.JSON(http.StatusOK, LoginResponse{
-		User: user,
+		User: &userMe,
 		OTP:  nil,
 	})
 }
@@ -384,8 +424,28 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 		c.SetCookie(cookie)
 	}
 
+	isStaff, err := models.Staffs(
+		models.StaffWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	JoinedOrganization, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.UserID.EQ(user.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	userMe := UserMeResponse{
+		UserInfo:           user,
+		IsStaff:            isStaff,
+		JoinedOrganization: JoinedOrganization,
+	}
+
 	return c.JSON(http.StatusOK, LoginResponse{
-		User: user,
+		User: &userMe,
 		OTP:  nil,
 	})
 }

@@ -5,7 +5,7 @@ import {
 } from '@github/webauthn-json/browser-ponyfill';
 import React from 'react';
 import {LoginResponseSchema} from '../../utils/types/login';
-import {User} from '../../utils/types/user';
+import {UserMe} from '../../utils/types/user';
 import {useRequest} from '../Common/useRequest';
 
 interface Returns {
@@ -13,7 +13,7 @@ interface Returns {
   onClickWebAuthn: () => Promise<void>;
 }
 
-export const useWebAuthn = (loginSuccess: (user: User) => void): Returns => {
+export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
   const toast = useToast();
 
   const [isConditionSupported, setIsConditionSupported] = React.useState(true);

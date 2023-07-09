@@ -69,11 +69,7 @@ export const OtpPage: React.FC<Props> = props => {
       if (data.success) {
         if (data.data.user) {
           // ログインする
-          setUser({
-            user: data.data.user,
-            is_staff: false, // TODO: サーバーから取得できるようにする
-            joined_organization: false,
-          });
+          setUser(data.data.user);
           props.setStep(LoginStep.CompleteLogin);
           return;
         }

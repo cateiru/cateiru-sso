@@ -53,11 +53,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
 
   const {isConditionSupported, onClickWebAuthn} = useWebAuthn(user => {
     // ログインする
-    setUser({
-      user: user,
-      is_staff: false,
-      joined_organization: false,
-    });
+    setUser(user);
     props.setStep(LoginStep.CompleteLogin);
   });
 
@@ -85,11 +81,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
       if (data.success) {
         if (data.data.user) {
           // ログインする
-          setUser({
-            user: data.data.user,
-            is_staff: false,
-            joined_organization: false,
-          });
+          setUser(data.data.user);
           props.setStep(LoginStep.CompleteLogin);
         } else if (data.data.otp) {
           // OTPの認証が必要な場合はOTPのページに遷移

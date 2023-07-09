@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {UserSchema} from './user';
+import {UserMeSchema} from './user';
 
 export const LoginUserSchema = z.object({
   avatar: z.string().nullable(),
@@ -7,7 +7,7 @@ export const LoginUserSchema = z.object({
 export type LoginUser = z.infer<typeof LoginUserSchema>;
 
 export const LoginResponseSchema = z.object({
-  user: UserSchema.optional(),
+  user: UserMeSchema.optional(),
   otp: z
     .object({
       token: z.string(),
