@@ -94,7 +94,8 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
 
     setUser({
       user: data.data,
-      is_staff: false,
+      is_staff: false, // アカウント作成してすぐにスタッフにはならないのでfalse決め打ち
+      joined_organization: false, // TODO: orgに招待されて入った場合はtrueにしたい
     });
 
     props.setStatus(undefined);
