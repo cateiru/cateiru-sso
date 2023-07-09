@@ -38,6 +38,7 @@ const meta: Meta<typeof SwitchAccount> = {
             value: {
               user: user,
               is_staff: false,
+              joined_organization: false,
             },
           },
         ]}

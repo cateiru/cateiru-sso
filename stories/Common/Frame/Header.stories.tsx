@@ -35,6 +35,7 @@ const meta: Meta<typeof Header> = {
                 updated_at: faker.date.past().toString(),
               },
               is_staff: false,
+              joined_organization: false,
             },
           },
           {
@@ -56,6 +57,7 @@ const meta: Meta<typeof Header> = {
                 updated_at: faker.date.past().toString(),
               },
               is_staff: false,
+              joined_organization: false,
             },
           },
         ]}
