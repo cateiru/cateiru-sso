@@ -56,6 +56,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
     setUser({
       user: user,
       is_staff: false,
+      joined_organization: false,
     });
     props.setStep(LoginStep.CompleteLogin);
   });
@@ -87,6 +88,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
           setUser({
             user: data.data.user,
             is_staff: false,
+            joined_organization: false,
           });
           props.setStep(LoginStep.CompleteLogin);
         } else if (data.data.otp) {
