@@ -523,6 +523,7 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 	ip := c.RealIP()
 
 	var user *models.User
+	joinedOrganization := false
 
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		// 登録フロー
@@ -575,6 +576,7 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 				if err := orgUser.Insert(ctx, tx, boil.Infer()); err != nil {
 					return err
 				}
+				joinedOrganization = true
 			} else {
 				L.Error("org not found",
 					zap.String("org_id", registerSession.OrgID.String),
@@ -603,7 +605,14 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 		c.SetCookie(cookie)
 	}
 
-	return c.JSON(http.StatusCreated, user)
+	response := UserMeResponse{
+		UserInfo:           user,
+		Setting:            nil,
+		IsStaff:            false, // 登録時はtrueになることはない
+		JoinedOrganization: joinedOrganization,
+	}
+
+	return c.JSON(http.StatusCreated, &response)
 }
 
 // パスワードによる認証の登録
@@ -653,6 +662,7 @@ func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 	}
 
 	var user *models.User
+	joinedOrganization := false
 
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		user, err = RegisterUser(ctx, tx, registerSession.Email)
@@ -693,6 +703,8 @@ func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 				if err := orgUser.Insert(ctx, tx, boil.Infer()); err != nil {
 					return err
 				}
+
+				joinedOrganization = true
 			} else {
 				L.Error("org not found",
 					zap.String("org_id", registerSession.OrgID.String),
@@ -726,7 +738,14 @@ func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 		c.SetCookie(cookie)
 	}
 
-	return c.JSON(http.StatusCreated, user)
+	response := UserMeResponse{
+		UserInfo:           user,
+		Setting:            nil,
+		IsStaff:            false, // 登録時はtrueになることはない
+		JoinedOrganization: joinedOrganization,
+	}
+
+	return c.JSON(http.StatusCreated, &response)
 }
 
 // 招待メールからregister_sessionを作成する

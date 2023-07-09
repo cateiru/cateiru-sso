@@ -702,7 +702,7 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// userが返ってきているか
-		responseUser := new(models.User)
+		responseUser := new(src.UserMeResponse)
 		require.NoError(t, m.Json(responseUser))
 		require.NotNil(t, responseUser)
 
@@ -723,11 +723,11 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 
-		require.Equal(t, sessionUser.ID, responseUser.ID)
+		require.Equal(t, sessionUser.ID, responseUser.UserInfo.ID)
 
 		// passkeyが保存されているか
 		existsPasskey, err := models.Webauthns(
-			models.WebauthnWhere.UserID.EQ(responseUser.ID),
+			models.WebauthnWhere.UserID.EQ(responseUser.UserInfo.ID),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.True(t, existsPasskey)
@@ -769,13 +769,13 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// userが返ってきているか
-		responseUser := new(models.User)
+		responseUser := new(src.UserMeResponse)
 		require.NoError(t, m.Json(responseUser))
 		require.NotNil(t, responseUser)
 
 		// orgに所属されているか
 		orgUserExists, err := models.OrganizationUsers(
-			models.OrganizationUserWhere.UserID.EQ(responseUser.ID),
+			models.OrganizationUserWhere.UserID.EQ(responseUser.UserInfo.ID),
 			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
@@ -814,13 +814,13 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// userが返ってきているか
-		responseUser := new(models.User)
+		responseUser := new(src.UserMeResponse)
 		require.NoError(t, m.Json(responseUser))
 		require.NotNil(t, responseUser)
 
 		// orgは削除されているので所属されない
 		orgUserExists, err := models.OrganizationUsers(
-			models.OrganizationUserWhere.UserID.EQ(responseUser.ID),
+			models.OrganizationUserWhere.UserID.EQ(responseUser.UserInfo.ID),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.False(t, orgUserExists)
@@ -1072,7 +1072,7 @@ func TestRegisterPasswordHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// userが返ってきているか
-		responseUser := &models.User{}
+		responseUser := &src.UserMeResponse{}
 		require.NoError(t, m.Json(responseUser))
 		require.NotNil(t, responseUser)
 
@@ -1093,11 +1093,11 @@ func TestRegisterPasswordHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 
-		require.Equal(t, sessionUser.ID, responseUser.ID)
+		require.Equal(t, sessionUser.ID, responseUser.UserInfo.ID)
 
 		// パスワードは保存されている
 		passwordModel, err := models.Passwords(
-			models.PasswordWhere.UserID.EQ(responseUser.ID),
+			models.PasswordWhere.UserID.EQ(responseUser.UserInfo.ID),
 		).One(ctx, DB)
 		require.NoError(t, err)
 
@@ -1133,13 +1133,15 @@ func TestRegisterPasswordHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// userが返ってきているか
-		responseUser := &models.User{}
+		responseUser := &src.UserMeResponse{}
 		require.NoError(t, m.Json(responseUser))
 		require.NotNil(t, responseUser)
 
+		require.True(t, responseUser.JoinedOrganization)
+
 		// orgに所属されているか
 		orgUserExists, err := models.OrganizationUsers(
-			models.OrganizationUserWhere.UserID.EQ(responseUser.ID),
+			models.OrganizationUserWhere.UserID.EQ(responseUser.UserInfo.ID),
 			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
@@ -1175,13 +1177,15 @@ func TestRegisterPasswordHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// userが返ってきているか
-		responseUser := &models.User{}
+		responseUser := &src.UserMeResponse{}
 		require.NoError(t, m.Json(responseUser))
 		require.NotNil(t, responseUser)
 
+		require.False(t, responseUser.JoinedOrganization)
+
 		// orgは削除されているので所属されない
 		orgUserExists, err := models.OrganizationUsers(
-			models.OrganizationUserWhere.UserID.EQ(responseUser.ID),
+			models.OrganizationUserWhere.UserID.EQ(responseUser.UserInfo.ID),
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.False(t, orgUserExists)
