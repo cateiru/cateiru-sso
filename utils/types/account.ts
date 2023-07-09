@@ -30,7 +30,6 @@ export const AccountWebAuthnDeviceSchema = z.object({
   os: z.string().nullable(),
   browser: z.string().nullable(),
   is_mobile: z.boolean().nullable(),
-  ip: z.string().nullable(),
 
   created_at: z.string().datetime({offset: true}),
 });

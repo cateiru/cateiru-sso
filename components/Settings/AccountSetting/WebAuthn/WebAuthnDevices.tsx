@@ -72,7 +72,6 @@ export const WebAuthnDevices = () => {
                   isMobile={v.is_mobile}
                 />
               </Td>
-              <Td textAlign="center">{v.ip}</Td>
             </Tr>
           );
         })}
@@ -88,7 +87,6 @@ export const WebAuthnDevices = () => {
             <Th></Th>
             <Th>作成日時</Th>
             <Th textAlign="center">端末</Th>
-            <Th textAlign="center">IPアドレス</Th>
           </Tr>
         </Thead>
         <Tbody>

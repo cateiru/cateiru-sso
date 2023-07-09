@@ -55,7 +55,6 @@ type AccountWebauthnDevice struct {
 	Os       null.String `json:"os,omitempty"`
 	Browser  null.String `json:"browser,omitempty"`
 	IsMobile null.Bool   `json:"is_mobile,omitempty"`
-	IP       string      `json:"ip"`
 
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -618,7 +617,6 @@ func (h *Handler) AccountWebauthnRegisteredDevicesHandler(c echo.Context) error 
 			Os:       device.Os,
 			Browser:  device.Browser,
 			IsMobile: device.IsMobile,
-			IP:       net.IP.To16(device.IP).String(),
 
 			CreatedAt: device.CreatedAt,
 		}
