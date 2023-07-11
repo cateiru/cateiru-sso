@@ -106,6 +106,11 @@ func ServerMiddleWare(e *echo.Echo, c *Config) {
 	// CORS設定
 	e.Use(middleware.CORSWithConfig(*c.CorsConfig))
 
+	// gzip設定
+	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+		Level: 6,
+	}))
+
 	// CSRF設定
 	if c.EnableCSRFMeasures {
 		e.Use(CSRFHandler)
