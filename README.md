@@ -6,6 +6,7 @@ Cateiru's Single Sign On
 
 - require
   - docker
+    - docker compose >= [v2.20.0](https://github.com/docker/compose/releases/tag/v2.20.0)
 
 ```bash
 ./docker-compose up
