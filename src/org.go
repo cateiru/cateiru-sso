@@ -30,7 +30,8 @@ type OrgResponse struct {
 	Image null.String `json:"image,omitempty"`
 	Link  null.String `json:"link,omitempty"`
 
-	Role string `json:"role"`
+	Role     string    `json:"role"`
+	JoinDate time.Time `json:"join_date"`
 }
 
 type OrgDetailResponse struct {
@@ -137,7 +138,8 @@ func (h *Handler) OrgGetHandler(c echo.Context) error {
 			Image: org.Organization.Image,
 			Link:  org.Organization.Link,
 
-			Role: org.OrganizationUser.Role,
+			Role:     org.OrganizationUser.Role,
+			JoinDate: org.OrganizationUser.CreatedAt,
 		}
 	}
 
@@ -189,7 +191,8 @@ func (h *Handler) OrgGetDetailHandler(c echo.Context) error {
 			Image: organization.Image,
 			Link:  organization.Link,
 
-			Role: orgUser.Role,
+			Role:     orgUser.Role,
+			JoinDate: orgUser.CreatedAt,
 		},
 
 		CreatedAt: organization.CreatedAt,

@@ -10,6 +10,7 @@ import {
   LoginDeviceListScheme,
   LoginTryHistoryListScheme,
 } from '../types/history';
+import {PublicOrganizationListSchema} from '../types/organization';
 import {
   Brand,
   Brands,
@@ -267,6 +268,29 @@ export async function orgDetailFeather(id: string) {
   }
 
   const data = OrganizationDetailSchema.safeParse(await res.json());
+  if (data.success) {
+    return data.data;
+  }
+  console.error(data.error);
+  throw new HTTPError(data.error.message);
+}
+
+export async function orgListFeather() {
+  const res = await fetch(api('/v2/org/list'), {
+    credentials: 'include',
+    mode: 'cors',
+  });
+
+  if (!res.ok) {
+    const data = ErrorSchema.safeParse(await res.json());
+    if (data.success) {
+      throw data.data;
+    }
+    console.error(data.error.message);
+    throw new HTTPError(data.error.message);
+  }
+
+  const data = PublicOrganizationListSchema.safeParse(await res.json());
   if (data.success) {
     return data.data;
   }
