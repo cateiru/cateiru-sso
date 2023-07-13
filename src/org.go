@@ -18,12 +18,19 @@ import (
 	"go.uber.org/zap"
 )
 
+type OrganizationSlice struct {
+	Organization     models.Organization     `boil:",bind"`
+	OrganizationUser models.OrganizationUser `boil:",bind"`
+}
+
 type OrgResponse struct {
 	ID string `json:"id"`
 
 	Name  string      `json:"name"`
 	Image null.String `json:"image,omitempty"`
 	Link  null.String `json:"link,omitempty"`
+
+	Role string `json:"role"`
 }
 
 type OrgDetailResponse struct {
@@ -94,30 +101,43 @@ func (h *Handler) OrgGetHandler(c echo.Context) error {
 		return err
 	}
 
-	// 	SELECT organization.*
-	// FROM organization
-	// INNER JOIN organization_user
-	//     ON organization.id = organization_user.organization_id
-	// WHERE organization_user.user_id = ?
-	// AND organization_user.role IN ('owner', 'member', 'guest')
-	// ORDER BY organization.name ASC;
-	orgs, err := models.Organizations(
+	var organizations []OrganizationSlice
+
+	err = models.NewQuery(
+		qm.Select(
+			"organization.id",
+			"organization.name",
+			"organization.image",
+			"organization.link",
+			"organization.created_at",
+			"organization.updated_at",
+
+			"organization_user.id",
+			"organization_user.organization_id",
+			"organization_user.user_id",
+			"organization_user.role",
+			"organization_user.created_at",
+			"organization_user.updated_at",
+		),
+		qm.From("organization"),
 		qm.InnerJoin("organization_user ON organization_user.organization_id = organization.id"),
 		qm.Where("organization_user.user_id = ?", u.ID),
 		qm.WhereIn("organization_user.role IN ?", []any{"owner", "member", "guest"}...),
 		qm.OrderBy("organization.name ASC"),
-	).All(ctx, h.DB)
+	).Bind(ctx, h.DB, &organizations)
 	if err != nil {
 		return err
 	}
 
-	response := make([]OrgResponse, len(orgs))
-	for i, org := range orgs {
+	response := make([]OrgResponse, len(organizations))
+	for i, org := range organizations {
 		response[i] = OrgResponse{
-			ID:    org.ID,
-			Name:  org.Name,
-			Image: org.Image,
-			Link:  org.Link,
+			ID:    org.Organization.ID,
+			Name:  org.Organization.Name,
+			Image: org.Organization.Image,
+			Link:  org.Organization.Link,
+
+			Role: org.OrganizationUser.Role,
 		}
 	}
 
@@ -168,6 +188,8 @@ func (h *Handler) OrgGetDetailHandler(c echo.Context) error {
 			Name:  organization.Name,
 			Image: organization.Image,
 			Link:  organization.Link,
+
+			Role: orgUser.Role,
 		},
 
 		CreatedAt: organization.CreatedAt,

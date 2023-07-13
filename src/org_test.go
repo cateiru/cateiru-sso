@@ -49,6 +49,8 @@ func TestOrgGetHandler(t *testing.T) {
 
 		require.Equal(t, response[0].ID, orgId)
 		require.Equal(t, response[0].Name, "test")
+
+		require.Equal(t, response[0].Role, "owner")
 	})
 
 	t.Run("複数のorgに所属している", func(t *testing.T) {
@@ -101,6 +103,14 @@ func TestOrgGetDetailHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.OrgGetDetailHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		orgId := RegisterOrg(t, ctx, u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	})
+
 	t.Run("成功: 詳細を取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -125,6 +135,8 @@ func TestOrgGetDetailHandler(t *testing.T) {
 		require.Equal(t, response.Name, "test")
 		require.Equal(t, response.Image.String, "")
 		require.Equal(t, response.Link.String, "")
+
+		require.Equal(t, response.Role, "owner")
 	})
 
 	t.Run("失敗: org_idが空", func(t *testing.T) {

@@ -72,8 +72,8 @@ type LoginTryHistoryResponse struct {
 }
 
 type LoginHistoriesSlice struct {
-	models.LoginHistory `boil:",bind"`
-	models.Refresh      `boil:",bind"`
+	LoginHistory models.LoginHistory `boil:",bind"`
+	Refresh      models.Refresh      `boil:",bind"`
 }
 
 // ログインしているSSOクライアント
