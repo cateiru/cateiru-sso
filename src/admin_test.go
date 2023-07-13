@@ -822,7 +822,7 @@ func TestAdminOrgDetailHandler(t *testing.T) {
 		err = h.AdminOrgDetailHandler(c)
 		require.NoError(t, err)
 
-		response := src.OrgDetailResponse{}
+		response := src.OrgAdminDetailResponse{}
 		require.NoError(t, m.Json(&response))
 
 		require.Equal(t, response.Org.ID, orgId)
@@ -848,7 +848,7 @@ func TestAdminOrgDetailHandler(t *testing.T) {
 		err = h.AdminOrgDetailHandler(c)
 		require.NoError(t, err)
 
-		response := src.OrgDetailResponse{}
+		response := src.OrgAdminDetailResponse{}
 		require.NoError(t, m.Json(&response))
 
 		require.Equal(t, response.Org.ID, orgId)

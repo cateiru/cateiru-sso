@@ -93,7 +93,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	client.GET("/login_users", h.ClientLoginUsersHandler) // ログインしているユーザ一覧
 
 	org := version.Group("/org")
-	org.GET("/", h.OrgGetHandler)
+	org.GET("/list", h.OrgGetHandler)
+	org.GET("/detail", h.OrgGetDetailHandler)
 	org.GET("/member", h.OrgGetMemberHandler)
 	org.POST("/member", h.OrgPostMemberHandler) // 招待。アカウント登録しているユーザーに対して
 	org.PUT("/member", h.OrgUpdateMemberHandler)

@@ -26,6 +26,13 @@ type OrgResponse struct {
 	Link  null.String `json:"link,omitempty"`
 }
 
+type OrgDetailResponse struct {
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	OrgResponse
+}
+
 type OrgUserResponse struct {
 	ID uint `json:"id"`
 
@@ -112,6 +119,59 @@ func (h *Handler) OrgGetHandler(c echo.Context) error {
 			Image: org.Image,
 			Link:  org.Link,
 		}
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) OrgGetDetailHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	orgId := c.QueryParam("org_id")
+	if orgId == "" {
+		return NewHTTPError(http.StatusBadRequest, "org_id is required")
+	}
+
+	organization, err := models.Organizations(
+		models.OrganizationWhere.ID.EQ(orgId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "organization not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	// ユーザーがownerかどうかを見る
+	orgUser, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+		models.OrganizationUserWhere.UserID.EQ(u.ID),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusForbidden, "you are not member of this organization")
+	}
+	if err != nil {
+		return err
+	}
+	if orgUser.Role != "owner" {
+		return NewHTTPError(http.StatusForbidden, "you are not owner")
+	}
+
+	response := OrgDetailResponse{
+		OrgResponse: OrgResponse{
+			ID:    organization.ID,
+			Name:  organization.Name,
+			Image: organization.Image,
+			Link:  organization.Link,
+		},
+
+		CreatedAt: organization.CreatedAt,
+		UpdatedAt: organization.UpdatedAt,
 	}
 
 	return c.JSON(http.StatusOK, response)

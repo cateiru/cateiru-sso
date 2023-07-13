@@ -97,6 +97,106 @@ func TestOrgGetHandler(t *testing.T) {
 	})
 }
 
+func TestOrgGetDetailHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	t.Run("成功: 詳細を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetDetailHandler(c)
+		require.NoError(t, err)
+
+		response := src.OrgDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.ID, orgId)
+		require.Equal(t, response.Name, "test")
+		require.Equal(t, response.Image.String, "")
+		require.Equal(t, response.Link.String, "")
+	})
+
+	t.Run("失敗: org_idが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetDetailHandler(c)
+		require.EqualError(t, err, "code=400, message=org_id is required")
+	})
+
+	t.Run("失敗: org_idの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", "invalid"), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetDetailHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: orgに所属していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetDetailHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this organization")
+	})
+
+	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetDetailHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not owner")
+	})
+}
+
 func TestOrgGetMemberHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)

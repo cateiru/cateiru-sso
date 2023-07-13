@@ -41,7 +41,7 @@ type UserDetailResponse struct {
 	Clients []StaffClientResponse `json:"clients"`
 }
 
-type OrgDetailResponse struct {
+type OrgAdminDetailResponse struct {
 	Org   *models.Organization `json:"org"`
 	Users []OrgUserResponse    `json:"users"`
 }
@@ -577,7 +577,7 @@ func (h *Handler) AdminOrgDetailHandler(c echo.Context) error {
 		}
 	}
 
-	response := &OrgDetailResponse{
+	response := &OrgAdminDetailResponse{
 		Org:   org,
 		Users: users,
 	}
