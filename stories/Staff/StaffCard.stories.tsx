@@ -28,3 +28,10 @@ export const Default: Story = {
     title: faker.lorem.words(3),
   },
 };
+
+export const Desctiption: Story = {
+  args: {
+    title: faker.lorem.words(3),
+    description: faker.lorem.words(10),
+  },
+};

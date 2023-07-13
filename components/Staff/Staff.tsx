@@ -7,7 +7,10 @@ import {StaffCard} from './StaffCard';
 export const Staff = () => {
   return (
     <>
-      <StaffCard title="ユーザー">
+      <StaffCard
+        title="ユーザー"
+        description="現在登録されているアカウント一覧です。"
+      >
         <Button
           variant="outline"
           colorScheme="cateiru"
@@ -18,7 +21,10 @@ export const Staff = () => {
           ユーザー一覧
         </Button>
       </StaffCard>
-      <StaffCard title="ブランド">
+      <StaffCard
+        title="ブランド"
+        description="ユーザーに特別な権限を与えることができるブランドの設定です。"
+      >
         <Button
           variant="outline"
           colorScheme="cateiru"
@@ -39,7 +45,10 @@ export const Staff = () => {
           ブランド新規作成
         </Button>
       </StaffCard>
-      <StaffCard title="クライアント">
+      <StaffCard
+        title="クライアント"
+        description="ユーザーが作成したクライアントの一覧です。"
+      >
         <Button
           variant="outline"
           colorScheme="cateiru"
@@ -50,7 +59,10 @@ export const Staff = () => {
           クライアント一覧
         </Button>
       </StaffCard>
-      <StaffCard title="組織">
+      <StaffCard
+        title="組織"
+        description="ユーザーをグループ化して個別に機能を提供する組織の設定です。"
+      >
         <Button
           variant="outline"
           colorScheme="cateiru"
@@ -71,7 +83,16 @@ export const Staff = () => {
           組織新規作成
         </Button>
       </StaffCard>
-      <StaffCard title="デプロイデータ">
+      <StaffCard
+        title="デプロイデータ"
+        description={
+          <>
+            現在のデプロイステータスです。
+            <br />
+            最新のコミットハッシュから、デプロイ時のモードなどを確認できます。
+          </>
+        }
+      >
         <Button
           variant="outline"
           colorScheme="cateiru"

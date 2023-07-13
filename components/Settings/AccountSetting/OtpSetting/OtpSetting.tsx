@@ -43,7 +43,16 @@ export const OtpSetting = () => {
     };
 
     return (
-      <SettingCard title="二段階認証">
+      <SettingCard
+        title="二段階認証"
+        description={
+          <>
+            二段階認証を使用することでアカウントのセキュリティを向上させることができます。
+            <br />
+            パスワードを設定している場合のみ有効化できます。
+          </>
+        }
+      >
         <C />
       </SettingCard>
     );
