@@ -45,6 +45,58 @@ export const Default: Story = {
   },
 };
 
+export const NotLink: Story = {
+  args: {
+    id: orgId,
+  },
+  parameters: {
+    layout: 'fullscreen',
+    mockData: [
+      {
+        url: api('/v2/org/detail', urlParam),
+        method: 'GET',
+        status: 200,
+        delay: 1000,
+        response: {
+          id: orgId,
+          name: faker.company.name(),
+          image: faker.image.url(),
+          link: null,
+          role: 'owner',
+          join_date: faker.date.past().toISOString(),
+          created_at: faker.date.past().toISOString(),
+        } as PublicOrganizationDetail,
+      },
+    ],
+  },
+};
+
+export const Member: Story = {
+  args: {
+    id: orgId,
+  },
+  parameters: {
+    layout: 'fullscreen',
+    mockData: [
+      {
+        url: api('/v2/org/detail', urlParam),
+        method: 'GET',
+        status: 200,
+        delay: 1000,
+        response: {
+          id: orgId,
+          name: faker.company.name(),
+          image: faker.image.url(),
+          link: faker.internet.url(),
+          role: 'member',
+          join_date: faker.date.past().toISOString(),
+          created_at: faker.date.past().toISOString(),
+        } as PublicOrganizationDetail,
+      },
+    ],
+  },
+};
+
 export const Loading: Story = {
   args: {
     id: orgId,

@@ -20,6 +20,7 @@ import {PublicOrganizationDetail} from '../../utils/types/organization';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Error} from '../Common/Error/Error';
 import {Margin} from '../Common/Margin';
+import {OrganizationMember} from './OrganizationMember';
 
 interface Props {
   id: string;
@@ -97,6 +98,17 @@ export const OrganizationDetail: React.FC<Props> = ({id}) => {
             </Center>
           )}
           <Divider my="1rem" />
+          {data && (
+            <>
+              {data.role === 'owner' ? (
+                <OrganizationMember id={id} />
+              ) : (
+                <Text textAlign="center">
+                  組織の管理はオーナー権限をもつユーザーのみが行えます。
+                </Text>
+              )}
+            </>
+          )}
         </>
       )}
     </Margin>

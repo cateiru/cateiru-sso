@@ -11,6 +11,9 @@ export const OrganizationUserSchema = z.object({
 });
 export type OrganizationUser = z.infer<typeof OrganizationUserSchema>;
 
+export const OrganizationUserListSchema = z.array(OrganizationUserSchema);
+export type OrganizationUserList = z.infer<typeof OrganizationUserListSchema>;
+
 export const PublicOrganizationSchema = z.object({
   id: z.string(),
   name: z.string(),
