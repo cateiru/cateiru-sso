@@ -9,7 +9,9 @@ export const OrgList = () => {
 
   return (
     <Margin>
-      <Heading textAlign="center">組織一覧</Heading>
+      <Heading textAlign="center" mt="3rem">
+        組織一覧
+      </Heading>
       <Text color={textColor} mt=".5rem" textAlign="center">
         あなたの所属している組織の一覧表示されます。
         <br />

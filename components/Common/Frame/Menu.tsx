@@ -9,6 +9,7 @@ import {usePathname} from 'next/navigation';
 import React from 'react';
 import {
   TbAddressBook,
+  TbBuildingSkyscraper,
   TbHistory,
   TbLogout,
   TbSettings,
@@ -16,6 +17,8 @@ import {
   TbUserPlus,
   TbUsers,
 } from 'react-icons/tb';
+import {useRecoilValue} from 'recoil';
+import {UserState} from '../../../utils/state/atom';
 import {Link} from '../Next/Link';
 import {useLogout} from '../useLogout';
 
@@ -23,6 +26,8 @@ const fontSize = {base: '1.2rem', sm: '1rem'};
 const height = {base: '40px', sm: '32px'};
 
 export const Menu = React.memo<{children: React.ReactNode}>(({children}) => {
+  const user = useRecoilValue(UserState);
+
   const {logout} = useLogout();
   const pathname = usePathname();
 
@@ -42,12 +47,12 @@ export const Menu = React.memo<{children: React.ReactNode}>(({children}) => {
           </MenuItem>
           <MenuItem
             as={Link}
-            href="/clients"
-            icon={<TbAddressBook size="20px" />}
+            href="/settings"
+            icon={<TbSettings size="20px" />}
             fontSize={fontSize}
             h={height}
           >
-            クライアント
+            設定
           </MenuItem>
           <MenuItem
             as={Link}
@@ -60,13 +65,24 @@ export const Menu = React.memo<{children: React.ReactNode}>(({children}) => {
           </MenuItem>
           <MenuItem
             as={Link}
-            href="/settings"
-            icon={<TbSettings size="20px" />}
+            href="/clients"
+            icon={<TbAddressBook size="20px" />}
             fontSize={fontSize}
             h={height}
           >
-            設定
+            クライアント
           </MenuItem>
+          {user?.joined_organization && (
+            <MenuItem
+              as={Link}
+              href="/orgs"
+              icon={<TbBuildingSkyscraper size="20px" />}
+              fontSize={fontSize}
+              h={height}
+            >
+              組織
+            </MenuItem>
+          )}
         </MenuGroup>
         <MenuDivider />
         <MenuGroup title="アカウント設定" fontSize={fontSize}>

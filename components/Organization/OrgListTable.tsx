@@ -109,15 +109,17 @@ export const OrgListTable = () => {
                       <Badge colorScheme={badgeColor()}>{v.role}</Badge>
                     </Td>
                     <Td>
-                      {v.role === 'owner' ? (
-                        <Button size="sm" colorScheme="cateiru">
-                          詳細
-                        </Button>
-                      ) : (
-                        <Button isDisabled size="sm">
-                          詳細
-                        </Button>
-                      )}
+                      <Center>
+                        {v.role === 'owner' ? (
+                          <Button size="sm" colorScheme="cateiru">
+                            詳細
+                          </Button>
+                        ) : (
+                          <Button isDisabled size="sm">
+                            詳細
+                          </Button>
+                        )}
+                      </Center>
                     </Td>
                   </Tr>
                 );
