@@ -6,9 +6,9 @@ import {
   Divider,
   Heading,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import {config} from '../../utils/config';
 import {Logo} from '../Common/Icons/Logo';
+import {Link} from '../Common/Next/Link';
 
 export const PageOne = () => {
   return (

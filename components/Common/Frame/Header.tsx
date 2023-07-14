@@ -6,13 +6,13 @@ import {
   Skeleton,
   Spacer,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import React from 'react';
 import {TbLogin} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
 import {Avatar} from '../Chakra/Avatar';
 import {Tooltip} from '../Chakra/Tooltip';
+import {Link} from '../Next/Link';
 import {ColorButton} from './ColorButton';
 import {HeaderTitle} from './HeaderTitle';
 import {Menu} from './Menu';

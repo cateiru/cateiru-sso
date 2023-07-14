@@ -11,11 +11,12 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import React from 'react';
 import {useSWRConfig} from 'swr';
+import {badgeColor} from '../../../utils/color';
 import {OrganizationUser} from '../../../utils/types/organization';
 import {Avatar} from '../../Common/Chakra/Avatar';
+import {Link as NextLink} from '../../Common/Next/Link';
 import {OrgDeleteUser} from './OrgDeleteUser';
 import {OrgJoinUser} from './OrgJoinUser';
 
@@ -67,18 +68,6 @@ export const OrgUser: React.FC<Props> = ({users, orgId}) => {
             {users.map(user => {
               const joinDate = new Date(user.created_at);
 
-              const badgeColor = () => {
-                if (user.role === 'owner') {
-                  return 'red';
-                }
-
-                if (user.role === 'member') {
-                  return 'blue';
-                }
-
-                return 'gray';
-              };
-
               return (
                 <Tr key={`org-user-${user.id}`}>
                   <Td>
@@ -93,7 +82,9 @@ export const OrgUser: React.FC<Props> = ({users, orgId}) => {
                   </Td>
                   <Td>{user.user.user_name}</Td>
                   <Td textAlign="center">
-                    <Badge colorScheme={badgeColor()}>{user.role}</Badge>
+                    <Badge colorScheme={badgeColor(user.role)}>
+                      {user.role}
+                    </Badge>
                   </Td>
                   <Td>{joinDate.toLocaleDateString()}</Td>
                   <Td>

@@ -13,9 +13,9 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import {TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
+import {badgeColor} from '../../utils/color';
 import {hawManyDaysAgo} from '../../utils/date';
 import {orgListFeather} from '../../utils/swr/featcher';
 import {colorTheme} from '../../utils/theme';
@@ -24,6 +24,7 @@ import {PublicOrganizationList} from '../../utils/types/organization';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
+import {Link as NextLink} from '../Common/Next/Link';
 
 export const OrgListTable = () => {
   const {data, error} = useSWR<PublicOrganizationList, ErrorType>(
@@ -62,18 +63,6 @@ export const OrgListTable = () => {
             ? data.map(v => {
                 const joinDate = new Date(v.join_date);
 
-                const badgeColor = () => {
-                  if (v.role === 'owner') {
-                    return 'red';
-                  }
-
-                  if (v.role === 'member') {
-                    return 'blue';
-                  }
-
-                  return 'gray';
-                };
-
                 return (
                   <Tr key={v.id}>
                     <Td>
@@ -107,7 +96,7 @@ export const OrgListTable = () => {
                       </Tooltip>
                     </Td>
                     <Td textAlign="center">
-                      <Badge colorScheme={badgeColor()}>{v.role}</Badge>
+                      <Badge colorScheme={badgeColor(v.role)}>{v.role}</Badge>
                     </Td>
                     <Td>
                       <Center>
