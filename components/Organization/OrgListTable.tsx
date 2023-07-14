@@ -13,6 +13,7 @@ import {
   Tr,
   useColorModeValue,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import {TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
 import {hawManyDaysAgo} from '../../utils/date';
@@ -110,15 +111,14 @@ export const OrgListTable = () => {
                     </Td>
                     <Td>
                       <Center>
-                        {v.role === 'owner' ? (
-                          <Button size="sm" colorScheme="cateiru">
-                            詳細
-                          </Button>
-                        ) : (
-                          <Button isDisabled size="sm">
-                            詳細
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          colorScheme="cateiru"
+                          as={NextLink}
+                          href={`/org/${v.id}`}
+                        >
+                          詳細
+                        </Button>
                       </Center>
                     </Td>
                   </Tr>

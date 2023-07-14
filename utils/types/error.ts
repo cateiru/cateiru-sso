@@ -23,4 +23,5 @@ export const ErrorUniqueMessage: {[key: number]: string | undefined} = {
   13: '認証に失敗しました',
   14: 'パスワードが設定されていないため、生体認証をすべて削除することはできません', // WebAuthnの削除でのみ使用している
   15: 'すでにログイン済みです',
+  16: 'この組織に加入されていないようです',
 };

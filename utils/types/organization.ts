@@ -28,7 +28,6 @@ export type PublicOrganizationList = z.infer<
 
 export const PublicOrganizationDetailSchema = PublicOrganizationSchema.extend({
   created_at: z.string().datetime({offset: true}),
-  updated_at: z.string().datetime({offset: true}),
 });
 export type PublicOrganizationDetail = z.infer<
   typeof PublicOrganizationDetailSchema

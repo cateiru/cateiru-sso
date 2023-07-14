@@ -12,7 +12,7 @@ import {useRouter} from 'next/navigation';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import useSWR from 'swr';
-import {orgDetailFeather} from '../../../utils/swr/featcher';
+import {adminOrgDetailFeather} from '../../../utils/swr/featcher';
 import {ErrorType} from '../../../utils/types/error';
 import {OrganizationDetail} from '../../../utils/types/staff';
 import {Error} from '../../Common/Error/Error';
@@ -31,7 +31,7 @@ interface EditOrgFromData extends ImageFormValue {
 export const EditOrg: React.FC<Props> = ({id}) => {
   const {data, error} = useSWR<OrganizationDetail, ErrorType>(
     `/v2/admin/org?org_id=${id}`,
-    () => orgDetailFeather(id)
+    () => adminOrgDetailFeather(id)
   );
 
   const methods = useForm<EditOrgFromData>();
