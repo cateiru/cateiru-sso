@@ -111,11 +111,12 @@ func TestOrgGetDetailHandler(t *testing.T) {
 		return m
 	})
 
-	t.Run("成功: 詳細を取得できる", func(t *testing.T) {
+	t.Run("成功: Owner権限で詳細を取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		orgId := RegisterOrg(t, ctx, &u)
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "owner")
 
 		cookie := RegisterSession(t, ctx, &u)
 
@@ -137,6 +138,64 @@ func TestOrgGetDetailHandler(t *testing.T) {
 		require.Equal(t, response.Link.String, "")
 
 		require.Equal(t, response.Role, "owner")
+	})
+
+	t.Run("成功: Member権限で詳細を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "member")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetDetailHandler(c)
+		require.NoError(t, err)
+
+		response := src.OrgDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.ID, orgId)
+		require.Equal(t, response.Name, "test")
+		require.Equal(t, response.Image.String, "")
+		require.Equal(t, response.Link.String, "")
+
+		require.Equal(t, response.Role, "member")
+	})
+
+	t.Run("成功: Guest権限で詳細を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetDetailHandler(c)
+		require.NoError(t, err)
+
+		response := src.OrgDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.ID, orgId)
+		require.Equal(t, response.Name, "test")
+		require.Equal(t, response.Image.String, "")
+		require.Equal(t, response.Link.String, "")
+
+		require.Equal(t, response.Role, "guest")
 	})
 
 	t.Run("失敗: org_idが空", func(t *testing.T) {
@@ -186,26 +245,7 @@ func TestOrgGetDetailHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgGetDetailHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this organization")
-	})
-
-	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		orgId := RegisterOrg(t, ctx)
-		InviteUserInOrg(t, ctx, orgId, &u, "member")
-
-		cookie := RegisterSession(t, ctx, &u)
-
-		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
-		require.NoError(t, err)
-		m.Cookie(cookie)
-
-		c := m.Echo()
-
-		err = h.OrgGetDetailHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not owner")
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
 }
 
@@ -312,7 +352,7 @@ func TestOrgGetMemberHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgGetMemberHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not owner")
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
@@ -542,7 +582,7 @@ func TestOrgPostMemberHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgPostMemberHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not owner")
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
@@ -789,7 +829,7 @@ func TestOrgUpdateMemberHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgUpdateMemberHandler(c)
-		require.EqualError(t, err, "code=404, message=organization not found")
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
@@ -985,7 +1025,7 @@ func TestOrgDeleteMemberHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgDeleteMemberHandler(c)
-		require.EqualError(t, err, "code=404, message=organization not found")
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
@@ -1162,7 +1202,7 @@ func TestOrgInvitedMemberHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgInvitedMemberHandler(c)
-		require.EqualError(t, err, "code=404, message=organization not found")
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
@@ -1360,7 +1400,7 @@ func TestOrgInviteNewMemberHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgInviteNewMemberHandler(c)
-		require.EqualError(t, err, "code=404, message=organization not found")
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {
@@ -1503,7 +1543,7 @@ func TestOrgInviteMemberDeleteHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.OrgInviteMemberDeleteHandler(c)
-		require.EqualError(t, err, "code=404, message=organization not found")
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
 
 	t.Run("失敗: orgに所属しているけどownerではない", func(t *testing.T) {

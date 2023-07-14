@@ -45,6 +45,8 @@ const (
 	ErrNoMoreAuthentication = 14
 	// すでにログイン済み
 	ErrAlreadyLoggedIn = 15
+	// orgに入っていない
+	ErrNoJoinedOrg = 16
 )
 
 // OIDCのエラーコード

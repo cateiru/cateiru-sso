@@ -36,7 +36,6 @@ type OrgResponse struct {
 
 type OrgDetailResponse struct {
 	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 
 	OrgResponse
 }
@@ -175,13 +174,10 @@ func (h *Handler) OrgGetDetailHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusForbidden, "you are not member of this organization")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
 	}
 	if err != nil {
 		return err
-	}
-	if orgUser.Role != "owner" {
-		return NewHTTPError(http.StatusForbidden, "you are not owner")
 	}
 
 	response := OrgDetailResponse{
@@ -196,7 +192,6 @@ func (h *Handler) OrgGetDetailHandler(c echo.Context) error {
 		},
 
 		CreatedAt: organization.CreatedAt,
-		UpdatedAt: organization.UpdatedAt,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -233,7 +228,7 @@ func (h *Handler) OrgGetMemberHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusForbidden, "you are not owner")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
 	}
 	if err != nil {
 		return err
@@ -320,7 +315,7 @@ func (h *Handler) OrgPostMemberHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusForbidden, "you are not owner")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
 	}
 	if err != nil {
 		return err
@@ -402,7 +397,7 @@ func (h *Handler) OrgUpdateMemberHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "organization not found")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
 	}
 	if err != nil {
 		return err
@@ -465,7 +460,7 @@ func (h *Handler) OrgDeleteMemberHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "organization not found")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
 	}
 	if err != nil {
 		return err
@@ -516,7 +511,7 @@ func (h *Handler) OrgInvitedMemberHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "organization not found")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
 	}
 	if err != nil {
 		return err
@@ -583,7 +578,7 @@ func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "organization not found")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
 	}
 	if err != nil {
 		return err
@@ -717,7 +712,7 @@ func (h *Handler) OrgInviteMemberDeleteHandler(c echo.Context) error {
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
-		return NewHTTPError(http.StatusNotFound, "organization not found")
+		return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
 	}
 	if err != nil {
 		return err
