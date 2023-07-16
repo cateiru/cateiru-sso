@@ -168,7 +168,7 @@ func (h *Handler) OrgGetDetailHandler(c echo.Context) error {
 		return err
 	}
 
-	// ユーザーがownerかどうかを見る
+	// ユーザーがメンバーかどうかを見る
 	orgUser, err := models.OrganizationUsers(
 		models.OrganizationUserWhere.OrganizationID.EQ(orgId),
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
