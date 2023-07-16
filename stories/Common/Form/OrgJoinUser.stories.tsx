@@ -1,8 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {OrgJoinUser} from '../../../components/Staff/Org/OrgJoinUser';
+import {OrgJoinUser} from '../../../components/Common/Form/OrgJoinUser';
 
 const meta: Meta<typeof OrgJoinUser> = {
-  title: 'CateiruSSO/Staff/Org/OrgJoinUser',
+  title: 'CateiruSSO/Common/Form/OrgJoinUser',
   component: OrgJoinUser,
   tags: ['autodocs'],
   parameters: {

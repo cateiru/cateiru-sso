@@ -16,9 +16,9 @@ import {useSWRConfig} from 'swr';
 import {badgeColor} from '../../../utils/color';
 import {OrganizationUser} from '../../../utils/types/organization';
 import {Avatar} from '../../Common/Chakra/Avatar';
+import {OrgJoinUser} from '../../Common/Form/OrgJoinUser';
 import {Link as NextLink} from '../../Common/Next/Link';
 import {OrgDeleteUser} from './OrgDeleteUser';
-import {OrgJoinUser} from './OrgJoinUser';
 
 interface Props {
   orgId: string;
@@ -51,7 +51,11 @@ export const OrgUser: React.FC<Props> = ({users, orgId}) => {
       >
         組織ユーザー
       </Text>
-      <OrgJoinUser orgId={orgId} handleSuccess={purge} />
+      <OrgJoinUser
+        orgId={orgId}
+        handleSuccess={purge}
+        apiEndpoint="/v2/admin/org/member"
+      />
       <TableContainer mt="1rem">
         <Table variant="simple">
           <Thead>

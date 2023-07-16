@@ -12,11 +12,11 @@ import {useRequest} from '../../Common/useRequest';
 
 interface Props {
   orgId: string;
-
+  apiEndpoint: string;
   handleSuccess: () => void;
 }
 
-interface JoinFormData {
+export interface JoinFormData {
   user_name_or_email: string;
   role: string;
 }
@@ -32,7 +32,7 @@ export const OrgJoinUser: React.FC<Props> = props => {
       role: 'guest',
     },
   });
-  const {request} = useRequest('/v2/admin/org/member');
+  const {request} = useRequest(props.apiEndpoint);
 
   const onSubmit = async (data: JoinFormData) => {
     const form = new FormData();
