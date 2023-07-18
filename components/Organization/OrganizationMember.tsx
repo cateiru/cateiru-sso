@@ -6,6 +6,7 @@ import {
   FormControl,
   FormErrorMessage,
   IconButton,
+  ListItem,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -21,6 +22,7 @@ import {
   Th,
   Thead,
   Tr,
+  UnorderedList,
   useDisclosure,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -37,6 +39,7 @@ import {
   OrganizationUserList,
 } from '../../utils/types/organization';
 import {Avatar} from '../Common/Chakra/Avatar';
+import {Confirm} from '../Common/Confirm/Confirm';
 import {Error} from '../Common/Error/Error';
 import {OrgJoinUser} from '../Common/Form/OrgJoinUser';
 import {Spinner} from '../Common/Icons/Spinner';
@@ -64,7 +67,7 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
   const [modalUser, setModalUser] = React.useState<OrganizationUser | null>(
     null
   );
-  const [loading, setLoading] = React.useState(false);
+  const confirmModal = useDisclosure();
 
   const {
     handleSubmit,
@@ -104,7 +107,6 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
   };
 
   const onDelete = async () => {
-    setLoading(true);
     const param = new URLSearchParams();
     param.append('org_user_id', String(modalUser?.id));
 
@@ -122,8 +124,6 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
       onClose();
       reload();
     }
-
-    setLoading(false);
   };
 
   const reload = () => {
@@ -229,12 +229,40 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
             <Text my="1rem" textAlign="center">
               もしくは、
             </Text>
-            <Button w="100%" onClick={onDelete} isLoading={loading}>
+            <Button
+              w="100%"
+              onClick={() => {
+                onClose();
+                confirmModal.onOpen();
+              }}
+            >
               組織から外す
             </Button>
           </ModalBody>
         </ModalContent>
       </Modal>
+      <Confirm
+        isOpen={confirmModal.isOpen}
+        onClose={confirmModal.onClose}
+        onSubmit={onDelete}
+        text={{
+          confirmHeader: '組織からユーザーを削除しますか？',
+          confirmOkText: '削除',
+          confirmOkTextColor: 'red',
+        }}
+      >
+        <UnorderedList spacing=".5rem">
+          <ListItem>
+            組織からユーザーを削除するとそのユーザーはこの組織にアクセスすることができなくなります。
+          </ListItem>
+          <ListItem>
+            再度アクセスさせるには、組織のオーナーが招待する必要があります。
+          </ListItem>
+          <ListItem>
+            ユーザーが作成したクライアントなどは削除されません。
+          </ListItem>
+        </UnorderedList>
+      </Confirm>
     </Box>
   );
 };

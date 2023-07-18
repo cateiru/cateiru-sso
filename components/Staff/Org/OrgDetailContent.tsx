@@ -4,12 +4,6 @@ import {
   Center,
   Link,
   ListItem,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Table,
   TableContainer,
   Tbody,
@@ -24,6 +18,7 @@ import {useRouter} from 'next/navigation';
 import React from 'react';
 import {OrganizationDetail} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';
+import {Confirm} from '../../Common/Confirm/Confirm';
 import {Link as NextLink} from '../../Common/Next/Link';
 import {useRequest} from '../../Common/useRequest';
 import {OrgUser} from './OrgUser';
@@ -33,31 +28,24 @@ export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
   const deleteModal = useDisclosure();
   const router = useRouter();
 
-  const [deleteLoad, setDeleteLoad] = React.useState(false);
   const {request} = useRequest('/v2/admin/org');
 
-  const onDeleteOrg = () => {
-    const f = async () => {
-      setDeleteLoad(true);
+  const onDeleteOrg = async () => {
+    const params = new URLSearchParams();
+    params.append('org_id', data.org.id);
 
-      const params = new URLSearchParams();
-      params.append('org_id', data.org.id);
+    const res = await request(
+      {
+        method: 'DELETE',
+        mode: 'cors',
+        credentials: 'include',
+      },
+      params
+    );
 
-      const res = await request(
-        {
-          method: 'DELETE',
-          mode: 'cors',
-          credentials: 'include',
-        },
-        params
-      );
-
-      if (res) {
-        router.replace('/staff/orgs');
-        setDeleteLoad(false);
-      }
-    };
-    f();
+    if (res) {
+      router.replace('/staff/orgs');
+    }
   };
 
   return (
@@ -131,31 +119,21 @@ export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
           組織削除
         </Button>
       </ButtonGroup>
-      <Modal
+      <Confirm
+        onSubmit={onDeleteOrg}
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.onClose}
-        isCentered
+        text={{
+          confirmHeader: `「${data.org.name}」を削除しますか？`,
+          confirmOkText: '削除',
+          confirmOkTextColor: 'red',
+        }}
       >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>「{data.org.name}」を削除しますか？</ModalHeader>
-          <ModalCloseButton size="lg" />
-          <ModalBody my="1rem">
-            <UnorderedList mb="1rem">
-              <ListItem>この操作は元に戻せません。</ListItem>
-              <ListItem>削除すると、全ユーザーの加入が解除されます。</ListItem>
-            </UnorderedList>
-            <Button
-              w="100%"
-              onClick={onDeleteOrg}
-              isLoading={deleteLoad}
-              colorScheme="red"
-            >
-              削除
-            </Button>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        <UnorderedList>
+          <ListItem>この操作は元に戻せません。</ListItem>
+          <ListItem>削除すると、全ユーザーの加入が解除されます。</ListItem>
+        </UnorderedList>
+      </Confirm>
       <OrgUser users={data.users} orgId={data.org.id} />
     </>
   );

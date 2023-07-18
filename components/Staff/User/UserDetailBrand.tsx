@@ -11,13 +11,14 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  useDisclosure,
 } from '@chakra-ui/react';
 import React from 'react';
 import {TbPlugConnectedX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
-import {UserBrand} from '../../../utils/types/staff';
+import {Brand, UserBrand} from '../../../utils/types/staff';
 import {Tooltip} from '../../Common/Chakra/Tooltip';
-import {Spinner} from '../../Common/Icons/Spinner';
+import {Confirm} from '../../Common/Confirm/Confirm';
 import {Link as NextLink} from '../../Common/Next/Link';
 import {useRequest} from '../../Common/useRequest';
 import {AddUser} from '../Brand/AddUser';
@@ -35,32 +36,28 @@ export const UserDetailBrand: React.FC<Props> = props => {
   const {mutate} = useSWRConfig();
   const {request} = useRequest('/v2/admin/user/brand');
 
+  const deleteModal = useDisclosure();
+
   const [hover, setHover] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const [selectedBrand, setSelectedBrand] = React.useState<UserBrand>();
 
-  const onDelete = (brandId: string) => {
-    const f = async () => {
-      setLoading(true);
-      const param = new URLSearchParams();
-      param.append('user_id', props.userId);
-      param.append('brand_id', brandId);
+  const onDelete = async () => {
+    const param = new URLSearchParams();
+    param.append('user_id', props.userId);
+    param.append('brand_id', selectedBrand?.brand_id ?? '');
 
-      const res = await request(
-        {
-          method: 'DELETE',
-          mode: 'cors',
-          credentials: 'include',
-        },
-        param
-      );
+    const res = await request(
+      {
+        method: 'DELETE',
+        mode: 'cors',
+        credentials: 'include',
+      },
+      param
+    );
 
-      if (res) {
-        purge();
-      }
-      setLoading(false);
-    };
-
-    f();
+    if (res) {
+      purge();
+    }
   };
 
   const purge = () => {
@@ -120,18 +117,17 @@ export const UserDetailBrand: React.FC<Props> = props => {
                       placement="top"
                     >
                       <Center>
-                        {loading ? (
-                          <Spinner />
-                        ) : (
-                          <TbPlugConnectedX
-                            size="25px"
-                            color={hover ? hoverTrashColor : defaultTrashColor}
-                            onMouseOver={() => setHover(true)}
-                            onMouseOut={() => setHover(false)}
-                            onClick={() => onDelete(brand.brand_id)}
-                            style={{cursor: 'pointer'}}
-                          />
-                        )}
+                        <TbPlugConnectedX
+                          size="25px"
+                          color={hover ? hoverTrashColor : defaultTrashColor}
+                          onMouseOver={() => setHover(true)}
+                          onMouseOut={() => setHover(false)}
+                          onClick={() => {
+                            setSelectedBrand(brand);
+                            deleteModal.onOpen();
+                          }}
+                          style={{cursor: 'pointer'}}
+                        />
                       </Center>
                     </Tooltip>
                   </Td>
@@ -152,6 +148,15 @@ export const UserDetailBrand: React.FC<Props> = props => {
             })}
           </Tbody>
         </Table>
+        <Confirm
+          isOpen={deleteModal.isOpen}
+          onClose={deleteModal.onClose}
+          onSubmit={onDelete}
+          text={{
+            confirmHeader: `ユーザーと${selectedBrand?.brand_name}の連携を解除しますか？`,
+            confirmOkText: '解除',
+          }}
+        />
       </TableContainer>
     </>
   );

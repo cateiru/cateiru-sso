@@ -2,12 +2,6 @@ import {
   Button,
   ButtonGroup,
   ListItem,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Table,
   TableContainer,
   Tbody,
@@ -21,6 +15,7 @@ import {
 import {useRouter} from 'next/navigation';
 import React from 'react';
 import {Brand} from '../../../utils/types/staff';
+import {Confirm} from '../../Common/Confirm/Confirm';
 import {Link} from '../../Common/Next/Link';
 import {useRequest} from '../../Common/useRequest';
 
@@ -32,32 +27,25 @@ export const BrandDetailContent: React.FC<Props> = ({brand}) => {
   const router = useRouter();
   const deleteModal = useDisclosure();
   const textColor = useColorModeValue('gray.500', 'gray.400');
-  const [deleteLoad, setDeleteLoad] = React.useState(false);
 
   const {request} = useRequest('/v2/admin/brand');
 
-  const onDelete = () => {
-    const f = async () => {
-      setDeleteLoad(true);
+  const onDelete = async () => {
+    const u = new URLSearchParams();
+    u.append('brand_id', brand?.id ?? '');
 
-      const u = new URLSearchParams();
-      u.append('brand_id', brand?.id ?? '');
+    const res = await request(
+      {
+        method: 'DELETE',
+        mode: 'cors',
+        credentials: 'include',
+      },
+      u
+    );
 
-      const res = await request(
-        {
-          method: 'DELETE',
-          mode: 'cors',
-          credentials: 'include',
-        },
-        u
-      );
-
-      if (res) {
-        router.replace('/staff/brands');
-        setDeleteLoad(false);
-      }
-    };
-    f();
+    if (res) {
+      router.replace('/staff/brands');
+    }
   };
 
   return (
@@ -121,31 +109,21 @@ export const BrandDetailContent: React.FC<Props> = ({brand}) => {
           削除
         </Button>
       </ButtonGroup>
-      <Modal
+      <Confirm
+        onSubmit={onDelete}
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.onClose}
-        isCentered
+        text={{
+          confirmHeader: `「${brand?.name}」を削除しますか？`,
+          confirmOkText: '削除',
+          confirmOkTextColor: 'red',
+        }}
       >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>「{brand?.name}」を削除しますか？</ModalHeader>
-          <ModalCloseButton size="lg" />
-          <ModalBody my="1rem">
-            <UnorderedList mb="1rem">
-              <ListItem>この操作は元に戻せません。</ListItem>
-              <ListItem>削除すると、全ユーザーの加入が解除されます。</ListItem>
-            </UnorderedList>
-            <Button
-              w="100%"
-              onClick={onDelete}
-              isLoading={deleteLoad}
-              colorScheme="red"
-            >
-              削除
-            </Button>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        <UnorderedList>
+          <ListItem>この操作は元に戻せません。</ListItem>
+          <ListItem>削除すると、全ユーザーの加入が解除されます。</ListItem>
+        </UnorderedList>
+      </Confirm>
     </>
   );
 };
