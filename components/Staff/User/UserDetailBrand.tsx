@@ -16,7 +16,7 @@ import {
 import React from 'react';
 import {TbPlugConnectedX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
-import {Brand, UserBrand} from '../../../utils/types/staff';
+import {UserBrand} from '../../../utils/types/staff';
 import {Tooltip} from '../../Common/Chakra/Tooltip';
 import {Confirm} from '../../Common/Confirm/Confirm';
 import {Link as NextLink} from '../../Common/Next/Link';
