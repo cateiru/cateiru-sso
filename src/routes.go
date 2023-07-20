@@ -94,6 +94,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	org := version.Group("/org")
 	org.GET("/list", h.OrgGetHandler)
+	org.GET("/list/simple", h.OrgGetSimpleListHandler) // クライアント一覧で使用するorgのリスト
 	org.GET("/detail", h.OrgGetDetailHandler)
 	org.GET("/member", h.OrgGetMemberHandler)
 	org.POST("/member", h.OrgPostMemberHandler) // 招待。アカウント登録しているユーザーに対して

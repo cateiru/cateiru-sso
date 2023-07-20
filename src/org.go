@@ -34,6 +34,11 @@ type OrgResponse struct {
 	JoinDate time.Time `json:"join_date"`
 }
 
+type OrgSimpleResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type OrgDetailResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 
@@ -139,6 +144,63 @@ func (h *Handler) OrgGetHandler(c echo.Context) error {
 
 			Role:     org.OrganizationUser.Role,
 			JoinDate: org.OrganizationUser.CreatedAt,
+		}
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) OrgGetSimpleListHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	orgId := c.QueryParam("org_id")
+	if orgId != "" {
+		// org_id が存在してかつユーザーが所属しているかを確認する
+		existOrganization, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(orgId),
+		).Exists(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			return NewHTTPError(http.StatusNotFound, "organization not found")
+		}
+		if err != nil {
+			return err
+		}
+		if !existOrganization {
+			return NewHTTPError(http.StatusNotFound, "organization not found")
+		}
+
+		// ユーザーがメンバーかどうかを見る
+		existOrgUser, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
+			models.OrganizationUserWhere.UserID.EQ(u.ID),
+		).Exists(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		if !existOrgUser {
+			return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
+		}
+	}
+
+	orgs, err := models.Organizations(
+		qm.InnerJoin("organization_user ON organization_user.organization_id = organization.id"),
+		models.OrganizationUserWhere.UserID.EQ(u.ID),
+		qm.OrderBy("organization.name ASC"),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	response := make([]OrgSimpleResponse, len(orgs))
+	for i, org := range orgs {
+		response[i] = OrgSimpleResponse{
+			ID:   org.ID,
+			Name: org.Name,
 		}
 	}
 

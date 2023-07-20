@@ -99,6 +99,93 @@ func TestOrgGetHandler(t *testing.T) {
 	})
 }
 
+func TestOrgGetSimpleListHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	t.Run("成功: org一覧を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetSimpleListHandler(c)
+		require.NoError(t, err)
+
+		response := []src.OrgResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 1)
+	})
+
+	t.Run("成功: org_idを指定すると所属しているかを確認する", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetSimpleListHandler(c)
+		require.NoError(t, err)
+
+		response := []src.OrgResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 1)
+	})
+
+	t.Run("失敗: org_idが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		RegisterOrg(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?org_id=invalid", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetSimpleListHandler(c)
+		require.EqualError(t, err, "code=404, message=organization not found")
+	})
+
+	t.Run("失敗: orgにユーザーが所属していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetSimpleListHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
+	})
+}
+
 func TestOrgGetDetailHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
