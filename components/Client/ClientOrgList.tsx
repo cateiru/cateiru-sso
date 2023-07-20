@@ -1,5 +1,5 @@
 'use client';
 
 export const ClientOrgList = () => {
-  return <></>;
+  return <>org client</>;
 };
