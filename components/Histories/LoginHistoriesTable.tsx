@@ -14,7 +14,7 @@ import {
 import React from 'react';
 import useSWR from 'swr';
 import {hawManyDaysAgo} from '../../utils/date';
-import {loginDeviceFeather} from '../../utils/swr/featcher';
+import {loginDeviceFeather} from '../../utils/swr/history';
 import {colorTheme} from '../../utils/theme';
 import {ErrorType} from '../../utils/types/error';
 import {LoginDeviceList} from '../../utils/types/history';

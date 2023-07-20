@@ -17,7 +17,7 @@ import {TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
 import {badgeColor} from '../../utils/color';
 import {hawManyDaysAgo} from '../../utils/date';
-import {orgListFeather} from '../../utils/swr/featcher';
+import {orgListFeather} from '../../utils/swr/organization';
 import {colorTheme} from '../../utils/theme';
 import {ErrorType} from '../../utils/types/error';
 import {PublicOrganizationList} from '../../utils/types/organization';

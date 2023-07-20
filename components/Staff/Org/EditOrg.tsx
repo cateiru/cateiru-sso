@@ -12,7 +12,7 @@ import {useRouter} from 'next/navigation';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import useSWR from 'swr';
-import {adminOrgDetailFeather} from '../../../utils/swr/featcher';
+import {adminOrgDetailFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {OrganizationDetail} from '../../../utils/types/staff';
 import {Error} from '../../Common/Error/Error';

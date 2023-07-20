@@ -2,7 +2,7 @@
 
 import {Skeleton} from '@chakra-ui/react';
 import useSWR from 'swr';
-import {userAccountCertificatesFeather} from '../../../utils/swr/featcher';
+import {userAccountCertificatesFeather} from '../../../utils/swr/account';
 import {Error} from '../../Common/Error/Error';
 import {RegisterPassword} from './RegisterPassword';
 import {UpdatePassword} from './UpdatePassword';

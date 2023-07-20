@@ -15,7 +15,7 @@ import {TbCheck, TbUserPlus} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import useSWR, {useSWRConfig} from 'swr';
 import {UserState} from '../../utils/state/atom';
-import {accountUserFeather} from '../../utils/swr/featcher';
+import {accountUserFeather} from '../../utils/swr/account';
 import {AccountUserList} from '../../utils/types/account';
 import {ErrorType} from '../../utils/types/error';
 import {Avatar} from '../Common/Chakra/Avatar';

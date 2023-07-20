@@ -12,7 +12,7 @@ import {useRouter} from 'next/navigation';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import useSWR from 'swr';
-import {brandFeather} from '../../../utils/swr/featcher';
+import {brandFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {Brand} from '../../../utils/types/staff';
 import {Error} from '../../Common/Error/Error';

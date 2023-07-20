@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react';
 import useSWR from 'swr';
 import {hawManyDaysAgo} from '../../../../utils/date';
-import {webAuthnDevicesFeather} from '../../../../utils/swr/featcher';
+import {webAuthnDevicesFeather} from '../../../../utils/swr/account';
 import {AccountWebAuthnDevices} from '../../../../utils/types/account';
 import {ErrorType} from '../../../../utils/types/error';
 import {Tooltip} from '../../../Common/Chakra/Tooltip';

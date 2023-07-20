@@ -32,7 +32,7 @@ import {useRecoilValue} from 'recoil';
 import useSWR, {useSWRConfig} from 'swr';
 import {badgeColor} from '../../utils/color';
 import {UserState} from '../../utils/state/atom';
-import {orgUsersFeather} from '../../utils/swr/featcher';
+import {orgUsersFeather} from '../../utils/swr/organization';
 import {ErrorType} from '../../utils/types/error';
 import {
   OrganizationUser,

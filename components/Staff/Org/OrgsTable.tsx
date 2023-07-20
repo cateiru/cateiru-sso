@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import useSWR from 'swr';
 import {hawManyDaysAgo} from '../../../utils/date';
-import {orgsFeather} from '../../../utils/swr/featcher';
+import {orgsFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {Organizations} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';

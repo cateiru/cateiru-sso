@@ -2,7 +2,7 @@
 
 import React from 'react';
 import useSWR from 'swr';
-import {staffUserDetailFeather} from '../../../utils/swr/featcher';
+import {staffUserDetailFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import type {UserDetail as UserDetailType} from '../../../utils/types/staff';
 import {Error} from '../../Common/Error/Error';

@@ -14,7 +14,7 @@ import React from 'react';
 import {TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
 import {routeChangeStart} from '../../utils/event';
-import {orgSimpleListFeather} from '../../utils/swr/featcher';
+import {orgSimpleListFeather} from '../../utils/swr/organization';
 import {ErrorType, ErrorUniqueMessage} from '../../utils/types/error';
 import {SimpleOrganizationList} from '../../utils/types/organization';
 import {Margin} from '../Common/Margin';

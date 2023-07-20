@@ -12,7 +12,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
-import {staffUsersFeather} from '../../../utils/swr/featcher';
+import {staffUsersFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {StaffUsers} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';

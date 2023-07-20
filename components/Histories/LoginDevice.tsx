@@ -13,7 +13,7 @@ import {
 import {TbCheck} from 'react-icons/tb';
 import useSWR from 'swr';
 import {hawManyDaysAgo} from '../../utils/date';
-import {loginDeviceFeather} from '../../utils/swr/featcher';
+import {loginDeviceFeather} from '../../utils/swr/history';
 import {ErrorType} from '../../utils/types/error';
 import {LoginDeviceList} from '../../utils/types/history';
 import {Tooltip} from '../Common/Chakra/Tooltip';

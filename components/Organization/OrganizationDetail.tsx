@@ -14,7 +14,7 @@ import React from 'react';
 import {TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
 import {badgeColor} from '../../utils/color';
-import {orgDetailFeather} from '../../utils/swr/featcher';
+import {orgDetailFeather} from '../../utils/swr/organization';
 import {ErrorType} from '../../utils/types/error';
 import {PublicOrganizationDetail} from '../../utils/types/organization';
 import {Avatar} from '../Common/Chakra/Avatar';

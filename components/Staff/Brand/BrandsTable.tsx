@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import useSWR from 'swr';
 import {hawManyDaysAgo} from '../../../utils/date';
-import {brandFeather} from '../../../utils/swr/featcher';
+import {brandFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {Brands} from '../../../utils/types/staff';
 import {Tooltip} from '../../Common/Chakra/Tooltip';
