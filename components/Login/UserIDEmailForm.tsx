@@ -39,6 +39,7 @@ export const UserIDEmailForm: React.FC<Props> = ({
     handleSubmit,
     register,
     setError,
+    clearErrors,
     formState: {errors, isSubmitting},
   } = methods;
 
@@ -80,6 +81,7 @@ export const UserIDEmailForm: React.FC<Props> = ({
       const data = LoginUserSchema.safeParse(await res.json());
       if (data.success) {
         setUser(data.data);
+        clearErrors('user_id_email');
       } else {
         console.error(data.error);
       }
