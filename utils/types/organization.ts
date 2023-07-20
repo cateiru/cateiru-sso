@@ -35,3 +35,14 @@ export const PublicOrganizationDetailSchema = PublicOrganizationSchema.extend({
 export type PublicOrganizationDetail = z.infer<
   typeof PublicOrganizationDetailSchema
 >;
+
+export const SimpleOrganizationSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+export type SimpleOrganization = z.infer<typeof SimpleOrganizationSchema>;
+
+export const SimpleOrganizationListSchema = z.array(SimpleOrganizationSchema);
+export type SimpleOrganizationList = z.infer<
+  typeof SimpleOrganizationListSchema
+>;

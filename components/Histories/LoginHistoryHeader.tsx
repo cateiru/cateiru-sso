@@ -3,6 +3,7 @@
 import {Heading, Select, Text, useColorModeValue} from '@chakra-ui/react';
 import {usePathname, useRouter} from 'next/navigation';
 import React from 'react';
+import {routeChangeStart} from '../../utils/event';
 import {Margin} from '../Common/Margin';
 import {UserName} from '../Common/UserName';
 
@@ -53,7 +54,10 @@ export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
         mb="1rem"
         size="md"
         mx="auto"
-        onChange={v => router.replace(v.target.value)}
+        onChange={v => {
+          routeChangeStart();
+          router.replace(v.target.value);
+        }}
         defaultValue={pathname}
       >
         <option value="/histories">ログイン履歴</option>

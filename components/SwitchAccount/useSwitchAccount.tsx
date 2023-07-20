@@ -37,8 +37,8 @@ export const useSwitchAccount = (): Returns => {
       });
 
       if (res) {
+        setUser(undefined);
         setTimeout(async () => {
-          setUser(undefined);
           toast({
             title: `ユーザー ${name} にログインしました`,
             status: 'success',
