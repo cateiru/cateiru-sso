@@ -26,7 +26,11 @@ export const MyClientList = () => {
     <>
       <Tooltip
         placement="top"
-        label={`あと、${data?.remaining_creatable_quantity}件のクライアントが作成可能です`}
+        label={
+          data?.can_register_client
+            ? `あと、${data?.remaining_creatable_quantity}件のクライアントが作成可能です`
+            : 'クライアントの作成上限を超えています'
+        }
       >
         <Button
           w="100%"
