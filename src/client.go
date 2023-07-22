@@ -62,18 +62,20 @@ type ClientAllowUserRuleResponse struct {
 func checkCanAccessToClient(ctx context.Context, db boil.ContextExecutor, client *models.Client, u *models.User) error {
 	if client.OrgID.Valid {
 		// orgが設定されている場合
-		userExist, err := models.OrganizationUsers(
+		orgUser, err := models.OrganizationUsers(
 			models.OrganizationUserWhere.OrganizationID.EQ(client.OrgID.String),
 			models.OrganizationUserWhere.UserID.EQ(u.ID),
-			qm.AndIn("role IN ?", "owner", "member"), // roleはownerかmemberのみ
-		).Exists(ctx, db)
+		).One(ctx, db)
+		if errors.Is(err, sql.ErrNoRows) {
+			// orgのアクセス権限がない場合
+			return NewHTTPError(http.StatusForbidden, "you are not member of this org")
+		}
 		if err != nil {
 			return err
 		}
 
-		// orgのアクセス権限がない場合
-		if !userExist {
-			return NewHTTPError(http.StatusForbidden, "you are not member of this org")
+		if orgUser.Role == "guest" {
+			return NewHTTPUniqueError(http.StatusForbidden, ErrNoAuthority, "you are not authority to access this organization")
 		}
 	} else {
 		// orgが設定されていない場合は、clientの作成者のみがアクセス可能
@@ -186,16 +188,18 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 	var clients models.ClientSlice
 	if orgId != "" {
 		// orgにユーザーがいるかどうかを見る
-		existOrgUser, err := models.OrganizationUsers(
+		orgUser, err := models.OrganizationUsers(
 			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
 			models.OrganizationUserWhere.UserID.EQ(u.ID),
-			qm.AndIn("role IN ?", "owner", "member"),
-		).Exists(ctx, h.DB)
+		).One(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			return NewHTTPError(http.StatusForbidden, "you are not member of this org")
+		}
 		if err != nil {
 			return err
 		}
-		if !existOrgUser {
-			return NewHTTPError(http.StatusForbidden, "you are not member of this org")
+		if orgUser.Role == "guest" {
+			return NewHTTPUniqueError(http.StatusForbidden, ErrNoAuthority, "you are not authority to access this organization")
 		}
 
 		clients, err = models.Clients(

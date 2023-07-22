@@ -174,16 +174,19 @@ func (h *Handler) OrgGetSimpleListHandler(c echo.Context) error {
 			return NewHTTPError(http.StatusNotFound, "organization not found")
 		}
 
-		// ユーザーがメンバーかどうかを見る
-		existOrgUser, err := models.OrganizationUsers(
+		// ユーザーがメンバーかつロールがownerかmemberかどうかを見る
+		orgUser, err := models.OrganizationUsers(
 			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
 			models.OrganizationUserWhere.UserID.EQ(u.ID),
-		).Exists(ctx, h.DB)
+		).One(ctx, h.DB)
+		if errors.Is(err, sql.ErrNoRows) {
+			return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
+		}
 		if err != nil {
 			return err
 		}
-		if !existOrgUser {
-			return NewHTTPUniqueError(http.StatusForbidden, ErrNoJoinedOrg, "you are not member of this organization")
+		if orgUser.Role == "guest" {
+			return NewHTTPUniqueError(http.StatusForbidden, ErrNoAuthority, "you are not authority to access this organization")
 		}
 	}
 

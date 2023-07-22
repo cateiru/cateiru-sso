@@ -47,6 +47,8 @@ const (
 	ErrAlreadyLoggedIn = 15
 	// orgに入っていない
 	ErrNoJoinedOrg = 16
+	// orgには入っているがロールによる権限が無い
+	ErrNoAuthority = 17
 )
 
 // OIDCのエラーコード

@@ -245,7 +245,7 @@ func TestClientHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this org")
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
 
 	t.Run("失敗: client_idをしたけどユーザーはorgのメンバーではない", func(t *testing.T) {
@@ -291,7 +291,7 @@ func TestClientHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this org")
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
 }
 
@@ -1313,7 +1313,7 @@ func TestClientUpdateHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientUpdateHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this org")
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
 
 	t.Run("失敗: promptの値が不正", func(t *testing.T) {
@@ -1786,7 +1786,7 @@ func TestClientDeleteHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientDeleteHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this org")
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
 }
 
@@ -2062,7 +2062,7 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientDeleteImageHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this org")
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
 }
 
@@ -2247,7 +2247,7 @@ func TestClientAllowUserHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientAllowUserHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this org")
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
 }
 
@@ -2528,7 +2528,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientAddAllowUserHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this org")
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
 }
 
@@ -2736,7 +2736,7 @@ func TestClientDeleteAllowUserHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.ClientDeleteAllowUserHandler(c)
-		require.EqualError(t, err, "code=403, message=you are not member of this org")
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
 }
 

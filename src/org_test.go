@@ -238,6 +238,25 @@ func TestOrgGetSimpleListHandler(t *testing.T) {
 		err = h.OrgGetSimpleListHandler(c)
 		require.EqualError(t, err, "code=403, message=you are not member of this organization, unique=16")
 	})
+
+	t.Run("失敗: orgに所属しているけどguest", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+		InviteUserInOrg(t, ctx, orgId, &u, "guest")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?org_id=%s", orgId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetSimpleListHandler(c)
+		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
+	})
 }
 
 func TestOrgGetDetailHandler(t *testing.T) {
