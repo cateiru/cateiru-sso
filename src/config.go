@@ -827,7 +827,7 @@ var TestConfig = &Config{
 	ClientRefreshPeriod: 24 * time.Hour, // 1days
 
 	ClientMaxCreated:            5, // テスト時のinsertを削減するために小さくしている
-	OrgClientMaxCreated:         5,
+	OrgClientMaxCreated:         6, // テスト時のinsertを削減するために小さくしている
 	ClientRedirectURLMaxCreated: 5,
 	ClientReferrerURLMaxCreated: 5,
 }

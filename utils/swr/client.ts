@@ -3,19 +3,19 @@ import {HTTPError} from '../error';
 import {
   ClientDetail,
   ClientDetailSchema,
-  ClientList,
-  ClientListSchema,
+  ClientListResponse,
+  ClientListResponseSchema,
 } from '../types/client';
 import {ErrorSchema} from '../types/error';
 
 export async function clientFetcher(
   clientId: undefined,
   orgId: undefined
-): Promise<ClientList>;
+): Promise<ClientListResponse>;
 export async function clientFetcher(
   clientId: undefined,
   orgId: string
-): Promise<ClientList>;
+): Promise<ClientListResponse>;
 export async function clientFetcher(
   clientId: string,
   orgId: undefined
@@ -23,7 +23,7 @@ export async function clientFetcher(
 export async function clientFetcher(
   clientId: string | undefined,
   orgId: string | undefined
-): Promise<ClientDetail | ClientList> {
+): Promise<ClientDetail | ClientListResponse> {
   const param = new URLSearchParams();
 
   if (clientId) {
@@ -33,7 +33,7 @@ export async function clientFetcher(
     param.append('org_id', orgId);
   }
 
-  const res = await fetch(api('/v2/client/', param), {
+  const res = await fetch(api('/v2/client', param), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -56,7 +56,7 @@ export async function clientFetcher(
     throw new HTTPError(data.error.message);
   }
 
-  const data = ClientListSchema.safeParse(await res.json());
+  const data = ClientListResponseSchema.safeParse(await res.json());
   if (data.success) {
     return data.data;
   }

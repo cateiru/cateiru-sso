@@ -77,14 +77,14 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	// 通知
 	notice := version.Group("/notice")
-	notice.GET("/", h.Root)
+	notice.GET("", h.Root)
 	notice.POST("/read", h.Root) // 既読にする
 
 	// SSOクライアント
 	client := version.Group("/client")
-	client.GET("/", h.ClientHandler)
-	client.POST("/", h.ClientCreateHandler) // クライアント新規作成
-	client.PUT("/", h.ClientUpdateHandler)  // クライアントの編集
+	client.GET("", h.ClientHandler)
+	client.POST("", h.ClientCreateHandler) // クライアント新規作成
+	client.PUT("", h.ClientUpdateHandler)  // クライアントの編集
 	client.DELETE("/", h.ClientDeleteHandler)
 	client.DELETE("/image", h.ClientDeleteImageHandler) // クライアント画像の削除
 	client.GET("/allow_user", h.ClientAllowUserHandler)

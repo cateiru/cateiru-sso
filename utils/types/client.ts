@@ -20,6 +20,14 @@ export type Client = z.infer<typeof ClientSchema>;
 export const ClientListSchema = z.array(ClientSchema);
 export type ClientList = z.infer<typeof ClientListSchema>;
 
+export const ClientListResponseSchema = z.object({
+  can_register_client: z.boolean(),
+  remaining_creatable_quantity: z.number(),
+
+  clients: ClientListSchema,
+});
+export type ClientListResponse = z.infer<typeof ClientListResponseSchema>;
+
 export const ClientDetailSchema = ClientSchema.extend({
   client_secret: z.string(),
   redirect_uris: z.array(z.string()),

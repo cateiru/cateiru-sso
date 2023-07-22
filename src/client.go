@@ -191,9 +191,13 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 		return c.JSON(http.StatusOK, response)
 	}
 
+	maxCreated := h.C.ClientMaxCreated
+
 	// orgIdが指定されている場合はそのorgのクライアントを返す
 	var clients models.ClientSlice
 	if orgId != "" {
+		maxCreated = h.C.OrgClientMaxCreated
+
 		// orgにユーザーがいるかどうかを見る
 		orgUser, err := models.OrganizationUsers(
 			models.OrganizationUserWhere.OrganizationID.EQ(orgId),
@@ -250,8 +254,8 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 	response := &ClientListResponse{
 
 		// ClientMaxCreated は上限なので作成可能であるのは-1した数
-		CanRegisterClient:          h.C.ClientMaxCreated > len(clients),
-		RemainingCreatableQuantity: h.C.ClientMaxCreated - len(clients),
+		CanRegisterClient:          maxCreated > len(clients),
+		RemainingCreatableQuantity: maxCreated - len(clients),
 		Clients:                    clientResponse,
 	}
 
