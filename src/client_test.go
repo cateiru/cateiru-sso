@@ -74,10 +74,12 @@ func TestClientHandler(t *testing.T) {
 		err = h.ClientHandler(c)
 		require.NoError(t, err)
 
-		response := []src.ClientResponse{}
+		response := src.ClientListResponse{}
 		require.NoError(t, m.Json(&response))
 
-		require.Len(t, response, 2)
+		require.Len(t, response.Clients, 2)
+		require.True(t, response.CanRegisterClient)
+		require.Equal(t, response.RemainingCreatableQuantity, C.ClientMaxCreated-2)
 	})
 
 	t.Run("成功: orgIdを指定するとその組織のすべてのクライアントを取得できる", func(t *testing.T) {
@@ -101,10 +103,12 @@ func TestClientHandler(t *testing.T) {
 		err = h.ClientHandler(c)
 		require.NoError(t, err)
 
-		response := []src.ClientResponse{}
+		response := src.ClientListResponse{}
 		require.NoError(t, m.Json(&response))
 
-		require.Len(t, response, 2, "orgのクライアントのみ取得できる")
+		require.Len(t, response.Clients, 2, "orgのクライアントのみ取得できる")
+		require.True(t, response.CanRegisterClient)
+		require.Equal(t, response.RemainingCreatableQuantity, C.OrgClientMaxCreated-2)
 	})
 
 	t.Run("成功: clientがorgの場合、client_idを指定して取得できる", func(t *testing.T) {

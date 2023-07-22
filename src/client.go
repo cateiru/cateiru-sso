@@ -24,6 +24,13 @@ import (
 var PromptEMUNS = []string{"login", "2fa_login"}
 var ScopeEMUNS = []string{"email", ""}
 
+type ClientListResponse struct {
+	CanRegisterClient          bool `json:"can_register_client"`
+	RemainingCreatableQuantity int  `json:"remaining_creatable_quantity"`
+
+	Clients []*ClientResponse `json:"clients"`
+}
+
 type ClientResponse struct {
 	ClientID string `json:"client_id"`
 
@@ -221,9 +228,9 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 		}
 	}
 
-	response := make([]*ClientResponse, len(clients))
+	clientResponse := make([]*ClientResponse, len(clients))
 	for i, client := range clients {
-		response[i] = &ClientResponse{
+		clientResponse[i] = &ClientResponse{
 			ClientID: client.ClientID,
 
 			Name:        client.Name,
@@ -238,6 +245,14 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 			CreatedAt: client.CreatedAt,
 			UpdatedAt: client.UpdatedAt,
 		}
+	}
+
+	response := &ClientListResponse{
+
+		// ClientMaxCreated は上限なので作成可能であるのは-1した数
+		CanRegisterClient:          h.C.ClientMaxCreated > len(clients),
+		RemainingCreatableQuantity: h.C.ClientMaxCreated - len(clients),
+		Clients:                    clientResponse,
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -370,7 +385,7 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 			return err
 		}
 		// 新規作成するので現在あるクライアント数が上限-1以上であればエラー（org version）
-		if orgClientCount >= int64(h.C.OrgClientMaxCreated) {
+		if orgClientCount >= int64(h.C.OrgClientMaxCreated-1) {
 			return NewHTTPError(http.StatusBadRequest, "too many clients")
 		}
 
