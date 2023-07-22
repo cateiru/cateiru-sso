@@ -1,10 +1,10 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {ClientList} from '../../components/Client/ClientList';
+import {ClientListTable} from '../../components/Client/ClientListTable';
 
-const meta: Meta<typeof ClientList> = {
-  title: 'CateiruSSO/Client/ClientList',
-  component: ClientList,
+const meta: Meta<typeof ClientListTable> = {
+  title: 'CateiruSSO/Client/ClientListTable',
+  component: ClientListTable,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
@@ -12,7 +12,7 @@ const meta: Meta<typeof ClientList> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ClientList>;
+type Story = StoryObj<typeof ClientListTable>;
 
 export const Default: Story = {
   args: {
@@ -31,4 +31,8 @@ export const Default: Story = {
         updated_at: faker.date.past().toISOString(),
       })),
   },
+};
+
+export const Loading: Story = {
+  args: {},
 };
