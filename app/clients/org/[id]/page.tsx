@@ -1,7 +1,7 @@
-import {MyClientList} from '../../../../components/Client/MyClientList';
+import {ClientList} from '../../../../components/Client/ClientList';
 
 const Page = () => {
-  return <MyClientList />;
+  return <ClientList />;
 };
 
 export default Page;

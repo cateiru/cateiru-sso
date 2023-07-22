@@ -10,7 +10,7 @@ import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
 import {ClientListTable} from './ClientListTable';
 
-export const MyClientList = () => {
+export const ClientList = () => {
   const param = useParams();
 
   const {data, error} = useSWR<ClientListResponse, ErrorType>(

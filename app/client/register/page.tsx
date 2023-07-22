@@ -1,3 +1,7 @@
+import {RegisterClient} from '../../../components/Client/RegisterClient';
+
 const Page = () => {
-  return;
+  return <RegisterClient />;
 };
+
+export default Page;
