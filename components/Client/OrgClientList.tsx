@@ -1,5 +1,5 @@
 'use client';
 
-export const ClientOrgList = () => {
+export const OrgClientList = () => {
   return <>org client</>;
 };

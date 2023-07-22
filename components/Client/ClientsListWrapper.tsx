@@ -56,8 +56,6 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
     return 'あなたの作成したクライアントの一覧が表示されます。';
   }, [pathname, error]);
 
-  console.log(id);
-
   return (
     <Margin>
       <Heading textAlign="center" mt="3rem">

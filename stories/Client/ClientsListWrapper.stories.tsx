@@ -2,7 +2,6 @@ import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
 import {ClientsListWrapper} from '../../components/Client/ClientsListWrapper';
 import {api} from '../../utils/api';
-import {ErrorType} from '../../utils/types/error';
 import {SimpleOrganizationList} from '../../utils/types/organization';
 
 const meta: Meta<typeof ClientsListWrapper> = {

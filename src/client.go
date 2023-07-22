@@ -48,8 +48,6 @@ type ClientDetailResponse struct {
 
 	Scopes []string `json:"scopes"`
 
-	OrgMemberOnly bool `json:"org_member_only,omitempty"`
-
 	ClientResponse
 }
 
@@ -139,10 +137,9 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 	return &ClientDetailResponse{
 		ClientSecret: client.ClientSecret,
 
-		RedirectUrls:  redirectUrls,
-		ReferrerUrls:  referrerUrls,
-		Scopes:        scopes,
-		OrgMemberOnly: client.OrgMemberOnly,
+		RedirectUrls: redirectUrls,
+		ReferrerUrls: referrerUrls,
+		Scopes:       scopes,
 
 		ClientResponse: ClientResponse{
 			ClientID: client.ClientID,

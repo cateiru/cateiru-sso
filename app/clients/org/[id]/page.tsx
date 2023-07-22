@@ -1,7 +1,7 @@
-import {ClientOrgList} from '../../../../components/Client/ClientOrgList';
+import {OrgClientList} from '../../../../components/Client/OrgClientList';
 
 const Page = () => {
-  return <ClientOrgList />;
+  return <OrgClientList />;
 };
 
 export default Page;
