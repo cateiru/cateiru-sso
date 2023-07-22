@@ -65,7 +65,12 @@ export const ImageForm: React.FC<Props> = props => {
   };
 
   const closeModal = () => {
-    clearImage();
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+    setImage(new File([], ''));
+    setZoom(1);
+
     onClose();
   };
 
@@ -74,10 +79,13 @@ export const ImageForm: React.FC<Props> = props => {
       inputRef.current.value = '';
     }
     setImage(new File([], ''));
-    setImageUrl('');
     setZoom(1);
 
-    props.clearImage && props.clearImage();
+    setImageUrl('');
+
+    if (props.clearImage) {
+      props.clearImage();
+    }
   };
 
   const apply = () => {

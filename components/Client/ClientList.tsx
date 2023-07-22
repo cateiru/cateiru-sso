@@ -1,6 +1,7 @@
 'use client';
 
 import {Button} from '@chakra-ui/react';
+import Link from 'next/link';
 import {useParams} from 'next/navigation';
 import useSWR from 'swr';
 import {clientFetcher} from '../../utils/swr/client';
@@ -11,11 +12,11 @@ import {Error} from '../Common/Error/Error';
 import {ClientListTable} from './ClientListTable';
 
 export const ClientList = () => {
-  const param = useParams();
+  const {id} = useParams();
 
   const {data, error} = useSWR<ClientListResponse, ErrorType>(
-    param.id ? `/v2/client?org_id=${param.id}` : '/v2/client',
-    () => clientFetcher(undefined, param.id ?? '')
+    id ? `/v2/client?org_id=${id}` : '/v2/client',
+    () => clientFetcher(undefined, id ?? '')
   );
 
   if (error) {
@@ -37,6 +38,8 @@ export const ClientList = () => {
           my=".5rem"
           colorScheme="cateiru"
           isDisabled={!data?.can_register_client}
+          as={Link}
+          href={id ? `/client/register?org_id=${id}` : '/client/register'}
         >
           クライアントを新規作成
         </Button>
