@@ -190,6 +190,7 @@ func (h *Handler) OrgGetSimpleListHandler(c echo.Context) error {
 	orgs, err := models.Organizations(
 		qm.InnerJoin("organization_user ON organization_user.organization_id = organization.id"),
 		models.OrganizationUserWhere.UserID.EQ(u.ID),
+		models.OrganizationUserWhere.Role.GT("guest"),
 		qm.OrderBy("organization.name ASC"),
 	).All(ctx, h.DB)
 	if err != nil {

@@ -103,6 +103,12 @@ func TestOrgGetSimpleListHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
+	SessionTest(t, h.OrgGetSimpleListHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	})
+
 	t.Run("成功: org一覧を取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -120,7 +126,7 @@ func TestOrgGetSimpleListHandler(t *testing.T) {
 		err = h.OrgGetSimpleListHandler(c)
 		require.NoError(t, err)
 
-		response := []src.OrgResponse{}
+		response := []src.OrgSimpleResponse{}
 		require.NoError(t, m.Json(&response))
 
 		require.Len(t, response, 1)
@@ -143,10 +149,58 @@ func TestOrgGetSimpleListHandler(t *testing.T) {
 		err = h.OrgGetSimpleListHandler(c)
 		require.NoError(t, err)
 
-		response := []src.OrgResponse{}
+		response := []src.OrgSimpleResponse{}
 		require.NoError(t, m.Json(&response))
 
 		require.Len(t, response, 1)
+	})
+
+	t.Run("成功: ownerとmemberロールのみ取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		org1 := RegisterOrg(t, ctx)
+		org2 := RegisterOrg(t, ctx)
+		org3 := RegisterOrg(t, ctx)
+
+		InviteUserInOrg(t, ctx, org1, &u, "owner")
+		InviteUserInOrg(t, ctx, org2, &u, "member")
+		InviteUserInOrg(t, ctx, org3, &u, "guest")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.OrgGetSimpleListHandler(c)
+		require.NoError(t, err)
+
+		response := []src.OrgSimpleResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 2)
+		findOwnerOrg := false
+		findMemberOrg := false
+		findGuestOrg := false
+
+		for _, org := range response {
+			if org.ID == org1 {
+				findOwnerOrg = true
+			}
+			if org.ID == org2 {
+				findMemberOrg = true
+			}
+			if org.ID == org3 {
+				findGuestOrg = true
+			}
+		}
+
+		require.True(t, findOwnerOrg)
+		require.True(t, findMemberOrg)
+		require.False(t, findGuestOrg)
 	})
 
 	t.Run("失敗: org_idが不正", func(t *testing.T) {
