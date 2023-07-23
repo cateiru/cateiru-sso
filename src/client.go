@@ -58,6 +58,12 @@ type ClientDetailResponse struct {
 	ClientResponse
 }
 
+type ClientConfigResponse struct {
+	RedirectUrlMax int      `json:"redirect_url_max"`
+	ReferrerUrlMax int      `json:"referrer_url_max"`
+	Scopes         []string `json:"scopes"`
+}
+
 type ClientAllowUserRuleResponse struct {
 	Id uint `json:"id"`
 
@@ -857,6 +863,18 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 	}
 
 	return nil
+}
+
+// クライアントの設定を返す
+func (h *Handler) ClientConfigHandler(c echo.Context) error {
+	response := &ClientConfigResponse{
+		RedirectUrlMax: h.C.ClientRedirectURLMaxCreated,
+		ReferrerUrlMax: h.C.ClientReferrerURLMaxCreated,
+
+		Scopes: lib.AllowScopes,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 // クライアント画像の削除

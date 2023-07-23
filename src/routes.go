@@ -85,7 +85,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	client.GET("", h.ClientHandler)
 	client.POST("", h.ClientCreateHandler) // クライアント新規作成
 	client.PUT("", h.ClientUpdateHandler)  // クライアントの編集
-	client.DELETE("/", h.ClientDeleteHandler)
+	client.DELETE("", h.ClientDeleteHandler)
+	client.GET("/config", h.ClientConfigHandler)        // クライアントの設定
 	client.DELETE("/image", h.ClientDeleteImageHandler) // クライアント画像の削除
 	client.GET("/allow_user", h.ClientAllowUserHandler)
 	client.POST("/allow_user", h.ClientAddAllowUserHandler)

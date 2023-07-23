@@ -21,7 +21,7 @@ var allowContentType = []string{
 }
 
 // サポートしているOIDCのスコープ
-var allowScopes = []string{
+var AllowScopes = []string{
 	"openid",
 	"profile",
 	"email",
@@ -131,7 +131,7 @@ func ValidateContentType(c string) bool {
 }
 
 func ValidateScope(s string) bool {
-	for _, allow := range allowScopes {
+	for _, allow := range AllowScopes {
 		if allow == s {
 			return true
 		}

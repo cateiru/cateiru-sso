@@ -1794,6 +1794,28 @@ func TestClientDeleteHandler(t *testing.T) {
 	})
 }
 
+func TestClientConfigHandler(t *testing.T) {
+	h := NewTestHandler(t)
+
+	t.Run("取得できる", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.ClientConfigHandler(c)
+		require.NoError(t, err)
+
+		response := src.ClientConfigResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.RedirectUrlMax, C.ClientRedirectURLMaxCreated)
+		require.Equal(t, response.ReferrerUrlMax, C.ClientReferrerURLMaxCreated)
+
+		require.Equal(t, response.Scopes, []string{"openid", "profile", "email"})
+	})
+}
+
 func TestClientDeleteImageHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
