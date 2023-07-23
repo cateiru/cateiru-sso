@@ -64,7 +64,7 @@ export const RedirectUrlsForm: React.FC<Props> = props => {
           </FormErrorMessage>
         </React.Fragment>
       ))}
-      <ButtonGroup size="sm" isAttached>
+      <ButtonGroup size="sm" isAttached mt=".5rem">
         <IconButton
           aria-label="add"
           icon={<TbPlus size="20px" />}

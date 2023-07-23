@@ -30,12 +30,10 @@ export type ClientListResponse = z.infer<typeof ClientListResponseSchema>;
 
 export const ClientDetailSchema = ClientSchema.extend({
   client_secret: z.string(),
-  redirect_uris: z.array(z.string()),
+  redirect_urls: z.array(z.string()),
   referrer_urls: z.array(z.string()),
 
   scopes: z.array(z.string()),
-
-  org_member_only: z.boolean(),
 });
 export type ClientDetail = z.infer<typeof ClientDetailSchema>;
 

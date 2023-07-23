@@ -54,18 +54,16 @@ export const ReferrerUrlsForm: React.FC<Props> = props => {
                 },
               })}
             />
-            {fields.length > 1 && (
-              <IconButton
-                ml=".5rem"
-                aria-label="add"
-                icon={<TbX size="20px" />}
-                borderRadius="50%"
-                variant="ghost"
-                onClick={() => {
-                  remove(index);
-                }}
-              />
-            )}
+            <IconButton
+              ml=".5rem"
+              aria-label="add"
+              icon={<TbX size="20px" />}
+              borderRadius="50%"
+              variant="ghost"
+              onClick={() => {
+                remove(index);
+              }}
+            />
           </Flex>
           <FormErrorMessage>
             {errors.referrerUrls &&
@@ -74,7 +72,7 @@ export const ReferrerUrlsForm: React.FC<Props> = props => {
           </FormErrorMessage>
         </React.Fragment>
       ))}
-      <ButtonGroup size="sm" isAttached>
+      <ButtonGroup size="sm" isAttached mt=".5rem">
         <IconButton
           aria-label="add"
           icon={<TbPlus size="20px" />}
@@ -87,11 +85,7 @@ export const ReferrerUrlsForm: React.FC<Props> = props => {
         <IconButton
           aria-label="remove"
           icon={<TbMinus size="20px" />}
-          onClick={() => {
-            if (fields.length <= 1) return;
-
-            remove(fields.length - 1);
-          }}
+          onClick={() => remove(fields.length - 1)}
         />
       </ButtonGroup>
     </>
