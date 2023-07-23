@@ -41,3 +41,11 @@ export type ClientDetail = z.infer<typeof ClientDetailSchema>;
 
 export const ClientDetailListSchema = z.array(ClientDetailSchema);
 export type ClientDetailList = z.infer<typeof ClientDetailListSchema>;
+
+export const ClientConfigSchema = z.object({
+  redirect_url_max: z.number(),
+  referrer_url_max: z.number(),
+
+  scopes: z.array(z.string()),
+});
+export type ClientConfig = z.infer<typeof ClientConfigSchema>;

@@ -5,46 +5,94 @@ import {
   Divider,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   Heading,
   Input,
   Select,
   Spacer,
   Switch,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import {useSearchParams} from 'next/navigation';
+import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
+import {ClientConfig, ClientConfigSchema} from '../../utils/types/client';
 import {ImageForm, ImageFormValue} from '../Common/Form/ImageForm';
-import {ListForm} from '../Common/Form/ListForm';
+import {
+  RedirectUrlsForm,
+  RedirectUrlsFormValue,
+} from '../Common/Form/RedirectUrlsForm';
+import {
+  ReferrerUrlsForm,
+  ReferrerUrlsFormValue,
+} from '../Common/Form/ReferrerUrlsForm';
+import {ScopesForm, ScopesFormValue} from '../Common/Form/ScopesFrom';
 import {Margin} from '../Common/Margin';
+import {useRequest} from '../Common/useRequest';
 
-interface RegisterClientForm extends ImageFormValue {
+interface RegisterClientForm
+  extends ImageFormValue,
+    ScopesFormValue,
+    RedirectUrlsFormValue,
+    ReferrerUrlsFormValue {
   name: string;
   description?: string;
   isAllow: boolean;
   prompt: 'login' | '2fa_login' | '';
-  scopes: string[];
   orgMemberOnly?: boolean;
-  redirectUrls: string[];
-  referrerUrls: string[];
 }
 
 export const RegisterClient = () => {
   const param = useSearchParams();
   const orgId = param.get('org_id');
 
+  const textColor = useColorModeValue('gray.500', 'gray.400');
+
+  const {request} = useRequest('/v2/client/config');
+  const [config, setConfig] = React.useState<ClientConfig | undefined>();
+
   const methods = useForm<RegisterClientForm>({
     defaultValues: {
-      scopes: ['openid'],
-      redirectUrls: [],
-      referrerUrls: [],
+      redirectUrls: [{value: ''}],
+      referrerUrls: [{value: ''}],
     },
   });
   const {
     handleSubmit,
     register,
+    setValue,
     formState: {errors, isSubmitting},
   } = methods;
+
+  // 設定（リダイレクトURLの作成最大数など）を取得するやつ
+  // SWR使ってもいいが、初回にしか使わないので愚直に書いている
+  React.useEffect(() => {
+    const f = async () => {
+      const res = await request({
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'include',
+      });
+
+      if (res) {
+        const data = ClientConfigSchema.safeParse(await res.json());
+        if (data.success) {
+          setConfig(data.data);
+          setValue(
+            'scopes',
+            data.data.scopes.map(v => ({
+              value: v,
+              isRequired: v === 'openid', // openid は必須
+            }))
+          );
+          return;
+        }
+        console.error(data.error);
+      }
+    };
+    f();
+  }, []);
 
   const onSubmit = async (data: RegisterClientForm) => {
     console.log(data);
@@ -92,25 +140,39 @@ export const RegisterClient = () => {
 
           <FormControl isInvalid={Boolean(errors.scopes)} mt="1rem">
             <FormLabel htmlFor="scopes">スコープ</FormLabel>
-            <ListForm name="scopes" />
+            <ScopesForm scopes={config?.scopes ?? []} />
             <FormErrorMessage>
-              {errors.scopes && errors.scopes.message}
+              {errors.scopes &&
+                errors.scopes.root &&
+                errors.scopes.root?.message}
             </FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={Boolean(errors.redirectUrls)} mt="1rem">
             <FormLabel htmlFor="redirectUrls">リダイレクトURL</FormLabel>
-            <ListForm name="redirectUrls" placeholder="https://" />
+            <FormHelperText color={textColor}>
+              リダイレクトURLは最大{config?.redirect_url_max ?? '-'}
+              件まで作成することができます。
+            </FormHelperText>
+            <RedirectUrlsForm maxCreatedCount={config?.redirect_url_max ?? 1} />
             <FormErrorMessage>
-              {errors.redirectUrls && errors.redirectUrls.message}
+              {errors.redirectUrls &&
+                errors.redirectUrls.root &&
+                errors.redirectUrls.root?.message}
             </FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={Boolean(errors.referrerUrls)} mt="1rem">
             <FormLabel htmlFor="referrerUrls">リファラーURL</FormLabel>
-            <ListForm name="referrerUrls" placeholder="https://" />
+            <FormHelperText color={textColor}>
+              リファラーURLは最大{config?.referrer_url_max ?? '-'}
+              件まで作成することができます。
+            </FormHelperText>
+            <ReferrerUrlsForm maxCreatedCount={config?.referrer_url_max ?? 1} />
             <FormErrorMessage>
-              {errors.referrerUrls && errors.referrerUrls.message}
+              {errors.referrerUrls &&
+                errors.referrerUrls.root &&
+                errors.referrerUrls.root?.message}
             </FormErrorMessage>
           </FormControl>
 
