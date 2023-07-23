@@ -13,6 +13,7 @@ import {
   Select,
   Spacer,
   Switch,
+  Textarea,
   useColorModeValue,
 } from '@chakra-ui/react';
 import {useRouter, useSearchParams} from 'next/navigation';
@@ -178,7 +179,7 @@ export const RegisterClient = () => {
             <FormLabel htmlFor="description">
               クライアントの説明（オプション）
             </FormLabel>
-            <Input id="description" {...register('description')} />
+            <Textarea id="description" {...register('description')} />
             <FormErrorMessage>
               {errors.description && errors.description.message}
             </FormErrorMessage>
