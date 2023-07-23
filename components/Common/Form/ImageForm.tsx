@@ -22,6 +22,7 @@ import {
 import React from 'react';
 import AvatarEditor from 'react-avatar-editor';
 import {useFormContext} from 'react-hook-form';
+import {TbPhoto} from 'react-icons/tb';
 import {Avatar} from '../Chakra/Avatar';
 
 interface Props {
@@ -108,21 +109,27 @@ export const ImageForm: React.FC<Props> = props => {
   return (
     <>
       <Flex alignItems="center">
-        <Avatar src={imageUrl} size="sm" mr=".5rem" />
-        <InputGroup>
+        <Avatar
+          src={imageUrl}
+          size="sm"
+          mr=".5rem"
+          icon={<TbPhoto size="20px" />}
+        />
+        <Flex w="100%" ml=".5rem">
           <Input
             ref={inputRef}
             id="filename"
             type="file"
             accept="image/*"
             onChange={handleChange}
+            variant="unstyled"
+            h="100%"
+            borderRadius="0"
           />
-          <InputRightElement w="5.5rem" mr=".2rem">
-            <Button size="sm" onClick={clearImage}>
-              画像を削除
-            </Button>
-          </InputRightElement>
-        </InputGroup>
+          <Button size="sm" onClick={clearImage}>
+            画像を削除
+          </Button>
+        </Flex>
       </Flex>
 
       <Modal isOpen={isOpen} onClose={closeModal} isCentered>
