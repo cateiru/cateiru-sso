@@ -230,6 +230,7 @@ func (h *Handler) ClientHandler(c echo.Context) error {
 	} else {
 		clients, err = models.Clients(
 			models.ClientWhere.OwnerUserID.EQ(u.ID),
+			models.ClientWhere.OrgID.IsNull(),
 			qm.Limit(h.C.ClientMaxCreated),
 			qm.OrderBy("updated_at DESC"),
 		).All(ctx, h.DB)
