@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jarcoal/httpmock v1.3.0
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
-	github.com/labstack/echo/v4 v4.10.0
+	github.com/labstack/echo/v4 v4.11.1
 	github.com/mailgun/mailgun-go v2.0.0+incompatible
 	github.com/mileusna/useragent v1.2.1
 	github.com/oklog/ulid/v2 v2.1.0
@@ -25,9 +25,9 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.14.1
 	github.com/volatiletech/strmangle v0.0.4
 	go.uber.org/zap v1.24.0
-	golang.org/x/crypto v0.7.0
-	golang.org/x/net v0.8.0
-	golang.org/x/text v0.8.0
+	golang.org/x/crypto v0.11.0
+	golang.org/x/net v0.12.0
+	golang.org/x/text v0.11.0
 )
 
 require (
@@ -64,7 +64,7 @@ require (
 	github.com/lib/pq v1.10.7 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
@@ -87,7 +87,7 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.114.0 // indirect
