@@ -4,8 +4,6 @@ import {
   Center,
   Flex,
   Input,
-  InputGroup,
-  InputRightElement,
   Modal,
   ModalBody,
   ModalCloseButton,

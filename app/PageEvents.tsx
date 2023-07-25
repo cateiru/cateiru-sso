@@ -17,6 +17,7 @@ export const PageEventsImplementation: React.FC = () => {
   React.useEffect(() => {
     // まだ試験的機能なので型情報がない。そのため、一旦anyにしてしまう
     // mdn: https://developer.mozilla.org/en-US/docs/Web/API/Window/navigation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const {navigation} = window as any;
     if (!navigation) {
       return;
