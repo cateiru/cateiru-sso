@@ -11,14 +11,12 @@ import {
   Thead,
   Tr,
   useColorModeValue,
-  useDisclosure,
 } from '@chakra-ui/react';
 import React from 'react';
 import {TbPlugConnectedX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
 import {UserBrand} from '../../../utils/types/staff';
-import {Tooltip} from '../../Common/Chakra/Tooltip';
-import {Confirm} from '../../Common/Confirm/Confirm';
+import {DeleteButton} from '../../Common/DeleteButton';
 import {Link as NextLink} from '../../Common/Next/Link';
 import {useRequest} from '../../Common/useRequest';
 import {AddUser} from '../Brand/AddUser';
@@ -30,21 +28,13 @@ interface Props {
 
 export const UserDetailBrand: React.FC<Props> = props => {
   const textColor = useColorModeValue('gray.500', 'gray.400');
-  const defaultTrashColor = useColorModeValue('#CBD5E0', '#4A5568');
-  const hoverTrashColor = useColorModeValue('#F56565', '#C53030');
-
   const {mutate} = useSWRConfig();
   const {request} = useRequest('/v2/admin/user/brand');
 
-  const deleteModal = useDisclosure();
-
-  const [hover, setHover] = React.useState(false);
-  const [selectedBrand, setSelectedBrand] = React.useState<UserBrand>();
-
-  const onDelete = async () => {
+  const onDelete = async (brandId: string) => {
     const param = new URLSearchParams();
     param.append('user_id', props.userId);
-    param.append('brand_id', selectedBrand?.brand_id ?? '');
+    param.append('brand_id', brandId);
 
     const res = await request(
       {
@@ -112,24 +102,20 @@ export const UserDetailBrand: React.FC<Props> = props => {
               return (
                 <Tr key={`brand-${brand.id}`}>
                   <Td>
-                    <Tooltip
-                      label="ユーザーからこのブランドを削除"
-                      placement="top"
-                    >
-                      <Center>
-                        <TbPlugConnectedX
-                          size="25px"
-                          color={hover ? hoverTrashColor : defaultTrashColor}
-                          onMouseOver={() => setHover(true)}
-                          onMouseOut={() => setHover(false)}
-                          onClick={() => {
-                            setSelectedBrand(brand);
-                            deleteModal.onOpen();
-                          }}
-                          style={{cursor: 'pointer'}}
-                        />
-                      </Center>
-                    </Tooltip>
+                    <Center>
+                      <DeleteButton
+                        onSubmit={async () => {
+                          await onDelete(brand.brand_id);
+                        }}
+                        tooltipLabel="ユーザーからこのブランドを削除"
+                        text={{
+                          confirmHeader: `ユーザーと${brand.brand_name}の連携を解除しますか？`,
+                          confirmOkTextColor: 'red',
+                          confirmOkText: '削除',
+                        }}
+                        icon={<TbPlugConnectedX size="25px" />}
+                      />
+                    </Center>
                   </Td>
                   <Td>{brand.brand_name}</Td>
                   <Td>{new Date(brand.created_at).toLocaleString()}</Td>
@@ -148,15 +134,6 @@ export const UserDetailBrand: React.FC<Props> = props => {
             })}
           </Tbody>
         </Table>
-        <Confirm
-          isOpen={deleteModal.isOpen}
-          onClose={deleteModal.onClose}
-          onSubmit={onDelete}
-          text={{
-            confirmHeader: `ユーザーと${selectedBrand?.brand_name}の連携を解除しますか？`,
-            confirmOkText: '解除',
-          }}
-        />
       </TableContainer>
     </>
   );

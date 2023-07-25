@@ -1,9 +1,8 @@
-import {Center, useColorModeValue} from '@chakra-ui/react';
+import {Center, ListItem, UnorderedList} from '@chakra-ui/react';
 import React from 'react';
-import {TbTrashX} from 'react-icons/tb';
+import {TbPlugConnectedX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
-import {Tooltip} from '../Common/Chakra/Tooltip';
-import {Spinner} from '../Common/Icons/Spinner';
+import {DeleteButton} from '../Common/DeleteButton';
 import {useRequest} from '../Common/useRequest';
 
 interface Props {
@@ -11,17 +10,10 @@ interface Props {
 }
 
 export const LogoutDevice: React.FC<Props> = props => {
-  const defaultTrashColor = useColorModeValue('#CBD5E0', '#4A5568');
-  const hoverTrashColor = useColorModeValue('#F56565', '#C53030');
-
   const {request} = useRequest('/v2/account/logout');
   const {mutate} = useSWRConfig();
 
-  const [hover, setHover] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-
   const onLogout = async () => {
-    setLoading(true);
     const form = new FormData();
     form.append('login_history_id', String(props.loginHistoryId));
 
@@ -41,25 +33,27 @@ export const LogoutDevice: React.FC<Props> = props => {
         {revalidate: true}
       );
     }
-    setLoading(false);
   };
 
   return (
-    <Tooltip label="このデバイスからログアウト" placement="top">
-      <Center>
-        {loading ? (
-          <Spinner />
-        ) : (
-          <TbTrashX
-            size="25px"
-            color={hover ? hoverTrashColor : defaultTrashColor}
-            onMouseOver={() => setHover(true)}
-            onMouseOut={() => setHover(false)}
-            onClick={onLogout}
-            style={{cursor: 'pointer'}}
-          />
-        )}
-      </Center>
-    </Tooltip>
+    <Center>
+      <DeleteButton
+        onSubmit={onLogout}
+        tooltipLabel="このデバイスからログアウト"
+        text={{
+          confirmHeader: 'このデバイスからログアウトしますか？',
+          confirmOkTextColor: 'red',
+          confirmOkText: 'ログアウト',
+        }}
+        icon={<TbPlugConnectedX size="25px" />}
+      >
+        <UnorderedList>
+          <ListItem>
+            一度ログアウトすると、操作を取り消すことはできません。
+          </ListItem>
+          <ListItem>ログイン履歴は保持されます。</ListItem>
+        </UnorderedList>
+      </DeleteButton>
+    </Center>
   );
 };

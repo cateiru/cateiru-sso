@@ -1,8 +1,7 @@
-import {Center, useColorModeValue} from '@chakra-ui/react';
+import {Center} from '@chakra-ui/react';
 import React from 'react';
 import {TbPlugConnectedX} from 'react-icons/tb';
-import {Tooltip} from '../../Common/Chakra/Tooltip';
-import {Spinner} from '../../Common/Icons/Spinner';
+import {DeleteButton} from '../../Common/DeleteButton';
 import {useRequest} from '../../Common/useRequest';
 
 interface Props {
@@ -13,17 +12,10 @@ interface Props {
 }
 
 export const OrgDeleteUser: React.FC<Props> = props => {
-  const defaultTrashColor = useColorModeValue('#CBD5E0', '#4A5568');
-  const hoverTrashColor = useColorModeValue('#F56565', '#C53030');
-
-  const [hover, setHover] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-
   const {request} = useRequest('/v2/admin/org/member');
 
   const onDelete = () => {
     const f = async () => {
-      setLoading(true);
       const param = new URLSearchParams();
       param.append('org_user_id', props.userId.toString());
 
@@ -39,27 +31,22 @@ export const OrgDeleteUser: React.FC<Props> = props => {
       if (res) {
         props.handleSuccess();
       }
-      setLoading(false);
     };
     f();
   };
 
   return (
-    <Tooltip label={`この組織から${props.userName}を削除`} placement="top">
-      <Center>
-        {loading ? (
-          <Spinner />
-        ) : (
-          <TbPlugConnectedX
-            size="25px"
-            color={hover ? hoverTrashColor : defaultTrashColor}
-            onMouseOver={() => setHover(true)}
-            onMouseOut={() => setHover(false)}
-            onClick={onDelete}
-            style={{cursor: 'pointer'}}
-          />
-        )}
-      </Center>
-    </Tooltip>
+    <Center>
+      <DeleteButton
+        onSubmit={onDelete}
+        tooltipLabel={`この組織から${props.userName}を削除`}
+        text={{
+          confirmHeader: `この組織から${props.userName}を削除しますか？`,
+          confirmOkTextColor: 'red',
+          confirmOkText: '削除',
+        }}
+        icon={<TbPlugConnectedX size="25px" />}
+      />
+    </Center>
   );
 };

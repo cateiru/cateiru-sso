@@ -54,11 +54,11 @@ export const Confirm: React.FC<Props> = props => {
       <Modal isOpen={props.isOpen} onClose={onCloseHandler} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{props.text.confirmHeader}</ModalHeader>
+          <ModalHeader maxW="90%">{props.text.confirmHeader}</ModalHeader>
           <ModalCloseButton size="lg" />
           <ModalBody>
             {props.children}
-            <ButtonGroup w="100%" mt="2rem">
+            <ButtonGroup w="100%" mt="2rem" mb=".5rem">
               <Button
                 w="100%"
                 colorScheme={props.text.confirmOkTextColor ?? 'cateiru'}

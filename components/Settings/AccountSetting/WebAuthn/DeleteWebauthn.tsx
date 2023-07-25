@@ -1,26 +1,17 @@
-import {Center, useColorModeValue, useToast} from '@chakra-ui/react';
+import {Center, ListItem, UnorderedList, useToast} from '@chakra-ui/react';
 import React from 'react';
 import {TbTrashX} from 'react-icons/tb';
 import {useSWRConfig} from 'swr';
-import {Tooltip} from '../../../Common/Chakra/Tooltip';
-import {Spinner} from '../../../Common/Icons/Spinner';
+import {DeleteButton} from '../../../Common/DeleteButton';
 import {useRequest} from '../../../Common/useRequest';
 
 export const DeleteWebAuthn: React.FC<{id: number}> = ({id}) => {
-  const defaultTrashColor = useColorModeValue('#CBD5E0', '#4A5568');
-  const hoverTrashColor = useColorModeValue('#F56565', '#C53030');
-
   const toast = useToast();
 
   const {request} = useRequest('/v2/account/webauthn');
   const {mutate} = useSWRConfig();
 
-  const [hover, setHover] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-
   const onDeleteWebAuthn = async () => {
-    setLoading(true);
-
     const param = new URLSearchParams();
     param.append('webauthn_id', id.toString());
 
@@ -46,25 +37,27 @@ export const DeleteWebAuthn: React.FC<{id: number}> = ({id}) => {
         {revalidate: true}
       );
     }
-    setLoading(false);
   };
 
   return (
-    <Tooltip label="この生体認証を削除" placement="top">
-      <Center>
-        {loading ? (
-          <Spinner />
-        ) : (
-          <TbTrashX
-            size="25px"
-            color={hover ? hoverTrashColor : defaultTrashColor}
-            onMouseOver={() => setHover(true)}
-            onMouseOut={() => setHover(false)}
-            onClick={onDeleteWebAuthn}
-            style={{cursor: 'pointer'}}
-          />
-        )}
-      </Center>
-    </Tooltip>
+    <Center>
+      <DeleteButton
+        onSubmit={onDeleteWebAuthn}
+        tooltipLabel="この生体認証（パスキー）を削除"
+        text={{
+          confirmHeader: 'この生体認証（パスキー）を削除しますか？',
+          confirmOkTextColor: 'red',
+          confirmOkText: '削除する',
+        }}
+        icon={<TbTrashX size="25px" />}
+      >
+        <UnorderedList>
+          <ListItem>一度削除すると、操作を取り消すことはできません。</ListItem>
+          <ListItem>
+            ブラウザのパスキーは削除しないため、手動で削除してください。
+          </ListItem>
+        </UnorderedList>
+      </DeleteButton>
+    </Center>
   );
 };
