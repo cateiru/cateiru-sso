@@ -1,6 +1,6 @@
 import nprogress from 'nprogress';
 
-import '../public/nprogress.css';
+import '../app/nprogress.css';
 
 nprogress.configure({showSpinner: false, speed: 400, minimum: 0.25});
 
