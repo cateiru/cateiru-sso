@@ -79,3 +79,18 @@ FASTLY_API_TOKEN=[token]
 ```bash
 ./scripts/sql.sh
 ```
+
+## oreore.me 変更状況
+
+- [x] ドメイン
+- [x] CORS
+- [x] Email
+- [x] WebAuthn
+- [x] タイトル
+- [x] ストレージ
+- [x] OTPのIssuer
+- [ ] ブランチ名
+- [ ] データベース
+- [ ] Goのパッケージ名
+- [ ] Storybook
+- [ ] README

@@ -32,7 +32,7 @@ func (w *WebAuthnUser) WebAuthnIcon() string {
 
 func TestWebAuthn(t *testing.T) {
 	c := &webauthn.Config{
-		RPDisplayName: "Cateiru SSO Test",
+		RPDisplayName: "oreore.me Test",
 		RPID:          "localhost:3000",
 		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
 	}

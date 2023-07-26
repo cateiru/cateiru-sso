@@ -229,7 +229,7 @@ var LocalConfig = &Config{
 	InviteOrgSessionPeriod: 24 * time.Hour,
 
 	WebAuthnConfig: &webauthn.Config{
-		RPDisplayName: "Cateiru SSO Local",
+		RPDisplayName: "oreore.me Local",
 		RPID:          "localhost",
 		RPOrigins:     []string{"http://localhost:3000"},
 		Timeouts: webauthn.TimeoutsConfig{
@@ -398,7 +398,7 @@ var CloudRunConfig = &Config{
 	InviteOrgSessionPeriod: 24 * time.Hour,
 
 	WebAuthnConfig: &webauthn.Config{
-		RPDisplayName: "Cateiru SSO",
+		RPDisplayName: "oreore.me",
 		RPID:          "sso.cateiru.com",
 		RPOrigins:     []string{"https://sso.cateiru.com", "https://api.sso.cateiru.com"},
 		Timeouts: webauthn.TimeoutsConfig{
@@ -568,7 +568,7 @@ var CloudRunStagingConfig = &Config{
 	InviteOrgSessionPeriod: 24 * time.Hour,
 
 	WebAuthnConfig: &webauthn.Config{
-		RPDisplayName: "Cateiru SSO Staging",
+		RPDisplayName: "oreore.me Staging",
 		RPID:          "staging.oreore.me",
 		RPOrigins:     []string{"https://staging.oreore.me", "https://api.staging.oreore.me"},
 		Timeouts: webauthn.TimeoutsConfig{
@@ -732,7 +732,7 @@ var TestConfig = &Config{
 	InviteOrgSessionPeriod: 24 * time.Hour,
 
 	WebAuthnConfig: &webauthn.Config{
-		RPDisplayName: "Cateiru SSO",
+		RPDisplayName: "oreore.me",
 		RPID:          "localhost:3000",
 		RPOrigins:     []string{"localhost:3000", "localhost:8080"},
 	},
