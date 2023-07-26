@@ -1,11 +1,10 @@
-
 name: ci
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   nextjs:
@@ -14,38 +13,38 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v1
-      - name: yarn install
-        run: yarn install --dev
+      - name: pnpm install
+        run: pnpm i --frozen-lockfile
       - name: run gts
-        run: yarn lint
+        run: pnpm lint
       - name: build
-        run: yarn build
+        run: pnpm build
   go:
     name: go test
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      TZ: "Asia/Tokyo"
-      STORAGE_URL: "localhost:4443"
+      TZ: 'Asia/Tokyo'
+      STORAGE_URL: 'localhost:4443'
     steps:
-    - uses: actions/checkout@v2
-    - name: setup go
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.20'
-    - name: start database
-      run: ./scripts/docker-compose-db.sh up -d
-    - name: go module download
-      run: go mod download
-    - name: install tparse
-      run: go install github.com/mfridman/tparse@latest
-    - name: build
-      run: go build -v ./...
-    - name: test
-      run: ./scripts/test.sh -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic -json | tee ./go-test.out | tparse
-    - name: add job summary
-      if: always()
-      run: |
-        tparse -all -file ./go-test.out -format markdown >> $GITHUB_STEP_SUMMARY
-    - name: upload coverage to codecov
-      uses: codecov/codecov-action@v3
+      - uses: actions/checkout@v2
+      - name: setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.20'
+      - name: start database
+        run: ./scripts/docker-compose-db.sh up -d
+      - name: go module download
+        run: go mod download
+      - name: install tparse
+        run: go install github.com/mfridman/tparse@latest
+      - name: build
+        run: go build -v ./...
+      - name: test
+        run: ./scripts/test.sh -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic -json | tee ./go-test.out | tparse
+      - name: add job summary
+        if: always()
+        run: |
+          tparse -all -file ./go-test.out -format markdown >> $GITHUB_STEP_SUMMARY
+      - name: upload coverage to codecov
+        uses: codecov/codecov-action@v3

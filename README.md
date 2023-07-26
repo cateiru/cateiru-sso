@@ -26,12 +26,11 @@ go mod download
 ./script/test
 
 # Next.js
-yarn
-yarn lint
+pnpm i
+pnpm lint
 
 # Storybook
-yarn build-storybook
-yarn storybook
+pnpm storybook
 # http://localhost:6006
 ```
 
