@@ -15,7 +15,7 @@ export const config: Config = {
   loginStateCookieName: 'cateiru-sso-login-state',
   emailCodeLength: 6,
   mode: process.env.NODE_ENV ?? 'development',
-  title: `CateiruSSO${
+  title: `oreore.me${
     process.env.NEXT_PUBLIC_PUBLICATION_TYPE
       ? ` - ${process.env.NEXT_PUBLIC_PUBLICATION_TYPE}`
       : ''
