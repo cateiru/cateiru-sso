@@ -216,9 +216,9 @@ var LocalConfig = &Config{
 
 	EnableCSRFMeasures: false, // crulから叩きたいケースがあるので無効化する
 
-	FromDomain:        "m.cateiru.test",
+	FromDomain:        "oreore.me",
 	MailgunSecret:     "secret",
-	SenderMailAddress: "CateiruSSO <sso@m.cateiru.test>",
+	SenderMailAddress: "oreore.me <sso@oreore.me>",
 
 	SendMail: false,
 
@@ -247,7 +247,7 @@ var LocalConfig = &Config{
 	},
 	WebAuthnSessionPeriod: 5 * time.Minute,
 	WebAuthnSessionCookie: CookieConfig{
-		Name:     "cateiru-sso-webauthn-session",
+		Name:     "oreore-me-webauthn-session",
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
@@ -257,7 +257,7 @@ var LocalConfig = &Config{
 
 	SessionDBPeriod: 168 * time.Hour, // 7days
 	SessionCookie: CookieConfig{
-		Name:     "cateiru-sso-session",
+		Name:     "oreore-me-session",
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
@@ -266,7 +266,7 @@ var LocalConfig = &Config{
 	},
 	RefreshDBPeriod: 720 * time.Hour, // 30days
 	RefreshCookie: CookieConfig{
-		Name:     "cateiru-sso-refresh",
+		Name:     "oreore-me-refresh",
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
@@ -275,7 +275,7 @@ var LocalConfig = &Config{
 	},
 	// 現在ログインしているセッション
 	LoginUserCookie: CookieConfig{
-		Name:     "cateiru-sso-users",
+		Name:     "oreore-me-users",
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
@@ -284,7 +284,7 @@ var LocalConfig = &Config{
 	},
 	// ログイン状態をJSで見れるようにするCookie
 	LoginStateCookie: CookieConfig{
-		Name:     "cateiru-sso-login-state",
+		Name:     "oreore-me-login-state",
 		Secure:   false,
 		HttpOnly: false,
 		Path:     "/",
@@ -303,7 +303,7 @@ var LocalConfig = &Config{
 	OTPRegisterSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:            5,
 	OTPRegisterLimit:         3,
-	OTPIssuer:                "CateiruSSO Local",
+	OTPIssuer:                "oreore.me Local",
 	OTPBackupCount:           10,
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
@@ -318,12 +318,12 @@ var LocalConfig = &Config{
 	UseCDN: false,
 	CDNHost: &url.URL{
 		Host:   "localhost:4443",
-		Path:   "/cateiru-sso",
+		Path:   "/oreore-me",
 		Scheme: "http",
 	},
 	FastlyApiToken: "token",
 
-	StorageBucketName: "cateiru-sso",
+	StorageBucketName: "oreore-me",
 
 	StorageEmulatorHost: struct {
 		Value   string
@@ -357,7 +357,7 @@ var CloudRunConfig = &Config{
 	ReCaptchaAllowScore: 50,
 
 	DatabaseConfig: &mysql.Config{
-		DBName:               "cateirucom",
+		DBName:               "oreoreme",
 		User:                 os.Getenv("DB_USER"),
 		Passwd:               os.Getenv("DB_PASSWORD"),
 		Addr:                 fmt.Sprintf("/cloudsql/%s", os.Getenv("INSTANCE_CONNECTION_NAME")),
@@ -385,9 +385,9 @@ var CloudRunConfig = &Config{
 
 	EnableCSRFMeasures: true,
 
-	FromDomain:        "m.cateiru.com",
+	FromDomain:        "oreore.me",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
-	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+	SenderMailAddress: "oreore.me <sso@oreore.me>",
 
 	SendMail: true,
 
@@ -416,7 +416,7 @@ var CloudRunConfig = &Config{
 	},
 	WebAuthnSessionPeriod: 5 * time.Minute,
 	WebAuthnSessionCookie: CookieConfig{
-		Name:     "cateiru-sso-webauthn-session",
+		Name:     "oreore-me-webauthn-session",
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
@@ -426,7 +426,7 @@ var CloudRunConfig = &Config{
 
 	SessionDBPeriod: 168 * time.Hour, // 7days
 	SessionCookie: CookieConfig{
-		Name:     "cateiru-sso-session",
+		Name:     "oreore-me-session",
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
@@ -435,7 +435,7 @@ var CloudRunConfig = &Config{
 	},
 	RefreshDBPeriod: 720 * time.Hour, // 30days
 	RefreshCookie: CookieConfig{
-		Name:     "cateiru-sso-refresh",
+		Name:     "oreore-me-refresh",
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
@@ -444,7 +444,7 @@ var CloudRunConfig = &Config{
 	},
 	// 現在ログインしているセッション
 	LoginUserCookie: CookieConfig{
-		Name:     "cateiru-sso-users",
+		Name:     "oreore-me-users",
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
@@ -453,7 +453,7 @@ var CloudRunConfig = &Config{
 	},
 	// ログイン状態をJSで見れるようにするCookie
 	LoginStateCookie: CookieConfig{
-		Name:     "cateiru-sso-login-state",
+		Name:     "oreore-me-login-state",
 		Secure:   true,
 		HttpOnly: false,
 		Path:     "/",
@@ -472,7 +472,7 @@ var CloudRunConfig = &Config{
 	OTPRegisterSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:            5,
 	OTPRegisterLimit:         3,
-	OTPIssuer:                "CateiruSSO",
+	OTPIssuer:                "oreore.me",
 	OTPBackupCount:           10,
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
@@ -491,7 +491,7 @@ var CloudRunConfig = &Config{
 	},
 	FastlyApiToken: os.Getenv("FASTLY_API_TOKEN"),
 
-	StorageBucketName: "cateiru-sso",
+	StorageBucketName: "oreore-me",
 
 	StorageEmulatorHost: struct {
 		Value   string
@@ -555,9 +555,9 @@ var CloudRunStagingConfig = &Config{
 
 	EnableCSRFMeasures: true,
 
-	FromDomain:        "m.cateiru.com",
+	FromDomain:        "oreore.me",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
-	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+	SenderMailAddress: "oreore.me <sso@oreore.me>",
 
 	SendMail: false, // NOTE: ステージングなのでfalse
 
@@ -586,7 +586,7 @@ var CloudRunStagingConfig = &Config{
 	},
 	WebAuthnSessionPeriod: 5 * time.Minute,
 	WebAuthnSessionCookie: CookieConfig{
-		Name:     "cateiru-sso-webauthn-session",
+		Name:     "oreore-me-webauthn-session",
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
@@ -596,7 +596,7 @@ var CloudRunStagingConfig = &Config{
 
 	SessionDBPeriod: 168 * time.Hour, // 7days
 	SessionCookie: CookieConfig{
-		Name:     "cateiru-sso-session",
+		Name:     "oreore-me-session",
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
@@ -605,7 +605,7 @@ var CloudRunStagingConfig = &Config{
 	},
 	RefreshDBPeriod: 720 * time.Hour, // 30days
 	RefreshCookie: CookieConfig{
-		Name:     "cateiru-sso-refresh",
+		Name:     "oreore-me-refresh",
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
@@ -614,7 +614,7 @@ var CloudRunStagingConfig = &Config{
 	},
 	// 現在ログインしているセッション
 	LoginUserCookie: CookieConfig{
-		Name:     "cateiru-sso-users",
+		Name:     "oreore-me-users",
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
@@ -623,7 +623,7 @@ var CloudRunStagingConfig = &Config{
 	},
 	// ログイン状態をJSで見れるようにするCookie
 	LoginStateCookie: CookieConfig{
-		Name:     "cateiru-sso-login-state",
+		Name:     "oreore-me-login-state",
 		Secure:   true,
 		HttpOnly: false,
 		Path:     "/",
@@ -642,7 +642,7 @@ var CloudRunStagingConfig = &Config{
 	OTPRegisterSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:            5,
 	OTPRegisterLimit:         3,
-	OTPIssuer:                "CateiruSSO Staging",
+	OTPIssuer:                "oreore.me Staging",
 	OTPBackupCount:           10,
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
@@ -657,12 +657,12 @@ var CloudRunStagingConfig = &Config{
 	UseCDN: false, // NOTE: ステージング環境はCloudStorageから直接
 	CDNHost: &url.URL{
 		Host:   "storage.googleapis.com",
-		Path:   "/cateiru-sso-staging",
+		Path:   "/oreore-me-staging",
 		Scheme: "https",
 	},
 	FastlyApiToken: "token", // NOTE: ステージング環境はCloudStorageから直接
 
-	StorageBucketName: "cateiru-sso-staging",
+	StorageBucketName: "oreore-me-staging",
 
 	StorageEmulatorHost: struct {
 		Value   string
@@ -719,9 +719,9 @@ var TestConfig = &Config{
 
 	EnableCSRFMeasures: false,
 
-	FromDomain:        "m.cateiru.com",
+	FromDomain:        "oreore.me",
 	MailgunSecret:     "secret",
-	SenderMailAddress: "CateiruSSO <sso@m.cateiru.com>",
+	SenderMailAddress: "oreore.me <sso@oreore.me>",
 
 	SendMail: false,
 
@@ -738,7 +738,7 @@ var TestConfig = &Config{
 	},
 	WebAuthnSessionPeriod: 5 * time.Minute,
 	WebAuthnSessionCookie: CookieConfig{
-		Name:     "cateiru-sso-webauthn-session",
+		Name:     "oreore-me-webauthn-session",
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
@@ -748,7 +748,7 @@ var TestConfig = &Config{
 
 	SessionDBPeriod: 168 * time.Hour, // 7days
 	SessionCookie: CookieConfig{
-		Name:     "cateiru-sso-session",
+		Name:     "oreore-me-session",
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
@@ -757,7 +757,7 @@ var TestConfig = &Config{
 	},
 	RefreshDBPeriod: 720 * time.Hour, // 30days
 	RefreshCookie: CookieConfig{
-		Name:     "cateiru-sso-refresh",
+		Name:     "oreore-me-refresh",
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
@@ -766,7 +766,7 @@ var TestConfig = &Config{
 	},
 	// 現在ログインしているセッション
 	LoginUserCookie: CookieConfig{
-		Name:     "cateiru-sso-users",
+		Name:     "oreore-me-users",
 		Secure:   false,
 		HttpOnly: true,
 		Path:     "/",
@@ -775,7 +775,7 @@ var TestConfig = &Config{
 	},
 	// ログイン状態をJSで見れるようにするCookie
 	LoginStateCookie: CookieConfig{
-		Name:     "cateiru-sso-login-state",
+		Name:     "oreore-me-login-state",
 		Secure:   false,
 		HttpOnly: false,
 		Path:     "/",
@@ -794,7 +794,7 @@ var TestConfig = &Config{
 	OTPRegisterSessionPeriod: 5 * time.Minute,
 	OTPRetryLimit:            5,
 	OTPRegisterLimit:         3,
-	OTPIssuer:                "CateiruSSO",
+	OTPIssuer:                "oreore.me",
 	OTPBackupCount:           10,
 
 	ReregistrationPasswordSessionPeriod:      5 * time.Minute,
@@ -813,7 +813,7 @@ var TestConfig = &Config{
 	},
 	FastlyApiToken: "token",
 
-	StorageBucketName: "test-cateiru-sso",
+	StorageBucketName: "test-oreore-me",
 
 	StorageEmulatorHost: struct {
 		Value   string

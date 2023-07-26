@@ -1,5 +1,5 @@
 {
-  "name": "cateiru-sso",
+  "name": "oreore.me",
   "private": true,
   "scripts": {
     "dev": "NODE_ENV=development next dev",
