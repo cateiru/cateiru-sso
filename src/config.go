@@ -538,16 +538,16 @@ var CloudRunStagingConfig = &Config{
 	DBDebugLog: false,
 
 	Host: &url.URL{
-		Host:   "api.sso-staging.cateiru.com",
+		Host:   "api.staging.oreore.me",
 		Scheme: "https",
 	},
 	SiteHost: &url.URL{
-		Host:   "sso-staging.cateiru.com",
+		Host:   "staging.oreore.me",
 		Scheme: "https",
 	},
 
 	CorsConfig: &middleware.CORSConfig{
-		AllowOrigins:     []string{"https://sso-staging.cateiru.com"},
+		AllowOrigins:     []string{"https://staging.oreore.me"},
 		AllowHeaders:     []string{"*", "X-Register-Token", echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowCredentials: true,
@@ -569,8 +569,8 @@ var CloudRunStagingConfig = &Config{
 
 	WebAuthnConfig: &webauthn.Config{
 		RPDisplayName: "Cateiru SSO Staging",
-		RPID:          "sso-staging.cateiru.com",
-		RPOrigins:     []string{"https://sso-staging.cateiru.com", "https://api.sso-staging.cateiru.com"},
+		RPID:          "staging.oreore.me",
+		RPOrigins:     []string{"https://staging.oreore.me", "https://api.staging.oreore.me"},
 		Timeouts: webauthn.TimeoutsConfig{
 			Login: webauthn.TimeoutConfig{
 				Enforce:    true,

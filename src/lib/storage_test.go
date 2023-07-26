@@ -14,7 +14,7 @@ import (
 
 func TestStorage(t *testing.T) {
 	ctx := context.Background()
-	s := lib.NewCloudStorage("test-cateiru-sso")
+	s := lib.NewCloudStorage("test-oreore-me")
 
 	t.Run("読み出し、書き込みが可能", func(t *testing.T) {
 		body := "hoge"
