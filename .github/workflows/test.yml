@@ -13,6 +13,17 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v1
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        with:
+          version: 8
+          run_install: false
+
       - name: pnpm install
         run: pnpm i --frozen-lockfile
       - name: run gts
