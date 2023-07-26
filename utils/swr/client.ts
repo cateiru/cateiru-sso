@@ -14,7 +14,7 @@ export async function clientFetcher(
 ): Promise<ClientListResponse>;
 export async function clientFetcher(
   clientId: undefined,
-  orgId: string
+  orgId: string | string[]
 ): Promise<ClientListResponse>;
 export async function clientFetcher(
   clientId: string | string[],
@@ -22,14 +22,14 @@ export async function clientFetcher(
 ): Promise<ClientDetail>;
 export async function clientFetcher(
   clientId: string | string[] | undefined,
-  orgId: string | undefined
+  orgId: string | string[] | undefined
 ): Promise<ClientDetail | ClientListResponse> {
   const param = new URLSearchParams();
 
   if (typeof clientId === 'string') {
     param.append('client_id', clientId);
   }
-  if (orgId) {
+  if (typeof orgId === 'string') {
     param.append('org_id', orgId);
   }
 
