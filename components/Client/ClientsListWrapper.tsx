@@ -30,7 +30,8 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
   const router = useRouter();
   const params = useParams();
 
-  const id: string | undefined = params?.id;
+  const id: string | undefined =
+    typeof params?.id === 'string' ? params.id : undefined;
 
   const {data, error} = useSWR<SimpleOrganizationList, ErrorType>(
     id ? `/v2/org/list/simple?org_id=${id}` : '/v2/org/list',

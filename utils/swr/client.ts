@@ -17,16 +17,16 @@ export async function clientFetcher(
   orgId: string
 ): Promise<ClientListResponse>;
 export async function clientFetcher(
-  clientId: string,
+  clientId: string | string[],
   orgId: undefined
 ): Promise<ClientDetail>;
 export async function clientFetcher(
-  clientId: string | undefined,
+  clientId: string | string[] | undefined,
   orgId: string | undefined
 ): Promise<ClientDetail | ClientListResponse> {
   const param = new URLSearchParams();
 
-  if (clientId) {
+  if (typeof clientId === 'string') {
     param.append('client_id', clientId);
   }
   if (orgId) {
@@ -47,7 +47,7 @@ export async function clientFetcher(
     throw new HTTPError(data.error.message);
   }
 
-  if (clientId) {
+  if (typeof clientId === 'string') {
     const data = ClientDetailSchema.safeParse(await res.json());
     if (data.success) {
       return data.data;
