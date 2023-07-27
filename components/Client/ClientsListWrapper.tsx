@@ -12,8 +12,10 @@ import {
 import {useParams, usePathname, useRouter} from 'next/navigation';
 import React from 'react';
 import {TbExternalLink} from 'react-icons/tb';
+import {useRecoilValue} from 'recoil';
 import useSWR from 'swr';
 import {routeChangeStart} from '../../utils/event';
+import {UserState} from '../../utils/state/atom';
 import {orgSimpleListFeather} from '../../utils/swr/organization';
 import {ErrorType, ErrorUniqueMessage} from '../../utils/types/error';
 import {SimpleOrganizationList} from '../../utils/types/organization';
@@ -33,9 +35,10 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
   const id: string | undefined =
     typeof params?.id === 'string' ? params.id : undefined;
 
+  const user = useRecoilValue(UserState);
   const {data, error} = useSWR<SimpleOrganizationList, ErrorType>(
     id ? `/v2/org/list/simple?org_id=${id}` : '/v2/org/list',
-    () => orgSimpleListFeather(id)
+    () => orgSimpleListFeather(id, user?.joined_organization)
   );
 
   const title = React.useMemo(() => {

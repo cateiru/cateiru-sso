@@ -16,7 +16,7 @@ export const ClientList = () => {
 
   const {data, error} = useSWR<ClientListResponse, ErrorType>(
     id ? `/v2/client?org_id=${id}` : '/v2/client',
-    () => clientFetcher(undefined, id ?? '')
+    () => clientFetcher(undefined, id)
   );
 
   if (error) {

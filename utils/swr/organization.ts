@@ -83,7 +83,9 @@ export async function orgUsersFeather(id: string) {
   throw new HTTPError(data.error.message);
 }
 
-export async function orgSimpleListFeather(id?: string) {
+export async function orgSimpleListFeather(id?: string, isJoined?: boolean) {
+  if (!isJoined) return [];
+
   const urlSearchParam = new URLSearchParams();
   if (id) {
     urlSearchParam.append('org_id', id);
