@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Center,
+  Flex,
   Input,
   Modal,
   ModalBody,
@@ -301,20 +302,25 @@ export const UpdateAvatar = () => {
                     borderRadius={255}
                   />
                 </Box>
-                <Slider
-                  colorScheme="blue"
-                  aria-label="zoom"
-                  defaultValue={1}
-                  step={0.01}
-                  max={5}
-                  min={0.6}
-                  onChange={v => setZoom(v)}
-                >
-                  <SliderTrack>
-                    <SliderFilledTrack bgColor="my.secondary" />
-                  </SliderTrack>
-                  <SliderThumb bgColor={sliderThumbColor} />
-                </Slider>
+                <Flex>
+                  <Text w="50px" mr=".5rem">
+                    {Math.floor(zoom * 100)}%
+                  </Text>
+                  <Slider
+                    colorScheme="blue"
+                    aria-label="zoom"
+                    defaultValue={1}
+                    step={0.01}
+                    max={5}
+                    min={0.6}
+                    onChange={v => setZoom(v)}
+                  >
+                    <SliderTrack>
+                      <SliderFilledTrack bgColor="my.secondary" />
+                    </SliderTrack>
+                    <SliderThumb bgColor={sliderThumbColor} />
+                  </Slider>
+                </Flex>
               </Box>
             </Center>
             <Button
