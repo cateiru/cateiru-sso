@@ -13,13 +13,12 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import useSWR from 'swr';
-import {hawManyDaysAgo} from '../../utils/date';
 import {loginDeviceFeather} from '../../utils/swr/history';
 import {colorTheme} from '../../utils/theme';
 import {ErrorType} from '../../utils/types/error';
 import {LoginDeviceList} from '../../utils/types/history';
-import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
+import {AgoTime} from '../Common/Time';
 import {Device} from './Device';
 
 export const LoginHistoriesTable = () => {
@@ -55,13 +54,10 @@ export const LoginHistoriesTable = () => {
         <Tbody>
           {data
             ? data.map(v => {
-                const created = new Date(v.created_at);
                 return (
                   <Tr key={v.id}>
                     <Td>
-                      <Tooltip placement="top" label={created.toLocaleString()}>
-                        {hawManyDaysAgo(created)}
-                      </Tooltip>
+                      <AgoTime time={v.created_at} />
                     </Td>
                     <Td>
                       <Device

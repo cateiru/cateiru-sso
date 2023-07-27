@@ -12,7 +12,6 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
-import {hawManyDaysAgo} from '../../utils/date';
 import {loginTryHistoryFeather} from '../../utils/swr/history';
 import {colorTheme} from '../../utils/theme';
 import {ErrorType} from '../../utils/types/error';
@@ -20,8 +19,8 @@ import {
   LOGIN_TRY_IDENTIFIER,
   LoginTryHistoryList,
 } from '../../utils/types/history';
-import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
+import {AgoTime} from '../Common/Time';
 import {Device} from './Device';
 
 export const LoginTryTable = () => {
@@ -58,13 +57,10 @@ export const LoginTryTable = () => {
         <Tbody>
           {data
             ? data.map(v => {
-                const created = new Date(v.created_at);
                 return (
                   <Tr key={v.id}>
                     <Td>
-                      <Tooltip placement="top" label={created.toLocaleString()}>
-                        {hawManyDaysAgo(created)}
-                      </Tooltip>
+                      <AgoTime time={v.created_at} />
                     </Td>
                     <Td>{LOGIN_TRY_IDENTIFIER[v.identifier] ?? '不明'}</Td>
                     <Td>

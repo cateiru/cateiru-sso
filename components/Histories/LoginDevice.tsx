@@ -12,12 +12,12 @@ import {
 } from '@chakra-ui/react';
 import {TbCheck} from 'react-icons/tb';
 import useSWR from 'swr';
-import {hawManyDaysAgo} from '../../utils/date';
 import {loginDeviceFeather} from '../../utils/swr/history';
 import {ErrorType} from '../../utils/types/error';
 import {LoginDeviceList} from '../../utils/types/history';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
+import {AgoTime} from '../Common/Time';
 import {Device} from './Device';
 import {LogoutDevice} from './LogoutDevice';
 
@@ -46,7 +46,6 @@ export const LoginDevice = () => {
         <Tbody>
           {data
             ? data.map(v => {
-                const created = new Date(v.created_at);
                 return (
                   <Tr key={v.id}>
                     <Td p="0">
@@ -65,9 +64,7 @@ export const LoginDevice = () => {
                       )}
                     </Td>
                     <Td>
-                      <Tooltip placement="top" label={created.toLocaleString()}>
-                        {hawManyDaysAgo(created)}
-                      </Tooltip>
+                      <AgoTime time={v.created_at} />
                     </Td>
                     <Td>
                       <Device

@@ -12,14 +12,13 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
-import {hawManyDaysAgo} from '../../../utils/date';
 import {orgsFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {Organizations} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';
-import {Tooltip} from '../../Common/Chakra/Tooltip';
 import {Error} from '../../Common/Error/Error';
 import {Link as NextLink} from '../../Common/Next/Link';
+import {AgoTime} from '../../Common/Time';
 
 export const OrgsTable = () => {
   const {data, error} = useSWR<Organizations, ErrorType>(
@@ -58,8 +57,6 @@ export const OrgsTable = () => {
           </Thead>
           <Tbody>
             {data.map((v, i) => {
-              const created = new Date(v.created_at);
-
               return (
                 <Tr key={`brands-${i}`}>
                   <Td>
@@ -75,9 +72,7 @@ export const OrgsTable = () => {
                     )}
                   </Td>
                   <Td>
-                    <Tooltip placement="top" label={created.toLocaleString()}>
-                      {hawManyDaysAgo(created)}
-                    </Tooltip>
+                    <AgoTime time={v.created_at} />
                   </Td>
                   <Td>
                     <Button

@@ -11,13 +11,12 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
-import {hawManyDaysAgo} from '../../../utils/date';
 import {brandFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {Brands} from '../../../utils/types/staff';
-import {Tooltip} from '../../Common/Chakra/Tooltip';
 import {Error} from '../../Common/Error/Error';
 import {Link} from '../../Common/Next/Link';
+import {AgoTime} from '../../Common/Time';
 
 export const BrandsTable = () => {
   const {data, error} = useSWR<Brands, ErrorType>('/v2/admin/brand', () =>
@@ -55,8 +54,6 @@ export const BrandsTable = () => {
           </Thead>
           <Tbody>
             {data.map((v, i) => {
-              const created = new Date(v.created_at);
-
               return (
                 <Tr key={`brands-${i}`}>
                   <Td>{v.name}</Td>
@@ -69,9 +66,7 @@ export const BrandsTable = () => {
                     {v.description}
                   </Td>
                   <Td>
-                    <Tooltip placement="top" label={created.toLocaleString()}>
-                      {hawManyDaysAgo(created)}
-                    </Tooltip>
+                    <AgoTime time={v.created_at} />
                   </Td>
                   <Td>
                     <Button

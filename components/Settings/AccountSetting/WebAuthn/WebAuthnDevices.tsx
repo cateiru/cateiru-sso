@@ -9,12 +9,11 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
-import {hawManyDaysAgo} from '../../../../utils/date';
 import {webAuthnDevicesFeather} from '../../../../utils/swr/account';
 import {AccountWebAuthnDevices} from '../../../../utils/types/account';
 import {ErrorType} from '../../../../utils/types/error';
-import {Tooltip} from '../../../Common/Chakra/Tooltip';
 import {Error} from '../../../Common/Error/Error';
+import {AgoTime} from '../../../Common/Time';
 import {Device} from '../../../Histories/Device';
 import {DeleteWebAuthn} from './DeleteWebauthn';
 
@@ -53,16 +52,13 @@ export const WebAuthnDevices = () => {
     return (
       <>
         {data.map(v => {
-          const created = new Date(v.created_at);
           return (
             <Tr key={`webauthn-${v.id}`}>
               <Td>
                 <DeleteWebAuthn id={v.id} />
               </Td>
               <Td>
-                <Tooltip placement="top" label={created.toLocaleString()}>
-                  {hawManyDaysAgo(created)}
-                </Tooltip>
+                <AgoTime time={v.created_at} />
               </Td>
               <Td>
                 <Device

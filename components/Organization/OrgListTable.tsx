@@ -16,15 +16,14 @@ import {
 import {TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
 import {badgeColor} from '../../utils/color';
-import {hawManyDaysAgo} from '../../utils/date';
 import {orgListFeather} from '../../utils/swr/organization';
 import {colorTheme} from '../../utils/theme';
 import {ErrorType} from '../../utils/types/error';
 import {PublicOrganizationList} from '../../utils/types/organization';
 import {Avatar} from '../Common/Chakra/Avatar';
-import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
 import {Link as NextLink} from '../Common/Next/Link';
+import {AgoTime} from '../Common/Time';
 
 export const OrgListTable = () => {
   const {data, error} = useSWR<PublicOrganizationList, ErrorType>(
@@ -61,8 +60,6 @@ export const OrgListTable = () => {
         <Tbody>
           {data
             ? data.map(v => {
-                const joinDate = new Date(v.join_date);
-
                 return (
                   <Tr key={v.id}>
                     <Td>
@@ -88,12 +85,7 @@ export const OrgListTable = () => {
                       )}
                     </Td>
                     <Td>
-                      <Tooltip
-                        placement="top"
-                        label={joinDate.toLocaleString()}
-                      >
-                        {hawManyDaysAgo(joinDate)}
-                      </Tooltip>
+                      <AgoTime time={v.join_date} />
                     </Td>
                     <Td textAlign="center">
                       <Badge colorScheme={badgeColor(v.role)}>{v.role}</Badge>

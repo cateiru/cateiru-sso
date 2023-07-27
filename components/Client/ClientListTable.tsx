@@ -12,10 +12,9 @@ import {
 } from '@chakra-ui/react';
 import Link from 'next/link';
 import React from 'react';
-import {hawManyDaysAgo} from '../../utils/date';
 import type {ClientList as ClientListType} from '../../utils/types/client';
 import {Avatar} from '../Common/Chakra/Avatar';
-import {Tooltip} from '../Common/Chakra/Tooltip';
+import {AgoTime} from '../Common/Time';
 
 interface Props {
   clients?: ClientListType;
@@ -37,8 +36,6 @@ export const ClientListTable: React.FC<Props> = ({clients}) => {
         <Tbody>
           {clients
             ? clients.map(v => {
-                const created = new Date(v.created_at);
-
                 return (
                   <Tr key={`client-list-${v.client_id}`}>
                     <Td>
@@ -56,9 +53,7 @@ export const ClientListTable: React.FC<Props> = ({clients}) => {
                       {v.description}
                     </Td>
                     <Td>
-                      <Tooltip placement="top" label={created.toLocaleString()}>
-                        {hawManyDaysAgo(created)}
-                      </Tooltip>
+                      <AgoTime time={v.created_at} />
                     </Td>
                     <Td>
                       <Button
