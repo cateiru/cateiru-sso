@@ -5,48 +5,5 @@
 include:
   # DB関連はGo Testで単体で実行したいので分離されている
   # compose v2.20.0 以降ではないと動かないことに注意
-   - ../docker/docker-compose.db.yaml
-services:
-  backend_app:
-    container_name: backend_app
-    build:
-      context: .
-      dockerfile_inline: |
-        FROM golang:1.20.4-alpine
-
-        RUN apk update && apk add --no-cache ca-certificates && update-ca-certificates
-        RUN go install github.com/cosmtrek/air@latest
-
-        WORKDIR /app
-
-        RUN apk add openssh-client && mkdir /jwt && ssh-keygen -t rsa -f /jwt/jwt_key.rsa -N "" -m pem && ssh-keygen -f /jwt/jwt_key.rsa.pub -e -m pkcs8 > /jwt/jwt_key.rsa.pkcs8
-
-        COPY go.mod go.sum ./
-        RUN go mod download
-    ports:
-      - "8080:8080"
-    volumes:
-      - .:/app
-    depends_on:
-      - db
-      - gcs
-    command: air -c .air.toml
-  frontend_app:
-    container_name: frontend_app
-    build:
-      context: .
-      dockerfile_inline: |
-        FROM node:18-alpine
-
-        WORKDIR /app
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-http://localhost:8080}
-      - NEXT_PUBLIC_PUBLICATION_TYPE=local
-    volumes:
-      - .:/app
-    depends_on:
-      - db
-      - gcs
-    command: sh -c "yarn --frozen-lockfile && yarn dev"
+  - ./docker/docker-compose.db.yaml
+  - ./docker/docker-compose.local.yaml
