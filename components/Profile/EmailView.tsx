@@ -1,16 +1,11 @@
-import {
-  Flex,
-  IconButton,
-  Spacer,
-  Text,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import {Flex, IconButton, Spacer, Text} from '@chakra-ui/react';
 import React from 'react';
 import {TbEye, TbEyeOff} from 'react-icons/tb';
 import {hideEmail} from '../../utils/hide';
+import {useSecondaryColor} from '../Common/useColor';
 
 export const EmailView: React.FC<{email: string}> = ({email}) => {
-  const color = useColorModeValue('#718096', '#A0AEC0');
+  const color = useSecondaryColor();
   const [show, setShow] = React.useState(false);
 
   const hide = React.useCallback(() => {

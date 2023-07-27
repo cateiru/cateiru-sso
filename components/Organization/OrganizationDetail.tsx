@@ -8,7 +8,6 @@ import {
   Link,
   Skeleton,
   Text,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {TbExternalLink} from 'react-icons/tb';
@@ -20,6 +19,7 @@ import {PublicOrganizationDetail} from '../../utils/types/organization';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Error} from '../Common/Error/Error';
 import {Margin} from '../Common/Margin';
+import {useSecondaryColor} from '../Common/useColor';
 import {OrganizationMember} from './OrganizationMember';
 
 interface Props {
@@ -27,7 +27,7 @@ interface Props {
 }
 
 export const OrganizationDetail: React.FC<Props> = ({id}) => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const {data, error} = useSWR<PublicOrganizationDetail, ErrorType>(
     `/v2/org/detail?org_id=${id}`,
     () => orgDetailFeather(id)

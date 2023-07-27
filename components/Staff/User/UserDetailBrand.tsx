@@ -10,7 +10,6 @@ import {
   Th,
   Thead,
   Tr,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {TbPlugConnectedX} from 'react-icons/tb';
@@ -18,6 +17,7 @@ import {useSWRConfig} from 'swr';
 import {UserBrand} from '../../../utils/types/staff';
 import {DeleteButton} from '../../Common/DeleteButton';
 import {Link as NextLink} from '../../Common/Next/Link';
+import {useSecondaryColor} from '../../Common/useColor';
 import {useRequest} from '../../Common/useRequest';
 import {AddUser} from '../Brand/AddUser';
 
@@ -27,7 +27,7 @@ interface Props {
 }
 
 export const UserDetailBrand: React.FC<Props> = props => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const {mutate} = useSWRConfig();
   const {request} = useRequest('/v2/admin/user/brand');
 

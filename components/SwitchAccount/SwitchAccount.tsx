@@ -1,10 +1,11 @@
 'use client';
 
-import {Box, Divider, Heading, useColorModeValue} from '@chakra-ui/react';
+import {Box, Divider, Heading} from '@chakra-ui/react';
+import {useBorderColor} from '../Common/useColor';
 import {AccountList} from './AccountList';
 
 export const SwitchAccount = () => {
-  const borderColor = useColorModeValue('gray.300', 'gray.600');
+  const borderColor = useBorderColor();
 
   return (
     <Box

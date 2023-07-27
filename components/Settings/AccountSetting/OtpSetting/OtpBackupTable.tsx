@@ -7,13 +7,14 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import {TbCheck} from 'react-icons/tb';
+import {useSecondaryColor} from '../../../Common/useColor';
 
 interface Props {
   backups: string[];
 }
 
 export const OtpBackupTable: React.FC<Props> = props => {
-  const backupColor = useColorModeValue('gray.500', 'gray.400');
+  const backupColor = useSecondaryColor();
   const checkMarkColor = useColorModeValue('#68D391', '#38A169');
 
   const {onCopy, hasCopied} = useClipboard(props.backups.join(', '));

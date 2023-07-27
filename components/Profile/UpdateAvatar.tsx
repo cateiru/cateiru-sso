@@ -26,6 +26,7 @@ import {UserState} from '../../utils/state/atom';
 import {colorTheme} from '../../utils/theme';
 import {UserAvatarSchema} from '../../utils/types/user';
 import {Avatar} from '../Common/Chakra/Avatar';
+import {useDeleteColor} from '../Common/useColor';
 import {useRequest} from '../Common/useRequest';
 
 export const UpdateAvatar = () => {
@@ -49,7 +50,7 @@ export const UpdateAvatar = () => {
     '0 5px 20px 0 #171923'
   );
   const sliderThumbColor = useColorModeValue('gray.500', 'white');
-  const errorBgColor = useColorModeValue('red.400', 'red.600');
+  const errorBgColor = useDeleteColor();
   const errorTextColor = useColorModeValue(
     colorTheme.darkText,
     colorTheme.lightText

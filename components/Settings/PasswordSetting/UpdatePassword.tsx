@@ -1,4 +1,5 @@
-import {Box, Text, useColorModeValue, useToast} from '@chakra-ui/react';
+import {Box, Text, useToast} from '@chakra-ui/react';
+import {useSecondaryColor} from '../../Common/useColor';
 import {useRequest} from '../../Common/useRequest';
 import {
   UpdatePasswordForm,
@@ -6,7 +7,7 @@ import {
 } from './UpdatePasswordForm';
 
 export const UpdatePassword = () => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const toast = useToast();
 
   const {request} = useRequest('/v2/account/password/update');

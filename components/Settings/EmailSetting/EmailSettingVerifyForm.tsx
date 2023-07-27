@@ -1,15 +1,16 @@
-import {Center, Text, useColorModeValue} from '@chakra-ui/react';
+import {Center, Text} from '@chakra-ui/react';
 import React from 'react';
 import {TbArrowBigDown} from 'react-icons/tb';
 import {config} from '../../../utils/config';
 import {EmailVerifyForm} from '../../Common/Form/EmailVerifyForm';
+import {useSecondaryColor} from '../../Common/useColor';
 
 interface Props {
   onSubmit: (data: EmailVerifyForm) => Promise<void>;
 }
 
 export const EmailSettingVerifyForm: React.FC<Props> = props => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   return (
     <>

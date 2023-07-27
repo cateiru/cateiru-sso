@@ -6,6 +6,7 @@ import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Margin} from '../Common/Margin';
+import {useSecondaryColor} from '../Common/useColor';
 import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {LoginStep, type DefaultPageProps} from './Login';
@@ -17,7 +18,7 @@ interface Props extends DefaultPageProps {
 }
 
 export const OtpPage: React.FC<Props> = props => {
-  const descriptionTextColor = useColorModeValue('gray.500', 'gray.400');
+  const descriptionTextColor = useSecondaryColor();
   const accentColor = useColorModeValue('my.primary', 'my.secondary');
 
   const setUser = useSetRecoilState(UserState);

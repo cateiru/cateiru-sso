@@ -2,13 +2,14 @@ import {Box, Heading, Text, VStack, useColorModeValue} from '@chakra-ui/react';
 import React from 'react';
 import {hideEmail} from '../../utils/hide';
 import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
+import {useSecondaryColor} from '../Common/useColor';
 
 interface Props {
   email: string;
 }
 
 export const SendMainSuccess: React.FC<Props> = ({email}) => {
-  const descriptionColor = useColorModeValue('gray.500', 'gray.400');
+  const descriptionColor = useSecondaryColor();
   const checkmarkProps = useColorModeValue<CheckmarkProps, CheckmarkProps>(
     {
       size: 100,

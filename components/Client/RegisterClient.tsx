@@ -14,7 +14,6 @@ import {
   Spacer,
   Switch,
   Textarea,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
@@ -35,6 +34,7 @@ import {
 } from '../Common/Form/ReferrerUrlsForm';
 import {ScopesForm, ScopesFormValue} from '../Common/Form/ScopesFrom';
 import {Margin} from '../Common/Margin';
+import {useSecondaryColor} from '../Common/useColor';
 import {useRequest} from '../Common/useRequest';
 
 interface RegisterClientForm
@@ -54,7 +54,7 @@ export const RegisterClient = () => {
   const router = useRouter();
   const orgId = param.get('org_id');
 
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   const {request: requestConfig} = useRequest('/v2/client/config');
   const {request} = useRequest('/v2/client');

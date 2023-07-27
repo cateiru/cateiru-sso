@@ -1,5 +1,6 @@
-import {Box, Text, useColorModeValue} from '@chakra-ui/react';
+import {Box, Text} from '@chakra-ui/react';
 import React from 'react';
+import {useBorderColor, useSecondaryColor} from '../Common/useColor';
 
 interface Props {
   title: string;
@@ -8,8 +9,8 @@ interface Props {
 }
 
 export const StaffCard: React.FC<Props> = props => {
-  const borderColor = useColorModeValue('gray.300', 'gray.600');
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const borderColor = useBorderColor();
+  const textColor = useSecondaryColor();
 
   return (
     <Box w="100%" margin="auto" my="2.5rem">

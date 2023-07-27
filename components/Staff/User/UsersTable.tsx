@@ -9,7 +9,6 @@ import {
   Th,
   Thead,
   Tr,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import useSWR from 'swr';
 import {staffUsersFeather} from '../../../utils/swr/staff';
@@ -18,9 +17,10 @@ import {StaffUsers} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';
 import {Error} from '../../Common/Error/Error';
 import {Link} from '../../Common/Next/Link';
+import {useSecondaryColor} from '../../Common/useColor';
 
 export const UsersTable = () => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   const {data, error} = useSWR<StaffUsers, ErrorType>(
     '/v2/admin/users',

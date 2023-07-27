@@ -1,7 +1,8 @@
-import {Box, Skeleton, SkeletonText, useColorModeValue} from '@chakra-ui/react';
+import {Box, Skeleton, SkeletonText} from '@chakra-ui/react';
+import {useBorderColor} from '../Common/useColor';
 
 export const SettingCardSkelton = () => {
-  const borderColor = useColorModeValue('gray.300', 'gray.600');
+  const borderColor = useBorderColor();
 
   return (
     <Box w="100%" margin="auto" my="2.5rem">

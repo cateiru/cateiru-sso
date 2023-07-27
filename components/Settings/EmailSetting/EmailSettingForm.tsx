@@ -6,12 +6,12 @@ import {
   FormLabel,
   Input,
   Text,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import {TbArrowBigDown} from 'react-icons/tb';
 import {emailRegex} from '../../../utils/regex';
+import {useSecondaryColor} from '../../Common/useColor';
 
 export interface EmailFormData {
   new_email: string;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export const EmailSettingForm: React.FC<Props> = props => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const {
     handleSubmit,
     register,

@@ -16,7 +16,6 @@ import {
   Text,
   Textarea,
   Tr,
-  useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -25,6 +24,7 @@ import {useRecoilValue} from 'recoil';
 import {useSWRConfig} from 'swr';
 import {UserState} from '../../../utils/state/atom';
 import {Staff} from '../../../utils/types/staff';
+import {useSecondaryColor} from '../../Common/useColor';
 import {useRequest} from '../../Common/useRequest';
 
 interface FormTypes {
@@ -37,7 +37,7 @@ interface Props {
 }
 
 export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   const {request: staffRequest} = useRequest('/v2/admin/staff');
   const {mutate} = useSWRConfig();

@@ -1,8 +1,9 @@
-import {Button, Text, useColorModeValue} from '@chakra-ui/react';
+import {Button, Text} from '@chakra-ui/react';
 import {Link} from '../../../Common/Next/Link';
+import {useSecondaryColor} from '../../../Common/useColor';
 
 export const OtpImpossible = () => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   return (
     <>

@@ -9,7 +9,6 @@ import {
   Text,
   Tr,
   UnorderedList,
-  useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
 import {useRouter} from 'next/navigation';
@@ -17,6 +16,7 @@ import React from 'react';
 import {Brand} from '../../../utils/types/staff';
 import {Confirm} from '../../Common/Confirm/Confirm';
 import {Link} from '../../Common/Next/Link';
+import {useSecondaryColor} from '../../Common/useColor';
 import {useRequest} from '../../Common/useRequest';
 
 interface Props {
@@ -26,7 +26,7 @@ interface Props {
 export const BrandDetailContent: React.FC<Props> = ({brand}) => {
   const router = useRouter();
   const deleteModal = useDisclosure();
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   const {request} = useRequest('/v2/admin/brand');
 

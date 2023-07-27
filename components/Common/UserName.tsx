@@ -1,12 +1,13 @@
-import {Text, TextProps, useColorModeValue} from '@chakra-ui/react';
+import {Text, TextProps} from '@chakra-ui/react';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
+import {useSecondaryColor} from './useColor';
 
 export const UserName = React.memo<TextProps>(props => {
   const user = useRecoilValue(UserState);
 
-  const userNameColor = useColorModeValue('gray.500', 'gray.400');
+  const userNameColor = useSecondaryColor();
 
   return (
     <Text

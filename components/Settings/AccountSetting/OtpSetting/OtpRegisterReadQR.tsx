@@ -14,6 +14,7 @@ import React from 'react';
 import {TbCheck, TbCopy} from 'react-icons/tb';
 import {colorTheme} from '../../../../utils/theme';
 import {Tooltip} from '../../../Common/Chakra/Tooltip';
+import {useSecondaryColor} from '../../../Common/useColor';
 
 interface Props {
   token: string;
@@ -26,7 +27,7 @@ export const OtpRegisterReadQR: React.FC<Props> = props => {
   );
   const fgColor = useColorModeValue('#572bcf', '#2bc4cf');
   const checkMarkColor = useColorModeValue('#68D391', '#38A169');
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   const {hasCopied, onCopy} = useClipboard(props.token);
 

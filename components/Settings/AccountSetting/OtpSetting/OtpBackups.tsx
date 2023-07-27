@@ -1,5 +1,6 @@
-import {Box, Divider, Text, useColorModeValue} from '@chakra-ui/react';
+import {Box, Divider, Text} from '@chakra-ui/react';
 import React from 'react';
+import {useSecondaryColor} from '../../../Common/useColor';
 import {OtpBackupTable} from './OtpBackupTable';
 
 interface Props {
@@ -8,7 +9,7 @@ interface Props {
 }
 
 export const OtpBackups: React.FC<Props> = props => {
-  const descriptionColor = useColorModeValue('gray.500', 'gray.400');
+  const descriptionColor = useSecondaryColor();
 
   return (
     <Box>

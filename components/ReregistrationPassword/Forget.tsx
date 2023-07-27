@@ -1,15 +1,16 @@
 'use client';
 
-import {Center, Heading, Text, useColorModeValue} from '@chakra-ui/react';
+import {Center, Heading, Text} from '@chakra-ui/react';
 import React from 'react';
 import {Margin} from '../Common/Margin';
+import {useSecondaryColor} from '../Common/useColor';
 import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {ForgetForm, type ForgetFormData} from './ForgetForm';
 import {SendMainSuccess} from './SendMailSuccess';
 
 export const Forget = () => {
-  const descriptionColor = useColorModeValue('gray.500', 'gray.400');
+  const descriptionColor = useSecondaryColor();
   const {request} = useRequest('/v2/account/forget/password');
   const {getRecaptchaToken} = useRecaptcha();
 

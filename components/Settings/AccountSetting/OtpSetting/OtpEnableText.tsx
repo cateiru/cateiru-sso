@@ -1,12 +1,6 @@
-import {
-  Box,
-  Button,
-  Stack,
-  Text,
-  useColorModeValue,
-  useDisclosure,
-} from '@chakra-ui/react';
+import {Box, Button, Stack, Text, useDisclosure} from '@chakra-ui/react';
 import React from 'react';
+import {useSecondaryColor} from '../../../Common/useColor';
 import {OtpBackupModal} from './OtpBackupModal';
 import {OtpDeleteModal} from './OtpDeleteModal';
 
@@ -15,7 +9,7 @@ interface Props {
 }
 
 export const OtpEnableText: React.FC<Props> = props => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   const deleteModal = useDisclosure();
   const backupModal = useDisclosure();

@@ -6,7 +6,6 @@ import {
   FormLabel,
   Input,
   Link,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
@@ -15,6 +14,7 @@ import {type LoginUser, LoginUserSchema} from '../../utils/types/login';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {PasswordForm, type PasswordFormData} from '../Common/Form/PasswordForm';
 import {Link as NextLink} from '../Common/Next/Link';
+import {useSecondaryColor} from '../Common/useColor';
 import {useRequest} from '../Common/useRequest';
 
 export interface UserIDEmailForm extends PasswordFormData {
@@ -32,7 +32,7 @@ export const UserIDEmailForm: React.FC<Props> = ({
   isConditionSupported,
   onClickWebAuthn,
 }) => {
-  const buttonColor = useColorModeValue('gray.500', 'gray.400');
+  const buttonColor = useSecondaryColor();
 
   const methods = useForm<UserIDEmailForm>();
   const {

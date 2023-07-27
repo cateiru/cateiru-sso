@@ -1,11 +1,12 @@
 'use client';
 
-import {Heading, Select, Text, useColorModeValue} from '@chakra-ui/react';
+import {Heading, Select, Text} from '@chakra-ui/react';
 import {usePathname, useRouter} from 'next/navigation';
 import React from 'react';
 import {routeChangeStart} from '../../utils/event';
 import {Margin} from '../Common/Margin';
 import {UserName} from '../Common/UserName';
+import {useSecondaryColor} from '../Common/useColor';
 
 export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
   children,
@@ -13,7 +14,7 @@ export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
   const pathname = usePathname();
   const router = useRouter();
 
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   const title = React.useCallback(() => {
     switch (pathname) {

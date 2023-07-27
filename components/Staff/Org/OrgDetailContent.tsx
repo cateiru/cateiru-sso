@@ -11,7 +11,6 @@ import {
   Text,
   Tr,
   UnorderedList,
-  useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
 import {useRouter} from 'next/navigation';
@@ -20,11 +19,12 @@ import {OrganizationDetail} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';
 import {Confirm} from '../../Common/Confirm/Confirm';
 import {Link as NextLink} from '../../Common/Next/Link';
+import {useSecondaryColor} from '../../Common/useColor';
 import {useRequest} from '../../Common/useRequest';
 import {OrgUser} from './OrgUser';
 
 export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const deleteModal = useDisclosure();
   const router = useRouter();
 

@@ -1,12 +1,9 @@
-import {
-  Avatar as ChakraAvatar,
-  type AvatarProps,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import {Avatar as ChakraAvatar, type AvatarProps} from '@chakra-ui/react';
 import React from 'react';
+import {useShadowColor} from '../useColor';
 
 export const Avatar: React.FC<AvatarProps> = props => {
-  const shadowColor = useColorModeValue('#242838', '#000');
+  const shadowColor = useShadowColor();
 
   if (props.src === '') {
     return <ChakraAvatar {...props} key={`no-image-avatar-${Math.random()}`} />;

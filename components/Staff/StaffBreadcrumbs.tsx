@@ -2,10 +2,10 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Breadcrumb as ChakraBreadcrumb,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {Link} from '../Common/Next/Link';
+import {useSecondaryColor} from '../Common/useColor';
 
 export interface Path {
   href?: string;
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const StaffBreadcrumbs: React.FC<Props> = props => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   return (
     <ChakraBreadcrumb color={textColor}>

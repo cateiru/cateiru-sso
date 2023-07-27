@@ -1,11 +1,12 @@
-import {Box, Text, useColorModeValue, useToast} from '@chakra-ui/react';
+import {Box, Text, useToast} from '@chakra-ui/react';
 import {useSWRConfig} from 'swr';
 import {RegisterPasswordForm} from '../../Common/Form/RegisterPasswordForm';
 import {RegisterPasswordFormContextData} from '../../Common/Form/RegisterPasswordFormContext';
+import {useSecondaryColor} from '../../Common/useColor';
 import {useRequest} from '../../Common/useRequest';
 
 export const RegisterPassword = () => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const toast = useToast();
   const {mutate} = useSWRConfig();
 

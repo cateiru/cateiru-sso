@@ -1,19 +1,14 @@
-import {
-  Button,
-  Center,
-  Heading,
-  Text,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import {Button, Center, Heading, Text} from '@chakra-ui/react';
 import React from 'react';
 import {TbDeviceMobile} from 'react-icons/tb';
+import {useSecondaryColor} from '../../../Common/useColor';
 
 interface Props {
   onRegisterStart: () => Promise<void>;
 }
 
 export const OtpRegisterStart: React.FC<Props> = props => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const [loading, setLoading] = React.useState(false);
 
   const onClick = () => {

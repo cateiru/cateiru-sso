@@ -7,7 +7,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-  useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -18,6 +17,7 @@ import {
   PasswordForm,
   PasswordFormData,
 } from '../../../Common/Form/PasswordForm';
+import {useSecondaryColor} from '../../../Common/useColor';
 import {useRequest} from '../../../Common/useRequest';
 
 interface Props {
@@ -26,7 +26,7 @@ interface Props {
 }
 
 export const OtpDeleteModal: React.FC<Props> = props => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const toast = useToast();
   const {mutate} = useSWRConfig();
 

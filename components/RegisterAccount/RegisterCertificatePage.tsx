@@ -1,10 +1,4 @@
-import {
-  Box,
-  Button,
-  Center,
-  Heading,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import {Box, Button, Center, Heading} from '@chakra-ui/react';
 import type {RegistrationPublicKeyCredential} from '@github/webauthn-json/dist/types/browser-ponyfill';
 import React from 'react';
 import {TbFingerprint, TbPassword} from 'react-icons/tb';
@@ -13,6 +7,7 @@ import {UserState} from '../../utils/state/atom';
 import {UserMeSchema} from '../../utils/types/user';
 import {RegisterPasswordForm} from '../Common/Form/RegisterPasswordForm';
 import {RegisterPasswordFormContextData} from '../Common/Form/RegisterPasswordFormContext';
+import {useSecondaryColor} from '../Common/useColor';
 import {useRequest} from '../Common/useRequest';
 import type {DefaultPageProps} from './RegisterAccount';
 import {RegisterPasskeyForm} from './RegisterPasskeyForm';
@@ -23,7 +18,7 @@ interface Props extends DefaultPageProps {
 
 export const RegisterCertificatePage: React.FC<Props> = props => {
   const setUser = useSetRecoilState(UserState);
-  const buttonColor = useColorModeValue('gray.500', 'gray.400');
+  const buttonColor = useSecondaryColor();
 
   const [certType, setCertType] = React.useState<'passkey' | 'password'>(
     'passkey'

@@ -1,10 +1,11 @@
-import {Text, useColorModeValue} from '@chakra-ui/react';
+import {Text} from '@chakra-ui/react';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
+import {useSecondaryColor} from '../Common/useColor';
 
 export const ProfileDatetime = () => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const user = useRecoilValue(UserState);
 
   const created = React.useCallback(() => {

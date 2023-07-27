@@ -7,7 +7,6 @@ import {
   Heading,
   IconButton,
   Text,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import {
   TbAddressBook,
@@ -21,6 +20,7 @@ import {UserState} from '../../utils/state/atom';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Margin} from '../Common/Margin';
 import {Link} from '../Common/Next/Link';
+import {useSecondaryColor} from '../Common/useColor';
 import {LoginDevice} from '../Histories/LoginDevice';
 import {EmailView} from './EmailView';
 import {ProfileDatetime} from './ProfileDatetime';
@@ -28,7 +28,7 @@ import {ProfileForm} from './ProfileForm';
 import {UpdateAvatar} from './UpdateAvatar';
 
 export const Profile = () => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
   const user = useRecoilValue(UserState);
 
   return (

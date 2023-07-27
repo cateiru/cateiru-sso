@@ -1,10 +1,4 @@
-import {
-  Button,
-  Center,
-  Divider,
-  useColorModeValue,
-  useToast,
-} from '@chakra-ui/react';
+import {Button, Center, Divider, useToast} from '@chakra-ui/react';
 import React from 'react';
 import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
@@ -12,6 +6,7 @@ import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
 import {Margin} from '../Common/Margin';
 import {Link} from '../Common/Next/Link';
+import {useSecondaryColor} from '../Common/useColor';
 import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {type DefaultPageProps, LoginStep} from './Login';
@@ -24,7 +19,7 @@ interface Props extends DefaultPageProps {
 }
 
 export const UserIDEmailPage: React.FC<Props> = props => {
-  const buttonColor = useColorModeValue('gray.500', 'gray.400');
+  const buttonColor = useSecondaryColor();
 
   const setUser = useSetRecoilState(UserState);
   const {getRecaptchaToken} = useRecaptcha();

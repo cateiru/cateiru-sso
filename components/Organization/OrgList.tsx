@@ -1,12 +1,13 @@
 'use client';
 
-import {Heading, Text, useColorModeValue} from '@chakra-ui/react';
+import {Heading, Text} from '@chakra-ui/react';
 import {Margin} from '../Common/Margin';
 import {UserName} from '../Common/UserName';
+import {useSecondaryColor} from '../Common/useColor';
 import {OrgListTable} from './OrgListTable';
 
 export const OrgList = () => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   return (
     <Margin>

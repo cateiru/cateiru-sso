@@ -1,7 +1,8 @@
-import {Button, Spacer, Stack, Text, useColorModeValue} from '@chakra-ui/react';
+import {Button, Spacer, Stack, Text} from '@chakra-ui/react';
+import {useSecondaryColor} from '../../../Common/useColor';
 
 export const OtpDisableText: React.FC<{onOpen: () => void}> = ({onOpen}) => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   return (
     <>

@@ -9,7 +9,6 @@ import {
   Th,
   Thead,
   Tr,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {useSWRConfig} from 'swr';
@@ -18,6 +17,7 @@ import {OrganizationUser} from '../../../utils/types/organization';
 import {Avatar} from '../../Common/Chakra/Avatar';
 import {OrgJoinUser} from '../../Common/Form/OrgJoinUser';
 import {Link as NextLink} from '../../Common/Next/Link';
+import {useSecondaryColor} from '../../Common/useColor';
 import {OrgDeleteUser} from './OrgDeleteUser';
 
 interface Props {
@@ -26,7 +26,7 @@ interface Props {
 }
 
 export const OrgUser: React.FC<Props> = ({users, orgId}) => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   const {mutate} = useSWRConfig();
 

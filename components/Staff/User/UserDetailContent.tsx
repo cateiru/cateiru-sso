@@ -9,13 +9,13 @@ import {
   Th,
   Thead,
   Tr,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {UserDetail} from '../../../utils/types/staff';
 import {validateGender} from '../../../utils/validate';
 import {Avatar} from '../../Common/Chakra/Avatar';
 import {Link} from '../../Common/Next/Link';
+import {useSecondaryColor} from '../../Common/useColor';
 import {UserDetailBrand} from './UserDetailBrand';
 import {UserDetailStaff} from './UserDetailStaff';
 
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export const UserDetailContent: React.FC<Props> = ({data}) => {
-  const textColor = useColorModeValue('gray.500', 'gray.400');
+  const textColor = useSecondaryColor();
 
   return (
     <>
