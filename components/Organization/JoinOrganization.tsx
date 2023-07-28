@@ -103,12 +103,17 @@ const InviteForm: React.FC<Props & {email: string}> = ({
   );
 };
 
-const JoinForm: React.FC<
-  Props & {
-    setInvite: (value: boolean) => void;
-    setUserOrEmail: (value: string) => void;
-  }
-> = ({orgId, handleSuccess, setInvite, setUserOrEmail}) => {
+interface JoinFormProps extends Props {
+  setInvite: (el: boolean) => void;
+  setUserOrEmail: (el: string) => void;
+}
+
+const JoinForm: React.FC<JoinFormProps> = ({
+  orgId,
+  handleSuccess,
+  setInvite,
+  setUserOrEmail,
+}) => {
   const toast = useToast();
 
   const {request} = useRequest('/v2/org/member', {
