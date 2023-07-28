@@ -30,6 +30,7 @@ export const EmailInputForm: React.FC<Props> = ({onSubmit}) => {
         <Input
           id="email"
           type="email"
+          autoComplete="email"
           {...register('email', {
             required: 'Emailは必須項目です',
             pattern: {
