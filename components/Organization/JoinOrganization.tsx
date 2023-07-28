@@ -105,8 +105,8 @@ const InviteForm: React.FC<Props & {email: string}> = ({
 
 const JoinForm: React.FC<
   Props & {
-    setInvite: (i: boolean) => void;
-    setUserOrEmail: (e: string) => void;
+    setInvite: (value: boolean) => void;
+    setUserOrEmail: (value: string) => void;
   }
 > = ({orgId, handleSuccess, setInvite, setUserOrEmail}) => {
   const toast = useToast();
