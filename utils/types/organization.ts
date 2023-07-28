@@ -46,3 +46,19 @@ export const SimpleOrganizationListSchema = z.array(SimpleOrganizationSchema);
 export type SimpleOrganizationList = z.infer<
   typeof SimpleOrganizationListSchema
 >;
+
+export const OrganizationInviteMemberSchema = z.object({
+  id: z.number(),
+  email: z.string().email(),
+  created_at: z.string().datetime({offset: true}),
+});
+export type OrganizationInviteMember = z.infer<
+  typeof OrganizationInviteMemberSchema
+>;
+
+export const OrganizationInviteMemberListSchema = z.array(
+  OrganizationInviteMemberSchema
+);
+export type OrganizationInviteMemberList = z.infer<
+  typeof OrganizationInviteMemberListSchema
+>;

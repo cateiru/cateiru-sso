@@ -1,18 +1,18 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
+import {Card} from '../../components/Common/Card';
 import {Margin} from '../../components/Common/Margin';
-import {StaffCard} from '../../components/Staff/StaffCard';
 
-const a: typeof StaffCard = props => {
+const a: typeof Card = props => {
   return (
     <Margin>
-      <StaffCard {...props} />
+      <Card {...props} />
     </Margin>
   );
 };
 
-const meta: Meta<typeof StaffCard> = {
-  title: 'CateiruSSO/Staff/StaffCard',
+const meta: Meta<typeof Card> = {
+  title: 'CateiruSSO/Common/Card',
   component: a,
   tags: ['autodocs'],
   parameters: {
@@ -21,7 +21,7 @@ const meta: Meta<typeof StaffCard> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof StaffCard>;
+type Story = StoryObj<typeof Card>;
 
 export const Default: Story = {
   args: {

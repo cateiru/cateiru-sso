@@ -1,13 +1,13 @@
 'use client';
 
 import {Button} from '@chakra-ui/react';
+import {Card} from '../Common/Card';
 import {Link} from '../Common/Next/Link';
-import {StaffCard} from './StaffCard';
 
 export const Staff = () => {
   return (
     <>
-      <StaffCard
+      <Card
         title="ユーザー"
         description="現在登録されているアカウント一覧です。"
       >
@@ -20,8 +20,8 @@ export const Staff = () => {
         >
           ユーザー一覧
         </Button>
-      </StaffCard>
-      <StaffCard
+      </Card>
+      <Card
         title="ブランド"
         description="ユーザーに特別な権限を与えることができるブランドの設定です。"
       >
@@ -44,8 +44,8 @@ export const Staff = () => {
         >
           ブランド新規作成
         </Button>
-      </StaffCard>
-      <StaffCard
+      </Card>
+      <Card
         title="クライアント"
         description="ユーザーが作成したクライアントの一覧です。"
       >
@@ -58,8 +58,8 @@ export const Staff = () => {
         >
           クライアント一覧
         </Button>
-      </StaffCard>
-      <StaffCard
+      </Card>
+      <Card
         title="組織"
         description="ユーザーをグループ化して個別に機能を提供する組織の設定です。"
       >
@@ -82,8 +82,8 @@ export const Staff = () => {
         >
           組織新規作成
         </Button>
-      </StaffCard>
-      <StaffCard
+      </Card>
+      <Card
         title="デプロイデータ"
         description={
           <>
@@ -102,7 +102,7 @@ export const Staff = () => {
         >
           デプロイデータ
         </Button>
-      </StaffCard>
+      </Card>
     </>
   );
 };

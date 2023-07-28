@@ -40,9 +40,7 @@ export const useRequest = (path: string, options?: Options): Returns => {
             return;
           }
 
-          message = error.unique_code
-            ? ErrorUniqueMessage[error.unique_code] ?? error.message
-            : error.message;
+          message = ErrorUniqueMessage[error.unique_code ?? 0] ?? error.message;
         }
 
         toast({

@@ -27,23 +27,30 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import {useForm} from 'react-hook-form';
-import {TbEdit} from 'react-icons/tb';
+import {TbEdit, TbTrash} from 'react-icons/tb';
 import {useRecoilValue} from 'recoil';
 import useSWR, {useSWRConfig} from 'swr';
 import {badgeColor} from '../../utils/color';
 import {UserState} from '../../utils/state/atom';
-import {orgUsersFeather} from '../../utils/swr/organization';
+import {
+  orgInviteMemberListFeather,
+  orgUsersFeather,
+} from '../../utils/swr/organization';
 import {ErrorType} from '../../utils/types/error';
 import {
+  OrganizationInviteMember,
+  OrganizationInviteMemberList,
   OrganizationUser,
   OrganizationUserList,
 } from '../../utils/types/organization';
+import {Card} from '../Common/Card';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Confirm} from '../Common/Confirm/Confirm';
 import {Error} from '../Common/Error/Error';
-import {OrgJoinUser} from '../Common/Form/OrgJoinUser';
 import {Spinner} from '../Common/Icons/Spinner';
+import {AgoTime} from '../Common/Time';
 import {useRequest} from '../Common/useRequest';
+import {JoinOrganization} from './JoinOrganization';
 
 interface Props {
   id: string;
@@ -60,14 +67,24 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
     `/v2/org/member?org_id=${id}`,
     () => orgUsersFeather(id)
   );
+  const {data: InviteData, error: InviteError} = useSWR<
+    OrganizationInviteMemberList,
+    ErrorType
+  >(`/v2/org/member/invite?org_id=${id}`, () => orgInviteMemberListFeather(id));
+
   const {request} = useRequest('/v2/org/member');
+  const {request: requestJoin} = useRequest('/v2/org/member/invite');
 
   const {mutate} = useSWRConfig();
-  const {isOpen, onOpen, onClose} = useDisclosure();
+  const editMemberModal = useDisclosure();
+  const deleteJoinModal = useDisclosure();
+  const confirmModal = useDisclosure();
+
   const [modalUser, setModalUser] = React.useState<OrganizationUser | null>(
     null
   );
-  const confirmModal = useDisclosure();
+  const [joinItem, setJoinItem] =
+    React.useState<OrganizationInviteMember | null>(null);
 
   const {
     handleSubmit,
@@ -85,6 +102,8 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
 
   if (error) {
     return <Error {...error} />;
+  } else if (InviteError) {
+    return <Error {...InviteError} />;
   }
 
   const onSubmit = async (data: EditRoleForm) => {
@@ -101,7 +120,7 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
 
     if (res) {
       reset();
-      onClose();
+      editMemberModal.onClose();
       reload();
     }
   };
@@ -121,7 +140,28 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
 
     if (res) {
       reset();
-      onClose();
+      editMemberModal.onClose();
+      reload();
+    }
+  };
+
+  const onJoinDelete = async () => {
+    if (!joinItem) return;
+
+    const param = new URLSearchParams();
+    param.append('invite_id', String(joinItem?.id));
+
+    const res = await requestJoin(
+      {
+        method: 'DELETE',
+        mode: 'cors',
+        credentials: 'include',
+      },
+      param
+    );
+
+    if (res) {
+      deleteJoinModal.onClose();
       reload();
     }
   };
@@ -130,7 +170,8 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
     mutate(
       key =>
         typeof key === 'string' &&
-        key.startsWith(`/v2/org/member?org_id=${id}`),
+        (key.startsWith(`/v2/org/member?org_id=${id}`) ||
+          key.startsWith(`/v2/org/member/invite?org_id=${id}`)),
       undefined,
       {revalidate: true}
     );
@@ -138,64 +179,109 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
 
   return (
     <Box>
-      <OrgJoinUser
-        apiEndpoint="/v2/org/member"
-        orgId={id}
-        handleSuccess={reload}
-      />
-      {data ? (
-        <TableContainer mt="1rem">
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th></Th>
-                <Th>ユーザー名</Th>
-                <Th textAlign="center">ロール</Th>
-                <Th>追加日</Th>
-                <Th></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {data.map(user => {
-                const joinDate = new Date(user.created_at);
-
-                return (
-                  <Tr key={`org-user-${user.id}`}>
-                    <Td>
-                      <Avatar src={user.user.avatar ?? ''} size="sm" />
-                    </Td>
-                    <Td>{user.user.user_name}</Td>
-                    <Td textAlign="center">
-                      <Badge colorScheme={badgeColor(user.role)}>
-                        {user.role}
-                      </Badge>
-                    </Td>
-                    <Td>{joinDate.toLocaleDateString()}</Td>
-                    <Td>
-                      <IconButton
-                        size="sm"
-                        colorScheme="cateiru"
-                        icon={<TbEdit size="20px" />}
-                        aria-label="edit user"
-                        onClick={() => {
-                          setModalUser(user);
-                          onOpen();
-                        }}
-                        isDisabled={user.user.id === u?.user.id}
-                      />
-                    </Td>
-                  </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      ) : (
-        <Center mt="2rem">
-          <Spinner />
-        </Center>
-      )}
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+      <JoinOrganization orgId={id} handleSuccess={reload} />
+      <Card title="組織ユーザー">
+        {data ? (
+          <TableContainer mt="1rem">
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th></Th>
+                  <Th>ユーザー名</Th>
+                  <Th textAlign="center">ロール</Th>
+                  <Th>追加日</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {data.map(user => {
+                  return (
+                    <Tr key={`org-user-${user.id}`}>
+                      <Td>
+                        <Avatar src={user.user.avatar ?? ''} size="sm" />
+                      </Td>
+                      <Td>{user.user.user_name}</Td>
+                      <Td textAlign="center">
+                        <Badge colorScheme={badgeColor(user.role)}>
+                          {user.role}
+                        </Badge>
+                      </Td>
+                      <Td>
+                        <AgoTime time={user.created_at} />
+                      </Td>
+                      <Td>
+                        <IconButton
+                          size="sm"
+                          colorScheme="cateiru"
+                          icon={<TbEdit size="20px" />}
+                          aria-label="edit user"
+                          onClick={() => {
+                            setModalUser(user);
+                            editMemberModal.onOpen();
+                          }}
+                          isDisabled={user.user.id === u?.user.id}
+                        />
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Center mt="2rem">
+            <Spinner />
+          </Center>
+        )}
+      </Card>
+      <Card title="招待中のユーザー">
+        {InviteData ? (
+          <TableContainer mt="1rem">
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>Eメール</Th>
+                  <Th>追加日</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {InviteData.map(item => {
+                  return (
+                    <Tr key={`invite-data-${item.id}`}>
+                      <Td>{item.email}</Td>
+                      <Td>
+                        <AgoTime time={item.created_at} />
+                      </Td>
+                      <Td>
+                        <IconButton
+                          size="sm"
+                          colorScheme="cateiru"
+                          icon={<TbTrash size="20px" />}
+                          aria-label="edit user"
+                          onClick={() => {
+                            setJoinItem(item);
+                            deleteJoinModal.onOpen();
+                          }}
+                        />
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Center mt="2rem">
+            <Spinner />
+          </Center>
+        )}
+      </Card>
+      <Modal
+        isOpen={editMemberModal.isOpen}
+        onClose={editMemberModal.onClose}
+        isCentered
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{modalUser?.user.user_name} の編集</ModalHeader>
@@ -232,7 +318,7 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
             <Button
               w="100%"
               onClick={() => {
-                onClose();
+                editMemberModal.onClose();
                 confirmModal.onOpen();
               }}
             >
@@ -261,6 +347,21 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
           <ListItem>
             ユーザーが作成したクライアントなどは削除されません。
           </ListItem>
+        </UnorderedList>
+      </Confirm>
+      <Confirm
+        isOpen={deleteJoinModal.isOpen}
+        onClose={deleteJoinModal.onClose}
+        onSubmit={onJoinDelete}
+        text={{
+          confirmHeader: '招待を削除しますか？',
+          confirmOkText: '削除',
+          confirmOkTextColor: 'red',
+        }}
+      >
+        <UnorderedList spacing=".5rem">
+          <ListItem>送信されたメールは削除されません。</ListItem>
+          <ListItem>招待メールにある招待URLが無効化されます。</ListItem>
         </UnorderedList>
       </Confirm>
     </Box>

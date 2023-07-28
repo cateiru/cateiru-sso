@@ -1,6 +1,6 @@
 import {Box, Text} from '@chakra-ui/react';
 import React from 'react';
-import {useBorderColor, useSecondaryColor} from '../Common/useColor';
+import {useBorderColor, useSecondaryColor} from './useColor';
 
 interface Props {
   title: string;
@@ -8,7 +8,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const StaffCard: React.FC<Props> = props => {
+export const Card: React.FC<Props> = props => {
   const borderColor = useBorderColor();
   const textColor = useSecondaryColor();
 

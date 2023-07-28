@@ -2,7 +2,10 @@ import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
 import {OrganizationMember} from '../../components/Organization/OrganizationMember';
 import {api} from '../../utils/api';
-import {OrganizationUserList} from '../../utils/types/organization';
+import {
+  OrganizationInviteMemberList,
+  OrganizationUserList,
+} from '../../utils/types/organization';
 
 const meta: Meta<typeof OrganizationMember> = {
   title: 'CateiruSSO/Organization/OrganizationMember',
@@ -74,6 +77,19 @@ export const Default: Story = {
           },
         ] as OrganizationUserList,
       },
+      {
+        url: api('/v2/org/member/invite', urlParam),
+        method: 'GET',
+        status: 200,
+        delay: 1000,
+        response: [
+          {
+            id: 1234,
+            email: faker.internet.email(),
+            created_at: faker.date.past().toISOString(),
+          },
+        ] as OrganizationInviteMemberList,
+      },
     ],
   },
 };
@@ -87,6 +103,13 @@ export const Loading: Story = {
     mockData: [
       {
         url: api('/v2/org/member', urlParam),
+        method: 'GET',
+        status: 200,
+        delay: 10000,
+        response: [],
+      },
+      {
+        url: api('/v2/org/member/invite', urlParam),
         method: 'GET',
         status: 200,
         delay: 10000,
