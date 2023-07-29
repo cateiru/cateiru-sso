@@ -136,7 +136,7 @@ export const EditClient = () => {
           );
           setValue(
             'referrerUrls',
-            data.data.referrer_urls.map(v => ({value: v}))
+            data.data.referrer_urls.map(v => ({value: `https://${v}`}))
           );
           setValue(
             'scopes',
