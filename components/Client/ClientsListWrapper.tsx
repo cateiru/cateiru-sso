@@ -1,6 +1,7 @@
 'use client';
 
 import {Center, Heading, Link, Select, Skeleton, Text} from '@chakra-ui/react';
+import NextLink from 'next/link';
 import {useParams, usePathname, useRouter} from 'next/navigation';
 import React from 'react';
 import {TbExternalLink} from 'react-icons/tb';
@@ -72,6 +73,7 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
             fontWeight="bold"
             color={textColor}
             isExternal
+            as={NextLink}
           >
             組織の詳細
             <TbExternalLink

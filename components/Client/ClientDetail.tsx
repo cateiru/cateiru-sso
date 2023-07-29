@@ -31,6 +31,7 @@ import {Avatar} from '../Common/Chakra/Avatar';
 import {Error} from '../Common/Error/Error';
 import {Margin} from '../Common/Margin';
 import {useSecondaryColor} from '../Common/useColor';
+import {ClientDeleteModal} from './ClientDeleteModal';
 
 export const ClientDetail = () => {
   const {id} = useParams();
@@ -272,7 +273,14 @@ export const ClientDetail = () => {
         >
           編集
         </Button>
-        <Button w="100%">削除</Button>
+        {data ? (
+          <ClientDeleteModal
+            clientId={data?.client_id}
+            orgId={data.org_id ?? undefined}
+          />
+        ) : (
+          <Skeleton h="40px" w="100%" borderRadius="6px" />
+        )}
       </ButtonGroup>
     </Margin>
   );
