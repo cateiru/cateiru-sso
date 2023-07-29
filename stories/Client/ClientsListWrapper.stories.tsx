@@ -100,6 +100,12 @@ export const Default: Story = {
         ] as SimpleOrganizationList,
       },
     ],
+    nextjs: {
+      appDirectory: true,
+      navigation: {
+        pathname: '/',
+      },
+    },
   },
 };
 

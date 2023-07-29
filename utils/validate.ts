@@ -12,3 +12,18 @@ export function validateGender(gender: string): string {
       return '不明';
   }
 }
+
+export function validatePrompt(prompt: string | null): string {
+  if (prompt === null) {
+    return '認証しない';
+  }
+
+  switch (prompt) {
+    case 'login':
+      return '認証を求める';
+    case '2fa_login':
+      return '二段階認証のみを求める';
+    default:
+      return '認証しない';
+  }
+}
