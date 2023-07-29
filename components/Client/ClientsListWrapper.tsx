@@ -30,7 +30,7 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
 
   const user = useRecoilValue(UserState);
   const {data, error} = useSWR<SimpleOrganizationList, ErrorType>(
-    id ? `/v2/org/list/simple?org_id=${id}` : '/v2/org/list',
+    id ? `/v2/org/list/simple?org_id=${id}` : '/v2/org/list/simple',
     () => orgSimpleListFeather(id, user?.joined_organization)
   );
 
@@ -109,7 +109,7 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
           })}
         </Select>
       ) : (
-        <Center>
+        <Center mb="1rem">
           <Skeleton h="40px" w="400px" borderRadius="7px" />
         </Center>
       )}
