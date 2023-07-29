@@ -219,6 +219,7 @@ export const EditClient = () => {
 
   const onDeleteImage = async () => {
     if (typeof id !== 'string') return;
+    if (imageUrl === undefined) return;
 
     const param = new URLSearchParams();
     param.append('client_id', id);
