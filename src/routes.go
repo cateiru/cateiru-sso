@@ -10,6 +10,12 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	version := e.Group("/v2")
 
+	// CSRF設定
+	// APIにはつけたくないのでここで定義している
+	if c.EnableCSRFMeasures {
+		version.Use(CSRFHandler)
+	}
+
 	// アカウント登録
 	// フロー:
 	// 1. `/v2/register/email/send`にEmailを渡して確認コードをEmailに送信

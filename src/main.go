@@ -75,7 +75,7 @@ func Server(c *Config) error {
 	return e.StartH2CServer(":8080", &s)
 }
 
-// サーバ設定など
+// 共通のミドルウェア
 func ServerMiddleWare(e *echo.Echo, c *Config) {
 	// リクエストごとにログを出す
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
@@ -110,11 +110,6 @@ func ServerMiddleWare(e *echo.Echo, c *Config) {
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: 6,
 	}))
-
-	// CSRF設定
-	if c.EnableCSRFMeasures {
-		e.Use(CSRFHandler)
-	}
 }
 
 // CSRF対策で`Sec-Fetch-Site`ヘッダを検証する
