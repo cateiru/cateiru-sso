@@ -68,7 +68,7 @@ export const EditClient = () => {
     undefined
   );
   const [imageUrl, setImageUrl] = React.useState<string | undefined>(undefined);
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState<boolean | null>(true);
 
   const methods = useForm<EditClientForm>({
     defaultValues: {
@@ -153,6 +153,9 @@ export const EditClient = () => {
         }
         console.error(data.error);
       }
+
+      // エラー時はnullにする
+      setLoading(null);
     };
     c();
     i();
@@ -242,7 +245,9 @@ export const EditClient = () => {
       <Heading textAlign="center" mt="3rem" mb="1rem">
         {orgId && '組織'}クライアントの編集
       </Heading>
-      {loading ? (
+      {loading === null ? (
+        <></>
+      ) : loading ? (
         <Center mt="1rem">
           <Spinner />
         </Center>
