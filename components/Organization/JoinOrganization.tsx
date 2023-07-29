@@ -37,7 +37,11 @@ interface InviteFormData {
   email: string;
 }
 
-const InviteForm: React.FC<Props & {email: string}> = ({
+interface InviteFormProps extends Props {
+  email: string;
+}
+
+const InviteForm: React.FC<InviteFormProps> = ({
   orgId,
   handleSuccess,
   email,
