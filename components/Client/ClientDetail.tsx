@@ -21,7 +21,7 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import {useParams} from 'next/navigation';
-import {TbCheck} from 'react-icons/tb';
+import {TbCheck, TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
 import {clientFetcher} from '../../utils/swr/client';
 import {ClientDetail as ClientDetailType} from '../../utils/types/client';
@@ -30,9 +30,11 @@ import {validatePrompt} from '../../utils/validate';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Error} from '../Common/Error/Error';
 import {Margin} from '../Common/Margin';
+import {useSecondaryColor} from '../Common/useColor';
 
 export const ClientDetail = () => {
   const {id} = useParams();
+  const textColor = useSecondaryColor();
 
   const {data, error} = useSWR<ClientDetailType, ErrorType>(
     `/v2/client/?client_id=${id}`,
@@ -54,6 +56,29 @@ export const ClientDetail = () => {
       <Center my="1rem">
         <Avatar src={data?.image ?? ''} size="lg" />
       </Center>
+      {data?.org_id && (
+        <Text color={textColor} textAlign="center">
+          このクライアントは
+          <Link
+            isExternal
+            as={NextLink}
+            href={`/org/${data.org_id}`}
+            fontWeight="bold"
+            mx=".1rem"
+          >
+            組織
+            <TbExternalLink
+              size="1rem"
+              style={{
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                marginLeft: '0.1rem',
+              }}
+            />
+          </Link>
+          によって管理されています。
+        </Text>
+      )}
       <TableContainer mt="1rem">
         <Table variant="simple">
           <Tbody>
