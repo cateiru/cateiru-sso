@@ -11,6 +11,7 @@ import {
   Heading,
   Input,
   Select,
+  Skeleton,
   Spacer,
   Switch,
   Textarea,
@@ -202,7 +203,11 @@ export const RegisterClient = () => {
               <br />
               このスコープに設定した上限が取得可能になります。
             </FormHelperText>
-            <ScopesForm scopes={config?.scopes ?? []} />
+            {typeof config !== 'undefined' ? (
+              <ScopesForm scopes={config?.scopes ?? []} />
+            ) : (
+              <Skeleton mt=".5rem" h="130px" />
+            )}
             <FormErrorMessage>
               {errors.scopes &&
                 errors.scopes.root &&
