@@ -1,12 +1,15 @@
 import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
-import {ClientDetail} from '../../components/Client/ClientDetail';
+import {EditClient} from '../../components/Client/EditClient';
 import {api} from '../../utils/api';
-import {ClientDetail as ClientDetailType} from '../../utils/types/client';
+import {
+  ClientConfig,
+  ClientDetail as ClientDetailType,
+} from '../../utils/types/client';
 
-const meta: Meta<typeof ClientDetail> = {
-  title: 'CateiruSSO/Client/ClientDetail',
-  component: ClientDetail,
+const meta: Meta<typeof EditClient> = {
+  title: 'CateiruSSO/Client/EditClient',
+  component: EditClient,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
@@ -14,7 +17,7 @@ const meta: Meta<typeof ClientDetail> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ClientDetail>;
+type Story = StoryObj<typeof EditClient>;
 
 const clientId = faker.string.uuid();
 const param = new URLSearchParams({client_id: clientId});
@@ -49,6 +52,17 @@ export const Org: Story = {
           scopes: ['openid', 'profile', 'email'],
           org_id: faker.string.uuid(),
         } as ClientDetailType,
+      },
+      {
+        url: api('/v2/client/config'),
+        method: 'GET',
+        status: 200,
+        delay: 1000,
+        response: {
+          redirect_url_max: 10,
+          referrer_url_max: 10,
+          scopes: ['profile', 'email', 'openid'],
+        } as ClientConfig,
       },
     ],
     nextjs: {
@@ -89,6 +103,17 @@ export const NoOrg: Story = {
           org_id: null,
         } as ClientDetailType,
       },
+      {
+        url: api('/v2/client/config'),
+        method: 'GET',
+        status: 200,
+        delay: 1000,
+        response: {
+          redirect_url_max: 10,
+          referrer_url_max: 10,
+          scopes: ['profile', 'email', 'openid'],
+        } as ClientConfig,
+      },
     ],
     nextjs: {
       appDirectory: true,
@@ -109,6 +134,17 @@ export const Loading: Story = {
         status: 200,
         delay: 10000,
         response: {},
+      },
+      {
+        url: api('/v2/client/config'),
+        method: 'GET',
+        status: 200,
+        delay: 1000,
+        response: {
+          redirect_url_max: 10,
+          referrer_url_max: 10,
+          scopes: ['profile', 'email', 'openid'],
+        } as ClientConfig,
       },
     ],
     nextjs: {

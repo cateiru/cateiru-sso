@@ -19,6 +19,7 @@ import {
   UnorderedList,
   useClipboard,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import {useParams} from 'next/navigation';
 import {TbCheck} from 'react-icons/tb';
 import useSWR from 'swr';
@@ -238,7 +239,12 @@ export const ClientDetail = () => {
         </Table>
       </TableContainer>
       <ButtonGroup w="100%" mt="1rem">
-        <Button w="100%" colorScheme="cateiru">
+        <Button
+          w="100%"
+          colorScheme="cateiru"
+          as={NextLink}
+          href={`/client/edit/${id}`}
+        >
           編集
         </Button>
         <Button w="100%">削除</Button>

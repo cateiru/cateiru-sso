@@ -55,6 +55,8 @@ type ClientDetailResponse struct {
 
 	Scopes []string `json:"scopes"`
 
+	OrgId null.String `json:"org_id,omitempty"`
+
 	ClientResponse
 }
 
@@ -155,6 +157,8 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 		RedirectUrls: redirectUrls,
 		ReferrerUrls: referrerUrls,
 		Scopes:       scopes,
+
+		OrgId: client.OrgID,
 
 		ClientResponse: ClientResponse{
 			ClientID: client.ClientID,
@@ -685,8 +689,6 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 			}
 
 			client.Image = null.NewString(url.String(), true)
-		} else {
-			client.Image = null.NewString("", false)
 		}
 
 		if updateSecret {

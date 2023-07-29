@@ -34,6 +34,7 @@ export const ClientDetailSchema = ClientSchema.extend({
   referrer_urls: z.array(z.string()),
 
   scopes: z.array(z.string()),
+  org_id: z.string().nullable(),
 });
 export type ClientDetail = z.infer<typeof ClientDetailSchema>;
 
