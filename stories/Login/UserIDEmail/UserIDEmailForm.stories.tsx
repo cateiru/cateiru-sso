@@ -18,7 +18,6 @@ export const Default: Story = {
     onSubmit: async data => {
       window.alert(JSON.stringify(data));
     },
-    isConditionSupported: true,
   },
 };
 
@@ -27,6 +26,5 @@ export const ConditionNoSupport: Story = {
     onSubmit: async data => {
       window.alert(JSON.stringify(data));
     },
-    isConditionSupported: false,
   },
 };
