@@ -1407,7 +1407,7 @@ func TestRegisterInviteRegisterSession(t *testing.T) {
 		require.False(t, inviteEmailSessionExist)
 	})
 
-	t.Run("失敗: すでにセッションテーブルにEmailが存在している", func(t *testing.T) {
+	t.Run("成功: すでにセッションテーブルにEmailが存在していても作成可能", func(t *testing.T) {
 		orgId := RegisterOrg(t, ctx)
 		email := RandomEmail(t)
 
@@ -1434,7 +1434,29 @@ func TestRegisterInviteRegisterSession(t *testing.T) {
 		c := m.Echo()
 
 		err = h.RegisterInviteRegisterSession(c)
-		require.EqualError(t, err, "code=400, message=session exists, unique=2")
+		require.NoError(t, err)
+
+		resp := &src.RegisterEmailResponse{}
+		require.NoError(t, m.Json(resp))
+		require.NotNil(t, resp.Token)
+
+		s, err := models.RegisterSessions(
+			models.RegisterSessionWhere.Email.EQ(email),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, s.ID, resp.Token)
+		require.Equal(t, s.RetryCount, uint8(0))
+		require.True(t, s.EmailVerified)
+		require.Equal(t, s.VerifyCode, "000000")
+		require.Equal(t, s.OrgID.String, orgId)
+
+		// invite_email_sessionは削除される
+		inviteEmailSessionExist, err := models.InviteOrgSessions(
+			models.InviteOrgSessionWhere.Token.EQ(token),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, inviteEmailSessionExist)
 	})
 
 	t.Run("失敗: すでにメールアドレスが登録されている", func(t *testing.T) {

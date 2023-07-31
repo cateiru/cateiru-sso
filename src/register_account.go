@@ -784,54 +784,49 @@ func (h *Handler) RegisterInviteRegisterSession(c echo.Context) error {
 		return NewHTTPUniqueError(http.StatusForbidden, ErrExpired, "expired token")
 	}
 
-	// セッションテーブルにEmailが存在しているか
-	// 有効期限が切れるまで同じメールアドレスでセッションを作れないようにする
-	// スパム防止のため
-	registerSession, err := models.RegisterSessions(
-		models.RegisterSessionWhere.Email.EQ(email),
-	).One(ctx, h.DB)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return err
-	}
-	if registerSession != nil {
-		if registerSession.Period.After(time.Now()) {
-			return NewHTTPUniqueError(http.StatusBadRequest, ErrSessionExists, "session exists")
-		}
-		// 有効期限が切れているので削除する
-		if _, err := registerSession.Delete(ctx, h.DB); err != nil {
-			return err
-		}
-	}
-
-	// すでに登録されているメールアドレスの場合は登録できない（Emailがユニークなため）
-	exitsEmailInUser, err := models.Users(
-		models.UserWhere.Email.EQ(email),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	if exitsEmailInUser {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrImpossibleRegisterAccount, "impossible register")
-	}
-
-	// orgの存在確認をする
-	orgExists, err := models.Organizations(
-		models.OrganizationWhere.ID.EQ(inviteOrgSession.OrgID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	if !orgExists {
-		return NewHTTPError(http.StatusBadRequest, "invalid invite_token")
-	}
-
 	session, err := lib.RandomStr(31)
 	if err != nil {
 		return err
 	}
 
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
-		registerSession := &models.RegisterSession{
+		// トークンを使用した招待ではRegisterSessionの有効期限が切れていなくても
+		// 作成可能とする
+		registerSession, err := models.RegisterSessions(
+			models.RegisterSessionWhere.Email.EQ(email),
+		).One(ctx, h.DB)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+		if registerSession != nil {
+			if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+				return err
+			}
+		}
+
+		// すでに登録されているメールアドレスの場合は登録できない（Emailがユニークなため）
+		exitsEmailInUser, err := models.Users(
+			models.UserWhere.Email.EQ(email),
+		).Exists(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		if exitsEmailInUser {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrImpossibleRegisterAccount, "impossible register")
+		}
+
+		// orgの存在確認をする
+		orgExists, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(inviteOrgSession.OrgID),
+		).Exists(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		if !orgExists {
+			return NewHTTPError(http.StatusBadRequest, "invalid invite_token")
+		}
+
+		newRegisterSession := &models.RegisterSession{
 			ID: session,
 
 			Email:         inviteOrgSession.Email,
@@ -842,7 +837,7 @@ func (h *Handler) RegisterInviteRegisterSession(c echo.Context) error {
 
 			Period: time.Now().Add(h.C.RegisterSessionPeriod),
 		}
-		if err := registerSession.Insert(ctx, tx, boil.Infer()); err != nil {
+		if err := newRegisterSession.Insert(ctx, tx, boil.Infer()); err != nil {
 			return err
 		}
 
