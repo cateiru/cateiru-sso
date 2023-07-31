@@ -127,6 +127,12 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
       // シグナルがAbortされたらエラー出さないでReturn
       if (abortRef.current && abortRef.current.signal.aborted) return;
 
+      if (e instanceof DOMException) {
+        if (e.name === 'NotAllowedError') {
+          return;
+        }
+      }
+
       toast({
         title: 'WebAuthnエラー',
         status: 'error',

@@ -24,12 +24,10 @@ export interface UserIDEmailForm extends PasswordFormData {
 interface Props {
   onSubmit: (data: UserIDEmailForm) => Promise<void>;
   onClickWebAuthn: () => Promise<void>;
-  isConditionSupported: boolean;
 }
 
 export const UserIDEmailForm: React.FC<Props> = ({
   onSubmit,
-  isConditionSupported,
   onClickWebAuthn,
 }) => {
   const buttonColor = useSecondaryColor();
@@ -131,11 +129,9 @@ export const UserIDEmailForm: React.FC<Props> = ({
           >
             ログイン
           </Button>
-          {isConditionSupported || (
-            <Button w="100%" mt="1rem" onClick={onClickWebAuthn}>
-              生体認証でログイン
-            </Button>
-          )}
+          <Button w="100%" mt="1rem" onClick={onClickWebAuthn}>
+            生体認証でログイン
+          </Button>
         </form>
       </FormProvider>
     </>

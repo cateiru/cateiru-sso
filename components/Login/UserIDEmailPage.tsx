@@ -46,7 +46,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
     },
   });
 
-  const {isConditionSupported, onClickWebAuthn} = useWebAuthn(user => {
+  const {onClickWebAuthn} = useWebAuthn(user => {
     // ログインする
     setUser(user);
     props.setStep(LoginStep.CompleteLogin);
@@ -92,11 +92,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
 
   return (
     <Margin>
-      <UserIDEmailForm
-        onSubmit={onSubmit}
-        isConditionSupported={isConditionSupported}
-        onClickWebAuthn={onClickWebAuthn}
-      />
+      <UserIDEmailForm onSubmit={onSubmit} onClickWebAuthn={onClickWebAuthn} />
       <Divider my="1rem" />
       <Center>
         <Button variant="link" as={Link} href="/register" color={buttonColor}>
