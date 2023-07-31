@@ -162,7 +162,7 @@ export const RegisterAccount = () => {
   return (
     <Box>
       {email && (
-        <Text textAlign="center" color={textColor}>
+        <Text textAlign="center" mb="1rem" color={textColor}>
           {email}
         </Text>
       )}
