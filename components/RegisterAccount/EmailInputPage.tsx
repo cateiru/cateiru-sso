@@ -8,6 +8,7 @@ import {DefaultPageProps} from './RegisterAccount';
 
 interface Props extends DefaultPageProps {
   setRegisterToken: (token: string) => void;
+  setEmail: (email: string) => void;
 }
 
 export const EmailInputPage: React.FC<Props> = props => {
@@ -21,8 +22,10 @@ export const EmailInputPage: React.FC<Props> = props => {
   const onSubmit = async (data: EmailForm) => {
     props.setStatus('loading');
 
+    const email = data.email;
+
     const form = new FormData();
-    form.append('email', data.email);
+    form.append('email', email);
 
     const recaptchaToken = await getRecaptchaToken();
     if (typeof recaptchaToken === 'undefined') {
@@ -42,6 +45,7 @@ export const EmailInputPage: React.FC<Props> = props => {
         await res.json()
       );
       if (data.success) {
+        props.setEmail(email);
         props.setRegisterToken(data.data.register_token);
         props.setStatus(undefined);
         props.nextStep();

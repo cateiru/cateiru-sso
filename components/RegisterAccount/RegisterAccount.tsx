@@ -1,9 +1,10 @@
-import {Box, Center} from '@chakra-ui/react';
+import {Box, Center, Text} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
 import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
 import {CreateAccountRegisterEmailResponseSchema} from '../../utils/types/createAccount';
 import {Spinner} from '../Common/Icons/Spinner';
+import {useSecondaryColor} from '../Common/useColor';
 import {useRequest} from '../Common/useRequest';
 import {CompleteRegisterPage} from './CompleteRegisterPage';
 import {EmailInputPage} from './EmailInputPage';
@@ -28,6 +29,7 @@ export interface DefaultPageProps {
 export const RegisterAccount = () => {
   const prams = useSearchParams();
   const router = useRouter();
+  const textColor = useSecondaryColor();
 
   const {request} = useRequest('/v2/register/invite_generate_session');
 
@@ -43,6 +45,7 @@ export const RegisterAccount = () => {
   });
   const [status, setStatus] = React.useState<StepStatus>(undefined);
   const [isInvite, setIsInvite] = React.useState<boolean>(false);
+  const [email, setEmail] = React.useState<string | null>(null);
 
   // invite_token が存在する場合、それを使用して登録用のセッションを取得する
   React.useEffect(() => {
@@ -75,6 +78,7 @@ export const RegisterAccount = () => {
           await res.json()
         );
         if (data.success) {
+          setEmail(email);
           setRegisterToken(data.data.register_token);
           setStep(RegisterAccountStep.RegisterCertificate);
           return;
@@ -90,21 +94,23 @@ export const RegisterAccount = () => {
   const reset = React.useCallback(() => {
     setRegisterToken(null);
     setStatus(undefined);
+    setEmail(null);
 
     resetStep();
   }, []);
 
   const C = React.useCallback(() => {
-    if (isInvite) {
-      return (
-        <Center>
-          <Spinner />
-        </Center>
-      );
-    }
-
     switch (activeStep) {
       case RegisterAccountStep.EmailInput:
+        // invite_tokenを使用した場合はスピナーを表示させる
+        if (isInvite) {
+          return (
+            <Center>
+              <Spinner />
+            </Center>
+          );
+        }
+
         return (
           <EmailInputPage
             nextStep={nextStep}
@@ -112,6 +118,7 @@ export const RegisterAccount = () => {
             setStatus={setStatus}
             reset={reset}
             setRegisterToken={setRegisterToken}
+            setEmail={setEmail}
           />
         );
       case RegisterAccountStep.EmailVerify:
@@ -154,6 +161,11 @@ export const RegisterAccount = () => {
 
   return (
     <Box>
+      {email && (
+        <Text textAlign="center" color={textColor}>
+          {email}
+        </Text>
+      )}
       <Steps activeStep={activeStep} state={status} />
       <Center mt="1rem" h="50%">
         <C />
