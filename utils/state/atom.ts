@@ -37,9 +37,11 @@ const broadcastEffect =
     });
 
     onSet(newValue => {
+      const value = typeof newValue === 'undefined' ? null : newValue;
+
       bc.postMessage({
         id: tabId,
-        value: newValue,
+        value: value,
       } as BroadcastMessage<T>);
     });
   };
