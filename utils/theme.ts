@@ -107,11 +107,11 @@ export const theme = extendTheme({
       '::-webkit-scrollbar-track': {
         backgroundColor: 'rgba(0,0,0,0)',
       },
-      // FireFox
       html: {
         scrollbarWidth: 'thin',
         scrollbarColor: props.colorMode === 'dark' ? 'brand.600' : 'gray.400',
         scrollbarGutter: 'stable',
+        fontFamily: "'Noto Sans JP', sans-serif",
       },
       body: {
         background: mode(
@@ -122,9 +122,6 @@ export const theme = extendTheme({
           props.colorMode === 'dark'
             ? colorTheme.darkText
             : colorTheme.lightText,
-      },
-      pre: {
-        fontFamily: "'Noto Sans JP', sans-serif",
       },
       ':root': {
         '--background-color':
