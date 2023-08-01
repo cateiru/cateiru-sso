@@ -1,6 +1,7 @@
 import {useToast} from '@chakra-ui/react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import nProgress from 'nprogress';
+import React from 'react';
 import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {useRequest} from '../Common/useRequest';
@@ -9,6 +10,7 @@ nProgress.configure({showSpinner: false, speed: 400, minimum: 0.25});
 
 interface Returns {
   switch: (id: string, name: string) => void;
+  loading: boolean;
 }
 
 export const useSwitchAccount = (): Returns => {
@@ -21,6 +23,7 @@ export const useSwitchAccount = (): Returns => {
   const router = useRouter();
   const params = useSearchParams();
   const toast = useToast();
+  const [loading, setLoading] = React.useState(false);
 
   const switchAccount = (id: string, name: string) => {
     const f = async () => {
@@ -37,6 +40,8 @@ export const useSwitchAccount = (): Returns => {
       });
 
       if (res) {
+        setLoading(true);
+
         setTimeout(async () => {
           setUser(undefined);
           toast({
@@ -54,6 +59,7 @@ export const useSwitchAccount = (): Returns => {
           } else {
             router.push('/profile');
           }
+          setLoading(false);
         }, 500);
         return;
       }
@@ -63,6 +69,7 @@ export const useSwitchAccount = (): Returns => {
   };
 
   return {
+    loading,
     switch: switchAccount,
   };
 };

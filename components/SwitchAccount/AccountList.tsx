@@ -21,6 +21,7 @@ import {ErrorType} from '../../utils/types/error';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
+import {Spinner} from '../Common/Icons/Spinner';
 import {Link} from '../Common/Next/Link';
 import {useSwitchAccount} from './useSwitchAccount';
 
@@ -35,7 +36,7 @@ export const AccountList = () => {
     '/v2/account/list',
     accountUserFeather
   );
-  const {switch: s} = useSwitchAccount();
+  const {switch: s, loading} = useSwitchAccount();
 
   React.useEffect(() => {
     // ログイン状態 -> ログアウトしたときのみデータをパージする
@@ -140,7 +141,7 @@ export const AccountList = () => {
                     </Tooltip>
                   </Td>
                 ) : (
-                  <Td p="0"></Td>
+                  <Td p="0">{loading && <Spinner />}</Td>
                 )}
               </Tr>
             );
