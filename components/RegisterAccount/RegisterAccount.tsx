@@ -1,16 +1,14 @@
 import {Box, Center, Text} from '@chakra-ui/react';
 import {useSteps} from 'chakra-ui-steps';
-import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
-import {CreateAccountRegisterEmailResponseSchema} from '../../utils/types/createAccount';
 import {Spinner} from '../Common/Icons/Spinner';
 import {useSecondaryColor} from '../Common/useColor';
-import {useRequest} from '../Common/useRequest';
 import {CompleteRegisterPage} from './CompleteRegisterPage';
 import {EmailInputPage} from './EmailInputPage';
 import {EmailVerifyPage} from './EmailVerifyPage';
 import {RegisterCertificatePage} from './RegisterCertificatePage';
 import {type StepStatus, Steps} from './Steps';
+import {useInvite} from './useInvite';
 
 export enum RegisterAccountStep {
   EmailInput = 0,
@@ -27,11 +25,7 @@ export interface DefaultPageProps {
 }
 
 export const RegisterAccount = () => {
-  const prams = useSearchParams();
-  const router = useRouter();
   const textColor = useSecondaryColor();
-
-  const {request} = useRequest('/v2/register/invite_generate_session');
 
   const [registerToken, setRegisterToken] = React.useState<string | null>(null);
   const {
@@ -44,52 +38,13 @@ export const RegisterAccount = () => {
     initialStep: RegisterAccountStep.EmailInput,
   });
   const [status, setStatus] = React.useState<StepStatus>(undefined);
-  const [isInvite, setIsInvite] = React.useState<boolean>(false);
   const [email, setEmail] = React.useState<string | null>(null);
 
-  // invite_token が存在する場合、それを使用して登録用のセッションを取得する
-  React.useEffect(() => {
-    const token = prams.get('invite_token');
-    const email = prams.get('email');
-
-    const f = async () => {
-      if (typeof token !== 'string') return;
-      if (typeof email !== 'string') return;
-
-      // 重複して送信しないようにする
-      if (isInvite) return;
-      // 成功、失敗に関わらずにフラグを立てる
-      setIsInvite(true);
-
-      const form = new FormData();
-
-      form.append('invite_token', token);
-      form.append('email', email);
-
-      const res = await request({
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-        body: form,
-      });
-
-      if (res) {
-        const data = CreateAccountRegisterEmailResponseSchema.safeParse(
-          await res.json()
-        );
-        if (data.success) {
-          setEmail(email);
-          setRegisterToken(data.data.register_token);
-          setStep(RegisterAccountStep.RegisterCertificate);
-          return;
-        }
-        console.error(data.error);
-      }
-
-      router.replace('/');
-    };
-    f();
-  }, [prams.get('invite_token'), prams.get('email')]);
+  const {isInvite} = useInvite((email: string, token: string) => {
+    setEmail(email);
+    setRegisterToken(token);
+    setStep(RegisterAccountStep.RegisterCertificate);
+  });
 
   const reset = React.useCallback(() => {
     setRegisterToken(null);
