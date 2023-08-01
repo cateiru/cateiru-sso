@@ -25,7 +25,7 @@ import {useRequest} from '../Common/useRequest';
 
 interface Props {
   orgId: string;
-  handleSuccess: () => void;
+  handleSuccess: (isOrgMember: boolean) => void;
 }
 
 interface JoinFormData {
@@ -74,7 +74,7 @@ const InviteForm: React.FC<InviteFormProps> = ({
 
     if (res) {
       reset();
-      handleSuccess();
+      handleSuccess(false);
     }
   };
 
@@ -167,7 +167,7 @@ const JoinForm: React.FC<JoinFormProps> = ({
 
     if (res) {
       reset();
-      handleSuccess();
+      handleSuccess(true);
     }
   };
 
@@ -231,8 +231,8 @@ export const JoinOrganization: React.FC<Props> = props => {
     setInvite(false);
   };
 
-  const handleSuccess = () => {
-    props.handleSuccess();
+  const handleSuccess = (isOrgMember: boolean) => {
+    props.handleSuccess(isOrgMember);
     closeModal();
   };
 

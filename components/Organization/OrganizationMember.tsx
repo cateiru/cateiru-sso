@@ -121,7 +121,7 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
     if (res) {
       reset();
       editMemberModal.onClose();
-      reload();
+      reload(true);
     }
   };
 
@@ -141,7 +141,7 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
     if (res) {
       reset();
       editMemberModal.onClose();
-      reload();
+      reload(true);
     }
   };
 
@@ -162,19 +162,28 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
 
     if (res) {
       deleteJoinModal.onClose();
-      reload();
+      reload(false);
     }
   };
 
-  const reload = () => {
-    mutate(
-      key =>
-        typeof key === 'string' &&
-        (key.startsWith(`/v2/org/member?org_id=${id}`) ||
-          key.startsWith(`/v2/org/member/invite?org_id=${id}`)),
-      undefined,
-      {revalidate: true}
-    );
+  const reload = (isOrgMember: boolean) => {
+    if (isOrgMember) {
+      mutate(
+        key =>
+          typeof key === 'string' &&
+          key.startsWith(`/v2/org/member?org_id=${id}`),
+        undefined,
+        {revalidate: true}
+      );
+    } else {
+      mutate(
+        key =>
+          typeof key === 'string' &&
+          key.startsWith(`/v2/org/member/invite?org_id=${id}`),
+        undefined,
+        {revalidate: true}
+      );
+    }
   };
 
   return (
