@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {PublicUserSchema} from './user';
 
 export const ClientSchema = z.object({
   client_id: z.string(),
@@ -48,3 +49,13 @@ export const ClientConfigSchema = z.object({
   scopes: z.array(z.string()),
 });
 export type ClientConfig = z.infer<typeof ClientConfigSchema>;
+
+export const ClientAllowUserSchema = z.object({
+  id: z.number(),
+  user: PublicUserSchema.nullable(),
+  email_domain: z.string().nullable(),
+});
+export type ClientAllowUser = z.infer<typeof ClientAllowUserSchema>;
+
+export const ClientAllowUserListSchema = z.array(ClientAllowUserSchema);
+export type ClientAllowUserList = z.infer<typeof ClientAllowUserListSchema>;
