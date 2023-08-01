@@ -4,3 +4,4 @@ export const userIdEmailRegex = new RegExp(
   `^(${userIDRegex.source})|(${emailRegex.source})$`,
   'i'
 );
+export const domainRegex = /[A-Z0-9.-]+\.[A-Z]{2,}/i;
