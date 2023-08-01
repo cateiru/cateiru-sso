@@ -56,14 +56,15 @@ export const UserIDEmailForm: React.FC<Props> = ({
         });
         setUser(null);
       }
-
-      // TODO: エラーハンドリング
     },
   });
 
   const handleRequestUserInfo = React.useCallback(() => {
     const f = async () => {
-      if (userName.length === 0) return;
+      if (userName.length === 0) {
+        setUser(null);
+        return;
+      }
 
       const form = new FormData();
       form.append('username_or_email', userName);
@@ -74,14 +75,14 @@ export const UserIDEmailForm: React.FC<Props> = ({
         credentials: 'include',
       });
 
-      if (!res) return;
-
-      const data = LoginUserSchema.safeParse(await res.json());
-      if (data.success) {
-        setUser(data.data);
-        clearErrors('user_id_email');
-      } else {
-        console.error(data.error);
+      if (res) {
+        const data = LoginUserSchema.safeParse(await res.json());
+        if (data.success) {
+          setUser(data.data);
+          clearErrors('user_id_email');
+        } else {
+          console.error(data.error);
+        }
       }
     };
     f();

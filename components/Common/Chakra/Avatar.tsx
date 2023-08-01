@@ -6,10 +6,10 @@ export const Avatar: React.FC<AvatarProps> = props => {
   const shadowColor = useShadowColor();
 
   if (props.src === '') {
-    return <ChakraAvatar {...props} key={`no-image-avatar-${Math.random()}`} />;
+    return <ChakraAvatar key={`no-image-avatar-${Math.random()}`} {...props} />;
   }
 
   return (
-    <ChakraAvatar {...props} boxShadow={`0px 0px 7px -2px ${shadowColor}`} />
+    <ChakraAvatar boxShadow={`0px 0px 7px -2px ${shadowColor}`} {...props} />
   );
 };
