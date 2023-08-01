@@ -2556,6 +2556,66 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		err = h.ClientAddAllowUserHandler(c)
 		require.EqualError(t, err, "code=403, message=you are not authority to access this organization, unique=17")
 	})
+
+	t.Run("失敗: すでにメールドメインが存在している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		rule := models.ClientAllowRule{
+			ClientID:    clientId,
+			EmailDomain: null.NewString("cateiru.test", true),
+			UserID:      null.NewString("", false),
+		}
+		err := rule.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("email_domain", "cateiru.test")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=400, message=rule is already allowed")
+	})
+
+	t.Run("失敗: すでにユーザーが存在している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u)
+
+		rule := models.ClientAllowRule{
+			ClientID:    clientId,
+			EmailDomain: null.NewString("", false),
+			UserID:      null.NewString(u.ID, true),
+		}
+		err := rule.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("client_id", clientId)
+		form.Insert("user_name_or_email", u.Email)
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.ClientAddAllowUserHandler(c)
+		require.EqualError(t, err, "code=400, message=rule is already allowed")
+	})
 }
 
 func TestClientDeleteAllowUserHandler(t *testing.T) {

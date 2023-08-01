@@ -1078,6 +1078,19 @@ func (h *Handler) ClientAddAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
+	// すでに登録されていないか確認する
+	existClientAllowRule, err := models.ClientAllowRules(
+		models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		models.ClientAllowRuleWhere.UserID.EQ(null.NewString(userId, userId != "")),
+		models.ClientAllowRuleWhere.EmailDomain.EQ(null.NewString(emailDomain, emailDomain != "")),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if existClientAllowRule {
+		return NewHTTPError(http.StatusBadRequest, "rule is already allowed")
+	}
+
 	clientAllowRule := &models.ClientAllowRule{
 		ClientID: clientId,
 
