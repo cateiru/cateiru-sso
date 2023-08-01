@@ -113,6 +113,9 @@ export const theme = extendTheme({
         scrollbarGutter: 'stable',
         fontFamily: "'Noto Sans JP', sans-serif",
       },
+      pre: {
+        fontFamily: "'Noto Sans JP', sans-serif",
+      },
       body: {
         background: mode(
           colorTheme.lightBackground,
