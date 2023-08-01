@@ -69,8 +69,8 @@ type ClientConfigResponse struct {
 type ClientAllowUserRuleResponse struct {
 	Id uint `json:"id"`
 
-	UserId      null.String `json:"user_id,omitempty"`
-	EmailDomain null.String `json:"email_domain,omitempty"`
+	User        *PublicUserResponse `json:"user,omitempty"`
+	EmailDomain null.String         `json:"email_domain,omitempty"`
 }
 
 // そのユーザーはクライアントにアクセスできる権限を持っているか見る
@@ -985,12 +985,43 @@ func (h *Handler) ClientAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
+	// ユーザーIDのリストを作る
+	userIds := []string{}
+	for _, rule := range rules {
+		if rule.UserID.Valid {
+			userIds = append(userIds, rule.UserID.String)
+		}
+	}
+
+	// WHERE IN で一気にユーザー引いてくる
+	// n+1 対策
+	users, err := models.Users(
+		models.UserWhere.ID.IN(userIds),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
 	roleResponse := make([]ClientAllowUserRuleResponse, len(rules))
 	for i, rule := range rules {
-		roleResponse[i] = ClientAllowUserRuleResponse{
-			Id: rule.ID,
+		var user *PublicUserResponse = nil
+		if rule.UserID.Valid {
+			// ユーザーを探す
+			for _, u := range users {
+				if u.ID == rule.UserID.String {
+					user = &PublicUserResponse{
+						ID:       u.ID,
+						UserName: u.UserName,
+						Avatar:   u.Avatar,
+					}
+					break
+				}
+			}
+		}
 
-			UserId:      rule.UserID,
+		roleResponse[i] = ClientAllowUserRuleResponse{
+			Id:          rule.ID,
+			User:        user,
 			EmailDomain: rule.EmailDomain,
 		}
 	}
