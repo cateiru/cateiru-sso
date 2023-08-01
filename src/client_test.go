@@ -2286,7 +2286,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("client_id", clientId)
-		form.Insert("user_id", "test")
+		form.Insert("user_name_or_email", u.Email)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
@@ -2304,7 +2304,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("client_id", clientId)
-		form.Insert("user_id", "test")
+		form.Insert("user_name_or_email", u.Email)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
@@ -2320,7 +2320,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		).One(ctx, h.DB)
 		require.NoError(t, err)
 
-		require.Equal(t, rule.UserID.String, "test")
+		require.Equal(t, rule.UserID.String, u.ID)
 		require.False(t, rule.EmailDomain.Valid)
 	})
 
@@ -2372,7 +2372,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("client_id", clientId)
-		form.Insert("user_id", "test")
+		form.Insert("user_name_or_email", u.Email)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
@@ -2388,7 +2388,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		).One(ctx, h.DB)
 		require.NoError(t, err)
 
-		require.Equal(t, rule.UserID.String, "test")
+		require.Equal(t, rule.UserID.String, u.ID)
 		require.False(t, rule.EmailDomain.Valid)
 	})
 
@@ -2487,7 +2487,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("client_id", clientId)
-		form.Insert("user_id", "test")
+		form.Insert("user_name_or_email", u.Email)
 		form.Insert("email_domain", "cateiru.test")
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
@@ -2515,7 +2515,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("client_id", clientId)
-		form.Insert("user_id", "test")
+		form.Insert("user_name_or_email", u.Email)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
@@ -2545,7 +2545,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("client_id", clientId)
-		form.Insert("user_id", "test")
+		form.Insert("user_name_or_email", u.Email)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)

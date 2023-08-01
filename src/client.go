@@ -1038,20 +1038,29 @@ func (h *Handler) ClientAddAllowUserHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "client_id is required")
 	}
 
-	userId := c.FormValue("user_id")
+	userNameOrEmail := c.FormValue("user_name_or_email")
 	emailDomain := c.FormValue("email_domain")
 	// どちらか必須
-	if userId == "" && emailDomain == "" {
+	if userNameOrEmail == "" && emailDomain == "" {
 		return NewHTTPError(http.StatusBadRequest, "user_id or email_domain is required")
 	}
 	// 片方しか設定できない
-	if (userId != "") == (emailDomain != "") {
+	if (userNameOrEmail != "") == (emailDomain != "") {
 		return NewHTTPError(http.StatusBadRequest, "user_id and email_domain cannot be set at the same time")
 	}
 
 	u, err := h.Session.SimpleLogin(ctx, c)
 	if err != nil {
 		return err
+	}
+
+	userId := ""
+	if userNameOrEmail != "" {
+		user, err := FindUserByUserNameOrEmail(ctx, h.DB, userNameOrEmail)
+		if err != nil {
+			return err
+		}
+		userId = user.ID
 	}
 
 	// クライアントのis_allowがfalseでもホワイトリストに追加削除はできる
