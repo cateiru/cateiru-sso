@@ -4,6 +4,7 @@ import {
   Button,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   Heading,
   Input,
@@ -18,6 +19,8 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
+  Text,
+  useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
 import {useParams} from 'next/navigation';
@@ -26,6 +29,7 @@ import {useForm} from 'react-hook-form';
 import {useSWRConfig} from 'swr';
 import {domainRegex} from '../../utils/regex';
 import {Margin} from '../Common/Margin';
+import {useSecondaryColor} from '../Common/useColor';
 import {useRequest} from '../Common/useRequest';
 import {ClientAllowUserTable} from './ClientAllowUserTable';
 
@@ -36,6 +40,9 @@ interface ClientAllowUserFormData {
 
 export const ClientAllowUser = () => {
   const {id} = useParams();
+
+  const textColor = useSecondaryColor();
+  const textBoldColor = useColorModeValue('gray.100', 'gray.800');
 
   const {isOpen, onOpen, onClose} = useDisclosure();
   const {request} = useRequest('/v2/client/allow_user');
@@ -89,6 +96,9 @@ export const ClientAllowUser = () => {
       <Heading textAlign="center" mt="3rem">
         許可ユーザーの編集
       </Heading>
+      <Text textAlign="center" mt="1rem" color={textColor}>
+        許可するユーザーを追加することでそのユーザー、そのドメインのメールアドレスを持つユーザーのみ認証を許可することができます。
+      </Text>
       <Button w="100%" mt="1.5rem" colorScheme="cateiru" onClick={onOpen}>
         ルールを追加
       </Button>
@@ -117,6 +127,27 @@ export const ClientAllowUser = () => {
                       <FormLabel htmlFor="emailDomain">
                         メールドメイン
                       </FormLabel>
+                      <FormHelperText color={textColor} mb=".5rem">
+                        例えば、
+                        <Text
+                          as="span"
+                          bgColor={textBoldColor}
+                          px=".3rem"
+                          borderRadius="5px"
+                        >
+                          example.test
+                        </Text>
+                        を設定すると
+                        <Text
+                          as="span"
+                          bgColor={textBoldColor}
+                          px=".2rem"
+                          borderRadius="5px"
+                        >
+                          example@example.test
+                        </Text>
+                        といったドメインのメールアドレスが許可されます。
+                      </FormHelperText>
                       <Input
                         id="emailDomain"
                         type="text"
@@ -141,6 +172,9 @@ export const ClientAllowUser = () => {
                       <FormLabel htmlFor="description">
                         ユーザー名またはメールアドレス
                       </FormLabel>
+                      <FormHelperText color={textColor} mb=".5rem">
+                        ユーザーを指定するとそのユーザーのみ認証を許可します。
+                      </FormHelperText>
                       <Input
                         id="userNameOrEmail"
                         type="text"

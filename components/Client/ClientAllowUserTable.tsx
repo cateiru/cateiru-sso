@@ -6,6 +6,7 @@ import {
   TableContainer,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
@@ -59,132 +60,167 @@ export const ClientAllowUserTable: React.FC<{id: string | string[]}> = ({
     }
   };
 
+  const users = React.useMemo(() => {
+    if (typeof data === 'undefined') return undefined;
+
+    return data.filter(v => typeof v.user !== 'undefined');
+  }, [data]);
+
+  const emailDomain = React.useMemo(() => {
+    if (typeof data === 'undefined') return undefined;
+
+    return data.filter(v => v.email_domain);
+  }, [data]);
+
   if (error) {
     return <Error {...error} />;
   }
 
   return (
     <>
-      <Card title="ユーザー">
-        <TableContainer>
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th></Th>
-                <Th>ユーザーID</Th>
-                <Th></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {data
-                ? data.map(v => {
-                    if (v.user) {
+      <Card
+        title="ユーザー"
+        description="許可するユーザーを追加することでそのユーザーのみ認証を許可することができます。"
+      >
+        {(users && users.length) === 0 ? (
+          <Text>
+            許可するユーザーが設定されていないため、
+            すべてのユーザーが許可されます。
+          </Text>
+        ) : (
+          <TableContainer>
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th></Th>
+                  <Th>ユーザーID</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {users
+                  ? users.map(v => {
                       return (
                         <Tr key={`allow-user-${v.id}`}>
                           <Td>
                             <Center>
-                              <Avatar src={v.user.avatar ?? ''} size="sm" />
+                              <Avatar src={v.user?.avatar ?? ''} size="sm" />
                             </Center>
                           </Td>
-                          <Td>{v.user.user_name}</Td>
+                          <Td>{v.user?.user_name}</Td>
                           <Td>
-                            <Button
-                              size="sm"
-                              colorScheme="cateiru"
-                              onClick={() => {
-                                setDeleteId(v.id);
-                                deleteModal.onOpen();
-                              }}
-                            >
-                              削除
-                            </Button>
+                            <Center justifyContent="end">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setDeleteId(v.id);
+                                  deleteModal.onOpen();
+                                }}
+                              >
+                                削除
+                              </Button>
+                            </Center>
                           </Td>
                         </Tr>
                       );
-                    }
-                    return undefined;
-                  })
-                : Array(2)
-                    .fill(0)
-                    .map((_, i) => {
-                      return (
-                        <Tr key={`loading-allow-user-${i}`}>
-                          <Td>
-                            <Center>
-                              <Skeleton w="32px" h="32px" borderRadius="50%" />
-                            </Center>
-                          </Td>
-                          <Td>
-                            <Skeleton w="100px" h="16px" />
-                          </Td>
-                          <Td>
-                            <Skeleton
-                              w="52px"
-                              h="32px"
-                              borderRadius="0.375rem"
-                            />
-                          </Td>
-                        </Tr>
-                      );
-                    })}
-            </Tbody>
-          </Table>
-        </TableContainer>
+                    })
+                  : Array(2)
+                      .fill(0)
+                      .map((_, i) => {
+                        return (
+                          <Tr key={`loading-allow-user-${i}`}>
+                            <Td>
+                              <Center>
+                                <Skeleton
+                                  w="32px"
+                                  h="32px"
+                                  borderRadius="50%"
+                                />
+                              </Center>
+                            </Td>
+                            <Td>
+                              <Skeleton w="100px" h="16px" />
+                            </Td>
+                            <Td>
+                              <Skeleton
+                                w="52px"
+                                h="32px"
+                                borderRadius="0.375rem"
+                              />
+                            </Td>
+                          </Tr>
+                        );
+                      })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        )}
       </Card>
-      <Card title="メールドメイン">
-        <TableContainer>
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>メールドメイン</Th>
-                <Th></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {data
-                ? data.map(v => {
-                    if (v.email_domain) {
-                      return (
-                        <Tr key={`allow-user-${v.id}`}>
-                          <Td>{v.email_domain}</Td>
-                          <Td>
-                            <Button
-                              size="sm"
-                              colorScheme="cateiru"
-                              onClick={() => {
-                                setDeleteId(v.id);
-                                deleteModal.onOpen();
-                              }}
-                            >
-                              削除
-                            </Button>
-                          </Td>
-                        </Tr>
-                      );
-                    }
-                    return undefined;
-                  })
-                : Array(2)
-                    .fill(0)
-                    .map((_, i) => {
-                      return (
-                        <Tr key={`loading-allow-user-${i}`}>
-                          <Td>
-                            <Skeleton w="100px" h="16px" />
-                          </Td>
-                          <Td>
-                            <Skeleton
-                              w="52px"
-                              h="32px"
-                              borderRadius="0.375rem"
-                            />
-                          </Td>
-                        </Tr>
-                      );
-                    })}
-            </Tbody>
-          </Table>
-        </TableContainer>
+      <Card
+        title="メールドメイン"
+        description="許可するメールドメインを追加することでそのメールドメインのメールアドレスをもつユーザーのみ認証を許可することができます。"
+      >
+        {(emailDomain && emailDomain?.length) === 0 ? (
+          <Text>
+            許可するメールドメインが設定されていないため、
+            すべてのメールドメインが許可されます。
+          </Text>
+        ) : (
+          <TableContainer>
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>メールドメイン</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {emailDomain
+                  ? emailDomain.map(v => {
+                      if (v.email_domain) {
+                        return (
+                          <Tr key={`allow-user-${v.id}`}>
+                            <Td>{v.email_domain}</Td>
+                            <Td>
+                              <Center justifyContent="end">
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setDeleteId(v.id);
+                                    deleteModal.onOpen();
+                                  }}
+                                >
+                                  削除
+                                </Button>
+                              </Center>
+                            </Td>
+                          </Tr>
+                        );
+                      }
+                      return undefined;
+                    })
+                  : Array(2)
+                      .fill(0)
+                      .map((_, i) => {
+                        return (
+                          <Tr key={`loading-allow-user-${i}`}>
+                            <Td>
+                              <Skeleton w="100px" h="16px" />
+                            </Td>
+                            <Td>
+                              <Skeleton
+                                w="52px"
+                                h="32px"
+                                borderRadius="0.375rem"
+                              />
+                            </Td>
+                          </Tr>
+                        );
+                      })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        )}
       </Card>
       <Confirm
         onSubmit={onDelete}

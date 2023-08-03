@@ -130,20 +130,24 @@ export const ClientDetail = () => {
             <Tr>
               <Td fontWeight="bold">特定のユーザーのみ許可</Td>
               <Td>
-                {data?.is_allow ? (
-                  <Flex alignItems="center">
-                    <Text>はい</Text>
-                    <Button
-                      size="sm"
-                      ml=".5rem"
-                      as={NextLink}
-                      href={`/client/edit/user/${data.client_id}`}
-                    >
-                      ユーザーを編集
-                    </Button>
-                  </Flex>
+                {data ? (
+                  data?.is_allow ? (
+                    <Flex alignItems="center">
+                      <Text>はい</Text>
+                      <Button
+                        size="sm"
+                        ml=".5rem"
+                        as={NextLink}
+                        href={`/client/edit/user/${data.client_id}`}
+                      >
+                        許可ユーザーを編集
+                      </Button>
+                    </Flex>
+                  ) : (
+                    'いいえ'
+                  )
                 ) : (
-                  'いいえ'
+                  <Skeleton w="200px" h="1rem" />
                 )}
               </Td>
             </Tr>
@@ -287,17 +291,6 @@ export const ClientDetail = () => {
           <Skeleton h="40px" w="100%" borderRadius="6px" />
         )}
       </ButtonGroup>
-      {data?.is_allow && (
-        <Button
-          w="100%"
-          mt="1rem"
-          colorScheme="cateiru"
-          as={NextLink}
-          href={`/client/edit/user/${data.client_id}`}
-        >
-          許可ユーザーの編集
-        </Button>
-      )}
     </Margin>
   );
 };
