@@ -11,12 +11,14 @@ import {
   FormLabel,
   Heading,
   Input,
+  Link,
   Select,
   Spacer,
   Switch,
   Textarea,
   useToast,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import {useParams, useRouter} from 'next/navigation';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
@@ -69,6 +71,7 @@ export const EditClient = () => {
   );
   const [imageUrl, setImageUrl] = React.useState<string | undefined>(undefined);
   const [loading, setLoading] = React.useState<boolean | null>(true);
+  const [isAllow, setIsAllow] = React.useState<boolean>(false);
 
   const methods = useForm<EditClientForm>({
     defaultValues: {
@@ -125,6 +128,7 @@ export const EditClient = () => {
           setValue('name', data.data.name);
           setValue('description', data.data.description ?? undefined);
           setValue('isAllow', data.data.is_allow);
+          setIsAllow(data.data.is_allow);
           setValue(
             'prompt',
             (data.data.prompt ?? '') as 'login' | '2fa_login' | ''
@@ -357,7 +361,19 @@ export const EditClient = () => {
                 <FormHelperText color={textColor} maxW="90%">
                   この設定をONにすると、ユーザーを直接指定または、メールアドレスのドメインを指定してユーザーを制限することができます。
                   <br />
-                  ユーザー追加はクライアント作成後に行うことができます。
+                  {isAllow && (
+                    <>
+                      ユーザー追加は{' '}
+                      <Link
+                        as={NextLink}
+                        href={`/client/edit/user/${id}`}
+                        fontWeight="bold"
+                      >
+                        許可ユーザー編集ページ
+                      </Link>{' '}
+                      にて行うことができます。
+                    </>
+                  )}
                 </FormHelperText>
               </Box>
 
@@ -365,7 +381,9 @@ export const EditClient = () => {
               <Switch
                 id="isAllow"
                 colorScheme="cateiru"
-                {...register('isAllow')}
+                {...register('isAllow', {
+                  onChange: v => setIsAllow(v.target.checked),
+                })}
               />
             </FormControl>
 
