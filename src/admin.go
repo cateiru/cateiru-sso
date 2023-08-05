@@ -1121,53 +1121,9 @@ func (h *Handler) AdminClientDetailHandler(c echo.Context) error {
 		scopes[i] = scope.Scope
 	}
 
-	rules, err := models.ClientAllowRules(
-		models.ClientAllowRuleWhere.ClientID.EQ(clientId),
-		qm.Limit(100),
-	).All(ctx, h.DB)
+	allowRules, err := getClientAllowRules(ctx, h.DB, client.ClientID)
 	if err != nil {
 		return err
-	}
-
-	// ユーザーIDのリストを作る
-	userIds := []string{}
-	for _, rule := range rules {
-		if rule.UserID.Valid {
-			userIds = append(userIds, rule.UserID.String)
-		}
-	}
-
-	// WHERE IN で一気にユーザー引いてくる
-	// n+1 対策
-	users, err := models.Users(
-		models.UserWhere.ID.IN(userIds),
-	).All(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-
-	roleResponse := make([]ClientAllowUserRuleResponse, len(rules))
-	for i, rule := range rules {
-		var user *PublicUserResponse = nil
-		if rule.UserID.Valid {
-			// ユーザーを探す
-			for _, u := range users {
-				if u.ID == rule.UserID.String {
-					user = &PublicUserResponse{
-						ID:       u.ID,
-						UserName: u.UserName,
-						Avatar:   u.Avatar,
-					}
-					break
-				}
-			}
-		}
-
-		roleResponse[i] = ClientAllowUserRuleResponse{
-			Id:          rule.ID,
-			User:        user,
-			EmailDomain: rule.EmailDomain,
-		}
 	}
 
 	response := &StaffClientDetailResponse{
@@ -1175,7 +1131,7 @@ func (h *Handler) AdminClientDetailHandler(c echo.Context) error {
 		RedirectUrls: redirectUrls,
 		ReferrerUrls: referrerUrls,
 		Scopes:       scopes,
-		AllowRules:   roleResponse,
+		AllowRules:   allowRules,
 	}
 
 	return c.JSON(http.StatusOK, response)

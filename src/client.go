@@ -178,6 +178,59 @@ func getClientDetails(ctx context.Context, db *sql.DB, clientId string, u *model
 	}, nil
 }
 
+func getClientAllowRules(ctx context.Context, db *sql.DB, clientId string) ([]ClientAllowUserRuleResponse, error) {
+	rules, err := models.ClientAllowRules(
+		models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+		qm.Limit(100),
+	).All(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+
+	// ユーザーIDのリストを作る
+	userIds := []string{}
+	for _, rule := range rules {
+		if rule.UserID.Valid {
+			userIds = append(userIds, rule.UserID.String)
+		}
+	}
+
+	// WHERE IN で一気にユーザー引いてくる
+	// n+1 対策
+	users, err := models.Users(
+		models.UserWhere.ID.IN(userIds),
+	).All(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+
+	roleResponse := make([]ClientAllowUserRuleResponse, len(rules))
+	for i, rule := range rules {
+		var user *PublicUserResponse = nil
+		if rule.UserID.Valid {
+			// ユーザーを探す
+			for _, u := range users {
+				if u.ID == rule.UserID.String {
+					user = &PublicUserResponse{
+						ID:       u.ID,
+						UserName: u.UserName,
+						Avatar:   u.Avatar,
+					}
+					break
+				}
+			}
+		}
+
+		roleResponse[i] = ClientAllowUserRuleResponse{
+			Id:          rule.ID,
+			User:        user,
+			EmailDomain: rule.EmailDomain,
+		}
+	}
+
+	return roleResponse, nil
+}
+
 // クライアントの一覧を返す
 // client_idを指定するとそのクライアントを返す
 func (h *Handler) ClientHandler(c echo.Context) error {
@@ -977,53 +1030,9 @@ func (h *Handler) ClientAllowUserHandler(c echo.Context) error {
 		return err
 	}
 
-	rules, err := models.ClientAllowRules(
-		models.ClientAllowRuleWhere.ClientID.EQ(clientId),
-		qm.Limit(100),
-	).All(ctx, h.DB)
+	roleResponse, err := getClientAllowRules(ctx, h.DB, client.ClientID)
 	if err != nil {
 		return err
-	}
-
-	// ユーザーIDのリストを作る
-	userIds := []string{}
-	for _, rule := range rules {
-		if rule.UserID.Valid {
-			userIds = append(userIds, rule.UserID.String)
-		}
-	}
-
-	// WHERE IN で一気にユーザー引いてくる
-	// n+1 対策
-	users, err := models.Users(
-		models.UserWhere.ID.IN(userIds),
-	).All(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-
-	roleResponse := make([]ClientAllowUserRuleResponse, len(rules))
-	for i, rule := range rules {
-		var user *PublicUserResponse = nil
-		if rule.UserID.Valid {
-			// ユーザーを探す
-			for _, u := range users {
-				if u.ID == rule.UserID.String {
-					user = &PublicUserResponse{
-						ID:       u.ID,
-						UserName: u.UserName,
-						Avatar:   u.Avatar,
-					}
-					break
-				}
-			}
-		}
-
-		roleResponse[i] = ClientAllowUserRuleResponse{
-			Id:          rule.ID,
-			User:        user,
-			EmailDomain: rule.EmailDomain,
-		}
 	}
 
 	return c.JSON(http.StatusOK, roleResponse)
