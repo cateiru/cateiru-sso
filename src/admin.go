@@ -143,6 +143,7 @@ func (h *Handler) AdminUserDetailHandler(c echo.Context) error {
 	// userが作成したclient
 	clients, err := models.Clients(
 		models.ClientWhere.OwnerUserID.EQ(user.ID),
+		models.ClientWhere.OrgID.IsNull(),
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
