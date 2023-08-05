@@ -2,6 +2,7 @@ import {Heading, VStack, useColorModeValue} from '@chakra-ui/react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
+import {formatRedirectUrl} from '../../utils/format';
 import {UserState} from '../../utils/state/atom';
 import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
 
@@ -26,12 +27,7 @@ export const LoginSuccess: React.FC = () => {
     const t = setTimeout(() => {
       const redirectTo = params.get('redirect_to');
       if (typeof redirectTo === 'string') {
-        try {
-          const url = new URL(redirectTo);
-          router.replace(url.pathname);
-        } catch {
-          router.replace(redirectTo);
-        }
+        router.replace(formatRedirectUrl(redirectTo));
       } else {
         router.push('/profile');
       }

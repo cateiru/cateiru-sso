@@ -3,6 +3,7 @@ import {useRouter, useSearchParams} from 'next/navigation';
 import nProgress from 'nprogress';
 import React from 'react';
 import {useSetRecoilState} from 'recoil';
+import {formatRedirectUrl} from '../../utils/format';
 import {UserState} from '../../utils/state/atom';
 import {useRequest} from '../Common/useRequest';
 
@@ -50,12 +51,7 @@ export const useSwitchAccount = (): Returns => {
           });
           const redirectTo = params.get('redirect_to');
           if (typeof redirectTo === 'string') {
-            try {
-              const url = new URL(redirectTo);
-              router.push(url.pathname);
-            } catch {
-              router.push(redirectTo);
-            }
+            router.push(formatRedirectUrl(redirectTo));
           } else {
             router.push('/profile');
           }
