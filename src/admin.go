@@ -42,8 +42,9 @@ type UserDetailResponse struct {
 }
 
 type OrgAdminDetailResponse struct {
-	Org   *models.Organization `json:"org"`
-	Users []OrgUserResponse    `json:"users"`
+	Org     *models.Organization  `json:"org"`
+	Users   []OrgUserResponse     `json:"users"`
+	Clients []StaffClientResponse `json:"clients"`
 }
 
 // すべてのユーザー一覧を取得する
@@ -577,9 +578,25 @@ func (h *Handler) AdminOrgDetailHandler(c echo.Context) error {
 		}
 	}
 
+	clients, err := models.Clients(
+		models.ClientWhere.OrgID.EQ(null.NewString(orgId, true)),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	orgClients := make([]StaffClientResponse, len(clients))
+	for i, client := range clients {
+		orgClients[i] = StaffClientResponse{
+			ClientID: client.ClientID,
+			Name:     client.Name,
+			Image:    client.Image,
+		}
+	}
+
 	response := &OrgAdminDetailResponse{
-		Org:   org,
-		Users: users,
+		Org:     org,
+		Users:   users,
+		Clients: orgClients,
 	}
 
 	return c.JSON(http.StatusOK, response)
