@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {ClientAllowUserSchema} from './client';
 import {OrganizationUserSchema} from './organization';
 import {UserSchema} from './user';
 
@@ -76,3 +77,29 @@ export const OrganizationDetailSchema = z.object({
   clients: z.array(StaffClientSchema),
 });
 export type OrganizationDetail = z.infer<typeof OrganizationDetailSchema>;
+
+export const ClientDetailSchema = z.object({
+  client: z.object({
+    client_id: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    image: z.string().nullable(),
+    org_id: z.string().nullable(),
+    org_member_only: z.boolean(),
+    is_allow: z.boolean(),
+    prompt: z.string().nullable(),
+    owner_user_id: z.string(),
+    client_secret: z.string(),
+
+    created_at: z.string().datetime({offset: true}),
+    updated_at: z.string().datetime({offset: true}),
+  }),
+
+  redirect_urls: z.array(z.string()),
+  referrer_urls: z.array(z.string()),
+
+  scopes: z.array(z.string()),
+
+  allow_rules: z.array(ClientAllowUserSchema),
+});
+export type ClientDetail = z.infer<typeof ClientDetailSchema>;
