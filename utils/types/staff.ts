@@ -30,6 +30,9 @@ export const StaffClientSchema = z.object({
 });
 export type StaffClient = z.infer<typeof StaffClientSchema>;
 
+export const StaffClientsSchema = z.array(StaffClientSchema);
+export type StaffClients = z.infer<typeof StaffClientsSchema>;
+
 export const UserDetailSchema = z.object({
   user: UserSchema,
 

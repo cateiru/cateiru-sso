@@ -67,5 +67,22 @@ export const Default: Story = {
         updated_at: faker.date.past().toISOString(),
       },
     ],
+    clients: [
+      {
+        client_id: faker.string.uuid(),
+        name: faker.company.name(),
+        image: faker.image.url(),
+      },
+      {
+        client_id: faker.string.uuid(),
+        name: faker.company.name(),
+        image: faker.image.url(),
+      },
+      {
+        client_id: faker.string.uuid(),
+        name: faker.company.name(),
+        image: faker.image.url(),
+      },
+    ],
   },
 };

@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Button,
   Center,
   Table,
@@ -14,6 +13,7 @@ import {
 import Link from 'next/link';
 import React from 'react';
 import {StaffClient} from '../../../utils/types/staff';
+import {Avatar} from '../../Common/Chakra/Avatar';
 import {useSecondaryColor} from '../../Common/useColor';
 
 interface Props {
