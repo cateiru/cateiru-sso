@@ -1,7 +1,6 @@
 'use client';
 
 import {Center, Heading, Link, Select, Skeleton, Text} from '@chakra-ui/react';
-import NextLink from 'next/link';
 import {useParams, usePathname, useRouter} from 'next/navigation';
 import React from 'react';
 import {TbExternalLink} from 'react-icons/tb';
@@ -13,6 +12,7 @@ import {orgSimpleListFeather} from '../../utils/swr/organization';
 import {ErrorType, ErrorUniqueMessage} from '../../utils/types/error';
 import {SimpleOrganizationList} from '../../utils/types/organization';
 import {Margin} from '../Common/Margin';
+import {Link as NextLink} from '../Common/Next/Link';
 import {UserName} from '../Common/UserName';
 import {useSecondaryColor} from '../Common/useColor';
 

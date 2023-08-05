@@ -1,7 +1,6 @@
 'use client';
 
 import {Button} from '@chakra-ui/react';
-import Link from 'next/link';
 import {useParams} from 'next/navigation';
 import useSWR from 'swr';
 import {clientFetcher} from '../../utils/swr/client';
@@ -9,6 +8,7 @@ import type {ClientListResponse} from '../../utils/types/client';
 import {ErrorType} from '../../utils/types/error';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Error} from '../Common/Error/Error';
+import {Link} from '../Common/Next/Link';
 import {ClientListTable} from './ClientListTable';
 
 export const ClientList = () => {

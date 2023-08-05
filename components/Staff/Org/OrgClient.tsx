@@ -10,10 +10,10 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import React from 'react';
 import {StaffClient} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';
+import {Link} from '../../Common/Next/Link';
 import {useSecondaryColor} from '../../Common/useColor';
 
 interface Props {

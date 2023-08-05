@@ -19,7 +19,6 @@ import {
   UnorderedList,
   useClipboard,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import {useParams} from 'next/navigation';
 import {TbCheck, TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
@@ -30,6 +29,7 @@ import {validatePrompt} from '../../utils/validate';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Error} from '../Common/Error/Error';
 import {Margin} from '../Common/Margin';
+import {Link as NextLink} from '../Common/Next/Link';
 import {useSecondaryColor} from '../Common/useColor';
 import {ClientDeleteModal} from './ClientDeleteModal';
 

@@ -18,7 +18,6 @@ import {
   Textarea,
   useToast,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import {useParams, useRouter} from 'next/navigation';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
@@ -39,6 +38,7 @@ import {
 import {ScopesForm, ScopesFormValue} from '../Common/Form/ScopesFrom';
 import {Spinner} from '../Common/Icons/Spinner';
 import {Margin} from '../Common/Margin';
+import {Link as NextLink} from '../Common/Next/Link';
 import {useSecondaryColor} from '../Common/useColor';
 import {useRequest} from '../Common/useRequest';
 

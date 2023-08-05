@@ -10,10 +10,10 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import React from 'react';
 import type {ClientList as ClientListType} from '../../utils/types/client';
 import {Avatar} from '../Common/Chakra/Avatar';
+import {Link} from '../Common/Next/Link';
 import {AgoTime} from '../Common/Time';
 
 interface Props {

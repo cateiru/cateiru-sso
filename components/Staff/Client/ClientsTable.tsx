@@ -11,13 +11,13 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import useSWR from 'swr';
 import {staffClientsFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {StaffClients} from '../../../utils/types/staff';
 import {Avatar} from '../../Common/Chakra/Avatar';
 import {Error} from '../../Common/Error/Error';
+import {Link} from '../../Common/Next/Link';
 
 export const ClientsTable = () => {
   const {data, error} = useSWR<StaffClients, ErrorType>(
