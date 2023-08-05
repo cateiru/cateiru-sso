@@ -145,8 +145,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.POST("/org/member", h.AdminOrgMemberJoinHandler)     // orgにメンバー追加
 	admin.DELETE("/org/member", h.AdminOrgMemberRemoveHandler) // orgからメンバー削除
 
-	admin.GET("/clients", h.Root)       // クライアント一覧
-	admin.GET("/client_detail", h.Root) // クライアント詳細
+	admin.GET("/clients", h.AdminClientsHandler)            // クライアント一覧
+	admin.GET("/client_detail", h.AdminClientDetailHandler) // クライアント詳細
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う

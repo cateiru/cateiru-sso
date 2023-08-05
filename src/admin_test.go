@@ -1811,3 +1811,108 @@ func TestAdminOrgMemberRemoveHandler(t *testing.T) {
 		require.EqualError(t, err, "code=400, message=invalid org_user_id")
 	})
 }
+
+func TestAdminClientsHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminClientsHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	})
+
+	t.Run("成功: クライアント一覧を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+		err = h.AdminClientsHandler(c)
+		require.NoError(t, err)
+
+		response := []src.StaffClientResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response, 1)
+		require.Equal(t, response[0].ClientID, clientId)
+	})
+}
+
+func TestAdminClientDetailHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminClientsHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		clientId, _ := RegisterClient(t, ctx, u, "openid", "profile")
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	})
+
+	t.Run("成功: クライアントの詳細を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+		err = h.AdminClientDetailHandler(c)
+		require.NoError(t, err)
+
+		response := src.StaffClientDetailResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.Client.ClientID, clientId)
+		require.Len(t, response.Scopes, 2) // openid, profile
+	})
+
+	t.Run("失敗: client_idがない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+		err = h.AdminClientDetailHandler(c)
+		require.EqualError(t, err, "code=400, message=client_id is required")
+	})
+
+	t.Run("失敗: client_idが不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?client_id=invite", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+		err = h.AdminClientDetailHandler(c)
+		require.EqualError(t, err, "code=404, message=client not found")
+	})
+
+}

@@ -47,6 +47,17 @@ type OrgAdminDetailResponse struct {
 	Clients []StaffClientResponse `json:"clients"`
 }
 
+type StaffClientDetailResponse struct {
+	Client *models.Client `json:"client"`
+
+	RedirectUrls []string `json:"redirect_urls"`
+	ReferrerUrls []string `json:"referrer_urls"`
+
+	Scopes []string `json:"scopes"`
+
+	AllowRules []models.ClientAllowRule `json:"allow_rules"`
+}
+
 // すべてのユーザー一覧を取得する
 // `?offset=0` 指定可能。
 // 一度に返すユーザーの件数は50件
@@ -1015,4 +1026,119 @@ func (h *Handler) AdminOrgMemberRemoveHandler(c echo.Context) error {
 	}
 
 	return nil
+}
+
+// クライアント一覧
+func (h *Handler) AdminClientsHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	clients, err := models.Clients(
+		qm.OrderBy(models.ClientColumns.CreatedAt),
+		qm.Limit(50), // 一旦offsetなしで50件表示させる
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	clientsResponse := make([]*StaffClientResponse, len(clients))
+	for i, client := range clients {
+		clientsResponse[i] = &StaffClientResponse{
+			ClientID: client.ClientID,
+			Name:     client.Name,
+			Image:    client.Image,
+		}
+	}
+
+	return c.JSON(http.StatusOK, clientsResponse)
+}
+
+// クライアントの詳細
+func (h *Handler) AdminClientDetailHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	clientId := c.QueryParam("client_id")
+	if clientId == "" {
+		return NewHTTPError(http.StatusBadRequest, "client_id is required")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	client, err := models.Clients(
+		models.ClientWhere.ClientID.EQ(clientId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "client not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	redirectUrlRecords, err := models.ClientRedirects(
+		models.ClientRedirectWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	redirectUrls := make([]string, len(redirectUrlRecords))
+	for i, redirect := range redirectUrlRecords {
+		redirectUrls[i] = redirect.URL
+	}
+
+	referrerUrlRecords, err := models.ClientReferrers(
+		models.ClientReferrerWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	referrerUrls := make([]string, len(referrerUrlRecords))
+	for i, referrer := range referrerUrlRecords {
+		// referrerはホストのみを見るので
+		referrerUrls[i] = referrer.Host
+	}
+
+	scopesRecords, err := models.ClientScopes(
+		models.ClientScopeWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	scopes := make([]string, len(scopesRecords))
+	for i, scope := range scopesRecords {
+		scopes[i] = scope.Scope
+	}
+
+	allowRulesRecords, err := models.ClientAllowRules(
+		models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	allowRules := make([]models.ClientAllowRule, len(allowRulesRecords))
+	for i, rule := range allowRulesRecords {
+		allowRules[i] = *rule
+	}
+
+	response := &StaffClientDetailResponse{
+		Client:       client,
+		RedirectUrls: redirectUrls,
+		ReferrerUrls: referrerUrls,
+		Scopes:       scopes,
+		AllowRules:   allowRules,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
