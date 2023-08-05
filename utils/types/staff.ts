@@ -28,6 +28,7 @@ export const StaffClientSchema = z.object({
   name: z.string(),
   image: z.string().nullable(),
 });
+export type StaffClient = z.infer<typeof StaffClientSchema>;
 
 export const UserDetailSchema = z.object({
   user: UserSchema,
@@ -69,5 +70,6 @@ export type Organizations = z.infer<typeof OrganizationsSchema>;
 export const OrganizationDetailSchema = z.object({
   org: OrganizationSchema,
   users: z.array(OrganizationUserSchema),
+  clients: z.array(StaffClientSchema),
 });
 export type OrganizationDetail = z.infer<typeof OrganizationDetailSchema>;

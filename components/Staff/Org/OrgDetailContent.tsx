@@ -21,6 +21,7 @@ import {Confirm} from '../../Common/Confirm/Confirm';
 import {Link as NextLink} from '../../Common/Next/Link';
 import {useSecondaryColor} from '../../Common/useColor';
 import {useRequest} from '../../Common/useRequest';
+import {OrgClient} from './OrgClient';
 import {OrgUser} from './OrgUser';
 
 export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
@@ -135,6 +136,7 @@ export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
         </UnorderedList>
       </Confirm>
       <OrgUser users={data.users} orgId={data.org.id} />
+      <OrgClient clients={data.clients} />
     </>
   );
 };
