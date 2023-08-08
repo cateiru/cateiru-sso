@@ -13,5 +13,4 @@ https://todo
 
 ---
 
-{{.Data.BrandEmail}}
-`
+@{{.Data.BrandDomain}} #{{.Data.Data.Code}}
