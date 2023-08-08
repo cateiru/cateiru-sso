@@ -26,7 +26,9 @@ export const SwitchAccount = () => {
           mx=".5rem"
           fontSize={{base: '1.5rem', sm: '1.8rem'}}
         >
-          ログインするアカウントを選択してください
+          ログインするアカウントを
+          <br />
+          選択してください
         </Heading>
         <Divider mt="1.5rem" w="90%" mx="auto" />
       </Box>
