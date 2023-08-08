@@ -136,7 +136,13 @@ export const Profile = () => {
       <ProfileForm />
       <Divider my="2rem" />
       <Box mb="3rem">
-        <Text textAlign="center" mb="1rem" fontSize="1.2rem" fontWeight="bold">
+        <Text
+          textAlign="center"
+          as="h3"
+          mb="1rem"
+          fontSize="1.2rem"
+          fontWeight="bold"
+        >
           ログインしているデバイス
         </Text>
         <LoginDevice />

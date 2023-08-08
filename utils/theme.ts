@@ -64,6 +64,12 @@ export const theme = extendTheme({
         colorScheme: 'cateiru',
       },
     },
+    Heading: {
+      baseStyle: {
+        background: 'linear-gradient(132deg, #17C9C9 0%, #336CFF 100%);',
+        backgroundClip: 'text',
+      },
+    },
   },
   colors: {
     cateiru: {
