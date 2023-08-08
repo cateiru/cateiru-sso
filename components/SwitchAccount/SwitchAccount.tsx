@@ -1,22 +1,23 @@
 'use client';
 
 import {Box, Divider, Heading} from '@chakra-ui/react';
-import {useBorderColor} from '../Common/useColor';
+import {useBorderColor, useShadowColor} from '../Common/useColor';
 import {AccountList} from './AccountList';
 
 export const SwitchAccount = () => {
   const borderColor = useBorderColor();
+  const shadowColor = useShadowColor();
 
   return (
     <Box
       w={{base: '96%', sm: '450px'}}
       h={{base: '600px', sm: '700px'}}
-      borderWidth={{base: 'none', sm: '2px'}}
       margin="auto"
       mt="3rem"
       borderRadius="10px"
       borderColor={borderColor}
       mb={{base: '0', sm: '3rem'}}
+      boxShadow={{base: 'none', sm: `0px 0px 7px -2px ${shadowColor}`}}
     >
       <Box h="150px">
         <Heading
