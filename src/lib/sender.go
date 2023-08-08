@@ -2,7 +2,10 @@ package lib
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
+	"math"
+	"time"
 
 	"github.com/mailgun/mailgun-go"
 )
@@ -31,7 +34,11 @@ type MailBody struct {
 }
 
 func NewSender(pattern string, fromDomain string, mailgunSecret string, senderMailAddress string) (*Sender, error) {
-	template, err := template.New("templates").ParseGlob(pattern)
+	funcmap := template.FuncMap{
+		"timeDiffMinutes": TimeDiffMinutes,
+	}
+
+	template, err := template.New("templates").Funcs(funcmap).ParseGlob(pattern)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +58,7 @@ func NewSender(pattern string, fromDomain string, mailgunSecret string, senderMa
 func (s *Sender) Send(m *MailBody) (string, string, error) {
 
 	plainTextBuff := new(bytes.Buffer)
-	if err := s.Template.ExecuteTemplate(plainTextBuff, m.PlainTextFileName, m.Data); err != nil {
+	if err := s.Template.ExecuteTemplate(plainTextBuff, m.PlainTextFileName, m); err != nil {
 		return "", "", err
 	}
 	htmlBuff := new(bytes.Buffer)
@@ -64,4 +71,11 @@ func (s *Sender) Send(m *MailBody) (string, string, error) {
 	message.SetHtml(htmlBuff.String())
 
 	return mg.Send(message)
+}
+
+// XX分を作成する
+func TimeDiffMinutes(targetDate time.Time) string {
+	now := time.Now()
+	diff := now.Sub(targetDate)
+	return fmt.Sprint(math.Abs(diff.Minutes()))
 }

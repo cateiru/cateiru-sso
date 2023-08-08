@@ -131,7 +131,7 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	m := &lib.MailBody{
 		EmailAddress:      email,
 		Subject:           "メールアドレスの登録確認",
-		Data:              r,
+		Data:              GenerateEmailData(r, h.C),
 		PlainTextFileName: "register.gtpl",
 		HTMLTextFileName:  "register.html",
 	}

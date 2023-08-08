@@ -19,6 +19,8 @@ import (
 type Config struct {
 	Mode string
 
+	BrandName string
+
 	// ログ設定
 	LogConfig func() zap.Config
 
@@ -174,6 +176,8 @@ type CookieConfig struct {
 
 var LocalConfig = &Config{
 	Mode: "local",
+
+	BrandName: "oreore.me local",
 
 	LogConfig: func() zap.Config {
 		logConfig := zap.NewDevelopmentConfig()
@@ -345,6 +349,8 @@ var LocalConfig = &Config{
 var CloudRunConfig = &Config{
 	Mode: "cloudrun",
 
+	BrandName: "oreore.me",
+
 	LogConfig: func() zap.Config {
 		logConfig := zap.NewProductionConfig()
 		// Cloud Loggerに対応するための設定
@@ -512,6 +518,8 @@ var CloudRunConfig = &Config{
 
 var CloudRunStagingConfig = &Config{
 	Mode: "cloudrun-staging",
+
+	BrandName: "oreore.me staging",
 
 	LogConfig: func() zap.Config {
 		logConfig := zap.NewProductionConfig()
@@ -683,6 +691,8 @@ var CloudRunStagingConfig = &Config{
 
 var TestConfig = &Config{
 	Mode: "test",
+
+	BrandName: "oreore.me test",
 
 	LogConfig: func() zap.Config {
 		logConfig := zap.NewDevelopmentConfig()
