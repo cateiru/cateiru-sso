@@ -8,20 +8,6 @@ module.exports = withInterceptStdout(
     experimental: {
       scrollRestoration: true,
     },
-    async headers() {
-      return [
-        {
-          source: '/(.*)',
-          headers: [
-            {
-              key: 'Cache-Control',
-              value:
-                'public s-maxage=86400, max-age=0, stale-while-revalidate=86400',
-            },
-          ],
-        },
-      ];
-    },
   },
   text => (text.includes('Duplicate atom key') ? '' : text)
 );
