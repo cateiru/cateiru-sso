@@ -11,11 +11,12 @@ module.exports = withInterceptStdout(
     async headers() {
       return [
         {
-          source: '*',
+          source: '/(.*)',
           headers: [
             {
-              key: 'cache-control',
-              value: 'max-age=600, stale-while-revalidate=1800', // 10分キャッシュし、30分間は古いキャッシュを返す
+              key: 'Cache-Control',
+              value:
+                'public s-maxage=86400, max-age=0, stale-while-revalidate=86400',
             },
           ],
         },
