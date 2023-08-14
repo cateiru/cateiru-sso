@@ -121,47 +121,11 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 		return err
 	}
 
-	// 対象のメールアドレスにメールを送信する
-	r := RegisterEmailVerify{
-		Code:     code,
-		Email:    email,
-		Time:     time.Now(),
-		UserData: userData,
-	}
-	m := &lib.MailBody{
-		EmailAddress:      email,
-		Subject:           "メールアドレスの登録確認",
-		Data:              GenerateEmailData(r, h.C),
-		PlainTextFileName: "register.gtpl",
-		HTMLTextFileName:  "register.html",
-	}
-	msg, id, err := h.Sender.Send(m)
+	e := NewEmail(h.Sender, h.C, email, userData, ip, nil)
+	err = e.RegisterEmailVerify(code)
 	if err != nil {
-		L.Error("mail",
-			zap.String("Email", email),
-			zap.String("Subject", m.Subject),
-			zap.Error(err),
-			zap.String("IP", ip),
-			zap.String("Device", userData.Device),
-			zap.String("Browser", userData.Browser),
-			zap.String("OS", userData.OS),
-			zap.Bool("IsMobile", userData.IsMobile),
-		)
 		return err
 	}
-
-	// メールを送信したのでログを出す
-	L.Info("mail",
-		zap.String("Email", email),
-		zap.String("Subject", m.Subject),
-		zap.String("MailGunMessage", msg),
-		zap.String("MailGunID", id),
-		zap.String("IP", ip),
-		zap.String("Device", userData.Device),
-		zap.String("Browser", userData.Browser),
-		zap.String("OS", userData.OS),
-		zap.Bool("IsMobile", userData.IsMobile),
-	)
 
 	resp := &RegisterEmailResponse{
 		Token: session,
@@ -259,49 +223,13 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 
 	registerSession.SendCount++
 
-	// 対象のメールアドレスにメールを送信する
-	r := RegisterEmailVerify{
-		Code:     code,
-		Email:    registerSession.Email,
-		Time:     time.Now(),
-		UserData: userData,
-	}
-	m := &lib.MailBody{
-		EmailAddress:      registerSession.Email,
-		Subject:           "【再送】メールアドレスの登録確認",
-		Data:              GenerateEmailData(r, h.C),
-		PlainTextFileName: "register.gtpl",
-		HTMLTextFileName:  "register.html",
-	}
-	msg, id, err := h.Sender.Send(m)
-	if err != nil {
-		L.Error("mail",
-			zap.String("Email", registerSession.Email),
-			zap.String("Subject", m.Subject),
-			zap.Error(err),
-			zap.String("IP", ip),
-			zap.String("Device", userData.Device),
-			zap.String("Browser", userData.Browser),
-			zap.String("OS", userData.OS),
-			zap.Bool("IsMobile", userData.IsMobile),
-		)
+	if _, err := registerSession.Update(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 
-	// メールを送信したのでログを出す
-	L.Info("mail",
-		zap.String("Email", registerSession.Email),
-		zap.String("Subject", m.Subject),
-		zap.String("MailGunMessage", msg),
-		zap.String("MailGunID", id),
-		zap.String("IP", ip),
-		zap.String("Device", userData.Device),
-		zap.String("Browser", userData.Browser),
-		zap.String("OS", userData.OS),
-		zap.Bool("IsMobile", userData.IsMobile),
-	)
-
-	if _, err := registerSession.Update(ctx, h.DB, boil.Infer()); err != nil {
+	e := NewEmail(h.Sender, h.C, registerSession.Email, userData, ip, nil)
+	err = e.ResendRegisterEmailVerify(code)
+	if err != nil {
 		return err
 	}
 

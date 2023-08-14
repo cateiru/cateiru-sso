@@ -54,6 +54,7 @@ type InviteOrgSessionTemplate2 struct {
 
 type Email struct {
 	S     lib.SenderInterface
+	C     *Config
 	Email string // 送信先メールアドレス
 
 	EmailData *EmailData
@@ -62,7 +63,7 @@ type Email struct {
 	User      *models.User // 送信したときのユーザー nullable
 }
 
-func NewSender(s lib.SenderInterface, c *Config, userData *UserData, ip string, user *models.User) *Email {
+func NewEmail(s lib.SenderInterface, c *Config, email string, userData *UserData, ip string, user *models.User) *Email {
 	emailData := &EmailData{
 		BrandName:     c.BrandName,
 		BrandUrl:      c.SiteHost.String(),
@@ -72,6 +73,8 @@ func NewSender(s lib.SenderInterface, c *Config, userData *UserData, ip string, 
 
 	return &Email{
 		S:         s,
+		C:         c,
+		Email:     email,
 		EmailData: emailData,
 		UserData:  userData,
 		Ip:        ip,
@@ -80,13 +83,13 @@ func NewSender(s lib.SenderInterface, c *Config, userData *UserData, ip string, 
 }
 
 // アカウント登録時に送信するメール
-func (e *Email) RegisterEmailVerify(code string, expiration time.Time) error {
+func (e *Email) RegisterEmailVerify(code string) error {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "メールアドレスの登録確認",
 		Data: RegisterEmailVerifyTemplate{
 			Code:       code,
-			Expiration: expiration,
+			Expiration: time.Now().Add(e.C.RegisterSessionPeriod),
 			EmailData:  *e.EmailData,
 		},
 		PlainTextFileName: "register.gtpl",
@@ -124,13 +127,13 @@ func (e *Email) RegisterEmailVerify(code string, expiration time.Time) error {
 }
 
 // アカウント登録時に送信するメールの再送メール
-func (e *Email) ResendRegisterEmailVerify(code string, expiration time.Time) error {
+func (e *Email) ResendRegisterEmailVerify(code string) error {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "【再送】メールアドレスの登録確認",
 		Data: RegisterEmailVerifyTemplate{
 			Code:       code,
-			Expiration: expiration,
+			Expiration: time.Now().Add(e.C.RegisterSessionPeriod),
 			EmailData:  *e.EmailData,
 		},
 		PlainTextFileName: "register.gtpl",
@@ -168,14 +171,14 @@ func (e *Email) ResendRegisterEmailVerify(code string, expiration time.Time) err
 }
 
 // メールアドレス更新
-func (e *Email) UpdateEmail(oldEmail string, code string, expiration time.Time) error {
+func (e *Email) UpdateEmail(oldEmail string, code string) error {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "メールアドレスの確認して更新します",
 		Data: UpdateEmailTemplate2{
 			OldEmail:   oldEmail,
 			Code:       code,
-			Expiration: expiration,
+			Expiration: time.Now().Add(e.C.UpdateEmailSessionPeriod),
 
 			EmailData: *e.EmailData,
 		},
@@ -221,14 +224,14 @@ func (e *Email) UpdateEmail(oldEmail string, code string, expiration time.Time) 
 }
 
 // パスワード更新
-func (e *Email) UpdatePassword(token string, userName string, expiration time.Time) error {
+func (e *Email) UpdatePassword(token string, userName string) error {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "パスワードを再設定してください",
 		Data: AccountReRegisterPasswordTemplate2{
 			Token:      token,
 			UserName:   userName,
-			Expiration: expiration,
+			Expiration: time.Now().Add(e.C.ReregistrationPasswordSessionPeriod),
 
 			EmailData: *e.EmailData,
 		},
@@ -271,13 +274,13 @@ func (e *Email) UpdatePassword(token string, userName string, expiration time.Ti
 	return nil
 }
 
-func (e *Email) InviteOrg(token string, orgName string, InvitationUserName string, expiration time.Time) error {
+func (e *Email) InviteOrg(token string, orgName string, InvitationUserName string) error {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      fmt.Sprintf("%sに招待されています", orgName),
 		Data: InviteOrgSessionTemplate2{
 			Token:              token,
-			Expiration:         expiration,
+			Expiration:         time.Now().Add(e.C.InviteOrgSessionPeriod),
 			OrganizationName:   orgName,
 			InvitationUserName: InvitationUserName,
 

@@ -342,57 +342,16 @@ func (h *Handler) UserUpdateEmailHandler(c echo.Context) error {
 		return err
 	}
 
-	m := &lib.MailBody{
-		EmailAddress: newEmail,
-		Subject:      "メールアドレスの確認して更新します",
-		Data: GenerateEmailData(UpdateEmailTemplate{
-			User:     user,
-			NewEmail: newEmail,
-			Code:     code,
-			Period:   session.Period,
-		}, h.C),
-		PlainTextFileName: "update_email.gtpl",
-		HTMLTextFileName:  "update_email.html",
-	}
-
 	ua, err := h.ParseUA(c.Request())
 	if err != nil {
 		return err
 	}
 
-	msg, id, err := h.Sender.Send(m)
+	e := NewEmail(h.Sender, h.C, newEmail, ua, ip, user)
+	err = e.UpdateEmail(user.Email, code)
 	if err != nil {
-		L.Error("mail",
-			zap.String("NewEmail", newEmail),
-			zap.String("OldEmail", user.Email),
-			zap.String("UserID", user.ID),
-			zap.String("UserName", user.UserName),
-			zap.String("Subject", m.Subject),
-			zap.Error(err),
-			zap.String("IP", ip),
-			zap.String("Device", ua.Device),
-			zap.String("Browser", ua.Browser),
-			zap.String("OS", ua.OS),
-			zap.Bool("IsMobile", ua.IsMobile),
-		)
 		return err
 	}
-
-	// メールを送信したのでログを出す
-	L.Info("mail",
-		zap.String("NewEmail", newEmail),
-		zap.String("OldEmail", user.Email),
-		zap.String("UserID", user.ID),
-		zap.String("UserName", user.UserName),
-		zap.String("Subject", m.Subject),
-		zap.String("MailGunMessage", msg),
-		zap.String("MailGunID", id),
-		zap.String("IP", ip),
-		zap.String("Device", ua.Device),
-		zap.String("Browser", ua.Browser),
-		zap.String("OS", ua.OS),
-		zap.Bool("IsMobile", ua.IsMobile),
-	)
 
 	return c.JSON(http.StatusOK, &UserUpdateEmailResponse{
 		Session: sessionId,

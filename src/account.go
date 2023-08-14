@@ -16,7 +16,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/types"
-	"go.uber.org/zap"
 )
 
 type AccountUser struct {
@@ -857,47 +856,11 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	m := &lib.MailBody{
-		EmailAddress: email,
-		Subject:      "パスワードを再設定してください",
-		Data: GenerateEmailData(AccountReRegisterPasswordTemplate{
-			SessionToken: token,
-			Now:          time.Now(),
-			PeriodTime:   time.Now().Add(h.C.ReregistrationPasswordSessionPeriod),
-			Email:        email,
-			UserName:     user.UserName,
-		}, h.C),
-		PlainTextFileName: "forget_reregistration_password.gtpl",
-		HTMLTextFileName:  "forget_reregistration_password.html",
-	}
-
-	msg, id, err := h.Sender.Send(m)
+	e := NewEmail(h.Sender, h.C, email, ua, ip, user)
+	err = e.UpdatePassword(token, user.UserName)
 	if err != nil {
-		L.Error("mail",
-			zap.String("Email", email),
-			zap.String("Subject", m.Subject),
-			zap.Error(err),
-			zap.String("IP", ip),
-			zap.String("Device", ua.Device),
-			zap.String("Browser", ua.Browser),
-			zap.String("OS", ua.OS),
-			zap.Bool("IsMobile", ua.IsMobile),
-		)
 		return err
 	}
-
-	// メールを送信したのでログを出す
-	L.Info("mail",
-		zap.String("Email", email),
-		zap.String("Subject", m.Subject),
-		zap.String("MailGunMessage", msg),
-		zap.String("MailGunID", id),
-		zap.String("IP", ip),
-		zap.String("Device", ua.Device),
-		zap.String("Browser", ua.Browser),
-		zap.String("OS", ua.OS),
-		zap.Bool("IsMobile", ua.IsMobile),
-	)
 
 	return nil
 }

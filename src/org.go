@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,7 +14,6 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"go.uber.org/zap"
 )
 
 type OrganizationSlice struct {
@@ -687,50 +685,11 @@ func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
 	}
 	ip := c.RealIP()
 
-	// 対象のメールアドレスにメールを送信する
-	r := InviteOrgSessionTemplate{
-		Token:              token,
-		Email:              email,
-		Now:                time.Now(),
-		Period:             time.Now().Add(h.C.InviteOrgSessionPeriod),
-		UserData:           userData,
-		OrganizationName:   organization.Name,
-		InvitationUserName: u.UserName,
-	}
-	m := &lib.MailBody{
-		EmailAddress:      email,
-		Subject:           fmt.Sprintf("%sに招待されています", organization.Name),
-		Data:              GenerateEmailData(r, h.C),
-		PlainTextFileName: "invite_org.gtpl",
-		HTMLTextFileName:  "invite_org.html",
-	}
-	msg, id, err := h.Sender.Send(m)
+	e := NewEmail(h.Sender, h.C, email, userData, ip, u)
+	err = e.InviteOrg(token, organization.Name, u.UserName)
 	if err != nil {
-		L.Error("mail",
-			zap.String("Email", email),
-			zap.String("Subject", m.Subject),
-			zap.Error(err),
-			zap.String("IP", ip),
-			zap.String("Device", userData.Device),
-			zap.String("Browser", userData.Browser),
-			zap.String("OS", userData.OS),
-			zap.Bool("IsMobile", userData.IsMobile),
-		)
 		return err
 	}
-
-	// メールを送信したのでログを出す
-	L.Info("mail",
-		zap.String("Email", email),
-		zap.String("Subject", m.Subject),
-		zap.String("MailGunMessage", msg),
-		zap.String("MailGunID", id),
-		zap.String("IP", ip),
-		zap.String("Device", userData.Device),
-		zap.String("Browser", userData.Browser),
-		zap.String("OS", userData.OS),
-		zap.Bool("IsMobile", userData.IsMobile),
-	)
 
 	return nil
 }
