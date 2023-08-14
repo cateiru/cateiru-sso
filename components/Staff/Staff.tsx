@@ -83,16 +83,7 @@ export const Staff = () => {
           組織新規作成
         </Button>
       </Card>
-      <Card
-        title="デプロイデータ"
-        description={
-          <>
-            現在のデプロイステータスです。
-            <br />
-            最新のコミットハッシュから、デプロイ時のモードなどを確認できます。
-          </>
-        }
-      >
+      <Card title="その他">
         <Button
           variant="outline"
           colorScheme="cateiru"
@@ -101,6 +92,16 @@ export const Staff = () => {
           href="/staff/deploy_data"
         >
           デプロイデータ
+        </Button>
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          mt="1rem"
+          href="/staff/email_template_preview"
+        >
+          メールテンプレートプレビュー
         </Button>
       </Card>
     </>

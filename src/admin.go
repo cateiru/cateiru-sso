@@ -1137,6 +1137,9 @@ func (h *Handler) AdminClientDetailHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// メールのテンプレートをプレビューする
+// HTMLのみ対応
+// TODO: テスト書く
 func (h *Handler) AdminPreviewTemplateHTMLHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
