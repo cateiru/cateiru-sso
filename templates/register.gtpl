@@ -1,7 +1,7 @@
 {{.Data.BrandName}} へようこそ！
 
-はじめに、 メールアドレスを認証する必要があります。このメールに含まれる {{len .Data.Data.Code}}桁のコードを認証ページに入力してください。
-このコードの有効期限は{{timeDiffMinutes .Data.Data.Time}}分です。有効期限が切れると使用できなくなるので注意してください。
+はじめに、 メールアドレスを認証する必要があります。このメールに含まれる {{len .Data.Data.Code}}桁のコードをブラウザで入力してください。
+このコードの有効期限は{{timeDiffMinutes .Data.Data.Time}}分です。
 
 確認コード: {{.Data.Data.Code}}
 

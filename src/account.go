@@ -33,6 +33,7 @@ type AccountOTPPublic struct {
 type AccountReRegisterPasswordTemplate struct {
 	SessionToken string
 	Email        string
+	UserName     string
 	PeriodTime   time.Time
 	Now          time.Time
 }
@@ -859,12 +860,13 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 	m := &lib.MailBody{
 		EmailAddress: email,
 		Subject:      "パスワードを再設定してください",
-		Data: AccountReRegisterPasswordTemplate{
+		Data: GenerateEmailData(AccountReRegisterPasswordTemplate{
 			SessionToken: token,
 			Now:          time.Now(),
 			PeriodTime:   time.Now().Add(h.C.ReregistrationPasswordSessionPeriod),
 			Email:        email,
-		},
+			UserName:     user.UserName,
+		}, h.C),
 		PlainTextFileName: "forget_reregistration_password.gtpl",
 		HTMLTextFileName:  "forget_reregistration_password.html",
 	}

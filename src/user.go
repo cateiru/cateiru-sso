@@ -345,12 +345,12 @@ func (h *Handler) UserUpdateEmailHandler(c echo.Context) error {
 	m := &lib.MailBody{
 		EmailAddress: newEmail,
 		Subject:      "メールアドレスの確認して更新します",
-		Data: UpdateEmailTemplate{
+		Data: GenerateEmailData(UpdateEmailTemplate{
 			User:     user,
 			NewEmail: newEmail,
 			Code:     code,
 			Period:   session.Period,
-		},
+		}, h.C),
 		PlainTextFileName: "update_email.gtpl",
 		HTMLTextFileName:  "update_email.html",
 	}

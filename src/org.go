@@ -63,12 +63,13 @@ type OrgInviteMemberResponse struct {
 }
 
 type InviteOrgSessionTemplate struct {
-	Token            string
-	Email            string
-	Now              time.Time
-	Period           time.Time
-	UserData         *UserData
-	OrganizationName string
+	Token              string
+	Email              string
+	Now                time.Time
+	Period             time.Time
+	UserData           *UserData
+	OrganizationName   string
+	InvitationUserName string
 }
 
 func getOrgUser(ctx context.Context, db *sql.DB, userId string, orgId string) (*OrgUserResponse, error) {
@@ -688,17 +689,18 @@ func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
 
 	// 対象のメールアドレスにメールを送信する
 	r := InviteOrgSessionTemplate{
-		Token:            token,
-		Email:            email,
-		Now:              time.Now(),
-		Period:           time.Now().Add(h.C.InviteOrgSessionPeriod),
-		UserData:         userData,
-		OrganizationName: organization.Name,
+		Token:              token,
+		Email:              email,
+		Now:                time.Now(),
+		Period:             time.Now().Add(h.C.InviteOrgSessionPeriod),
+		UserData:           userData,
+		OrganizationName:   organization.Name,
+		InvitationUserName: u.UserName,
 	}
 	m := &lib.MailBody{
 		EmailAddress:      email,
 		Subject:           fmt.Sprintf("%sに招待されています", organization.Name),
-		Data:              r,
+		Data:              GenerateEmailData(r, h.C),
 		PlainTextFileName: "invite_org.gtpl",
 		HTMLTextFileName:  "invite_org.html",
 	}

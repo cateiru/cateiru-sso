@@ -212,6 +212,14 @@
           margin-left: auto !important;
           margin-right: auto !important;
         }
+        .awl img {
+          width: auto !important;
+          margin-right: auto !important;
+        }
+        .awr img {
+          width: auto !important;
+          margin-left: auto !important;
+        }
         .ah img {
           height: auto !important;
         }
@@ -267,6 +275,23 @@
         td.v.ico.s-8 > div.il > a.l.m,
         td.v.ico.s-8 .mn-label {
           padding-bottom: 8px !important;
+          padding-right: 0 !important;
+        }
+        td.b.fw-1 > table {
+          width: 100% !important;
+        }
+        td.fw-1 > table > tbody > tr > td > a {
+          display: block !important;
+          width: 100% !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+        }
+        td.b.fw-1 > table {
+          width: 100% !important;
+        }
+        td.fw-1 > table > tbody > tr > td {
+          width: 100% !important;
+          padding-left: 0 !important;
           padding-right: 0 !important;
         }
       }
@@ -428,7 +453,7 @@
                                   <td style="width: 74px">
                                     <img
                                       alt
-                                      src="{{.Data.BrandImageUrl}}"
+                                      src="img/71d4df6fa790a0da5856744f4bc0dd4e.png"
                                       style="
                                         border: 0;
                                         display: block;
@@ -524,7 +549,7 @@
 <![endif]-->
                               <a
                                 class="l"
-                                href="{{.Data.BrandUrl}}"
+                                href="#insertUrlLink"
                                 target="_blank"
                                 style="
                                   display: inline-block;
@@ -547,7 +572,7 @@
                                     font-size: 12px;
                                     font-family: Inter, Arial, sans-serif;
                                     font-weight: 400;
-                                    color: #777777;
+                                    color: #718096;
                                     line-height: 125%;
                                     text-decoration: underline;
                                     mso-line-height-alt: 16px;
@@ -691,15 +716,14 @@
                                   font-size: 16px;
                                   font-family: Inter, Arial, sans-serif;
                                   font-weight: 400;
-                                  color: #777777;
+                                  color: #718096;
                                   line-height: 150%;
                                   mso-line-height-alt: 24px;
                                   mso-ansi-font-size: 16px;
                                 "
                                 >はじめに、
                                 メールアドレスを認証する必要があります。このメールに含まれる
-                                {{len
-                                .Data.Data.Code}}桁のコードを認証ページに入力してください。</span
+                                {{ len.Data.Data.Code }}桁の確認コードをブラウザで入力してください。</span
                               >
                             </p>
                             <p
@@ -714,13 +738,12 @@
                                   font-size: 16px;
                                   font-family: Inter, Arial, sans-serif;
                                   font-weight: 400;
-                                  color: #777777;
+                                  color: #718096;
                                   line-height: 150%;
                                   mso-line-height-alt: 24px;
                                   mso-ansi-font-size: 16px;
                                 "
-                                >このコードの有効期限は{{timeDiffMinutes
-                                .Data.Data.Time}}分です。有効期限が切れると使用できなくなるので注意してください。</span
+                                >この確認コードの有効期限は{{ timeDiffMinutes .Data.Data.Time }}分です。</span
                               >
                             </p>
                           </div>
@@ -829,15 +852,208 @@
                                           font-size: 32px;
                                           font-family: Inter, Arial, sans-serif;
                                           font-weight: 700;
-                                          color: #000000;
+                                          color: #2bc4cf;
                                           line-height: 119%;
                                           mso-line-height-alt: 38px;
                                           mso-ansi-font-size: 32px;
                                         "
-                                        >{{.Data.Data.Code}}</span
+                                        >{{ .Data.Data.Code }}</span
                                       >
                                     </p>
                                   </div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!--[if mso | IE]>
+</td></tr></table>
+<![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!--[if mso | IE]>
+</td></tr></table>
+<table align="center" border="0" cellpadding="0" cellspacing="0" class="r-outlook -outlook pr-16-outlook pl-16-outlook -outlook" role="presentation" style="width:600px;" width="600"><tr><td style="line-height:0;font-size:0;mso-line-height-rule:exactly;">
+<![endif]-->
+      <div
+        class="r pr-16 pl-16"
+        style="
+          background: #fffffe;
+          background-color: #fffffe;
+          margin: 0px auto;
+          max-width: 600px;
+        "
+      >
+        <table
+          align="center"
+          border="0"
+          cellpadding="0"
+          cellspacing="0"
+          role="presentation"
+          style="background: #fffffe; background-color: #fffffe; width: 100%"
+        >
+          <tbody>
+            <tr>
+              <td
+                style="
+                  border: none;
+                  direction: ltr;
+                  font-size: 0;
+                  padding: 20px 16px 20px 16px;
+                  text-align: left;
+                "
+              >
+                <!--[if mso | IE]>
+<table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="c-outlook -outlook -outlook" style="vertical-align:middle;width:568px;">
+<![endif]-->
+                <div
+                  class="xc568 ogf c"
+                  style="
+                    font-size: 0;
+                    text-align: left;
+                    direction: ltr;
+                    display: inline-block;
+                    vertical-align: middle;
+                    width: 100%;
+                  "
+                >
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    style="border: none; vertical-align: middle"
+                    width="100%"
+                  >
+                    <tbody>
+                      <tr>
+                        <td
+                          align="center"
+                          class="x m"
+                          style="
+                            font-size: 0;
+                            padding-bottom: 8px;
+                            word-break: break-word;
+                          "
+                        >
+                          <div style="text-align: center">
+                            <p
+                              style="
+                                margin: 0;
+                                text-align: center;
+                                mso-line-height-alt: 24px;
+                                mso-ansi-font-size: 16px;
+                              "
+                            >
+                              <span
+                                style="
+                                  font-size: 16px;
+                                  font-family: Inter, Arial, sans-serif;
+                                  font-weight: 400;
+                                  color: #718096;
+                                  line-height: 150%;
+                                  mso-line-height-alt: 24px;
+                                  mso-ansi-font-size: 16px;
+                                "
+                                >もし、このメールに見に覚えがないがない場合はお手数ですが以下のリンクからお問い合わせください。</span
+                              >
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          class="s m"
+                          style="
+                            font-size: 0;
+                            padding: 0;
+                            padding-bottom: 8px;
+                            word-break: break-word;
+                          "
+                          aria-hidden="true"
+                        >
+                          <div style="height: 4px; line-height: 4px">
+                            &#8202;
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          align="center"
+                          vertical-align="middle"
+                          class="b fw-1"
+                          style="
+                            font-size: 0;
+                            padding: 0;
+                            padding-bottom: 0;
+                            word-break: break-word;
+                          "
+                        >
+                          <table
+                            border="0"
+                            cellpadding="0"
+                            cellspacing="0"
+                            role="presentation"
+                            style="
+                              border-collapse: separate;
+                              width: 216px;
+                              line-height: 100%;
+                            "
+                          >
+                            <tbody>
+                              <tr>
+                                <td
+                                  align="center"
+                                  bgcolor="transparent"
+                                  role="presentation"
+                                  style="
+                                    border: none;
+                                    cursor: auto;
+                                    mso-padding-alt: 4px 0px 4px 0px;
+                                    background: transparent;
+                                  "
+                                  valign="middle"
+                                >
+                                  <a
+                                    href="#insertUrlLink"
+                                    style="
+                                      display: inline-block;
+                                      width: 216px;
+                                      background: transparent;
+                                      color: #ffffff;
+                                      font-family: Inter, Arial, sans-serif;
+                                      font-size: 13px;
+                                      font-weight: normal;
+                                      line-height: 100%;
+                                      margin: 0;
+                                      text-decoration: none;
+                                      text-transform: none;
+                                      padding: 4px 0px 4px 0px;
+                                      mso-padding-alt: 0;
+                                    "
+                                    target="_blank"
+                                  >
+                                    <span
+                                      style="
+                                        font-size: 16px;
+                                        font-family: Inter, Arial, sans-serif;
+                                        font-weight: 700;
+                                        color: #000000;
+                                        line-height: 119%;
+                                        text-decoration: underline;
+                                        mso-line-height-alt: 20px;
+                                        mso-ansi-font-size: 16px;
+                                      "
+                                      >このメールに見に覚えがない</span
+                                    ></a
+                                  >
                                 </td>
                               </tr>
                             </tbody>
@@ -994,112 +1210,16 @@
                       <tr>
                         <td
                           align="center"
-                          class="x m"
-                          style="
-                            font-size: 0;
-                            padding-bottom: 16px;
-                            word-break: break-word;
-                          "
-                        >
-                          <div style="text-align: center">
-                            <p
-                              style="
-                                margin: 0;
-                                text-align: center;
-                                mso-line-height-alt: 14px;
-                                mso-ansi-font-size: 12px;
-                              "
-                            >
-                              <span
-                                style="
-                                  font-size: 11px;
-                                  font-family: Inter, Arial, sans-serif;
-                                  font-weight: 400;
-                                  color: #aaaaaa;
-                                  line-height: 118%;
-                                  mso-line-height-alt: 14px;
-                                  mso-ansi-font-size: 12px;
-                                "
-                                >もし、このメールに見に覚えがない場合は、</span
-                              >
-                            </p>
-                            <p
-                              style="
-                                margin: 0;
-                                mso-line-height-alt: 14px;
-                                mso-ansi-font-size: 12px;
-                              "
-                            >
-                              <span
-                                style="
-                                  font-size: 11px;
-                                  font-family: Inter, Arial, sans-serif;
-                                  font-weight: 400;
-                                  color: #aaaaaa;
-                                  line-height: 118%;
-                                  mso-line-height-alt: 14px;
-                                  mso-ansi-font-size: 12px;
-                                "
-                                >お手数ですが左下のリンクからお問い合わせください。</span
-                              >
-                            </p>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td
-                          align="center"
                           class="v s-8"
-                          style="
-                            font-size: 0;
-                            padding-bottom: 0;
-                            word-break: break-word;
-                          "
+                          style="font-size: 0; word-break: break-word"
                         >
                           <div class="il" style>
                             <!--[if mso | IE]>
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center"><tr><td style="padding:0;padding-top:0;padding-left:0;padding-right:8px;padding-bottom:0;" class="l-outlook -outlook m-outlook">
-<![endif]-->
-                            <a
-                              class="l m"
-                              href="#insertUrlLink"
-                              target="_blank"
-                              style="
-                                display: inline-block;
-                                color: #000000;
-                                font-family: Inter, Arial, sans-serif;
-                                font-size: 13px;
-                                font-weight: normal;
-                                line-height: 0;
-                                text-decoration: none;
-                                text-transform: none;
-                                padding: 0;
-                                padding-top: 0;
-                                padding-left: 0;
-                                padding-right: 8px;
-                                padding-bottom: 0;
-                              "
-                            >
-                              <span
-                                style="
-                                  font-size: 13px;
-                                  font-family: Inter, Arial, sans-serif;
-                                  font-weight: 400;
-                                  color: #4d4d4d;
-                                  line-height: 123%;
-                                  text-decoration: underline;
-                                  mso-line-height-alt: 16px;
-                                  mso-ansi-font-size: 14px;
-                                "
-                                >このメールに見に覚えがない場合</span
-                              >
-                            </a>
-                            <!--[if mso | IE]>
-</td><td style="padding:0;padding-top:0;padding-left:0;padding-right:0;padding-bottom:0;" class="l-outlook -outlook -outlook">
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center"><tr><td style="padding:0;padding-top:0;padding-left:0;padding-right:0;padding-bottom:0;" class="l-outlook -outlook -outlook">
 <![endif]-->
                             <a
                               class="l"
-                              href="{{.Data.BrandUrl}}"
+                              href="#insertUrlLink"
                               target="_blank"
                               style="
                                 display: inline-block;
@@ -1121,8 +1241,8 @@
                                 style="
                                   font-size: 13px;
                                   font-family: Inter, Arial, sans-serif;
-                                  font-weight: 400;
-                                  color: #4d4d4d;
+                                  font-weight: 700;
+                                  color: #000000;
                                   line-height: 123%;
                                   text-decoration: underline;
                                   mso-line-height-alt: 16px;

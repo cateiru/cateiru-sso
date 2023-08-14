@@ -62,7 +62,7 @@ func (s *Sender) Send(m *MailBody) (string, string, error) {
 		return "", "", err
 	}
 	htmlBuff := new(bytes.Buffer)
-	if err := s.Template.ExecuteTemplate(htmlBuff, m.HTMLTextFileName, m.Data); err != nil {
+	if err := s.Template.ExecuteTemplate(htmlBuff, m.HTMLTextFileName, m); err != nil {
 		return "", "", err
 	}
 
