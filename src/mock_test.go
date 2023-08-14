@@ -64,6 +64,10 @@ func (c *SenderMock) Send(m *lib.MailBody) (string, string, error) {
 	return "ok", "200", nil
 }
 
+func (s *SenderMock) Preview(m *lib.MailBody) (string, error) {
+	return "", nil
+}
+
 // --- WebAuthnMock
 
 func (a *WebAuthnMock) BeginRegistration(user webauthn.User) (*protocol.CredentialCreation, *webauthn.SessionData, error) {

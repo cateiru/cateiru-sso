@@ -61,6 +61,8 @@ type Email struct {
 	UserData  *UserData    // 送信したときのユーザーデータ
 	Ip        string       // 送信したときのIP
 	User      *models.User // 送信したときのユーザー nullable
+
+	HasPreviewMode bool
 }
 
 func NewEmail(s lib.SenderInterface, c *Config, email string, userData *UserData, ip string, user *models.User) *Email {
@@ -79,6 +81,8 @@ func NewEmail(s lib.SenderInterface, c *Config, email string, userData *UserData
 		UserData:  userData,
 		Ip:        ip,
 		User:      user,
+
+		HasPreviewMode: false, // プレビューモードはOFF、ONにするには上書きする
 	}
 }
 

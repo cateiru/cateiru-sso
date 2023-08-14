@@ -12,6 +12,7 @@ import (
 
 type SenderInterface interface {
 	Send(m *MailBody) (string, string, error)
+	Preview(m *MailBody) (string, error)
 }
 
 type Sender struct {
@@ -58,11 +59,11 @@ func NewSender(pattern string, fromDomain string, mailgunSecret string, senderMa
 func (s *Sender) Send(m *MailBody) (string, string, error) {
 
 	plainTextBuff := new(bytes.Buffer)
-	if err := s.Template.ExecuteTemplate(plainTextBuff, m.PlainTextFileName, m); err != nil {
+	if err := s.Template.ExecuteTemplate(plainTextBuff, m.PlainTextFileName, m.Data); err != nil {
 		return "", "", err
 	}
 	htmlBuff := new(bytes.Buffer)
-	if err := s.Template.ExecuteTemplate(htmlBuff, m.HTMLTextFileName, m); err != nil {
+	if err := s.Template.ExecuteTemplate(htmlBuff, m.HTMLTextFileName, m.Data); err != nil {
 		return "", "", err
 	}
 
@@ -71,6 +72,17 @@ func (s *Sender) Send(m *MailBody) (string, string, error) {
 	message.SetHtml(htmlBuff.String())
 
 	return mg.Send(message)
+}
+
+// HTMLをプレビューする
+func (s *Sender) Preview(m *MailBody) (string, error) {
+
+	htmlBuff := new(bytes.Buffer)
+	if err := s.Template.ExecuteTemplate(htmlBuff, m.HTMLTextFileName, m.Data); err != nil {
+		return "", err
+	}
+
+	return htmlBuff.String(), nil
 }
 
 // XX分を作成する

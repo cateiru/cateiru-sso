@@ -37,19 +37,22 @@ type Handler struct {
 func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
 	reCaptcha := lib.NewReCaptcha(config.ReCaptchaSecret)
 
+	fullpath, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	s, err := lib.NewSender(filepath.Join(fullpath, `templates/*`), config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
+	if err != nil {
+		return nil, err
+	}
+
 	var sender lib.SenderInterface = nil
 	if config.SendMail {
-		fullpath, err := os.Getwd()
-		if err != nil {
-			return nil, err
-		}
-		s, err := lib.NewSender(filepath.Join(fullpath, `templates/*.html`), config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
-		if err != nil {
-			return nil, err
-		}
 		sender = s
 	} else {
-		sender = &SenderMock{}
+		sender = &SenderMock{
+			Sender: s,
+		}
 	}
 
 	webauthn, err := lib.NewWebAuthn(config.WebAuthnConfig)
@@ -154,7 +157,9 @@ func (h *Handler) FormValues(c echo.Context, key string, optional ...bool) ([]st
 }
 
 // ローカル環境ではメールを送信したくないのでモックする
-type SenderMock struct{}
+type SenderMock struct {
+	Sender lib.SenderInterface
+}
 
 func (s *SenderMock) Send(m *lib.MailBody) (string, string, error) {
 	L.Debug("send mail",
@@ -164,6 +169,10 @@ func (s *SenderMock) Send(m *lib.MailBody) (string, string, error) {
 	)
 
 	return "", "", nil
+}
+
+func (s *SenderMock) Preview(m *lib.MailBody) (string, error) {
+	return s.Preview(m)
 }
 
 type CDNMock struct{}
