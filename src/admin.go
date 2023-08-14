@@ -1136,3 +1136,56 @@ func (h *Handler) AdminClientDetailHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func (h *Handler) AdminPreviewTemplateHTMLHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	name := c.Param("name")
+	if name == "" {
+		return NewHTTPError(http.StatusBadRequest, "name is required")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	ip := c.RealIP()
+	ua, err := h.ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+
+	e := NewEmail(h.Sender, h.C, "example@example.test", ua, ip, u)
+	e.HasPreviewMode = true
+
+	template := ""
+
+	switch name {
+	case "register":
+		template, err = e.RegisterEmailVerify("123456")
+	case "register_resend":
+		template, err = e.ResendRegisterEmailVerify("123456")
+	case "update_email":
+		template, err = e.UpdateEmail("old@example.test", "123456")
+	case "update_password":
+		template, err = e.UpdatePassword("token", u.UserName)
+	case "invite_org":
+		template, err = e.InviteOrg("token", "OrgName", u.UserName)
+	case "test":
+		template, err = e.Test()
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if template == "" {
+		return NewHTTPError(http.StatusBadRequest, "invalid name")
+	}
+
+	return c.HTML(http.StatusOK, template)
+}

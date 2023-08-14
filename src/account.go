@@ -857,7 +857,7 @@ func (h *Handler) AccountForgetPasswordHandler(c echo.Context) error {
 	}
 
 	e := NewEmail(h.Sender, h.C, email, ua, ip, user)
-	err = e.UpdatePassword(token, user.UserName)
+	_, err = e.UpdatePassword(token, user.UserName)
 	if err != nil {
 		return err
 	}

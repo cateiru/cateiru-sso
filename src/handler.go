@@ -158,7 +158,7 @@ func (h *Handler) FormValues(c echo.Context, key string, optional ...bool) ([]st
 
 // ローカル環境ではメールを送信したくないのでモックする
 type SenderMock struct {
-	Sender lib.SenderInterface
+	Sender *lib.Sender
 }
 
 func (s *SenderMock) Send(m *lib.MailBody) (string, string, error) {
@@ -172,7 +172,7 @@ func (s *SenderMock) Send(m *lib.MailBody) (string, string, error) {
 }
 
 func (s *SenderMock) Preview(m *lib.MailBody) (string, error) {
-	return s.Preview(m)
+	return s.Sender.Preview(m)
 }
 
 type CDNMock struct{}

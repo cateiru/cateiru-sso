@@ -122,7 +122,7 @@ func (h *Handler) SendEmailVerifyHandler(c echo.Context) error {
 	}
 
 	e := NewEmail(h.Sender, h.C, email, userData, ip, nil)
-	err = e.RegisterEmailVerify(code)
+	_, err = e.RegisterEmailVerify(code)
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func (h *Handler) ReSendVerifyEmailHandler(c echo.Context) error {
 	}
 
 	e := NewEmail(h.Sender, h.C, registerSession.Email, userData, ip, nil)
-	err = e.ResendRegisterEmailVerify(code)
+	_, err = e.ResendRegisterEmailVerify(code)
 	if err != nil {
 		return err
 	}

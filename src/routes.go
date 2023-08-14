@@ -148,7 +148,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.GET("/clients", h.AdminClientsHandler)            // クライアント一覧
 	admin.GET("/client_detail", h.AdminClientDetailHandler) // クライアント詳細
 
-	admin.GET("/template/:name", h.Root) // テンプレートのプレビュー
+	admin.GET("/template/:name", h.AdminPreviewTemplateHTMLHandler) // テンプレートのプレビュー
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う

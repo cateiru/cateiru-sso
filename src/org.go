@@ -686,7 +686,7 @@ func (h *Handler) OrgInviteNewMemberHandler(c echo.Context) error {
 	ip := c.RealIP()
 
 	e := NewEmail(h.Sender, h.C, email, userData, ip, u)
-	err = e.InviteOrg(token, organization.Name, u.UserName)
+	_, err = e.InviteOrg(token, organization.Name, u.UserName)
 	if err != nil {
 		return err
 	}

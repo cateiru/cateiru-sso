@@ -1,6 +1,6 @@
 {{ .EmailAddress }}から{{ .Data.Data.NewEmail }}に更新しようとしています。
 ブラウザで以下の{{ len .Data.Data.Code }}桁の確認コードを入力してください。
-この確認コードの有効期限は{{ timeDiffMinus .Data.Data.Period }}分です。
+この確認コードの有効期限は{{ timeDiffMinutes .Data.Data.Period }}分です。
 
 確認コード: {{.Data.Data.Code}}
 

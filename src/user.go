@@ -348,7 +348,7 @@ func (h *Handler) UserUpdateEmailHandler(c echo.Context) error {
 	}
 
 	e := NewEmail(h.Sender, h.C, newEmail, ua, ip, user)
-	err = e.UpdateEmail(user.Email, code)
+	_, err = e.UpdateEmail(user.Email, code)
 	if err != nil {
 		return err
 	}

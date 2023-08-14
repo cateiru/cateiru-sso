@@ -87,7 +87,7 @@ func NewEmail(s lib.SenderInterface, c *Config, email string, userData *UserData
 }
 
 // アカウント登録時に送信するメール
-func (e *Email) RegisterEmailVerify(code string) error {
+func (e *Email) RegisterEmailVerify(code string) (string, error) {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "メールアドレスの登録確認",
@@ -98,6 +98,10 @@ func (e *Email) RegisterEmailVerify(code string) error {
 		},
 		PlainTextFileName: "register.gtpl",
 		HTMLTextFileName:  "register.html",
+	}
+
+	if e.HasPreviewMode {
+		return e.S.Preview(m)
 	}
 
 	msg, id, err := e.S.Send(m)
@@ -112,7 +116,7 @@ func (e *Email) RegisterEmailVerify(code string) error {
 			zap.String("OS", e.UserData.OS),
 			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
-		return err
+		return "", err
 	}
 
 	// メールを送信したのでログを出す
@@ -127,11 +131,11 @@ func (e *Email) RegisterEmailVerify(code string) error {
 		zap.String("OS", e.UserData.OS),
 		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
-	return nil
+	return "", nil
 }
 
 // アカウント登録時に送信するメールの再送メール
-func (e *Email) ResendRegisterEmailVerify(code string) error {
+func (e *Email) ResendRegisterEmailVerify(code string) (string, error) {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "【再送】メールアドレスの登録確認",
@@ -142,6 +146,10 @@ func (e *Email) ResendRegisterEmailVerify(code string) error {
 		},
 		PlainTextFileName: "register.gtpl",
 		HTMLTextFileName:  "register.html",
+	}
+
+	if e.HasPreviewMode {
+		return e.S.Preview(m)
 	}
 
 	msg, id, err := e.S.Send(m)
@@ -156,7 +164,7 @@ func (e *Email) ResendRegisterEmailVerify(code string) error {
 			zap.String("OS", e.UserData.OS),
 			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
-		return err
+		return "", err
 	}
 
 	// メールを送信したのでログを出す
@@ -171,11 +179,11 @@ func (e *Email) ResendRegisterEmailVerify(code string) error {
 		zap.String("OS", e.UserData.OS),
 		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
-	return nil
+	return "", nil
 }
 
 // メールアドレス更新
-func (e *Email) UpdateEmail(oldEmail string, code string) error {
+func (e *Email) UpdateEmail(oldEmail string, code string) (string, error) {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "メールアドレスの確認して更新します",
@@ -188,6 +196,10 @@ func (e *Email) UpdateEmail(oldEmail string, code string) error {
 		},
 		PlainTextFileName: "update_email.gtpl",
 		HTMLTextFileName:  "update_email.html",
+	}
+
+	if e.HasPreviewMode {
+		return e.S.Preview(m)
 	}
 
 	msg, id, err := e.S.Send(m)
@@ -205,7 +217,7 @@ func (e *Email) UpdateEmail(oldEmail string, code string) error {
 			zap.String("OS", e.UserData.OS),
 			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
-		return err
+		return "", err
 	}
 
 	// メールを送信したのでログを出す
@@ -224,11 +236,11 @@ func (e *Email) UpdateEmail(oldEmail string, code string) error {
 		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
 
-	return nil
+	return "", nil
 }
 
 // パスワード更新
-func (e *Email) UpdatePassword(token string, userName string) error {
+func (e *Email) UpdatePassword(token string, userName string) (string, error) {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "パスワードを再設定してください",
@@ -241,6 +253,10 @@ func (e *Email) UpdatePassword(token string, userName string) error {
 		},
 		PlainTextFileName: "forget_reregistration_password.gtpl",
 		HTMLTextFileName:  "forget_reregistration_password.html",
+	}
+
+	if e.HasPreviewMode {
+		return e.S.Preview(m)
 	}
 
 	msg, id, err := e.S.Send(m)
@@ -257,7 +273,7 @@ func (e *Email) UpdatePassword(token string, userName string) error {
 			zap.String("OS", e.UserData.OS),
 			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
-		return err
+		return "", err
 	}
 
 	// メールを送信したのでログを出す
@@ -275,10 +291,10 @@ func (e *Email) UpdatePassword(token string, userName string) error {
 		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
 
-	return nil
+	return "", nil
 }
 
-func (e *Email) InviteOrg(token string, orgName string, InvitationUserName string) error {
+func (e *Email) InviteOrg(token string, orgName string, InvitationUserName string) (string, error) {
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      fmt.Sprintf("%sに招待されています", orgName),
@@ -292,6 +308,10 @@ func (e *Email) InviteOrg(token string, orgName string, InvitationUserName strin
 		},
 		PlainTextFileName: "invite_org.gtpl",
 		HTMLTextFileName:  "invite_org.html",
+	}
+
+	if e.HasPreviewMode {
+		return e.S.Preview(m)
 	}
 
 	msg, id, err := e.S.Send(m)
@@ -308,7 +328,7 @@ func (e *Email) InviteOrg(token string, orgName string, InvitationUserName strin
 			zap.String("OS", e.UserData.OS),
 			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
-		return err
+		return "", err
 	}
 
 	// メールを送信したのでログを出す
@@ -326,5 +346,49 @@ func (e *Email) InviteOrg(token string, orgName string, InvitationUserName strin
 		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
 
-	return nil
+	return "", nil
+}
+
+func (e *Email) Test() (string, error) {
+	m := &lib.MailBody{
+		EmailAddress:      e.Email,
+		Subject:           "test",
+		Data:              e.EmailData,
+		PlainTextFileName: "test.gtpl",
+		HTMLTextFileName:  "test.html",
+	}
+
+	if e.HasPreviewMode {
+		return e.S.Preview(m)
+	}
+
+	msg, id, err := e.S.Send(m)
+	if err != nil {
+		L.Error("mail",
+			zap.String("Email", e.Email),
+			zap.String("Subject", m.Subject),
+			zap.Error(err),
+			zap.String("IP", e.Ip),
+			zap.String("Device", e.UserData.Device),
+			zap.String("Browser", e.UserData.Browser),
+			zap.String("OS", e.UserData.OS),
+			zap.Bool("IsMobile", e.UserData.IsMobile),
+		)
+		return "", err
+	}
+
+	// メールを送信したのでログを出す
+	L.Info("mail",
+		zap.String("Email", e.Email),
+		zap.String("Subject", m.Subject),
+		zap.String("MailGunMessage", msg),
+		zap.String("MailGunID", id),
+		zap.String("IP", e.Ip),
+		zap.String("Device", e.UserData.Device),
+		zap.String("Browser", e.UserData.Browser),
+		zap.String("OS", e.UserData.OS),
+		zap.Bool("IsMobile", e.UserData.IsMobile),
+	)
+
+	return "", nil
 }
