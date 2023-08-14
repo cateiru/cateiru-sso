@@ -203,11 +203,11 @@ var LocalConfig = &Config{
 	DBDebugLog: true,
 
 	Host: &url.URL{
-		Host:   "sso.cateiru.test:8080",
+		Host:   "localhost:8080",
 		Scheme: "http",
 	},
 	SiteHost: &url.URL{
-		Host:   "sso.cateiru.test:3000",
+		Host:   "localhost:3000",
 		Scheme: "http",
 	},
 
