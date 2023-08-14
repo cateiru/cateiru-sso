@@ -52,7 +52,7 @@ type InviteOrgSessionTemplate2 struct {
 	EmailData
 }
 
-type Sender struct {
+type Email struct {
 	S     lib.SenderInterface
 	Email string // 送信先メールアドレス
 
@@ -62,7 +62,7 @@ type Sender struct {
 	User      *models.User // 送信したときのユーザー nullable
 }
 
-func NewSender(s lib.SenderInterface, c *Config, userData *UserData, ip string, user *models.User) *Sender {
+func NewSender(s lib.SenderInterface, c *Config, userData *UserData, ip string, user *models.User) *Email {
 	emailData := &EmailData{
 		BrandName:     c.BrandName,
 		BrandUrl:      c.SiteHost.String(),
@@ -70,7 +70,7 @@ func NewSender(s lib.SenderInterface, c *Config, userData *UserData, ip string, 
 		BrandDomain:   c.SiteHost.Host,
 	}
 
-	return &Sender{
+	return &Email{
 		S:         s,
 		EmailData: emailData,
 		UserData:  userData,
@@ -80,200 +80,200 @@ func NewSender(s lib.SenderInterface, c *Config, userData *UserData, ip string, 
 }
 
 // アカウント登録時に送信するメール
-func (s *Sender) RegisterEmailVerify(code string, expiration time.Time) error {
+func (e *Email) RegisterEmailVerify(code string, expiration time.Time) error {
 	m := &lib.MailBody{
-		EmailAddress: s.Email,
+		EmailAddress: e.Email,
 		Subject:      "メールアドレスの登録確認",
 		Data: RegisterEmailVerifyTemplate{
 			Code:       code,
 			Expiration: expiration,
-			EmailData:  *s.EmailData,
+			EmailData:  *e.EmailData,
 		},
 		PlainTextFileName: "register.gtpl",
 		HTMLTextFileName:  "register.html",
 	}
 
-	msg, id, err := s.S.Send(m)
+	msg, id, err := e.S.Send(m)
 	if err != nil {
 		L.Error("register mail",
-			zap.String("Email", s.Email),
+			zap.String("Email", e.Email),
 			zap.String("Subject", m.Subject),
 			zap.Error(err),
-			zap.String("IP", s.Ip),
-			zap.String("Device", s.UserData.Device),
-			zap.String("Browser", s.UserData.Browser),
-			zap.String("OS", s.UserData.OS),
-			zap.Bool("IsMobile", s.UserData.IsMobile),
+			zap.String("IP", e.Ip),
+			zap.String("Device", e.UserData.Device),
+			zap.String("Browser", e.UserData.Browser),
+			zap.String("OS", e.UserData.OS),
+			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
 		return err
 	}
 
 	// メールを送信したのでログを出す
 	L.Info("register mail",
-		zap.String("Email", s.Email),
+		zap.String("Email", e.Email),
 		zap.String("Subject", m.Subject),
 		zap.String("MailGunMessage", msg),
 		zap.String("MailGunID", id),
-		zap.String("IP", s.Ip),
-		zap.String("Device", s.UserData.Device),
-		zap.String("Browser", s.UserData.Browser),
-		zap.String("OS", s.UserData.OS),
-		zap.Bool("IsMobile", s.UserData.IsMobile),
+		zap.String("IP", e.Ip),
+		zap.String("Device", e.UserData.Device),
+		zap.String("Browser", e.UserData.Browser),
+		zap.String("OS", e.UserData.OS),
+		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
 	return nil
 }
 
 // アカウント登録時に送信するメールの再送メール
-func (s *Sender) ResendRegisterEmailVerify(code string, expiration time.Time) error {
+func (e *Email) ResendRegisterEmailVerify(code string, expiration time.Time) error {
 	m := &lib.MailBody{
-		EmailAddress: s.Email,
+		EmailAddress: e.Email,
 		Subject:      "【再送】メールアドレスの登録確認",
 		Data: RegisterEmailVerifyTemplate{
 			Code:       code,
 			Expiration: expiration,
-			EmailData:  *s.EmailData,
+			EmailData:  *e.EmailData,
 		},
 		PlainTextFileName: "register.gtpl",
 		HTMLTextFileName:  "register.html",
 	}
 
-	msg, id, err := s.S.Send(m)
+	msg, id, err := e.S.Send(m)
 	if err != nil {
 		L.Error("resend register mail",
-			zap.String("Email", s.Email),
+			zap.String("Email", e.Email),
 			zap.String("Subject", m.Subject),
 			zap.Error(err),
-			zap.String("IP", s.Ip),
-			zap.String("Device", s.UserData.Device),
-			zap.String("Browser", s.UserData.Browser),
-			zap.String("OS", s.UserData.OS),
-			zap.Bool("IsMobile", s.UserData.IsMobile),
+			zap.String("IP", e.Ip),
+			zap.String("Device", e.UserData.Device),
+			zap.String("Browser", e.UserData.Browser),
+			zap.String("OS", e.UserData.OS),
+			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
 		return err
 	}
 
 	// メールを送信したのでログを出す
 	L.Info("resend register mail",
-		zap.String("Email", s.Email),
+		zap.String("Email", e.Email),
 		zap.String("Subject", m.Subject),
 		zap.String("MailGunMessage", msg),
 		zap.String("MailGunID", id),
-		zap.String("IP", s.Ip),
-		zap.String("Device", s.UserData.Device),
-		zap.String("Browser", s.UserData.Browser),
-		zap.String("OS", s.UserData.OS),
-		zap.Bool("IsMobile", s.UserData.IsMobile),
+		zap.String("IP", e.Ip),
+		zap.String("Device", e.UserData.Device),
+		zap.String("Browser", e.UserData.Browser),
+		zap.String("OS", e.UserData.OS),
+		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
 	return nil
 }
 
 // メールアドレス更新
-func (s *Sender) UpdateEmail(oldEmail string, code string, expiration time.Time) error {
+func (e *Email) UpdateEmail(oldEmail string, code string, expiration time.Time) error {
 	m := &lib.MailBody{
-		EmailAddress: s.Email,
+		EmailAddress: e.Email,
 		Subject:      "メールアドレスの確認して更新します",
 		Data: UpdateEmailTemplate2{
 			OldEmail:   oldEmail,
 			Code:       code,
 			Expiration: expiration,
 
-			EmailData: *s.EmailData,
+			EmailData: *e.EmailData,
 		},
 		PlainTextFileName: "update_email.gtpl",
 		HTMLTextFileName:  "update_email.html",
 	}
 
-	msg, id, err := s.S.Send(m)
+	msg, id, err := e.S.Send(m)
 	if err != nil {
 		L.Error("mail",
-			zap.String("Email", s.Email),
+			zap.String("Email", e.Email),
 			zap.String("OldEmail", oldEmail),
-			zap.String("UserID", s.User.ID),
-			zap.String("UserName", s.User.UserName),
+			zap.String("UserID", e.User.ID),
+			zap.String("UserName", e.User.UserName),
 			zap.String("Subject", m.Subject),
 			zap.Error(err),
-			zap.String("IP", s.Ip),
-			zap.String("Device", s.UserData.Device),
-			zap.String("Browser", s.UserData.Browser),
-			zap.String("OS", s.UserData.OS),
-			zap.Bool("IsMobile", s.UserData.IsMobile),
+			zap.String("IP", e.Ip),
+			zap.String("Device", e.UserData.Device),
+			zap.String("Browser", e.UserData.Browser),
+			zap.String("OS", e.UserData.OS),
+			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
 		return err
 	}
 
 	// メールを送信したのでログを出す
 	L.Info("mail",
-		zap.String("Email", s.Email),
+		zap.String("Email", e.Email),
 		zap.String("OldEmail", oldEmail),
-		zap.String("UserID", s.User.ID),
-		zap.String("UserName", s.User.UserName),
+		zap.String("UserID", e.User.ID),
+		zap.String("UserName", e.User.UserName),
 		zap.String("Subject", m.Subject),
 		zap.String("MailGunMessage", msg),
 		zap.String("MailGunID", id),
-		zap.String("IP", s.Ip),
-		zap.String("Device", s.UserData.Device),
-		zap.String("Browser", s.UserData.Browser),
-		zap.String("OS", s.UserData.OS),
-		zap.Bool("IsMobile", s.UserData.IsMobile),
+		zap.String("IP", e.Ip),
+		zap.String("Device", e.UserData.Device),
+		zap.String("Browser", e.UserData.Browser),
+		zap.String("OS", e.UserData.OS),
+		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
 
 	return nil
 }
 
 // パスワード更新
-func (s *Sender) UpdatePassword(token string, userName string, expiration time.Time) error {
+func (e *Email) UpdatePassword(token string, userName string, expiration time.Time) error {
 	m := &lib.MailBody{
-		EmailAddress: s.Email,
+		EmailAddress: e.Email,
 		Subject:      "パスワードを再設定してください",
 		Data: AccountReRegisterPasswordTemplate2{
 			Token:      token,
 			UserName:   userName,
 			Expiration: expiration,
 
-			EmailData: *s.EmailData,
+			EmailData: *e.EmailData,
 		},
 		PlainTextFileName: "forget_reregistration_password.gtpl",
 		HTMLTextFileName:  "forget_reregistration_password.html",
 	}
 
-	msg, id, err := s.S.Send(m)
+	msg, id, err := e.S.Send(m)
 	if err != nil {
 		L.Error("mail",
-			zap.String("Email", s.Email),
-			zap.String("UserID", s.User.ID),
-			zap.String("UserName", s.User.UserName),
+			zap.String("Email", e.Email),
+			zap.String("UserID", e.User.ID),
+			zap.String("UserName", e.User.UserName),
 			zap.String("Subject", m.Subject),
 			zap.Error(err),
-			zap.String("IP", s.Ip),
-			zap.String("Device", s.UserData.Device),
-			zap.String("Browser", s.UserData.Browser),
-			zap.String("OS", s.UserData.OS),
-			zap.Bool("IsMobile", s.UserData.IsMobile),
+			zap.String("IP", e.Ip),
+			zap.String("Device", e.UserData.Device),
+			zap.String("Browser", e.UserData.Browser),
+			zap.String("OS", e.UserData.OS),
+			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
 		return err
 	}
 
 	// メールを送信したのでログを出す
 	L.Info("mail",
-		zap.String("Email", s.Email),
-		zap.String("UserID", s.User.ID),
-		zap.String("UserName", s.User.UserName),
+		zap.String("Email", e.Email),
+		zap.String("UserID", e.User.ID),
+		zap.String("UserName", e.User.UserName),
 		zap.String("Subject", m.Subject),
 		zap.String("MailGunMessage", msg),
 		zap.String("MailGunID", id),
-		zap.String("IP", s.Ip),
-		zap.String("Device", s.UserData.Device),
-		zap.String("Browser", s.UserData.Browser),
-		zap.String("OS", s.UserData.OS),
-		zap.Bool("IsMobile", s.UserData.IsMobile),
+		zap.String("IP", e.Ip),
+		zap.String("Device", e.UserData.Device),
+		zap.String("Browser", e.UserData.Browser),
+		zap.String("OS", e.UserData.OS),
+		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
 
 	return nil
 }
 
-func (s *Sender) InviteOrg(token string, orgName string, InvitationUserName string, expiration time.Time) error {
+func (e *Email) InviteOrg(token string, orgName string, InvitationUserName string, expiration time.Time) error {
 	m := &lib.MailBody{
-		EmailAddress: s.Email,
+		EmailAddress: e.Email,
 		Subject:      fmt.Sprintf("%sに招待されています", orgName),
 		Data: InviteOrgSessionTemplate2{
 			Token:              token,
@@ -281,42 +281,42 @@ func (s *Sender) InviteOrg(token string, orgName string, InvitationUserName stri
 			OrganizationName:   orgName,
 			InvitationUserName: InvitationUserName,
 
-			EmailData: *s.EmailData,
+			EmailData: *e.EmailData,
 		},
 		PlainTextFileName: "invite_org.gtpl",
 		HTMLTextFileName:  "invite_org.html",
 	}
 
-	msg, id, err := s.S.Send(m)
+	msg, id, err := e.S.Send(m)
 	if err != nil {
 		L.Error("mail",
-			zap.String("Email", s.Email),
+			zap.String("Email", e.Email),
 			zap.String("Subject", m.Subject),
 			zap.String("OrgName", orgName),
 			zap.String("InvitationUserName", InvitationUserName),
 			zap.Error(err),
-			zap.String("IP", s.Ip),
-			zap.String("Device", s.UserData.Device),
-			zap.String("Browser", s.UserData.Browser),
-			zap.String("OS", s.UserData.OS),
-			zap.Bool("IsMobile", s.UserData.IsMobile),
+			zap.String("IP", e.Ip),
+			zap.String("Device", e.UserData.Device),
+			zap.String("Browser", e.UserData.Browser),
+			zap.String("OS", e.UserData.OS),
+			zap.Bool("IsMobile", e.UserData.IsMobile),
 		)
 		return err
 	}
 
 	// メールを送信したのでログを出す
 	L.Info("mail",
-		zap.String("Email", s.Email),
+		zap.String("Email", e.Email),
 		zap.String("Subject", m.Subject),
 		zap.String("OrgName", orgName),
 		zap.String("InvitationUserName", InvitationUserName),
 		zap.String("MailGunMessage", msg),
 		zap.String("MailGunID", id),
-		zap.String("IP", s.Ip),
-		zap.String("Device", s.UserData.Device),
-		zap.String("Browser", s.UserData.Browser),
-		zap.String("OS", s.UserData.OS),
-		zap.Bool("IsMobile", s.UserData.IsMobile),
+		zap.String("IP", e.Ip),
+		zap.String("Device", e.UserData.Device),
+		zap.String("Browser", e.UserData.Browser),
+		zap.String("OS", e.UserData.OS),
+		zap.Bool("IsMobile", e.UserData.IsMobile),
 	)
 
 	return nil
