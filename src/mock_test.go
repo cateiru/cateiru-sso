@@ -18,7 +18,9 @@ import (
 // テスト用のmock オブジェクト
 type ReCaptchaMock struct{}
 
-type SenderMock struct{}
+type SenderMock struct {
+	Sender *lib.Sender
+}
 
 type WebAuthnMock struct {
 	M *lib.WebAuthn
@@ -65,7 +67,7 @@ func (c *SenderMock) Send(m *lib.MailBody) (string, string, error) {
 }
 
 func (s *SenderMock) Preview(m *lib.MailBody) (string, error) {
-	return "", nil
+	return s.Sender.Preview(m)
 }
 
 // --- WebAuthnMock

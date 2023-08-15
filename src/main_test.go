@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -246,11 +247,20 @@ func NewTestHandler(t *testing.T) *src.Handler {
 
 	storage := lib.NewCloudStorage(C.StorageBucketName)
 
+	// Previewをテストするために実際にSenderを作成する
+	path, err := os.Getwd()
+	require.NoError(t, err)
+
+	sender, err := lib.NewSender(filepath.Join(path, "..", `templates/*`), C.FromDomain, C.MailgunSecret, C.SenderMailAddress)
+	require.NoError(t, err)
+
 	return &src.Handler{
 		DB:        DB,
 		C:         C,
 		ReCaptcha: &ReCaptchaMock{},
-		Sender:    &SenderMock{},
+		Sender: &SenderMock{
+			Sender: sender,
+		},
 		WebAuthn: &WebAuthnMock{
 			M: webauthn,
 		},
