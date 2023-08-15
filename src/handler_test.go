@@ -2,6 +2,8 @@ package src_test
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
@@ -11,7 +13,12 @@ import (
 )
 
 func TestNewHandler(t *testing.T) {
-	h, err := src.NewHandler(DB, C)
+	path, err := os.Getwd()
+	require.NoError(t, err)
+
+	newPath := filepath.Join(path, "..")
+
+	h, err := src.NewHandler(DB, C, newPath)
 	require.NoError(t, err)
 
 	require.NotNil(t, h.DB)

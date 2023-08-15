@@ -1,16 +1,6 @@
 'use client';
 
-import {
-  Link,
-  ListItem,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Tr,
-  UnorderedList,
-} from '@chakra-ui/react';
+import {Link, ListItem, Text, UnorderedList} from '@chakra-ui/react';
 import {api} from '../../utils/api';
 import {useSecondaryColor} from '../Common/useColor';
 

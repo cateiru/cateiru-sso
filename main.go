@@ -1,6 +1,10 @@
 package main
 
-import "github.com/cateiru/cateiru-sso/src"
+import (
+	"os"
+
+	"github.com/cateiru/cateiru-sso/src"
+)
 
 // Set this variable at build time.
 //
@@ -10,6 +14,11 @@ import "github.com/cateiru/cateiru-sso/src"
 var mode string = "local"
 
 func main() {
+	path, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
 	// Run backend server
-	src.Main(mode)
+	src.Main(mode, path)
 }

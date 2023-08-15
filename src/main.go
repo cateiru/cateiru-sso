@@ -15,7 +15,7 @@ import (
 	_ "time/tzdata"
 )
 
-func Main(mode string) {
+func Main(mode string, path string) {
 	config := InitConfig(mode)
 	InitLogging(mode, config)
 
@@ -41,13 +41,13 @@ func Main(mode string) {
 		os.Setenv("STORAGE_EMULATOR_HOST", config.StorageEmulatorHost.Value)
 	}
 
-	if err := Server(config); err != nil {
+	if err := Server(config, path); err != nil {
 		panic(err)
 	}
 }
 
 // サーバを実行する
-func Server(c *Config) error {
+func Server(c *Config, path string) error {
 	e := echo.New()
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.HTTPErrorHandler = CustomHTTPErrorHandler
@@ -59,7 +59,7 @@ func Server(c *Config) error {
 		return err
 	}
 
-	handler, err := NewHandler(db, c)
+	handler, err := NewHandler(db, c, path)
 	if err != nil {
 		return err
 	}

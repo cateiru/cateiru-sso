@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 
@@ -34,14 +33,10 @@ type Handler struct {
 	CDN       lib.CDNInterface
 }
 
-func NewHandler(db *sql.DB, config *Config) (*Handler, error) {
+func NewHandler(db *sql.DB, config *Config, path string) (*Handler, error) {
 	reCaptcha := lib.NewReCaptcha(config.ReCaptchaSecret)
 
-	fullpath, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	s, err := lib.NewSender(filepath.Join(fullpath, `templates/*`), config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
+	s, err := lib.NewSender(filepath.Join(path, `templates/*`), config.FromDomain, config.MailgunSecret, config.SenderMailAddress)
 	if err != nil {
 		return nil, err
 	}
