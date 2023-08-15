@@ -1,9 +1,8 @@
 package src
 
-// TODO: テスト
-
 import (
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
@@ -16,6 +15,8 @@ type EmailData struct {
 	BrandUrl      string // ブランドのURL
 	BrandImageUrl string // ブランドの画像URL
 	BrandDomain   string // ブランドのドメイン
+
+	Email string // 送信先メールアドレス
 }
 
 // アカウント作成のテンプレートデータ
@@ -37,7 +38,7 @@ type UpdateEmailTemplate2 struct {
 
 // パスワード再登録テンプレートデータ
 type AccountReRegisterPasswordTemplate2 struct {
-	Token      string
+	URL        string
 	UserName   string
 	Expiration time.Time
 
@@ -46,7 +47,7 @@ type AccountReRegisterPasswordTemplate2 struct {
 
 // 組織招待のテンプレートデータ
 type InviteOrgSessionTemplate2 struct {
-	Token              string
+	URL                string
 	Expiration         time.Time
 	OrganizationName   string
 	InvitationUserName string
@@ -73,6 +74,7 @@ func NewEmail(s lib.SenderInterface, c *Config, email string, userData *UserData
 		BrandUrl:      c.SiteHost.String(),
 		BrandImageUrl: "https://todo",
 		BrandDomain:   c.SiteHost.Host,
+		Email:         email,
 	}
 
 	return &Email{
@@ -243,11 +245,23 @@ func (e *Email) UpdateEmail(oldEmail string, code string) (string, error) {
 
 // パスワード更新
 func (e *Email) UpdatePassword(token string, userName string) (string, error) {
+	u, err := url.Parse(e.C.SiteHost.String())
+	if err != nil {
+		return "", err
+	}
+
+	u.Path = "/forget_password/reregister"
+
+	query := u.Query()
+	query.Set("token", token)
+	query.Set("email", e.Email)
+	u.RawQuery = query.Encode()
+
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      "パスワードを再設定してください",
 		Data: AccountReRegisterPasswordTemplate2{
-			Token:      token,
+			URL:        u.String(),
 			UserName:   userName,
 			Expiration: time.Now().Add(e.C.ReregistrationPasswordSessionPeriod),
 
@@ -297,11 +311,23 @@ func (e *Email) UpdatePassword(token string, userName string) (string, error) {
 }
 
 func (e *Email) InviteOrg(token string, orgName string, InvitationUserName string) (string, error) {
+	u, err := url.Parse(e.C.SiteHost.String())
+	if err != nil {
+		return "", err
+	}
+
+	u.Path = "/register"
+
+	query := u.Query()
+	query.Set("invite_token", token)
+	query.Set("email", e.Email)
+	u.RawQuery = query.Encode()
+
 	m := &lib.MailBody{
 		EmailAddress: e.Email,
 		Subject:      fmt.Sprintf("%sに招待されています", orgName),
 		Data: InviteOrgSessionTemplate2{
-			Token:              token,
+			URL:                u.String(),
 			Expiration:         time.Now().Add(e.C.InviteOrgSessionPeriod),
 			OrganizationName:   orgName,
 			InvitationUserName: InvitationUserName,

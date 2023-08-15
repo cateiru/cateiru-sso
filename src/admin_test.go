@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -23,6 +24,8 @@ func TestAdminUsersHandler(t *testing.T) {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: 複数のユーザーを取得できる", func(t *testing.T) {
@@ -74,6 +77,8 @@ func TestAdminUserDetailHandler(t *testing.T) {
 		m, err := easy.NewMock(fmt.Sprintf("/?user_id=%s", u.ID), http.MethodGet, "")
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	email2 := RandomEmail(t)
@@ -161,6 +166,8 @@ func TestAdminUserBrandHandler(t *testing.T) {
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: 追加できる", func(t *testing.T) {
@@ -266,6 +273,8 @@ func TestAdminUserBrandDeleteHandler(t *testing.T) {
 		m, err := easy.NewMock(fmt.Sprintf("/?user_id=%s&brand_id=%s", u.ID, brandId), http.MethodDelete, "")
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: 削除できる", func(t *testing.T) {
@@ -329,6 +338,8 @@ func TestAdminStaffHandler(t *testing.T) {
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: スタッフになれる", func(t *testing.T) {
@@ -523,6 +534,8 @@ func TestAdminBroadcastHandler(t *testing.T) {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 }
 
@@ -534,6 +547,8 @@ func TestAdminBrandHandler(t *testing.T) {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	RegisterBrand(t, ctx, "test", "")
@@ -614,6 +629,8 @@ func TestAdminBrandCreateHandler(t *testing.T) {
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("ブランドを新規作成できる", func(t *testing.T) {
@@ -656,6 +673,8 @@ func TestAdminBrandUpdateHandler(t *testing.T) {
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("ブランドを更新できる", func(t *testing.T) {
@@ -719,6 +738,8 @@ func TestAdminBrandDeleteHandler(t *testing.T) {
 		m, err := easy.NewMock(fmt.Sprintf("/?brand_id=%s", brandId), http.MethodGet, "")
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("ブランドを削除できる", func(t *testing.T) {
@@ -757,6 +778,8 @@ func TestAdminOrgHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("すべてのorgを取得できる", func(t *testing.T) {
@@ -797,6 +820,8 @@ func TestAdminOrgDetailHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: orgの詳細を取得できる", func(t *testing.T) {
@@ -939,6 +964,8 @@ func TestAdminOrgCreateHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: orgを作成できる", func(t *testing.T) {
@@ -1081,6 +1108,8 @@ func TestAdminOrgUpdateHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: orgを更新できる", func(t *testing.T) {
@@ -1288,6 +1317,8 @@ func TestAdminOrgDeleteHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: orgを削除できる", func(t *testing.T) {
@@ -1373,6 +1404,8 @@ func TestAdminOrgDeleteImageHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: orgの画像を削除できる", func(t *testing.T) {
@@ -1485,6 +1518,8 @@ func TestAdminOrgMemberJoinHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: orgにメンバーを追加できる", func(t *testing.T) {
@@ -1745,6 +1780,8 @@ func TestAdminOrgMemberRemoveHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: orgからユーザーを削除できる", func(t *testing.T) {
@@ -1820,6 +1857,8 @@ func TestAdminClientsHandler(t *testing.T) {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: クライアント一覧を取得できる", func(t *testing.T) {
@@ -1856,6 +1895,8 @@ func TestAdminClientDetailHandler(t *testing.T) {
 		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
 		require.NoError(t, err)
 		return m
+	}, func(c echo.Context) echo.Context {
+		return c
 	})
 
 	t.Run("成功: クライアントの詳細を取得できる", func(t *testing.T) {
@@ -1914,4 +1955,49 @@ func TestAdminClientDetailHandler(t *testing.T) {
 		require.EqualError(t, err, "code=404, message=client not found")
 	})
 
+}
+
+func TestAdminPreviewTemplateHTMLHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminPreviewTemplateHTMLHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/?name=test", http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	}, func(c echo.Context) echo.Context {
+		c.SetParamNames("name")
+		c.SetParamValues("test")
+		return c
+	})
+
+	params := []string{
+		"register",
+		"register_resend",
+		"update_email",
+		"update_password",
+		"invite_org",
+		"test",
+	}
+
+	t.Run("アクセス可能", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		for _, param := range params {
+			m, err := easy.NewMock("/:name", http.MethodGet, "")
+			require.NoError(t, err)
+			m.Cookie(cookie)
+
+			c := m.Echo()
+			c.SetParamNames("name")
+			c.SetParamValues(param)
+
+			err = h.AdminPreviewTemplateHTMLHandler(c)
+			require.NoError(t, err, param)
+		}
+	})
 }

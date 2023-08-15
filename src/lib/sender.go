@@ -89,6 +89,5 @@ func (s *Sender) Preview(m *MailBody) (string, error) {
 func TimeDiffMinutes(targetDate time.Time) string {
 	now := time.Now()
 	diff := now.Sub(targetDate)
-	fmt.Println(diff.Minutes())
 	return fmt.Sprint(math.Ceil(math.Abs(diff.Minutes())))
 }

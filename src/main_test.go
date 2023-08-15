@@ -504,7 +504,7 @@ func SessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx co
 }
 
 // そのHandlerがスタッフ限定かどうかをテストする
-func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler) {
+func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock func(ctx context.Context, u *models.User) *easy.MockHandler, ctxHandler func(c echo.Context) echo.Context) {
 	ctx := context.Background()
 
 	defaultEmail := RandomEmail(t)
@@ -526,6 +526,8 @@ func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock fun
 		m.Cookie(staffSessionCookies)
 		c := m.Echo()
 
+		c = ctxHandler(c)
+
 		err := h(c)
 		require.NoError(t, err)
 	})
@@ -533,6 +535,7 @@ func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock fun
 	t.Run("Cookieが空の場合認証できない", func(t *testing.T) {
 		m := newMock(ctx, &defaultUser)
 		c := m.Echo()
+		c = ctxHandler(c)
 
 		err := h(c)
 		require.EqualError(t, err, "code=403, message=login failed, unique=8")
@@ -542,6 +545,8 @@ func StaffAndSessionTest(t *testing.T, h func(c echo.Context) error, newMock fun
 		m := newMock(ctx, &secondUser)
 		m.Cookie(sessionCookies)
 		c := m.Echo()
+
+		c = ctxHandler(c)
 
 		err := h(c)
 		require.EqualError(t, err, "code=403, message=require staff")
