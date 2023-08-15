@@ -549,7 +549,7 @@
 <![endif]-->
                               <a
                                 class="l"
-                                href="#insertUrlLink"
+                                href="{{.BrandUrl}}"
                                 target="_blank"
                                 style="
                                   display: inline-block;
@@ -578,7 +578,7 @@
                                     mso-line-height-alt: 16px;
                                     mso-ansi-font-size: 12px;
                                   "
-                                  >{{.Data.BrandName}}</span
+                                  >{{.BrandName}}</span
                                 >
                               </a>
                               <!--[if mso | IE]>
@@ -686,7 +686,8 @@
                                   mso-line-height-alt: 32px;
                                   mso-ansi-font-size: 28px;
                                 "
-                                >組織{{ .Data.Data.OrganizationName }}に招待されています</span
+                                >組織{{ .OrganizationName
+                                }}に招待されています</span
                               >
                             </p>
                           </div>
@@ -721,7 +722,8 @@
                                   mso-line-height-alt: 24px;
                                   mso-ansi-font-size: 16px;
                                 "
-                                >@{{ .Data.Data.InvitationUserName }} により組織{{ .Data.Data.OrganizationName }}に招待されています。</span
+                                >@{{ .InvitationUserName }} により組織{{
+                                .OrganizationName }}に招待されています。</span
                               >
                             </p>
                             <p
@@ -761,7 +763,8 @@
                                   mso-line-height-alt: 24px;
                                   mso-ansi-font-size: 16px;
                                 "
-                                >このリンクの有効期限は{{ timeDiffMinutes .Data.Data.Period }}分です。</span
+                                >このリンクの有効期限は{{ timeDiffMinutes
+                                .Expiration }}分です。</span
                               >
                             </p>
                             <p
@@ -891,7 +894,7 @@
                                   valign="middle"
                                 >
                                   <a
-                                    href="{{ .Data.BrandUrl  }}/register?invite_token={{ .Data.Data.Token }}&email={{ .Data.Data.Email }}"
+                                    href="{{ .URL }}"
                                     style="
                                       display: inline-block;
                                       width: 184px;
@@ -1088,7 +1091,7 @@
 <![endif]-->
                             <a
                               class="l"
-                              href="#insertUrlLink"
+                              href="{{.BrandUrl}}"
                               target="_blank"
                               style="
                                 display: inline-block;
@@ -1117,7 +1120,7 @@
                                   mso-line-height-alt: 16px;
                                   mso-ansi-font-size: 14px;
                                 "
-                                >{{.Data.BrandName}}</span
+                                >{{.BrandName}}</span
                               >
                             </a>
                             <!--[if mso | IE]>

@@ -6,7 +6,7 @@
   xmlns:o="urn:schemas-microsoft-com:office:office"
 >
   <head>
-    <title>メールアドレスの更新 | {{.Data.BrandName}}</title>
+    <title>メールアドレスの更新 | {{.BrandName}}</title>
     <!--[if !mso]><!-->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!--<![endif]-->
@@ -549,7 +549,7 @@
 <![endif]-->
                               <a
                                 class="l"
-                                href="#insertUrlLink"
+                                href="{{ .BrandUrl }}"
                                 target="_blank"
                                 style="
                                   display: inline-block;
@@ -578,7 +578,7 @@
                                     mso-line-height-alt: 16px;
                                     mso-ansi-font-size: 12px;
                                   "
-                                  >{{.Data.BrandName}}</span
+                                  >{{.BrandName}}</span
                                 >
                               </a>
                               <!--[if mso | IE]>
@@ -721,7 +721,8 @@
                                   mso-line-height-alt: 24px;
                                   mso-ansi-font-size: 16px;
                                 "
-                                >{{ .EmailAddress }}から{{ .Data.Data.NewEmail }}に更新しようとしています。</span
+                                >{{ .OldEmail }} から {{ .Email }}
+                                に更新しようとしています。</span
                               >
                             </p>
                             <p
@@ -741,7 +742,8 @@
                                   mso-line-height-alt: 24px;
                                   mso-ansi-font-size: 16px;
                                 "
-                                >ブラウザで以下の{{ len .Data.Data.Code }}桁の確認コードを入力してください。</span
+                                >ブラウザで以下の{{ len .Code
+                                }}桁の確認コードを入力してください。</span
                               >
                             </p>
                             <p
@@ -761,7 +763,8 @@
                                   mso-line-height-alt: 24px;
                                   mso-ansi-font-size: 16px;
                                 "
-                                >この確認コードの有効期限は{{ timeDiffMinutes .Data.Data.Period }}分です。</span
+                                >この確認コードの有効期限は{{ timeDiffMinutes
+                                .Expiration }}分です。</span
                               >
                             </p>
                           </div>
@@ -875,7 +878,7 @@
                                           mso-line-height-alt: 38px;
                                           mso-ansi-font-size: 32px;
                                         "
-                                        >{{ .Data.Data.Code }}</span
+                                        >{{ .Code }}</span
                                       >
                                     </p>
                                   </div>
@@ -1237,7 +1240,7 @@
 <![endif]-->
                             <a
                               class="l"
-                              href="#insertUrlLink"
+                              href="{{ .BrandUrl }}"
                               target="_blank"
                               style="
                                 display: inline-block;
@@ -1266,7 +1269,7 @@
                                   mso-line-height-alt: 16px;
                                   mso-ansi-font-size: 14px;
                                 "
-                                >{{.Data.BrandName}}</span
+                                >{{.BrandName}}</span
                               >
                             </a>
                             <!--[if mso | IE]>

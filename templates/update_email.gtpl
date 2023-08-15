@@ -1,8 +1,8 @@
-{{ .EmailAddress }}から{{ .Data.Data.NewEmail }}に更新しようとしています。
-ブラウザで以下の{{ len .Data.Data.Code }}桁の確認コードを入力してください。
-この確認コードの有効期限は{{ timeDiffMinutes .Data.Data.Period }}分です。
+{{ .OldEmail }} から {{ .Email }} に更新しようとしています。
+ブラウザで以下の{{ len .Code }}桁の確認コードを入力してください。
+この確認コードの有効期限は{{ timeDiffMinutes .Expiration }}分です。
 
-確認コード: {{.Data.Data.Code}}
+確認コード: {{.Code}}
 
 
 もし、このメールに見に覚えがない場合は、
@@ -12,4 +12,4 @@ https://todo
 
 ---
 
-@{{.Data.BrandDomain}} #{{.Data.Data.Code}}
+@{{.BrandDomain}} #{{.Code}}
