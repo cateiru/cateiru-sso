@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
@@ -536,7 +537,7 @@ func (h *Handler) UserLogoutClientHandler(c echo.Context) error {
 
 // ユーザを新規に作成する
 // 最初は、ユーザ名などの情報はデフォルト値に設定する（ユーザ登録フローの簡略化のため）
-func RegisterUser(ctx context.Context, db boil.ContextExecutor, email string, ids ...string) (*models.User, error) {
+func RegisterUser(ctx context.Context, db boil.ContextExecutor, c *Config, email string, ids ...string) (*models.User, error) {
 	// もう一度Emailが登録されていないか確認する
 	exist, err := models.Users(models.UserWhere.Email.EQ(email)).Exists(ctx, db)
 	if err != nil {
@@ -561,13 +562,23 @@ func RegisterUser(ctx context.Context, db boil.ContextExecutor, email string, id
 		return nil, err
 	}
 
+	if c.StaffEmail.Enable {
+		r := regexp.MustCompile(c.StaffEmail.Pattern)
+		if r.MatchString(email) {
+			staff := models.Staff{
+				UserID: u.ID,
+			}
+			if err := staff.Insert(ctx, db, boil.Infer()); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	L.Info("register user",
 		zap.String("email", email),
 	)
 
-	return models.Users(
-		models.UserWhere.ID.EQ(id),
-	).One(ctx, db)
+	return &u, nil
 }
 
 // ユーザ名かEmailを使用してユーザを引く

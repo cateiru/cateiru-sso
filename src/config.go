@@ -46,6 +46,15 @@ type Config struct {
 	// `Sec-Fetch-Site` ヘッダを検証する
 	EnableCSRFMeasures bool
 
+	// スタッフにするユーザーのメールアドレス
+	StaffEmail struct {
+		// メールアドレスでスタッフにする機能を有効にするかどうか
+		Enable bool
+
+		// メールアドレスパターン正規表現
+		Pattern string
+	}
+
 	// 送信メール設定
 	// 送信するメールアドレスドメイン
 	FromDomain string
@@ -220,6 +229,14 @@ var LocalConfig = &Config{
 
 	EnableCSRFMeasures: false, // crulから叩きたいケースがあるので無効化する
 
+	StaffEmail: struct {
+		Enable  bool
+		Pattern string
+	}{
+		Enable:  true,
+		Pattern: `.test$`, // `example@example.test` ドメインをすべて通す
+	},
+
 	FromDomain:        "oreore.me",
 	MailgunSecret:     "secret",
 	SenderMailAddress: "oreore.me <sso@oreore.me>",
@@ -390,6 +407,14 @@ var CloudRunConfig = &Config{
 	},
 
 	EnableCSRFMeasures: true,
+
+	StaffEmail: struct {
+		Enable  bool
+		Pattern string
+	}{
+		Enable:  false,
+		Pattern: "",
+	},
 
 	FromDomain:        "oreore.me",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
@@ -563,6 +588,14 @@ var CloudRunStagingConfig = &Config{
 
 	EnableCSRFMeasures: true,
 
+	StaffEmail: struct {
+		Enable  bool
+		Pattern string
+	}{
+		Enable:  false,
+		Pattern: "",
+	},
+
 	FromDomain:        "oreore.me",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
 	SenderMailAddress: "oreore.me <sso@oreore.me>",
@@ -728,6 +761,14 @@ var TestConfig = &Config{
 	CorsConfig: &middleware.CORSConfig{},
 
 	EnableCSRFMeasures: false,
+
+	StaffEmail: struct {
+		Enable  bool
+		Pattern string
+	}{
+		Enable:  true,
+		Pattern: ".test$",
+	},
 
 	FromDomain:        "oreore.me",
 	MailgunSecret:     "secret",

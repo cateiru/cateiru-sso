@@ -2,6 +2,7 @@ package src_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -1355,11 +1356,41 @@ func TestRegisterUser(t *testing.T) {
 		ctx := context.Background()
 		email := RandomEmail(t)
 
-		u, err := src.RegisterUser(ctx, DB, email)
+		u, err := src.RegisterUser(ctx, DB, C, email)
 		require.NoError(t, err)
 
 		require.Equal(t, u.Email, email)
 		require.Len(t, u.UserName, 8)
+
+		existUser, err := models.UserExists(ctx, DB, u.ID)
+		require.NoError(t, err)
+		require.True(t, existUser)
+
+		existStaff, err := models.StaffExists(ctx, DB, u.ID)
+		require.NoError(t, err)
+		require.False(t, existStaff)
+	})
+
+	t.Run("メールアドレスのドメインが一致するとスタッフになる", func(t *testing.T) {
+		ctx := context.Background()
+
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@exmaple.test", r) // ドメインを `.test` にする
+
+		u, err := src.RegisterUser(ctx, DB, C, email)
+		require.NoError(t, err)
+
+		require.Equal(t, u.Email, email)
+		require.Len(t, u.UserName, 8)
+
+		existUser, err := models.UserExists(ctx, DB, u.ID)
+		require.NoError(t, err)
+		require.True(t, existUser)
+
+		existStaff, err := models.StaffExists(ctx, DB, u.ID)
+		require.NoError(t, err)
+		require.True(t, existStaff)
 	})
 
 	t.Run("すでにEmailが存在している場合はエラー", func(t *testing.T) {
@@ -1368,7 +1399,7 @@ func TestRegisterUser(t *testing.T) {
 
 		RegisterUser(t, ctx, email)
 
-		_, err := src.RegisterUser(ctx, DB, email)
+		_, err := src.RegisterUser(ctx, DB, C, email)
 		require.EqualError(t, err, "code=400, message=impossible register account, unique=3")
 	})
 }

@@ -455,7 +455,7 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
 		// 登録フロー
-		user, err = RegisterUser(ctx, h.DB, registerSession.Email, string(webauthnUser.WebAuthnID()))
+		user, err = RegisterUser(ctx, h.DB, h.C, registerSession.Email, string(webauthnUser.WebAuthnID()))
 		if err != nil {
 			return err
 		}
@@ -593,7 +593,7 @@ func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 	joinedOrganization := false
 
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
-		user, err = RegisterUser(ctx, tx, registerSession.Email)
+		user, err = RegisterUser(ctx, tx, h.C, registerSession.Email)
 		if err != nil {
 			return err
 		}
