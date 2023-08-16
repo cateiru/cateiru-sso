@@ -600,7 +600,7 @@ var CloudRunStagingConfig = &Config{
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
 	SenderMailAddress: "oreore.me <noreply@oreore.me>",
 
-	SendMail: false, // NOTE: ステージングなのでfalse
+	SendMail: true,
 
 	RegisterSessionPeriod:     10 * time.Minute,
 	RegisterSessionRetryLimit: 5,
