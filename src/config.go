@@ -418,7 +418,7 @@ var CloudRunConfig = &Config{
 
 	FromDomain:        "oreore.me",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
-	SenderMailAddress: "oreore.me <sso@oreore.me>",
+	SenderMailAddress: "oreore.me <noreply@oreore.me>",
 
 	SendMail: true,
 
@@ -598,7 +598,7 @@ var CloudRunStagingConfig = &Config{
 
 	FromDomain:        "oreore.me",
 	MailgunSecret:     os.Getenv("MAILGUN_SECRET"),
-	SenderMailAddress: "oreore.me <sso@oreore.me>",
+	SenderMailAddress: "oreore.me <noreply@oreore.me>",
 
 	SendMail: false, // NOTE: ステージングなのでfalse
 
