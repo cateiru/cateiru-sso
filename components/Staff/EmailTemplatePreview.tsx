@@ -9,39 +9,33 @@ export const EmailTemplatePreview = () => {
 
   return (
     <>
-      <Text mb="1rem" textAlign="center" color={textColor}>
+      <Text mb="1rem" color={textColor}>
         送信するメール本文のテンプレートをプレビューします。
       </Text>
-      <UnorderedList>
+      <UnorderedList w="90%" mx="auto">
         <ListItem>
-          <Link href={api('/v2/admin/template/register')} isExternal>
-            アカウント登録
-          </Link>
+          <Link href={api('/v2/admin/template/register')}>アカウント登録</Link>
         </ListItem>
         <ListItem>
-          <Link href={api('/v2/admin/template/register_resend')} isExternal>
+          <Link href={api('/v2/admin/template/register_resend')}>
             アカウント登録（再送）
           </Link>
         </ListItem>
         <ListItem>
-          <Link href={api('/v2/admin/template/update_email')} isExternal>
+          <Link href={api('/v2/admin/template/update_email')}>
             メールアドレス更新
           </Link>
         </ListItem>
         <ListItem>
-          <Link href={api('/v2/admin/template/update_password')} isExternal>
+          <Link href={api('/v2/admin/template/update_password')}>
             パスワード再設定
           </Link>
         </ListItem>
         <ListItem>
-          <Link href={api('/v2/admin/template/invite_org')} isExternal>
-            組織招待
-          </Link>
+          <Link href={api('/v2/admin/template/invite_org')}>組織招待</Link>
         </ListItem>
         <ListItem>
-          <Link href={api('/v2/admin/template/test')} isExternal>
-            テスト
-          </Link>
+          <Link href={api('/v2/admin/template/test')}>テスト</Link>
         </ListItem>
       </UnorderedList>
     </>
