@@ -1,6 +1,6 @@
 @{{ .InvitationUserName }} により組織{{ .OrganizationName }}に招待されています。
 組織に参加する場合は、以下のリンクからアカウント作成を行ってください。
-このリンクの有効期限は{{ timeDiffMinutes .Expiration }}分です。
+このリンクの有効期限は{{ timeDiffHours .Expiration }}時間です。
 リンクは一度アクセスすると再度アクセスすることはできなくなります。
 
 {{ .URL }}

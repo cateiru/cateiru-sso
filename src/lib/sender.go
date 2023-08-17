@@ -37,6 +37,7 @@ type MailBody struct {
 func NewSender(pattern string, fromDomain string, mailgunSecret string, senderMailAddress string) (*Sender, error) {
 	funcmap := template.FuncMap{
 		"timeDiffMinutes": TimeDiffMinutes,
+		"timeDiffHours":   TimeDiffHours,
 	}
 
 	template, err := template.New("templates").Funcs(funcmap).ParseGlob(pattern)
@@ -89,5 +90,12 @@ func (s *Sender) Preview(m *MailBody) (string, error) {
 func TimeDiffMinutes(targetDate time.Time) string {
 	now := time.Now()
 	diff := now.Sub(targetDate)
-	return fmt.Sprint(math.Ceil(math.Abs(diff.Minutes())))
+	return fmt.Sprint(math.Round(math.Abs(diff.Minutes())))
+}
+
+// XX時間を作成する
+func TimeDiffHours(targetDate time.Time) string {
+	now := time.Now()
+	diff := now.Sub(targetDate)
+	return fmt.Sprint(math.Round(math.Abs(diff.Hours())))
 }
