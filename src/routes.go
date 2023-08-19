@@ -150,6 +150,9 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	admin.GET("/template/:name", h.AdminPreviewTemplateHTMLHandler) // テンプレートのプレビュー
 
+	admin.GET("/register_session", h.Root)    // 登録のセッション一覧を表示する
+	admin.DELETE("/register_session", h.Root) // 登録のセッションを削除する
+
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
 	internal := version.Group("/internal")
