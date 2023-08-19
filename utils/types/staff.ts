@@ -103,3 +103,20 @@ export const ClientDetailSchema = z.object({
   allow_rules: z.array(ClientAllowUserSchema),
 });
 export type ClientDetail = z.infer<typeof ClientDetailSchema>;
+
+export const RegisterSessionSchema = z.object({
+  email: z.string(),
+  email_verified: z.boolean(),
+  send_count: z.number(),
+  retry_count: z.number(),
+  org_id: z.string().nullable(),
+
+  period: z.string().datetime({offset: true}),
+
+  created_at: z.string().datetime({offset: true}),
+  updated_at: z.string().datetime({offset: true}),
+});
+export type RegisterSession = z.infer<typeof RegisterSessionSchema>;
+
+export const RegisterSessionsSchema = z.array(RegisterSessionSchema);
+export type RegisterSessions = z.infer<typeof RegisterSessionsSchema>;
