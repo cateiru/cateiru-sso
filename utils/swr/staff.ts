@@ -8,6 +8,7 @@ import {
   ClientDetailSchema,
   OrganizationDetailSchema,
   OrganizationsSchema,
+  RegisterSessionsSchema,
   StaffClientsSchema,
   StaffUsersSchema,
   UserDetailSchema,
@@ -194,6 +195,29 @@ export async function staffClientDetailFeather(id: string) {
   }
 
   const data = ClientDetailSchema.safeParse(await res.json());
+  if (data.success) {
+    return data.data;
+  }
+  console.error(data.error);
+  throw new HTTPError(data.error.message);
+}
+
+export async function staffRegisterSessionsFeather() {
+  const res = await fetch(api('/v2/admin/register_session'), {
+    credentials: 'include',
+    mode: 'cors',
+  });
+
+  if (!res.ok) {
+    const data = ErrorSchema.safeParse(await res.json());
+    if (data.success) {
+      throw data.data;
+    }
+    console.error(data.error.message);
+    throw new HTTPError(data.error.message);
+  }
+
+  const data = RegisterSessionsSchema.safeParse(await res.json());
   if (data.success) {
     return data.data;
   }
