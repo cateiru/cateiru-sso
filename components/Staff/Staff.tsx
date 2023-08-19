@@ -83,6 +83,17 @@ export const Staff = () => {
           組織新規作成
         </Button>
       </Card>
+      <Card title="セッション">
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          href="/staff/register_session"
+        >
+          登録セッション
+        </Button>
+      </Card>
       <Card title="その他">
         <Button
           variant="outline"
