@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/labstack/echo/v4"
@@ -1999,5 +2001,156 @@ func TestAdminPreviewTemplateHTMLHandler(t *testing.T) {
 			err = h.AdminPreviewTemplateHTMLHandler(c)
 			require.NoError(t, err, param)
 		}
+	})
+}
+
+func TestAdminRegisterSessionHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	registerRegisterSession := func(email string) {
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		sessionDB := models.RegisterSession{
+			ID:         session,
+			Email:      email,
+			VerifyCode: "123456",
+			RetryCount: 0,
+
+			Period: time.Now().Add(h.C.RegisterSessionPeriod),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	}
+
+	StaffAndSessionTest(t, h.AdminRegisterSessionHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		registerEmail := RandomEmail(t)
+		registerRegisterSession(registerEmail)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	}, func(c echo.Context) echo.Context {
+		return c
+	})
+
+	t.Run("成功: セッション一覧を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		registerEmail := RandomEmail(t)
+		registerRegisterSession(registerEmail)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+		err = h.AdminRegisterSessionHandler(c)
+		require.NoError(t, err)
+
+		response := []src.RegisterSessionResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.NotEqual(t, len(response), 0)
+	})
+}
+
+func TestAdminDeleteRegisterSessionHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	registerRegisterSession := func(email string) {
+		session, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		sessionDB := models.RegisterSession{
+			ID:         session,
+			Email:      email,
+			VerifyCode: "123456",
+			RetryCount: 0,
+
+			Period: time.Now().Add(h.C.RegisterSessionPeriod),
+		}
+		err = sessionDB.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+	}
+
+	StaffAndSessionTest(t, h.AdminDeleteRegisterSessionHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		registerEmail := RandomEmail(t)
+		registerRegisterSession(registerEmail)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?email=%s", registerEmail), http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	}, func(c echo.Context) echo.Context {
+		return c
+	})
+
+	t.Run("成功: セッションを削除できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		registerEmail := RandomEmail(t)
+		registerRegisterSession(registerEmail)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock(fmt.Sprintf("/?email=%s", registerEmail), http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+		err = h.AdminDeleteRegisterSessionHandler(c)
+		require.NoError(t, err)
+
+		exist, err := models.RegisterSessions(
+			models.RegisterSessionWhere.Email.EQ(registerEmail),
+		).Exists(ctx, h.DB)
+		require.NoError(t, err)
+		require.False(t, exist)
+	})
+
+	t.Run("失敗: メールアドレスが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		registerEmail := RandomEmail(t)
+		registerRegisterSession(registerEmail)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+		err = h.AdminDeleteRegisterSessionHandler(c)
+		require.EqualError(t, err, "code=400, message=email is required")
+	})
+
+	t.Run("失敗: そのメールアドレスのセッションが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		registerEmail := RandomEmail(t)
+		registerRegisterSession(registerEmail)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/?email=invalid", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+		err = h.AdminDeleteRegisterSessionHandler(c)
+		require.EqualError(t, err, "code=404, message=register session not found")
 	})
 }

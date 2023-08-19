@@ -1220,6 +1220,7 @@ func (h *Handler) AdminRegisterSessionHandler(c echo.Context) error {
 
 	registerSessions, err := models.RegisterSessions(
 		qm.OrderBy("created_at DESC"),
+		qm.Limit(50), // 一旦決め打ち
 	).All(ctx, h.DB)
 	if err != nil {
 		return err
