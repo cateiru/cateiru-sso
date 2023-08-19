@@ -52,7 +52,7 @@ export type ClientConfig = z.infer<typeof ClientConfigSchema>;
 
 export const ClientAllowUserSchema = z.object({
   id: z.number(),
-  user: PublicUserSchema.optional(),
+  user: PublicUserSchema.optional().nullable(),
   email_domain: z.string().nullable(),
 });
 export type ClientAllowUser = z.infer<typeof ClientAllowUserSchema>;
