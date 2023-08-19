@@ -58,6 +58,18 @@ type StaffClientDetailResponse struct {
 	AllowRules []ClientAllowUserRuleResponse `json:"allow_rules"`
 }
 
+type RegisterSessionResponse struct {
+	Email         string      `json:"email"`
+	EmailVerified bool        `json:"email_verified"`
+	SendCount     uint8       `json:"send_count"`
+	RetryCount    uint8       `json:"retry_count"`
+	OrgId         null.String `json:"org_id"`
+
+	Period    time.Time `json:"period"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 // すべてのユーザー一覧を取得する
 // `?offset=0` 指定可能。
 // 一度に返すユーザーの件数は50件
@@ -1190,4 +1202,78 @@ func (h *Handler) AdminPreviewTemplateHTMLHandler(c echo.Context) error {
 	}
 
 	return c.HTML(http.StatusOK, template)
+}
+
+// 登録セッションの一覧を返す
+// PKはセッショントークンとして使用しているので削除しない
+// メールアドレスをPKとしてあつかう（uniqueなので）
+func (h *Handler) AdminRegisterSessionHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	registerSessions, err := models.RegisterSessions(
+		qm.OrderBy("created_at DESC"),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	registerSessionsResponse := make([]RegisterSessionResponse, len(registerSessions))
+
+	for i, registerSession := range registerSessions {
+		registerSessionsResponse[i] = RegisterSessionResponse{
+			Email:         registerSession.Email,
+			EmailVerified: registerSession.EmailVerified,
+			SendCount:     registerSession.SendCount,
+			RetryCount:    registerSession.RetryCount,
+			OrgId:         registerSession.OrgID,
+
+			CreatedAt: registerSession.CreatedAt,
+			UpdatedAt: registerSession.UpdatedAt,
+		}
+	}
+
+	return c.JSON(http.StatusOK, registerSessionsResponse)
+}
+
+// 登録セッションを削除する
+// 通常、登録セッションは数十分で削除されるが、管理者が直接削除できるようにする
+func (h *Handler) AdminDeleteRegisterSessionHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	email := c.QueryParam("email")
+	if email == "" {
+		return NewHTTPError(http.StatusBadRequest, "email is required")
+	}
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	registerSession, err := models.RegisterSessions(
+		models.RegisterSessionWhere.Email.EQ(email),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusNotFound, "register session not found")
+	}
+	if err != nil {
+		return err
+	}
+
+	if _, err := registerSession.Delete(ctx, h.DB); err != nil {
+		return err
+	}
+
+	return nil
 }
