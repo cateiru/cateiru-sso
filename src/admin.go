@@ -1219,6 +1219,7 @@ func (h *Handler) AdminRegisterSessionHandler(c echo.Context) error {
 	}
 
 	registerSessions, err := models.RegisterSessions(
+		qm.Where("period > NOW()"),
 		qm.OrderBy("created_at DESC"),
 		qm.Limit(50), // 一旦決め打ち
 	).All(ctx, h.DB)
@@ -1234,6 +1235,7 @@ func (h *Handler) AdminRegisterSessionHandler(c echo.Context) error {
 			EmailVerified: registerSession.EmailVerified,
 			SendCount:     registerSession.SendCount,
 			RetryCount:    registerSession.RetryCount,
+			Period:        registerSession.Period,
 			OrgId:         registerSession.OrgID,
 
 			CreatedAt: registerSession.CreatedAt,
