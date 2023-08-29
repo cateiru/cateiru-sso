@@ -3,7 +3,17 @@
 # docker compose -f ./docker/docker-compose.db.yaml up を使用してコンテナを実行してください
 services:
   db:
-    image: mysql:8.0
+    build:
+      context: ..
+      dockerfile_inline: |
+        FROM mysql:8.0-debian
+
+        RUN apt update && apt install -y curl
+
+        # Install https://github.com/golang-migrate/migrate
+        RUN curl -s https://packagecloud.io/install/repositories/golang-migrate/migrate/script.deb.sh | bash \
+          && apt install -y migrate
+
     container_name: db
     environment:
       MYSQL_USER: docker
@@ -16,6 +26,7 @@ services:
       - ../db/.data:/var/lib/mysql
       - ../db/my.cnf:/etc/mysql/conf.d/my.cnf
       - ../db/sql:/docker-entrypoint-initdb.d
+      - ../db/migrations:/migrations
     ports:
       - "127.0.0.1:3306:3306"
   gcs:

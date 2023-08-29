@@ -64,6 +64,8 @@ jobs:
         run: go install github.com/mfridman/tparse@latest
       - name: build
         run: go build -v ./...
+      - name: migrate
+        run: ./scripts/migrate.sh ./docker/docker-compose.db.yaml
       - name: test
         run: ./scripts/test.sh -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic -json | tee ./go-test.out | tparse
       - name: add job summary
