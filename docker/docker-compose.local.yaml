@@ -10,12 +10,14 @@ services:
       dockerfile_inline: |
         FROM golang:1.20.4-alpine
 
-        RUN apk update && apk add --no-cache ca-certificates && update-ca-certificates
+        RUN apk update && apk add --no-cache ca-certificates curl tar && update-ca-certificates
         RUN go install github.com/cosmtrek/air@latest
 
         WORKDIR /app
 
         RUN apk add openssh-client && mkdir /jwt && ssh-keygen -t rsa -f /jwt/jwt_key.rsa -N "" -m pem && ssh-keygen -f /jwt/jwt_key.rsa.pub -e -m pkcs8 > /jwt/jwt_key.rsa.pkcs8
+
+        RUN go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
         COPY go.mod go.sum ./
         RUN go mod download
@@ -23,6 +25,7 @@ services:
       - "8080:8080"
     volumes:
       - ..:/app
+      - ../db/migrations:/migrations
     depends_on:
       - db
       - gcs
