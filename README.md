@@ -15,9 +15,6 @@ docker compose up
 # docker compose < 2.20.0
 ./docker-compose up
 
-# マイグレーション
-./scripts/migrate.sh
-
 # http://localhost:3000
 # （APIは http://localhost:8080 ）
 ```
@@ -27,9 +24,6 @@ docker compose up
 ```bash
 # DBは起動しておく
 ./script/docker-compose-db.sh up -d
-
-# マイグレーション
-./scripts/migrate.sh ./docker/docker-compose.db.yaml
 
 # Go
 go mod download

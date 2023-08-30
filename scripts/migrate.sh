@@ -22,8 +22,6 @@ else
     FILE=""
 fi
 
-echo $FILE
-
 for OP_DATABASE in "${OP_DATABASES[@]}" ; do
     echo "Migrate ${OP_DATABASE}..."
 
