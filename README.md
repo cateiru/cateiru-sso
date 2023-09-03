@@ -1,22 +1,31 @@
-# Cateiru SSO
+# Oreore.me
 
-Cateiru's Single Sign On
+IdP
 
 ## Quick Start
 
-- require
+- 必要なもの
   - docker
-    - docker compose
+  - docker compose
 
 ```bash
-# docker compose >= 2.20.0
 docker compose up
-
-# docker compose < 2.20.0
-./docker-compose up
 
 # http://localhost:3000
 # （APIは http://localhost:8080 ）
+```
+
+### 管理画面に入る方法
+
+> [!WARNING]
+> この機能はローカル環境のみ有効です。他の環境では`staff`テーブルにINSERTしてください。
+
+ローカル環境では、`admin@local.test`というメールアドレスをもつユーザーが作成されています。[パスワード再設定](http://localhost:3000/forget_password)からパスワードを再設定してください。
+
+再設定用のURLはDEBUGログに以下のように出力されます。
+
+```log
+2023-09-03T13:34:11.747+0900       DEBUG   src/handler.go:160      send mail       {"email_address": "admin@local.test", "subject": "パスワードを再設定してください", "data": {"URL":"http://localhost:3000/forget_password/reregister?email=admin%40local.test&token=8K7R0stblqJLp8AyIOh3yzFYYSQl3RA","UserName":"admin","Expiration":"2023-09-03T13:39:11.747804793+09:00","BrandName":"oreore.me local","BrandUrl":"http://localhost:3000","BrandImageUrl":"https://todo","BrandDomain":"localhost:3000","Email":"admin@local.test"}}
 ```
 
 ## Storybook, Test and Lint
@@ -25,17 +34,31 @@ docker compose up
 # DBは起動しておく
 ./script/docker-compose-db.sh up -d
 
-# Go
+# Go test
 go mod download
 ./script/test
 
-# Next.js
+# Next.js lint
 pnpm i
 pnpm lint
 
 # Storybook
 pnpm storybook
 # http://localhost:6006
+```
+
+## データベースのマイグレーション
+
+```bash
+docker compose up
+
+# マイグレーション用の`up`, `down`ファイルを作成します。
+# `YYYYMMDDhhmmss_[name].[up|down].sql` のファイルが `db/migrations/` に追加されます。
+./script/setup_migrate.sh [name]
+
+# go-migrateを使用してマイグレーションを実行します
+# ローカル環境で使用するDBとテスト環境で使用するDBの2つでマイグレーションが実行されます。
+./script/migrate.sh
 ```
 
 ## Environments
@@ -94,7 +117,8 @@ FASTLY_API_TOKEN=[token]
 - [x] ストレージ
 - [x] OTPのIssuer
 - [ ] ブランチ名
-- [ ] データベース
+- [x] ローカルデータベース
+- [ ] 本番データベース
 - [ ] Goのパッケージ名
 - [ ] Storybook
 - [ ] README
