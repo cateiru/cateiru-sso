@@ -8,13 +8,10 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import {TbCheck} from 'react-icons/tb';
-import {config} from '../../utils/config';
-import {useSecondaryColor, useShadowColor} from '../Common/useColor';
+import {useSecondaryColor} from '../Common/useColor';
 
 export const PageThree = () => {
   const textColor = useSecondaryColor();
-  const shadowColor = useShadowColor();
-  const image = useColorModeValue('/top_1.png', '/top_2.png');
   const checkMarkColor = useColorModeValue('#68D391', '#38A169');
 
   return (
