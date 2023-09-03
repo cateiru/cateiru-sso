@@ -31,7 +31,6 @@ var TableNames = struct {
 	RegisterOtpSession            string
 	RegisterSession               string
 	ReregistrationPasswordSession string
-	SchemaMigrations              string
 	Session                       string
 	Setting                       string
 	Staff                         string
@@ -67,7 +66,6 @@ var TableNames = struct {
 	RegisterOtpSession:            "register_otp_session",
 	RegisterSession:               "register_session",
 	ReregistrationPasswordSession: "reregistration_password_session",
-	SchemaMigrations:              "schema_migrations",
 	Session:                       "session",
 	Setting:                       "setting",
 	Staff:                         "staff",

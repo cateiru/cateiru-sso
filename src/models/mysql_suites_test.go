@@ -60,8 +60,6 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("ReregistrationPasswordSessions", testReregistrationPasswordSessionsUpsert)
 
-	t.Run("SchemaMigrations", testSchemaMigrationsUpsert)
-
 	t.Run("Sessions", testSessionsUpsert)
 
 	t.Run("Settings", testSettingsUpsert)
