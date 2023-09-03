@@ -200,7 +200,7 @@ var LocalConfig = &Config{
 	ReCaptchaAllowScore: 0,
 
 	DatabaseConfig: &mysql.Config{
-		DBName:               "cateiru-sso",
+		DBName:               "local",
 		User:                 "docker",
 		Passwd:               "docker",
 		Addr:                 "db", // docker-composeで使うのでdbコンテナ
@@ -738,7 +738,7 @@ var TestConfig = &Config{
 	ReCaptchaAllowScore: 50,
 
 	DatabaseConfig: &mysql.Config{
-		DBName:               "cateiru-sso-test",
+		DBName:               "test",
 		User:                 "docker",
 		Passwd:               "docker",
 		Addr:                 "localhost:3306",

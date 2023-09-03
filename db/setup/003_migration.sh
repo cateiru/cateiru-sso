@@ -4,8 +4,8 @@ MYSQL_USER="docker"
 MYSQL_PASSWORD="docker"
 
 OP_DATABASES=(
-    "cateiru-sso"
-    "cateiru-sso-test"
+    "local"
+    "test"
 )
 
 for OP_DATABASE in "${OP_DATABASES[@]}" ; do

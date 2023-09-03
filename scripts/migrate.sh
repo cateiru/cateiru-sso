@@ -7,8 +7,8 @@ MYSQL_USER="docker"
 MYSQL_PASSWORD="docker"
 
 OP_DATABASES=(
-    "cateiru-sso"
-    "cateiru-sso-test"
+    "local"
+    "test"
 )
 
 HOST="db"
