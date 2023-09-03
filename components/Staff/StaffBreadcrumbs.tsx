@@ -20,7 +20,12 @@ export const StaffBreadcrumbs: React.FC<Props> = props => {
   const textColor = useSecondaryColor();
 
   return (
-    <ChakraBreadcrumb color={textColor}>
+    <ChakraBreadcrumb
+      color={textColor}
+      overflow="auto"
+      whiteSpace="nowrap"
+      py=".5rem"
+    >
       {props.paths.map((path, index) => {
         const currentPage = props.paths.length - 1 === index;
 
