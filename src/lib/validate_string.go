@@ -20,13 +20,6 @@ var allowContentType = []string{
 	"image/webp",
 }
 
-// サポートしているOIDCのスコープ
-var AllowScopes = []string{
-	"openid",
-	"profile",
-	"email",
-}
-
 // orgのロール
 var roles = []string{
 	"owner",
@@ -124,15 +117,6 @@ func ValidateLocale(l string) bool {
 func ValidateContentType(c string) bool {
 	for _, allow := range allowContentType {
 		if allow == c {
-			return true
-		}
-	}
-	return false
-}
-
-func ValidateScope(s string) bool {
-	for _, allow := range AllowScopes {
-		if allow == s {
 			return true
 		}
 	}

@@ -51,7 +51,7 @@ const (
 	ErrNoAuthority = 17
 )
 
-// OIDCのエラーコード
+// OIDCの Authentication エラーコード
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#AuthError
 const (
 	// Authorization Server は処理を進めるためにいくつかの End-User interaction を必要とする.
@@ -141,11 +141,11 @@ func NewHTTPUniqueError(code int, unique int, message ...any) *HTTPError {
 	return he
 }
 
-func NewOIDCError(code string, message string, uri string, state string) *OIDCError {
+func NewOIDCError(status int, code string, message string, uri string, state string) *OIDCError {
 	_, file, line, _ := runtime.Caller(1)
 
 	oe := &OIDCError{
-		Code: 400, // HTTPステータスコードは決め打ちで400で返す
+		Code: status,
 
 		File: file,
 		Line: line,
