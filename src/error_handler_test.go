@@ -37,4 +37,33 @@ func TestHTTPError(t *testing.T) {
 
 		require.Equal(t, e.Error(), "code=200, message=text, unique=10")
 	})
+
+	t.Run("NewOIDCError", func(t *testing.T) {
+		t.Run("default", func(t *testing.T) {
+			e := src.NewOIDCError(http.StatusBadRequest, src.ErrLoginRequired, "message", "uri", "state")
+
+			require.Equal(t, e.Code, http.StatusBadRequest)
+			require.Equal(t, e.AuthenticationErrorResponse.Error, src.ErrLoginRequired)
+			require.Equal(t, e.AuthenticationErrorResponse.ErrorDescription, "message")
+			require.Equal(t, e.AuthenticationErrorResponse.ErrorURI, "uri")
+			require.Equal(t, e.AuthenticationErrorResponse.State, "state")
+
+			require.Equal(t, e.Error(), "code=400, error=login_required, message=message, error_uri=uri, state=state")
+		})
+
+		t.Run("no uri", func(t *testing.T) {
+			e := src.NewOIDCError(http.StatusBadRequest, src.ErrLoginRequired, "message", "", "state")
+			require.Equal(t, e.Error(), "code=400, error=login_required, message=message, state=state")
+		})
+
+		t.Run("no state", func(t *testing.T) {
+			e := src.NewOIDCError(http.StatusBadRequest, src.ErrLoginRequired, "message", "uri", "")
+			require.Equal(t, e.Error(), "code=400, error=login_required, message=message, error_uri=uri")
+		})
+
+		t.Run("no uri and state", func(t *testing.T) {
+			e := src.NewOIDCError(http.StatusBadRequest, src.ErrLoginRequired, "message", "", "")
+			require.Equal(t, e.Error(), "code=400, error=login_required, message=message")
+		})
+	})
 }

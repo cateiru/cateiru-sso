@@ -141,6 +141,7 @@ func NewHTTPUniqueError(code int, unique int, message ...any) *HTTPError {
 	return he
 }
 
+// uri と state はoptional
 func NewOIDCError(status int, code string, message string, uri string, state string) *OIDCError {
 	_, file, line, _ := runtime.Caller(1)
 
@@ -170,7 +171,7 @@ func (he *HTTPError) Error() string {
 }
 
 func (oe *OIDCError) Error() string {
-	m := fmt.Sprintf("code=%d, error=%v", oe.Code, oe.AuthenticationErrorResponse.Error)
+	m := fmt.Sprintf("code=%d, error=%v, message=%v", oe.Code, oe.AuthenticationErrorResponse.Error, oe.AuthenticationErrorResponse.ErrorDescription)
 	if oe.AuthenticationErrorResponse.ErrorURI != "" {
 		m += fmt.Sprintf(", error_uri=%v", oe.AuthenticationErrorResponse.ErrorURI)
 	}
