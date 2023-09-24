@@ -28,7 +28,6 @@ type OauthSession struct {
 	UserID    string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	ClientID  string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	State     null.String `boil:"state" json:"state,omitempty" toml:"state" yaml:"state,omitempty"`
-	Nonce     null.String `boil:"nonce" json:"nonce,omitempty" toml:"nonce" yaml:"nonce,omitempty"`
 	Period    time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
 	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
@@ -42,7 +41,6 @@ var OauthSessionColumns = struct {
 	UserID    string
 	ClientID  string
 	State     string
-	Nonce     string
 	Period    string
 	CreatedAt string
 	UpdatedAt string
@@ -51,7 +49,6 @@ var OauthSessionColumns = struct {
 	UserID:    "user_id",
 	ClientID:  "client_id",
 	State:     "state",
-	Nonce:     "nonce",
 	Period:    "period",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
@@ -62,7 +59,6 @@ var OauthSessionTableColumns = struct {
 	UserID    string
 	ClientID  string
 	State     string
-	Nonce     string
 	Period    string
 	CreatedAt string
 	UpdatedAt string
@@ -71,7 +67,6 @@ var OauthSessionTableColumns = struct {
 	UserID:    "oauth_session.user_id",
 	ClientID:  "oauth_session.client_id",
 	State:     "oauth_session.state",
-	Nonce:     "oauth_session.nonce",
 	Period:    "oauth_session.period",
 	CreatedAt: "oauth_session.created_at",
 	UpdatedAt: "oauth_session.updated_at",
@@ -84,7 +79,6 @@ var OauthSessionWhere = struct {
 	UserID    whereHelperstring
 	ClientID  whereHelperstring
 	State     whereHelpernull_String
-	Nonce     whereHelpernull_String
 	Period    whereHelpertime_Time
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
@@ -93,7 +87,6 @@ var OauthSessionWhere = struct {
 	UserID:    whereHelperstring{field: "`oauth_session`.`user_id`"},
 	ClientID:  whereHelperstring{field: "`oauth_session`.`client_id`"},
 	State:     whereHelpernull_String{field: "`oauth_session`.`state`"},
-	Nonce:     whereHelpernull_String{field: "`oauth_session`.`nonce`"},
 	Period:    whereHelpertime_Time{field: "`oauth_session`.`period`"},
 	CreatedAt: whereHelpertime_Time{field: "`oauth_session`.`created_at`"},
 	UpdatedAt: whereHelpertime_Time{field: "`oauth_session`.`updated_at`"},
@@ -137,8 +130,8 @@ func (r *oauthSessionR) GetClient() *Client {
 type oauthSessionL struct{}
 
 var (
-	oauthSessionAllColumns            = []string{"code", "user_id", "client_id", "state", "nonce", "period", "created_at", "updated_at"}
-	oauthSessionColumnsWithoutDefault = []string{"code", "user_id", "client_id", "state", "nonce"}
+	oauthSessionAllColumns            = []string{"code", "user_id", "client_id", "state", "period", "created_at", "updated_at"}
+	oauthSessionColumnsWithoutDefault = []string{"code", "user_id", "client_id", "state"}
 	oauthSessionColumnsWithDefault    = []string{"period", "created_at", "updated_at"}
 	oauthSessionPrimaryKeyColumns     = []string{"code"}
 	oauthSessionGeneratedColumns      = []string{}
