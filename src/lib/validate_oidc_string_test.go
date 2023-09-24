@@ -81,7 +81,7 @@ func TestValidateResponseMode(t *testing.T) {
 }
 
 func TestValidateDisplay(t *testing.T) {
-	require.Equal(t, lib.ValidateResponseMode("aaa"), lib.DisplayPage, "決め打ちでpageになる")
+	require.Equal(t, lib.ValidateDisplay("aaa"), lib.DisplayPage, "決め打ちでpageになる")
 }
 
 func TestValidatePrompt(t *testing.T) {
