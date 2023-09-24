@@ -114,64 +114,6 @@ type Address struct {
 	Country string `json:"country"`
 }
 
-// Authorization Code Flow でのリクエストパラメータ
-// ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#AuthRequest
-type AuthenticationRequest struct {
-	// OpenID Connect リクエストは scope に openid を含まねばならない
-	Scope string `json:"scope"`
-
-	// 使用する認証処理フローを決定する OAuth 2.0 Response Type 値
-	// Authorization Code Flow を使用する場合, この値は code となる
-	ResponseType string `json:"response_type"`
-
-	// Authorization Server における OAuth 2.0 Client Identifier の値
-	ClientID string `json:"client_id"`
-
-	// レスポンスが返される Redirection URI
-	RedirectURI string `json:"redirect_uri"`
-
-	// リクエストとコールバックの間で維持されるランダムな値
-	State string `json:"state"`
-
-	// Authorization Endpoint からパラメータを返す手段を Authorization Server に通知する
-	// 要求される Response Mode が Response Type で指定されるデフォルトの場合, このパラメータの使用は推奨されない
-	ResponseMode string `json:"response_mode,omitempty"`
-
-	// Client セッションと ID Token を紐づける文字列であり, リプレイアタック対策に用いられる
-	Nonce string `json:"nonce,omitempty"`
-
-	// Authorization Server が認証および同意のためのユーザーインタフェースを End-User にどのように表示するかを指定するための ASCII 値
-	// Authorization Server は User Agent の機能を検知して適切な表示を行うようにしても良い
-	//
-	// - page: Authorization Server は認証および同意 UI を User Agent の全画面に表示すべきである (SHOULD). display パラメータが指定されていない場合, この値がデフォルトとなる
-	// - popup: Authorization Server は認証および同意 UI を User Agent のポップアップウィンドウに表示すべきである (SHOULD). User Agent のポップアップウィンドウはログインダイアログに適切なサイズで, 親ウィンドウ全体を覆うことのないようにすべきである
-	// - touch: Authorization Server は認証および同意 UI をタッチインタフェースを持つデバイスに適した形で表示すべきである (SHOULD)
-	// - wap: Authorization Server は認証および同意 UI を "feature phone" に適した形で表示すべきである (SHOULD)
-	Display string `json:"display,omitempty"`
-
-	// Authorization Server が End-User に再認証および同意を再度要求するかどうか指定するための, スペース区切りの ASCII 文字列のリスト. 以下の値が定義されている
-	// - none: Authorization Server はいかなる認証および同意 UI をも表示してはならない
-	// - login: Authorization Server は End-User を再認証するべきである
-	// - consent: Authorization Server は Client にレスポンスを返す前に End-User に同意を要求するべきである
-	// - select_account: Authorization Server は End-User にアカウント選択を促すべきである
-	Prompt string `json:"prompt,omitempty"`
-
-	// Authentication Age の最大値. End-User が OP によって明示的に認証されてからの経過時間の最大許容値 (秒)
-	MaxAge int64 `json:"max_age,omitempty"`
-
-	// End-User の選好する UI の表示言語および文字種
-	UiLocales string `json:"ui_locales,omitempty"`
-
-	// Authorization Server が以前発行した ID Token. Client が認証した End-User の現在もしくは過去のセッションに関するヒントとして利用される
-	IDTokenHint string `json:"id_token_hint,omitempty"`
-
-	// Authorization Server に対する End-User ログイン識別子のヒントとして利用される
-	LoginHint string `json:"login_hint,omitempty"`
-
-	// Authentication Context Class Reference リクエスト値
-	AcrValues string `json:"acr_values,omitempty"`
-}
-
 // 成功時のパラメータ
 // oidc ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#AuthResponse
 // oauth2 ref. https://openid-foundation-japan.github.io/rfc6749.ja.html#code-authz-resp

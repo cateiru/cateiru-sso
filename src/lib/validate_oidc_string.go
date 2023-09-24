@@ -2,6 +2,7 @@ package lib
 
 import (
 	"strconv"
+	"strings"
 )
 
 // サポートしているOIDCのスコープ
@@ -62,6 +63,22 @@ func ValidateScope(s string) bool {
 	return false
 }
 
+func ValidateScopes(s string) ([]string, bool) {
+	scopes := []string{}
+
+	findOpenidScope := false
+	for _, scope := range strings.Split(s, " ") {
+		if ValidateScope(scope) {
+			scopes = append(scopes, scope)
+			if scope == "openid" {
+				findOpenidScope = true
+			}
+		}
+	}
+
+	return scopes, findOpenidScope
+}
+
 func ValidateResponseType(s string) ResponseType {
 	switch s {
 	case "code":
@@ -114,12 +131,13 @@ func ValidatePrompt(s string) Prompt {
 
 // max-age
 // OP によって明示的に認証されてからの経過時間の最大許容値 (秒)。指定しない場合や不正な値の場合は0
-func ValidateMaxAge(s string) int {
+func ValidateMaxAge(s string) uint64 {
 	if s == "" {
 		return 0
 	}
 
-	n, err := strconv.Atoi(s)
+	n, err := strconv.ParseUint(s, 10, 64)
+
 	if err != nil {
 		return 0
 	}
@@ -129,4 +147,8 @@ func ValidateMaxAge(s string) int {
 	}
 
 	return n
+}
+
+func ValidateUiLocales(s string) []string {
+	return []string{"ja_JP"}
 }

@@ -113,15 +113,19 @@ func TestValidatePrompt(t *testing.T) {
 func TestValidateMaxAge(t *testing.T) {
 
 	t.Run("成功: max-ageを指定している", func(t *testing.T) {
-		require.Equal(t, lib.ValidateMaxAge("100"), 100)
+		require.Equal(t, lib.ValidateMaxAge("100"), uint64(100))
 	})
 
 	t.Run("空の場合は0になる", func(t *testing.T) {
-		require.Equal(t, lib.ValidateMaxAge(""), 0)
+		require.Equal(t, lib.ValidateMaxAge(""), uint64(0))
 	})
 
 	t.Run("負の値の場合は0になる", func(t *testing.T) {
-		require.Equal(t, lib.ValidateMaxAge("-1"), 0)
+		require.Equal(t, lib.ValidateMaxAge("-1"), uint64(0))
 	})
 
+}
+
+func TestValidateUiLocales(t *testing.T) {
+	require.Equal(t, lib.ValidateUiLocales("hoge"), []string{"ja_JP"}, "決め打ちでja_JPになる")
 }
