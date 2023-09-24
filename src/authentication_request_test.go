@@ -1,22 +1,38 @@
 package src_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
+	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-func TestGetAuthenticationRequest(t *testing.T) {
+func TestNewAuthenticationRequest(t *testing.T) {
+	ctx := context.Background()
 	h := NewTestHandler(t)
 
 	t.Run("成功", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
 		form := easy.NewMultipart()
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", "test")
+		form.Insert("client_id", clientId)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -34,12 +50,11 @@ func TestGetAuthenticationRequest(t *testing.T) {
 
 		c := m.Echo()
 
-		authenticationRequest, err := h.GetAuthenticationRequest(c)
+		authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
 		require.NoError(t, err)
 
-		require.Equal(t, authenticationRequest.Scopes, []string{"openid", "profile", "email"})
+		require.Equal(t, authenticationRequest.Scopes, []string{"openid", "profile"}, "クライアントが有効かつ、指定されたものになる")
 		require.Equal(t, authenticationRequest.ResponseType, lib.ResponseTypeAuthorizationCode)
-		require.Equal(t, authenticationRequest.ClientId, "test")
 		require.Equal(t, authenticationRequest.RedirectUri.String(), "https://example.test")
 		require.True(t, authenticationRequest.State.Valid)
 		require.Equal(t, authenticationRequest.State.String, "state_test")
@@ -62,10 +77,22 @@ func TestGetAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: scopeが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
 		form := easy.NewMultipart()
 
 		form.Insert("response_type", "code")
-		form.Insert("client_id", "test")
+		form.Insert("client_id", clientId)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -83,16 +110,28 @@ func TestGetAuthenticationRequest(t *testing.T) {
 
 		c := m.Echo()
 
-		_, err = h.GetAuthenticationRequest(c)
+		_, err = h.NewAuthenticationRequest(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=scope is required")
 	})
 
 	t.Run("失敗: scopeにopenidが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
 		form := easy.NewMultipart()
 
 		form.Insert("scope", "profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", "test")
+		form.Insert("client_id", clientId)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -110,15 +149,27 @@ func TestGetAuthenticationRequest(t *testing.T) {
 
 		c := m.Echo()
 
-		_, err = h.GetAuthenticationRequest(c)
+		_, err = h.NewAuthenticationRequest(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=scope is invalid")
 	})
 
 	t.Run("失敗: request_typeが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
 		form := easy.NewMultipart()
 
 		form.Insert("scope", "openid profile email")
-		form.Insert("client_id", "test")
+		form.Insert("client_id", clientId)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -136,16 +187,28 @@ func TestGetAuthenticationRequest(t *testing.T) {
 
 		c := m.Echo()
 
-		_, err = h.GetAuthenticationRequest(c)
+		_, err = h.NewAuthenticationRequest(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=request_type is invalid")
 	})
 
 	t.Run("失敗: request_typeの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
 		form := easy.NewMultipart()
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "hogehoge")
-		form.Insert("client_id", "test")
+		form.Insert("client_id", clientId)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -163,7 +226,7 @@ func TestGetAuthenticationRequest(t *testing.T) {
 
 		c := m.Echo()
 
-		_, err = h.GetAuthenticationRequest(c)
+		_, err = h.NewAuthenticationRequest(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=request_type is invalid")
 	})
 
@@ -189,16 +252,17 @@ func TestGetAuthenticationRequest(t *testing.T) {
 
 		c := m.Echo()
 
-		_, err = h.GetAuthenticationRequest(c)
+		_, err = h.NewAuthenticationRequest(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=client_id is required")
 	})
 
-	t.Run("失敗: redirect_uriが存在しない", func(t *testing.T) {
+	t.Run("失敗: clientが存在しない", func(t *testing.T) {
 		form := easy.NewMultipart()
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", "test")
+		form.Insert("client_id", "clienthogehoge")
+		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
 		form.Insert("nonce", "nonce_test")
@@ -215,16 +279,66 @@ func TestGetAuthenticationRequest(t *testing.T) {
 
 		c := m.Echo()
 
-		_, err = h.GetAuthenticationRequest(c)
-		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=redirect_uri is required")
+		_, err = h.NewAuthenticationRequest(ctx, c)
+		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=client_id is invalid")
 	})
 
-	t.Run("失敗: redirect_uriの値が不正", func(t *testing.T) {
+	t.Run("失敗: redirect_uriが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
 		form := easy.NewMultipart()
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", "test")
+		form.Insert("client_id", clientId)
+		form.Insert("state", "state_test")
+		form.Insert("response_mode", "query")
+		form.Insert("nonce", "nonce_test")
+		form.Insert("display", "page")
+		form.Insert("prompt", "login consent")
+		form.Insert("max_age", "3600")
+		form.Insert("ui_locales", "ja_JP")
+		form.Insert("id_token_hint", "id_token_hint_test")
+		form.Insert("login_hint", "login_hint_test")
+		form.Insert("acr_values", "acr_values_test")
+
+		m, err := easy.NewFormData("/", "POST", form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		_, err = h.NewAuthenticationRequest(ctx, c)
+		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=redirect_uri is required")
+	})
+
+	t.Run("失敗: redirect_uriの値が不正", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+
+		form.Insert("scope", "openid profile email")
+		form.Insert("response_type", "code")
+		form.Insert("client_id", clientId)
 		form.Insert("redirect_uri", "hogehoge")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -242,7 +356,46 @@ func TestGetAuthenticationRequest(t *testing.T) {
 
 		c := m.Echo()
 
-		_, err = h.GetAuthenticationRequest(c)
+		_, err = h.NewAuthenticationRequest(ctx, c)
+		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=redirect_uri is invalid")
+	})
+
+	t.Run("失敗: クライアントに登録しているRedirectURIがない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+
+		form.Insert("scope", "openid profile email")
+		form.Insert("response_type", "code")
+		form.Insert("client_id", clientId)
+		form.Insert("redirect_uri", "https://example2.test")
+		form.Insert("state", "state_test")
+		form.Insert("response_mode", "query")
+		form.Insert("nonce", "nonce_test")
+		form.Insert("display", "page")
+		form.Insert("prompt", "login consent")
+		form.Insert("max_age", "3600")
+		form.Insert("ui_locales", "ja_JP")
+		form.Insert("id_token_hint", "id_token_hint_test")
+		form.Insert("login_hint", "login_hint_test")
+		form.Insert("acr_values", "acr_values_test")
+
+		m, err := easy.NewFormData("/", "POST", form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		_, err = h.NewAuthenticationRequest(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=redirect_uri is invalid")
 	})
 }

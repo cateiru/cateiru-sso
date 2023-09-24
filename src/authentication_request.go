@@ -1,11 +1,15 @@
 package src
 
 import (
+	"context"
+	"database/sql"
+	"errors"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
+	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 )
@@ -17,9 +21,6 @@ type AuthenticationRequest struct {
 	// コードフローを決定する値
 	// Authorization Code Flow の場合は `code`
 	ResponseType lib.ResponseType
-
-	// Authorization Server における OAuth 2.0 Client Identifier の値
-	ClientId string
 
 	// レスポンスが返される Redirection URI
 	RedirectUri *url.URL
@@ -58,22 +59,14 @@ type AuthenticationRequest struct {
 	IdTokenHint null.String
 	LoginHint   null.String
 	AcrValues   null.String
+
+	Client *models.Client
 }
 
 // Authentication Request を取得する
 // RFCではGETかPOSTでx-www-form-urlencodedでリクエストを送るとあるが、
 // これはjs側で対応するのでjs - サーバ間は multipart/form-data で送る
-func (h *Handler) GetAuthenticationRequest(c echo.Context) (*AuthenticationRequest, error) {
-
-	// scope
-	scope := c.FormValue("scope")
-	if scope == "" {
-		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "scope is required", "", "")
-	}
-	validatedScopes, scopesOk := lib.ValidateScopes(scope)
-	if !scopesOk {
-		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "scope is invalid", "", "")
-	}
+func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) (*AuthenticationRequest, error) {
 
 	// Request Type
 	requestType := c.FormValue("response_type")
@@ -87,15 +80,14 @@ func (h *Handler) GetAuthenticationRequest(c echo.Context) (*AuthenticationReque
 	if clientId == "" {
 		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "client_id is required", "", "")
 	}
-
-	// Redirect URI
-	redirectUri := c.FormValue("redirect_uri")
-	if redirectUri == "" {
-		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "redirect_uri is required", "", "")
+	client, err := models.Clients(
+		models.ClientWhere.ClientID.EQ(clientId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "client_id is invalid", "", "")
 	}
-	parsedRedirectUri, redirectUriOk := lib.ValidateURL(redirectUri)
-	if !redirectUriOk {
-		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "redirect_uri is invalid", "", "")
+	if err != nil {
+		return nil, err
 	}
 
 	// State
@@ -136,10 +128,53 @@ func (h *Handler) GetAuthenticationRequest(c echo.Context) (*AuthenticationReque
 	// ACR Values
 	acrValues := c.FormValue("acr_values")
 
+	// Scope
+	scope := c.FormValue("scope")
+	if scope == "" {
+		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "scope is required", "", "")
+	}
+	validatedScopes, scopesOk := lib.ValidateScopes(scope)
+	if !scopesOk {
+		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "scope is invalid", "", "")
+	}
+
+	clientScopes, err := models.ClientScopes(
+		models.ClientScopeWhere.ClientID.EQ(client.ClientID),
+		models.ClientScopeWhere.Scope.IN(validatedScopes),
+	).All(ctx, h.DB)
+	if err != nil {
+		return nil, err
+	}
+
+	enableScopes := []string{}
+	for _, clientScope := range clientScopes {
+		enableScopes = append(enableScopes, clientScope.Scope)
+	}
+
+	// Redirect URI
+	redirectUri := c.FormValue("redirect_uri")
+	if redirectUri == "" {
+		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "redirect_uri is required", "", "")
+	}
+	parsedRedirectUri, redirectUriOk := lib.ValidateURL(redirectUri)
+	if !redirectUriOk {
+		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "redirect_uri is invalid", "", "")
+	}
+
+	existRedirect, err := models.ClientRedirects(
+		models.ClientRedirectWhere.ClientID.EQ(client.ClientID),
+		models.ClientRedirectWhere.URL.EQ(redirectUri),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return nil, err
+	}
+	if !existRedirect {
+		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "redirect_uri is invalid", "", "")
+	}
+
 	return &AuthenticationRequest{
-		Scopes:       validatedScopes,
+		Scopes:       enableScopes,
 		ResponseType: validatedResponseType,
-		ClientId:     clientId,
 		RedirectUri:  parsedRedirectUri,
 		State:        null.NewString(state, state != ""),
 		ResponseMode: validatedResponseMode,
@@ -152,5 +187,7 @@ func (h *Handler) GetAuthenticationRequest(c echo.Context) (*AuthenticationReque
 		IdTokenHint: null.NewString(idTokenHint, idTokenHint != ""),
 		LoginHint:   null.NewString(loginHint, loginHint != ""),
 		AcrValues:   null.NewString(acrValues, acrValues != ""),
+
+		Client: client,
 	}, nil
 }
