@@ -61,6 +61,80 @@ type AuthenticationRequest struct {
 	AcrValues   null.String
 
 	Client *models.Client
+
+	AllowRules []*models.ClientAllowRule
+}
+
+// preview で返す用のもの
+type PublicAuthenticationRequest struct {
+	ClientId          string      `json:"client_id"`
+	ClientName        string      `json:"client_name"`
+	ClientDescription null.String `json:"client_description"`
+	Image             null.String `json:"image"`
+
+	OrgName  null.String `json:"org_name"`
+	OrgImage null.String `json:"org_image"`
+
+	Scopes       []string `json:"scopes"`
+	RedirectUri  string   `json:"redirect_uri"`
+	ResponseType string   `json:"response_type"`
+}
+
+// プレビュー用のレスポンスを返す
+// TODO: テスト
+func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.DB) (*PublicAuthenticationRequest, error) {
+
+	orgName := null.NewString("", false)
+	orgImage := null.NewString("", false)
+
+	if a.Client.OrgID.Valid {
+		// orgは見つからないことはないはずなので、見つからなかったら500エラーにする
+		org, err := models.Organizations(
+			models.OrganizationWhere.ID.EQ(a.Client.OrgID.String),
+		).One(ctx, db)
+		if err != nil {
+			return nil, err
+		}
+		orgName = null.NewString(org.Name, true)
+		orgImage = org.Image
+	}
+
+	return &PublicAuthenticationRequest{
+		ClientId:          a.Client.ClientID,
+		ClientName:        a.Client.Name,
+		ClientDescription: a.Client.Description,
+		Image:             a.Client.Image,
+
+		OrgName:  orgName,
+		OrgImage: orgImage,
+
+		Scopes:       a.Scopes,
+		RedirectUri:  a.RedirectUri.String(),
+		ResponseType: string(a.ResponseType),
+	}, nil
+}
+
+// ユーザーが認証可能かチェックする
+// TODO: テスト
+func (a *AuthenticationRequest) CheckUserAuthenticationPossible(ctx context.Context, db *sql.DB, user *models.User) (bool, error) {
+	// ルールが存在しない場合はすべてが認証可能
+	if len(a.AllowRules) == 0 {
+		return true, nil
+	}
+
+	for _, rule := range a.AllowRules {
+		// ユーザーが一致している場合
+		if rule.UserID.Valid && rule.UserID.String == user.ID {
+			return true, nil
+		}
+
+		// メールドメインが後方一致している場合
+		if rule.EmailDomain.Valid && strings.HasSuffix(user.Email, rule.EmailDomain.String) {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // Authentication Request を取得する
@@ -172,6 +246,45 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "redirect_uri is invalid", "", "")
 	}
 
+	// TODO: テスト
+	allowRules := []*models.ClientAllowRule{}
+
+	if client.IsAllow {
+		allowRules, err = models.ClientAllowRules(
+			models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
+		).All(ctx, h.DB)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// リファラー
+	// TODO: テスト
+	refererUrl, err := url.Parse(c.Request().Referer())
+	if err != nil {
+		return nil, err
+	}
+
+	dbReferer, err := models.ClientReferrers(
+		models.ClientReferrerWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, h.DB)
+	if err != nil {
+		return nil, err
+	}
+	// リファラーが設定されている場合はチェックする
+	if len(dbReferer) != 0 {
+		ok := false
+		for _, referrer := range dbReferer {
+			if referrer.Host == refererUrl.Host {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "referer is invalid", "", "")
+		}
+	}
+
 	return &AuthenticationRequest{
 		Scopes:       enableScopes,
 		ResponseType: validatedResponseType,
@@ -188,6 +301,7 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		LoginHint:   null.NewString(loginHint, loginHint != ""),
 		AcrValues:   null.NewString(acrValues, acrValues != ""),
 
-		Client: client,
+		Client:     client,
+		AllowRules: allowRules,
 	}, nil
 }
