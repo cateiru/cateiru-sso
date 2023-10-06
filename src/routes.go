@@ -155,7 +155,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
-	internal := version.Group("/internal")
+	internal := e.Group("/internal")
 	internal.Use(
 		middleware.BasicAuth(func(userName, password string, ctx echo.Context) (bool, error) {
 			if userName == c.InternalBasicAuthUserName && password == c.InternalBasicAuthPassword {
