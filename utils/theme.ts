@@ -1,11 +1,15 @@
+import {menuAnatomy} from '@chakra-ui/anatomy';
 import {
   ThemeConfig,
   UseToastOptions,
   extendTheme,
   defineStyleConfig,
+  createMultiStyleConfigHelpers,
 } from '@chakra-ui/react';
 import {mode} from '@chakra-ui/theme-tools';
 import {StepsTheme} from 'chakra-ui-steps';
+
+const multiStyleConfigHelpers = createMultiStyleConfigHelpers(menuAnatomy.keys);
 
 const config: ThemeConfig = {
   useSystemColorMode: false,
@@ -102,6 +106,20 @@ export const theme = extendTheme({
               props.colorMode === 'dark'
                 ? 'my.secondary !important'
                 : 'my.primary !important',
+          },
+        },
+      }),
+    }),
+    Menu: multiStyleConfigHelpers.defineMultiStyleConfig({
+      baseStyle: multiStyleConfigHelpers.definePartsStyle({
+        list: {
+          _dark: {
+            '--menu-bg': colorTheme.darkBackground,
+          },
+        },
+        item: {
+          _dark: {
+            '--menu-bg': colorTheme.darkBackground,
           },
         },
       }),

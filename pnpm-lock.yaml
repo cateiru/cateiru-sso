@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@chakra-ui/anatomy':
+    specifier: ^2.2.1
+    version: 2.2.1
   '@chakra-ui/next-js':
     specifier: ^2.1.5
     version: 2.1.5(@chakra-ui/react@2.8.0)(@emotion/react@11.11.1)(next@13.4.12)(react@18.2.0)
@@ -1627,6 +1630,10 @@ packages:
 
   /@chakra-ui/anatomy@2.2.0:
     resolution: {integrity: sha512-cD8Ms5C8+dFda0LrORMdxiFhAZwOIY1BSlCadz6/mHUIgNdQy13AHPrXiq6qWdMslqVHq10k5zH7xMPLt6kjFg==}
+
+  /@chakra-ui/anatomy@2.2.1:
+    resolution: {integrity: sha512-bbmyWTGwQo+aHYDMtLIj7k7hcWvwE7GFVDViLFArrrPhfUTDdQTNqhiDp1N7eh2HLyjNhc2MKXV8s2KTQqkmTg==}
+    dev: false
 
   /@chakra-ui/avatar@2.3.0(@chakra-ui/system@2.6.0)(react@18.2.0):
     resolution: {integrity: sha512-8gKSyLfygnaotbJbDMHDiJoF38OHXUYVme4gGxZ1fLnQEdPVEaIWfH+NndIjOM0z8S+YEFnT9KyGMUtvPrBk3g==}
