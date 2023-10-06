@@ -1,4 +1,9 @@
-import {ThemeConfig, UseToastOptions, extendTheme} from '@chakra-ui/react';
+import {
+  ThemeConfig,
+  UseToastOptions,
+  extendTheme,
+  defineStyleConfig,
+} from '@chakra-ui/react';
 import {mode} from '@chakra-ui/theme-tools';
 import {StepsTheme} from 'chakra-ui-steps';
 
@@ -70,6 +75,37 @@ export const theme = extendTheme({
         backgroundClip: 'text',
       },
     },
+    Modal: defineStyleConfig({
+      baseStyle: props => ({
+        dialog: {
+          bg:
+            props.colorMode === 'dark'
+              ? colorTheme.darkBackground
+              : colorTheme.lightBackground,
+        },
+      }),
+    }),
+    Tooltip: defineStyleConfig({
+      baseStyle: props => ({
+        color:
+          props.colorMode === 'dark'
+            ? colorTheme.lightText
+            : colorTheme.darkText,
+        background: props.colorMode === 'dark' ? 'my.secondary' : 'my.primary',
+        borderRadius: '7px',
+        px: '.7rem',
+        fontWeight: 'bold',
+        hasArrow: true,
+        div: {
+          div: {
+            background:
+              props.colorMode === 'dark'
+                ? 'my.secondary !important'
+                : 'my.primary !important',
+          },
+        },
+      }),
+    }),
   },
   colors: {
     cateiru: {
