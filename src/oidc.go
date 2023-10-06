@@ -1,11 +1,27 @@
 package src
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
 
 // リクエストされたOIDCクライアントが有効か、認証可能かなどの情報を返す
 // jsonでpayloadを取得する
 func (h *Handler) OIDCRequireHandler(c echo.Context) error {
-	return nil
+	ctx := c.Request().Context()
+
+	authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	previewResponse, err := authenticationRequest.GetPreviewResponse(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, previewResponse)
 }
 
 // 認証用のWebAuthnチャレンジを返す
