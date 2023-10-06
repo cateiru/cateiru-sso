@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
@@ -144,7 +145,18 @@ func (c *CDNMock) SoftPurge(url string) error {
 // --- StorageMock
 
 func (c *StorageMock) Read(ctx context.Context, path string) ([]byte, string, error) {
-	return c.S.Read(ctx, path)
+	file, err := os.OpenFile("test_sample_image.png", os.O_RDONLY, 666)
+	if err != nil {
+		return []byte{}, "", err
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return []byte{}, "", err
+	}
+
+	return data, "image/png", nil
 }
 
 func (c *StorageMock) Write(ctx context.Context, path string, data io.Reader, contentType string) error {

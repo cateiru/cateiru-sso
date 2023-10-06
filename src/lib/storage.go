@@ -18,6 +18,9 @@ type CloudStorage struct {
 	BucketName string
 }
 
+var ErrBucketNotFound = storage.ErrBucketNotExist
+var ErrObjectNotFound = storage.ErrObjectNotExist
+
 func NewCloudStorage(bucketName string) CloudStorageInterface {
 
 	return &CloudStorage{

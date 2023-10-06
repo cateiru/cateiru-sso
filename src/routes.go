@@ -164,8 +164,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 			return false, nil
 		}),
 	)
-	internal.GET("/avatar", h.Root)
-	internal.GET("/worker", h.Root)
+	internal.GET("/avatar/:key/:id", h.InternalAvatarHandler)
+	internal.GET("/worker", h.InternalWorkerHandler)
 
 	// API
 	api := e.Group("/api/v2")
