@@ -2,6 +2,7 @@ package lib_test
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -15,6 +16,7 @@ import (
 func TestStorage(t *testing.T) {
 	ctx := context.Background()
 	s := lib.NewCloudStorage("test-oreore-me")
+	os.Setenv("STORAGE_EMULATOR_HOST", "localhost:4443")
 
 	t.Run("読み出し、書き込みが可能", func(t *testing.T) {
 		body := "hoge"
