@@ -40,7 +40,7 @@ func TestInternalAvatarHandler(t *testing.T) {
 		c.SetParamValues("", "image")
 
 		err = h.InternalAvatarHandler(c)
-		require.EqualError(t, err, "key and id are required")
+		require.EqualError(t, err, "code=400, message=key and id are required")
 	})
 
 	t.Run("失敗: idが空", func(t *testing.T) {
@@ -52,6 +52,6 @@ func TestInternalAvatarHandler(t *testing.T) {
 		c.SetParamValues("test", "")
 
 		err = h.InternalAvatarHandler(c)
-		require.EqualError(t, err, "key and id are required")
+		require.EqualError(t, err, "code=400, message=key and id are required")
 	})
 }
