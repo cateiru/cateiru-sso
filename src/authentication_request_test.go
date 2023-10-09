@@ -695,6 +695,9 @@ func TestGetPreviewResponse(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("通常のクライアント", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
 		a := src.AuthenticationRequest{
 			Scopes: []string{
 				"openid",
@@ -727,7 +730,10 @@ func TestGetPreviewResponse(t *testing.T) {
 				Description: null.NewString("client_description_test", true),
 				Image:       null.NewString("client_image_test", true),
 
-				OrgID: null.NewString("", false),
+				OrgID:         null.NewString("", false),
+				OrgMemberOnly: false,
+
+				OwnerUserID: u.ID,
 			},
 
 			AllowRules: []*models.ClientAllowRule{
@@ -749,8 +755,9 @@ func TestGetPreviewResponse(t *testing.T) {
 			ClientDescription: null.NewString("client_description_test", true),
 			Image:             null.NewString("client_image_test", true),
 
-			OrgName:  null.NewString("", false),
-			OrgImage: null.NewString("", false),
+			OrgName:       null.NewString("", false),
+			OrgImage:      null.NewString("", false),
+			OrgMemberOnly: false,
 
 			Scopes: []string{
 				"openid",
@@ -758,10 +765,16 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 			RedirectUri:  "https://example.test/",
 			ResponseType: "code",
+
+			RegisterUserName:  u.UserName,
+			RegisterUserImage: u.Avatar,
 		})
 	})
 
 	t.Run("組織のクライアント", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
 		org := RegisterOrg(t, ctx)
 
 		a := src.AuthenticationRequest{
@@ -796,7 +809,9 @@ func TestGetPreviewResponse(t *testing.T) {
 				Description: null.NewString("client_description_test", true),
 				Image:       null.NewString("client_image_test", true),
 
-				OrgID: null.NewString(org, true),
+				OrgID:         null.NewString(org, true),
+				OwnerUserID:   u.ID,
+				OrgMemberOnly: true,
 			},
 
 			AllowRules: []*models.ClientAllowRule{
@@ -818,8 +833,9 @@ func TestGetPreviewResponse(t *testing.T) {
 			ClientDescription: null.NewString("client_description_test", true),
 			Image:             null.NewString("client_image_test", true),
 
-			OrgName:  null.NewString("test", true),
-			OrgImage: null.NewString("", false),
+			OrgName:       null.NewString("test", true),
+			OrgImage:      null.NewString("", false),
+			OrgMemberOnly: true,
 
 			Scopes: []string{
 				"openid",
@@ -827,6 +843,9 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 			RedirectUri:  "https://example.test/",
 			ResponseType: "code",
+
+			RegisterUserName:  u.UserName,
+			RegisterUserImage: u.Avatar,
 		})
 	})
 }

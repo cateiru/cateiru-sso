@@ -72,12 +72,16 @@ type PublicAuthenticationRequest struct {
 	ClientDescription null.String `json:"client_description"`
 	Image             null.String `json:"image"`
 
-	OrgName  null.String `json:"org_name"`
-	OrgImage null.String `json:"org_image"`
+	OrgName       null.String `json:"org_name"`
+	OrgImage      null.String `json:"org_image"`
+	OrgMemberOnly bool        `json:"org_member_only"`
 
 	Scopes       []string `json:"scopes"`
 	RedirectUri  string   `json:"redirect_uri"`
 	ResponseType string   `json:"response_type"`
+
+	RegisterUserName  string      `json:"register_user_name"`
+	RegisterUserImage null.String `json:"register_user_image"`
 }
 
 // プレビュー用のレスポンスを返す
@@ -98,18 +102,30 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 		orgImage = org.Image
 	}
 
+	// userは見つからないことはないはずなので、見つからなかったら500エラーにする
+	user, err := models.Users(
+		models.UserWhere.ID.EQ(a.Client.OwnerUserID),
+	).One(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+
 	return &PublicAuthenticationRequest{
 		ClientId:          a.Client.ClientID,
 		ClientName:        a.Client.Name,
 		ClientDescription: a.Client.Description,
 		Image:             a.Client.Image,
 
-		OrgName:  orgName,
-		OrgImage: orgImage,
+		OrgName:       orgName,
+		OrgImage:      orgImage,
+		OrgMemberOnly: a.Client.OrgMemberOnly,
 
 		Scopes:       a.Scopes,
 		RedirectUri:  a.RedirectUri.String(),
 		ResponseType: string(a.ResponseType),
+
+		RegisterUserName:  user.UserName,
+		RegisterUserImage: user.Avatar,
 	}, nil
 }
 
