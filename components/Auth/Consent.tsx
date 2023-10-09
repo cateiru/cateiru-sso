@@ -97,7 +97,7 @@ export const Consent: React.FC<Props> = props => {
     <Flex
       w={{base: '96%', sm: '450px'}}
       minH={{base: '600px', sm: '700px'}}
-      boxShadow={{base: 'none', sm: `0px 0px 7px -2px ${shadowColor}`}}
+      boxShadow={{base: 'none', sm: `0px 0px 10px -2px ${shadowColor}`}}
       borderRadius="10px"
       mx="auto"
       py="2rem"
