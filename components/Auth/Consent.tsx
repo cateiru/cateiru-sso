@@ -199,7 +199,7 @@ export const Consent: React.FC<Props> = props => {
         <Stack direction="column" spacing="10px">
           <Button
             w="100%"
-            colorScheme="green"
+            colorScheme="cateiru"
             isLoading={isLoadingSubmit}
             isDisabled={isLoadingCancel}
             onClick={onSubmit}
