@@ -19,7 +19,6 @@ import React from 'react';
 import {
   TbExternalLink,
   TbFileDescription,
-  TbMoodSmileBeam,
   TbPlugConnected,
   TbSquareKey,
   TbUserQuestion,
