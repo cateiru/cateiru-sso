@@ -150,7 +150,13 @@ export const Consent: React.FC<Props> = props => {
             <Text as="h2">
               <AccordionButton>
                 <TbFileDescription size="20px" />
-                <Text ml=".5rem" as="span" flex="1" textAlign="left">
+                <Text
+                  ml=".5rem"
+                  as="span"
+                  flex="1"
+                  textAlign="left"
+                  fontWeight="bold"
+                >
                   クライアントの説明
                 </Text>
                 <AccordionIcon />
@@ -167,7 +173,13 @@ export const Consent: React.FC<Props> = props => {
           <Text as="h2">
             <AccordionButton>
               <TbSquareKey size="20px" />
-              <Text ml=".5rem" as="span" flex="1" textAlign="left">
+              <Text
+                ml=".5rem"
+                as="span"
+                flex="1"
+                textAlign="left"
+                fontWeight="bold"
+              >
                 求めている権限
               </Text>
               <AccordionIcon />
@@ -187,7 +199,13 @@ export const Consent: React.FC<Props> = props => {
           <Text as="h2">
             <AccordionButton>
               <TbUserQuestion size="20px" />
-              <Text ml=".5rem" as="span" flex="1" textAlign="left">
+              <Text
+                ml=".5rem"
+                as="span"
+                flex="1"
+                textAlign="left"
+                fontWeight="bold"
+              >
                 {`作成者${props.orgName ? '・組織' : ''}に関する情報`}
               </Text>
               <AccordionIcon />
