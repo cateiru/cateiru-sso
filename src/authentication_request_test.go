@@ -902,6 +902,69 @@ func TestCheckUserAuthenticationPossible(t *testing.T) {
 		require.True(t, ok)
 	})
 
+	t.Run("OrgMemberOnlyがtrueかつユーザーがorgに所属している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx, &u)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{},
+			Client: &models.Client{
+				OrgID:         null.NewString(orgId, true),
+				OrgMemberOnly: true,
+			},
+		}
+
+		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
+		require.NoError(t, err)
+		require.True(t, ok)
+	})
+
+	t.Run("失敗: OrgMemberOnlyがtrueかつユーザーがorgに所属していない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{},
+			Client: &models.Client{
+				OrgID:         null.NewString(orgId, true),
+				OrgMemberOnly: true,
+			},
+		}
+
+		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
+		require.NoError(t, err)
+		require.False(t, ok)
+	})
+
+	t.Run("失敗: ルールに一致しているけどOrgMemberOnlyがtrueかつユーザーがorgに所属していない", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@example.test", r)
+		u := RegisterUser(t, ctx, email)
+
+		orgId := RegisterOrg(t, ctx)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+			},
+			Client: &models.Client{
+				OrgID:         null.NewString(orgId, true),
+				OrgMemberOnly: true,
+			},
+		}
+
+		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
+		require.NoError(t, err)
+		require.False(t, ok)
+	})
+
 	t.Run("失敗: ルールが設定されているけど、そのルールに一致しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)

@@ -131,24 +131,47 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 
 // ユーザーが認証可能かチェックする
 func (a *AuthenticationRequest) CheckUserAuthenticationPossible(ctx context.Context, db *sql.DB, user *models.User) (bool, error) {
+	ok := false
+
 	// ルールが存在しない場合はすべてが認証可能
 	if len(a.AllowRules) == 0 {
-		return true, nil
+		ok = true
 	}
 
 	for _, rule := range a.AllowRules {
 		// ユーザーが一致している場合
 		if rule.UserID.Valid && rule.UserID.String == user.ID {
-			return true, nil
+			ok = true
+			break
 		}
 
 		// メールドメインが後方一致している場合
 		if rule.EmailDomain.Valid && strings.HasSuffix(user.Email, rule.EmailDomain.String) {
-			return true, nil
+			ok = true
+			break
 		}
 	}
 
-	return false, nil
+	// クライアントが組織所属のものかつメンバーオンリーの場合は
+	// ユーザーをチェックする
+	if a.Client.OrgID.Valid && a.Client.OrgMemberOnly {
+		memberExist, err := models.OrganizationUsers(
+			models.OrganizationUserWhere.OrganizationID.EQ(a.Client.OrgID.String),
+			models.OrganizationUserWhere.UserID.EQ(user.ID),
+		).Exists(ctx, db)
+		if err != nil {
+			return false, err
+		}
+
+		if memberExist {
+			ok = true
+		} else {
+			// `OrgMemberOnly` が true の場合にユーザーがそのorgに所属していない場合は強制false
+			ok = false
+		}
+	}
+
+	return ok, nil
 }
 
 // Authentication Request を取得する
