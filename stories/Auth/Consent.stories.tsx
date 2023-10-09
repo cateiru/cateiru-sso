@@ -22,6 +22,8 @@ export const Default: Story = {
     description: faker.lorem.paragraph(),
     clientImage: faker.image.url(),
 
+    orgMemberOnly: false,
+
     registerUserName: faker.internet.userName(),
     registerUserImage: faker.image.url(),
 
@@ -51,6 +53,8 @@ export const NoDescription: Story = {
   args: {
     clientName: faker.internet.displayName(),
     clientImage: faker.image.url(),
+
+    orgMemberOnly: false,
 
     registerUserName: faker.internet.userName(),
 
@@ -84,6 +88,8 @@ export const TooLongDescription: Story = {
     description: Array(100).fill('a').join('\n'),
     clientImage: faker.image.url(),
 
+    orgMemberOnly: false,
+
     registerUserName: faker.internet.userName(),
     registerUserImage: faker.image.url(),
 
@@ -113,6 +119,8 @@ export const NoImage: Story = {
   args: {
     clientName: faker.internet.displayName(),
     description: faker.lorem.paragraph(),
+
+    orgMemberOnly: false,
 
     registerUserName: faker.internet.userName(),
     registerUserImage: faker.image.url(),
@@ -150,6 +158,42 @@ export const Org: Story = {
 
     orgName: faker.company.name(),
     orgImage: faker.image.url(),
+    orgMemberOnly: false,
+
+    scopes: ['openid', 'profile', 'email'],
+    redirectUri: faker.internet.url(),
+
+    onSubmit: () => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve();
+          window.alert('submit');
+        }, 1000);
+      });
+    },
+    onCancel: () => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve();
+          window.alert('cancel');
+        }, 1000);
+      });
+    },
+  },
+};
+
+export const OrgMemberOnly: Story = {
+  args: {
+    clientName: faker.internet.displayName(),
+    description: faker.lorem.paragraph(),
+    clientImage: faker.image.url(),
+
+    registerUserName: faker.internet.userName(),
+    registerUserImage: faker.image.url(),
+
+    orgName: faker.company.name(),
+    orgImage: faker.image.url(),
+    orgMemberOnly: true,
 
     scopes: ['openid', 'profile', 'email'],
     redirectUri: faker.internet.url(),

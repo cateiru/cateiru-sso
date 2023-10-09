@@ -39,6 +39,7 @@ interface Props {
 
   orgName?: string;
   orgImage?: string;
+  orgMemberOnly: boolean;
 
   scopes?: string[];
   redirectUri: string;
@@ -117,6 +118,12 @@ export const Consent: React.FC<Props> = props => {
         </Center>
         <Avatar src={props.clientImage} justifyContent="flex-end" size="lg" />
       </Center>
+
+      {props.orgMemberOnly && (
+        <Text textAlign="center" my=".5rem" fontSize=".8rem">
+          このクライアントは組織に所属しているユーザーのみ有効です。
+        </Text>
+      )}
 
       <Accordion mt="1rem" defaultIndex={[0]} allowMultiple>
         {props.description && (
