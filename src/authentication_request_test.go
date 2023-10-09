@@ -859,6 +859,10 @@ func TestCheckUserAuthenticationPossible(t *testing.T) {
 
 		a := src.AuthenticationRequest{
 			AllowRules: []*models.ClientAllowRule{},
+			Client: &models.Client{
+				OrgID:         null.NewString("", false),
+				OrgMemberOnly: false,
+			},
 		}
 
 		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
@@ -875,6 +879,10 @@ func TestCheckUserAuthenticationPossible(t *testing.T) {
 				{
 					UserID: null.NewString(u.ID, true),
 				},
+			},
+			Client: &models.Client{
+				OrgID:         null.NewString("", false),
+				OrgMemberOnly: false,
 			},
 		}
 
@@ -894,6 +902,10 @@ func TestCheckUserAuthenticationPossible(t *testing.T) {
 				{
 					EmailDomain: null.NewString("example.test", true),
 				},
+			},
+			Client: &models.Client{
+				OrgID:         null.NewString("", false),
+				OrgMemberOnly: false,
 			},
 		}
 
@@ -974,6 +986,10 @@ func TestCheckUserAuthenticationPossible(t *testing.T) {
 				{
 					UserID: null.NewString("123", true),
 				},
+			},
+			Client: &models.Client{
+				OrgID:         null.NewString("", false),
+				OrgMemberOnly: false,
 			},
 		}
 
