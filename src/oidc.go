@@ -11,9 +11,22 @@ import (
 func (h *Handler) OIDCRequireHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
+	u, err := h.Session.SimpleLogin(ctx, c, true)
+	if err != nil {
+		return err
+	}
+
 	authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
 	if err != nil {
 		return err
+	}
+
+	ok, err := authenticationRequest.CheckUserAuthenticationPossible(ctx, h.DB, u)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "user is not allowed", "", "")
 	}
 
 	previewResponse, err := authenticationRequest.GetPreviewResponse(ctx, h.DB)
