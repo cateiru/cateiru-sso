@@ -27,3 +27,16 @@ export function validatePrompt(prompt: string | null): string {
       return '認証しない';
   }
 }
+
+export function validateScope(scope: string): string {
+  switch (scope) {
+    case 'openid':
+      return 'openid';
+    case 'profile':
+      return 'プロフィール';
+    case 'email':
+      return 'メールアドレス';
+    default:
+      return '不明';
+  }
+}
