@@ -15,7 +15,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)
 
-	t.Run("成功", func(t *testing.T) {
+	t.Run("成功: リファラー未設定", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
@@ -48,6 +48,9 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		m, err := easy.NewFormData("/", "POST", form)
 		require.NoError(t, err)
 
+		// リファラーを設定する
+		m.R.Header.Set("Referer", "https://example.test")
+
 		c := m.Echo()
 
 		authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
@@ -74,6 +77,109 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.Equal(t, authenticationRequest.LoginHint.String, "login_hint_test")
 		require.True(t, authenticationRequest.AcrValues.Valid)
 		require.Equal(t, authenticationRequest.AcrValues.String, "acr_values_test")
+	})
+
+	t.Run("成功: リファラー設定済み", func(t *testing.T) {
+		t.Run("originの場合", func(t *testing.T) {
+			email := RandomEmail(t)
+			u := RegisterUser(t, ctx, email)
+			clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+			r := models.ClientRedirect{
+				ClientID: clientId,
+				URL:      "https://example.test",
+				Host:     "example.test",
+			}
+			err := r.Insert(ctx, DB, boil.Infer())
+			require.NoError(t, err)
+
+			referrer := models.ClientReferrer{
+				ClientID: clientId,
+				Host:     "example.test",
+				URL:      "https://example.test",
+			}
+			err = referrer.Insert(ctx, DB, boil.Infer())
+			require.NoError(t, err)
+
+			form := easy.NewMultipart()
+
+			form.Insert("scope", "openid profile email")
+			form.Insert("response_type", "code")
+			form.Insert("client_id", clientId)
+			form.Insert("redirect_uri", "https://example.test")
+			form.Insert("state", "state_test")
+			form.Insert("response_mode", "query")
+			form.Insert("nonce", "nonce_test")
+			form.Insert("display", "page")
+			form.Insert("prompt", "login consent")
+			form.Insert("max_age", "3600")
+			form.Insert("ui_locales", "ja_JP")
+			form.Insert("id_token_hint", "id_token_hint_test")
+			form.Insert("login_hint", "login_hint_test")
+			form.Insert("acr_values", "acr_values_test")
+
+			m, err := easy.NewFormData("/", "POST", form)
+			require.NoError(t, err)
+
+			// リファラーを設定する
+			// originの場合はパス、クエリはリファラーに含まれない
+			m.R.Header.Set("Referer", "https://example.test")
+
+			c := m.Echo()
+
+			_, err = h.NewAuthenticationRequest(ctx, c)
+			require.NoError(t, err)
+		})
+
+		t.Run("unsafe-url", func(t *testing.T) {
+			email := RandomEmail(t)
+			u := RegisterUser(t, ctx, email)
+			clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+			r := models.ClientRedirect{
+				ClientID: clientId,
+				URL:      "https://example.test",
+				Host:     "example.test",
+			}
+			err := r.Insert(ctx, DB, boil.Infer())
+			require.NoError(t, err)
+
+			referrer := models.ClientReferrer{
+				ClientID: clientId,
+				Host:     "example.test",
+				URL:      "https://example.test",
+			}
+			err = referrer.Insert(ctx, DB, boil.Infer())
+			require.NoError(t, err)
+
+			form := easy.NewMultipart()
+
+			form.Insert("scope", "openid profile email")
+			form.Insert("response_type", "code")
+			form.Insert("client_id", clientId)
+			form.Insert("redirect_uri", "https://example.test")
+			form.Insert("state", "state_test")
+			form.Insert("response_mode", "query")
+			form.Insert("nonce", "nonce_test")
+			form.Insert("display", "page")
+			form.Insert("prompt", "login consent")
+			form.Insert("max_age", "3600")
+			form.Insert("ui_locales", "ja_JP")
+			form.Insert("id_token_hint", "id_token_hint_test")
+			form.Insert("login_hint", "login_hint_test")
+			form.Insert("acr_values", "acr_values_test")
+
+			m, err := easy.NewFormData("/", "POST", form)
+			require.NoError(t, err)
+
+			// リファラーを設定する
+			m.R.Header.Set("Referer", "https://example.test/hoge/huga?aa=test")
+
+			c := m.Echo()
+
+			_, err = h.NewAuthenticationRequest(ctx, c)
+			require.NoError(t, err)
+		})
 	})
 
 	t.Run("失敗: scopeが存在しない", func(t *testing.T) {
@@ -397,5 +503,101 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		_, err = h.NewAuthenticationRequest(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=redirect_uri is invalid")
+	})
+
+	t.Run("失敗: 設定されているリファラーに存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		referrer := models.ClientReferrer{
+			ClientID: clientId,
+			Host:     "example.test",
+			URL:      "https://example.test",
+		}
+		err = referrer.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+
+		form.Insert("scope", "openid profile email")
+		form.Insert("response_type", "code")
+		form.Insert("client_id", clientId)
+		form.Insert("redirect_uri", "https://example.test")
+		form.Insert("state", "state_test")
+		form.Insert("response_mode", "query")
+		form.Insert("nonce", "nonce_test")
+		form.Insert("display", "page")
+		form.Insert("prompt", "login consent")
+		form.Insert("max_age", "3600")
+		form.Insert("ui_locales", "ja_JP")
+		form.Insert("id_token_hint", "id_token_hint_test")
+		form.Insert("login_hint", "login_hint_test")
+		form.Insert("acr_values", "acr_values_test")
+
+		m, err := easy.NewFormData("/", "POST", form)
+		require.NoError(t, err)
+
+		m.R.Header.Set("Referer", "https://hoge.test")
+
+		c := m.Echo()
+
+		_, err = h.NewAuthenticationRequest(ctx, c)
+		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=referer is invalid")
+	})
+
+	t.Run("失敗: リファラーが設定されているけど、リファラーが空", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		referrer := models.ClientReferrer{
+			ClientID: clientId,
+			Host:     "example.test",
+			URL:      "https://example.test",
+		}
+		err = referrer.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+
+		form.Insert("scope", "openid profile email")
+		form.Insert("response_type", "code")
+		form.Insert("client_id", clientId)
+		form.Insert("redirect_uri", "https://example.test")
+		form.Insert("state", "state_test")
+		form.Insert("response_mode", "query")
+		form.Insert("nonce", "nonce_test")
+		form.Insert("display", "page")
+		form.Insert("prompt", "login consent")
+		form.Insert("max_age", "3600")
+		form.Insert("ui_locales", "ja_JP")
+		form.Insert("id_token_hint", "id_token_hint_test")
+		form.Insert("login_hint", "login_hint_test")
+		form.Insert("acr_values", "acr_values_test")
+
+		m, err := easy.NewFormData("/", "POST", form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		_, err = h.NewAuthenticationRequest(ctx, c)
+		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=referer is invalid")
 	})
 }
