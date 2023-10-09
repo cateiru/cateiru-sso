@@ -125,7 +125,6 @@ export const Consent: React.FC<Props> = props => {
         </Tooltip>
         <Center
           mx="40px"
-          cursor="pointer"
           css={{
             ':hover': {
               animation: `${rotate} 1s linear infinite`,
