@@ -10,12 +10,17 @@ import {useSecondaryColor} from '../useColor';
 
 export const Error: React.FC<ErrorType> = props => {
   return (
-    <Center>
-      <Heading color="red.500" textAlign="center">
-        {props.unique_code
-          ? ErrorUniqueMessage[props.unique_code] ?? props.message
-          : props.message}
-      </Heading>
+    <Center h="80vh">
+      <Box>
+        <Center color="red.500">
+          <TbMoodSadSquint size="50px" />
+        </Center>
+        <Heading color="red.500" textAlign="center">
+          {props.unique_code
+            ? ErrorUniqueMessage[props.unique_code] ?? props.message
+            : props.message}
+        </Heading>
+      </Box>
     </Center>
   );
 };
