@@ -1376,7 +1376,7 @@ func TestRegisterUser(t *testing.T) {
 
 		r, err := lib.RandomStr(10)
 		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.test", r) // ドメインを `.test` にする
+		email := fmt.Sprintf("%s@exammple.test", r) // ドメインを `.test` にする
 
 		u, err := src.RegisterUser(ctx, DB, C, email)
 		require.NoError(t, err)

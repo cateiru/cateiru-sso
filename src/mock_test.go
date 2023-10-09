@@ -119,7 +119,7 @@ func (a *WebAuthnMock) FinishLogin(handler webauthn.DiscoverableUserHandler, ses
 
 		u = &models.User{
 			ID:    id.String(),
-			Email: fmt.Sprintf("%s@exmaple.com", r),
+			Email: fmt.Sprintf("%s@example.test", r),
 		}
 		if err := u.Insert(ctx, DB, boil.Infer()); err != nil {
 			return nil, err

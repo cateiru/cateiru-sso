@@ -603,7 +603,7 @@ func TestRegisterBeginWebAuthnHandler(t *testing.T) {
 	t.Run("まだEmailの認証が終わっていない", func(t *testing.T) {
 		r, err := lib.RandomStr(10)
 		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := fmt.Sprintf("%s@example.test", r)
 
 		s := createSession(email, false)
 

@@ -23,7 +23,7 @@ import (
 func TestNewWebAuthUserRegister(t *testing.T) {
 	r, err := lib.RandomStr(10)
 	require.NoError(t, err)
-	email := fmt.Sprintf("%s@exmaple.com", r)
+	email := fmt.Sprintf("%s@example.test", r)
 
 	id := ulid.Make().String()
 	user, err := src.NewWebAuthnUserRegister(email, []byte(id))
@@ -115,7 +115,7 @@ func TestNewWebAuthnUserFromDB(t *testing.T) {
 	t.Run("成功", func(t *testing.T) {
 		r, err := lib.RandomStr(10)
 		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := fmt.Sprintf("%s@example.test", r)
 
 		u := RegisterUser(t, ctx, email)
 
@@ -151,7 +151,7 @@ func TestNewWebAuthnUserFromDB(t *testing.T) {
 	t.Run("名前が設定されている場合、displayNameは名前になる", func(t *testing.T) {
 		r, err := lib.RandomStr(10)
 		require.NoError(t, err)
-		email := fmt.Sprintf("%s@exmaple.com", r)
+		email := fmt.Sprintf("%s@example.test", r)
 
 		u := RegisterUser(t, ctx, email)
 
