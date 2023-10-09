@@ -26,6 +26,7 @@ import {
 } from 'react-icons/tb';
 import {validateScope} from '../../utils/validate';
 import {Avatar} from '../Common/Chakra/Avatar';
+import {Tooltip} from '../Common/Chakra/Tooltip';
 import {useShadowColor} from '../Common/useColor';
 
 const rotate = keyframes`
@@ -39,6 +40,7 @@ const rotate = keyframes`
 `;
 
 interface Props {
+  userName: string;
   userImage?: string;
 
   clientName: string;
@@ -118,7 +120,9 @@ export const Consent: React.FC<Props> = props => {
       </Text>
 
       <Center mt="1.5rem">
-        <Avatar src={props.userImage} justifyContent="flex-start" size="lg" />
+        <Tooltip label={props.userName} placement="top">
+          <Avatar src={props.userImage} justifyContent="flex-start" size="lg" />
+        </Tooltip>
         <Center
           mx="40px"
           cursor="pointer"
@@ -135,7 +139,9 @@ export const Consent: React.FC<Props> = props => {
             }}
           />
         </Center>
-        <Avatar src={props.clientImage} justifyContent="flex-end" size="lg" />
+        <Tooltip label={props.clientName} placement="top">
+          <Avatar src={props.clientImage} justifyContent="flex-end" size="lg" />
+        </Tooltip>
       </Center>
 
       {props.orgMemberOnly && (

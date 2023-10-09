@@ -37,6 +37,7 @@ export const OidcRequirePage = () => {
   return (
     <Box mt="3rem">
       <Consent
+        userName={user?.user.user_name ?? ''}
         userImage={user?.user.avatar ?? undefined}
         clientName={data.client_name}
         description={data.client_description ?? undefined}

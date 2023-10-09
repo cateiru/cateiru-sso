@@ -16,6 +16,7 @@ type Story = StoryObj<typeof Consent>;
 
 export const Default: Story = {
   args: {
+    userName: faker.internet.userName(),
     userImage: faker.image.url(),
 
     clientName: faker.internet.displayName(),
@@ -51,6 +52,8 @@ export const Default: Story = {
 
 export const NoDescription: Story = {
   args: {
+    userName: faker.internet.userName(),
+
     clientName: faker.internet.displayName(),
     clientImage: faker.image.url(),
 
@@ -82,6 +85,7 @@ export const NoDescription: Story = {
 
 export const TooLongDescription: Story = {
   args: {
+    userName: faker.internet.userName(),
     userImage: faker.image.url(),
 
     clientName: faker.internet.displayName(),
@@ -117,6 +121,8 @@ export const TooLongDescription: Story = {
 
 export const NoImage: Story = {
   args: {
+    userName: faker.internet.userName(),
+
     clientName: faker.internet.displayName(),
     description: faker.lorem.paragraph(),
 
@@ -149,6 +155,8 @@ export const NoImage: Story = {
 
 export const Org: Story = {
   args: {
+    userName: faker.internet.userName(),
+
     clientName: faker.internet.displayName(),
     description: faker.lorem.paragraph(),
     clientImage: faker.image.url(),
@@ -184,6 +192,8 @@ export const Org: Story = {
 
 export const OrgMemberOnly: Story = {
   args: {
+    userName: faker.internet.userName(),
+
     clientName: faker.internet.displayName(),
     description: faker.lorem.paragraph(),
     clientImage: faker.image.url(),
