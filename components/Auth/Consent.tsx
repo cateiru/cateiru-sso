@@ -19,6 +19,7 @@ import React from 'react';
 import {
   TbExternalLink,
   TbFileDescription,
+  TbMoodSmileBeam,
   TbPlugConnected,
   TbSquareKey,
   TbUserQuestion,
@@ -169,7 +170,7 @@ export const Consent: React.FC<Props> = props => {
             <AccordionButton>
               <TbUserQuestion size="20px" />
               <Text ml=".5rem" as="span" flex="1" textAlign="left">
-                作成者に関する情報
+                {`作成者${props.orgName ? '・組織' : ''}に関する情報`}
               </Text>
               <AccordionIcon />
             </AccordionButton>
