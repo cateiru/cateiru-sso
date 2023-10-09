@@ -14,6 +14,7 @@ import {
   Stack,
   Text,
   UnorderedList,
+  keyframes,
 } from '@chakra-ui/react';
 import React from 'react';
 import {
@@ -26,6 +27,16 @@ import {
 import {validateScope} from '../../utils/validate';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {useShadowColor} from '../Common/useColor';
+
+const rotate = keyframes`
+0%,
+100% {
+  transform: rotate(0deg);
+}
+100% {
+  transform: rotate(360deg);
+}
+`;
 
 interface Props {
   userImage?: string;
@@ -108,7 +119,15 @@ export const Consent: React.FC<Props> = props => {
 
       <Center mt="1.5rem">
         <Avatar src={props.userImage} justifyContent="flex-start" size="lg" />
-        <Center mx="40px">
+        <Center
+          mx="40px"
+          cursor="pointer"
+          css={{
+            ':hover': {
+              animation: `${rotate} 1s linear infinite`,
+            },
+          }}
+        >
           <TbPlugConnected
             size="40px"
             style={{
@@ -207,7 +226,6 @@ export const Consent: React.FC<Props> = props => {
             許可する
           </Button>
           <Button
-            w="100%"
             isDisabled={isLoadingSubmit || isLoadingCancel}
             onClick={onCancel}
             variant="link"
