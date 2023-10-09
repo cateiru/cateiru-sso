@@ -107,7 +107,7 @@ func resetDBTable(ctx context.Context, db *sql.DB) error {
 func RandomEmail(t *testing.T) string {
 	r, err := lib.RandomStr(10)
 	require.NoError(t, err)
-	return fmt.Sprintf("%s@exmaple.com", r)
+	return fmt.Sprintf("%s@example.com", r)
 }
 
 // ユーザを新規作成する

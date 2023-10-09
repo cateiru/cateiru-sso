@@ -2,8 +2,11 @@ package src_test
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"testing"
 
+	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
@@ -685,5 +688,215 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		_, err = h.NewAuthenticationRequest(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=referer is invalid")
+	})
+}
+
+func TestGetPreviewResponse(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("通常のクライアント", func(t *testing.T) {
+		a := src.AuthenticationRequest{
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			ResponseType: lib.ResponseTypeAuthorizationCode,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State:        null.NewString("state_test", true),
+			ResponseMode: lib.ResponseModeQuery,
+			Nonce:        null.NewString("nonce_test", true),
+			Display:      lib.DisplayPage,
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+			},
+			MaxAge: uint64(0),
+			UiLocales: []string{
+				"ja_JP",
+			},
+			IdTokenHint: null.NewString("id_token_hint_test", true),
+			LoginHint:   null.NewString("login_hint_test", true),
+			AcrValues:   null.NewString("acr_values_test", true),
+
+			Client: &models.Client{
+				ClientID:    "client_id_test",
+				Name:        "client_name_test",
+				Description: null.NewString("client_description_test", true),
+				Image:       null.NewString("client_image_test", true),
+
+				OrgID: null.NewString("", false),
+			},
+
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+				{
+					UserID: null.NewString("user_id", true),
+				},
+			},
+		}
+
+		response, err := a.GetPreviewResponse(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, *response, src.PublicAuthenticationRequest{
+			ClientId:          "client_id_test",
+			ClientName:        "client_name_test",
+			ClientDescription: null.NewString("client_description_test", true),
+			Image:             null.NewString("client_image_test", true),
+
+			OrgName:  null.NewString("", false),
+			OrgImage: null.NewString("", false),
+
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			RedirectUri:  "https://example.test/",
+			ResponseType: "code",
+		})
+	})
+
+	t.Run("組織のクライアント", func(t *testing.T) {
+		org := RegisterOrg(t, ctx)
+
+		a := src.AuthenticationRequest{
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			ResponseType: lib.ResponseTypeAuthorizationCode,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State:        null.NewString("state_test", true),
+			ResponseMode: lib.ResponseModeQuery,
+			Nonce:        null.NewString("nonce_test", true),
+			Display:      lib.DisplayPage,
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+			},
+			MaxAge: uint64(0),
+			UiLocales: []string{
+				"ja_JP",
+			},
+			IdTokenHint: null.NewString("id_token_hint_test", true),
+			LoginHint:   null.NewString("login_hint_test", true),
+			AcrValues:   null.NewString("acr_values_test", true),
+
+			Client: &models.Client{
+				ClientID:    "client_id_test",
+				Name:        "client_name_test",
+				Description: null.NewString("client_description_test", true),
+				Image:       null.NewString("client_image_test", true),
+
+				OrgID: null.NewString(org, true),
+			},
+
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+				{
+					UserID: null.NewString("user_id", true),
+				},
+			},
+		}
+
+		response, err := a.GetPreviewResponse(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, *response, src.PublicAuthenticationRequest{
+			ClientId:          "client_id_test",
+			ClientName:        "client_name_test",
+			ClientDescription: null.NewString("client_description_test", true),
+			Image:             null.NewString("client_image_test", true),
+
+			OrgName:  null.NewString("test", true),
+			OrgImage: null.NewString("", false),
+
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			RedirectUri:  "https://example.test/",
+			ResponseType: "code",
+		})
+	})
+}
+
+func TestCheckUserAuthenticationPossible(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("ルールがない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{},
+		}
+
+		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
+		require.NoError(t, err)
+		require.True(t, ok)
+	})
+
+	t.Run("ユーザーIDが一致", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{
+				{
+					UserID: null.NewString(u.ID, true),
+				},
+			},
+		}
+
+		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
+		require.NoError(t, err)
+		require.True(t, ok)
+	})
+
+	t.Run("ユーザーのメールが一致", func(t *testing.T) {
+		r, err := lib.RandomStr(10)
+		require.NoError(t, err)
+		email := fmt.Sprintf("%s@example.test", r)
+		u := RegisterUser(t, ctx, email)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+			},
+		}
+
+		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
+		require.NoError(t, err)
+		require.True(t, ok)
+	})
+
+	t.Run("失敗: ルールが設定されているけど、そのルールに一致しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{
+				{
+					UserID: null.NewString("123", true),
+				},
+			},
+		}
+
+		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
+		require.NoError(t, err)
+		require.False(t, ok)
 	})
 }

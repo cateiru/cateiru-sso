@@ -81,7 +81,6 @@ type PublicAuthenticationRequest struct {
 }
 
 // プレビュー用のレスポンスを返す
-// TODO: テスト
 func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.DB) (*PublicAuthenticationRequest, error) {
 
 	orgName := null.NewString("", false)
