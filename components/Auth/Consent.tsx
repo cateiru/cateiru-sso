@@ -91,9 +91,16 @@ export const Consent: React.FC<Props> = props => {
       py="2rem"
       flexDirection="column"
     >
-      <Heading fontWeight="bold" textAlign="center">
-        {props.clientName}
-      </Heading>
+      <Center>
+        <Heading
+          fontWeight="bold"
+          textAlign="center"
+          background="linear-gradient(132deg, #e23d3d 0%, #ec44bd 100%);"
+          backgroundClip="text"
+        >
+          {props.clientName}
+        </Heading>
+      </Center>
       <Text textAlign="center" fontWeight="bold">
         がアクセスを求めています
       </Text>
