@@ -31,8 +31,8 @@ interface Props {
   userImage?: string;
 
   clientName: string;
-  description: string;
-  clientImage: string;
+  description?: string;
+  clientImage?: string;
 
   registerUserName: string;
   registerUserImage?: string;

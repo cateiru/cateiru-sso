@@ -26,3 +26,11 @@ export const ErrorUniqueMessage: {[key: number]: string | undefined} = {
   16: 'この組織に加入されていないようです',
   17: 'この組織の詳細にアクセスできる権限がありません',
 };
+
+export const OidcErrorSchema = z.object({
+  error: z.string(),
+  error_description: z.string().optional(),
+  error_uri: z.string().optional(),
+  state: z.string().optional(),
+});
+export type OidcErrorType = z.infer<typeof OidcErrorSchema>;

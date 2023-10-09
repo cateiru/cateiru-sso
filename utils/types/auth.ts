@@ -1,6 +1,6 @@
-import z from 'zod';
+import {z} from 'zod';
 
-export const publicAuthenticationRequestSchema = z.object({
+export const PublicAuthenticationRequestSchema = z.object({
   client_id: z.string(),
   client_name: z.string(),
   client_description: z.string().nullable(),
@@ -18,5 +18,5 @@ export const publicAuthenticationRequestSchema = z.object({
   register_user_image: z.string().nullable(),
 });
 export type PublicAuthenticationRequest = z.infer<
-  typeof publicAuthenticationRequestSchema
+  typeof PublicAuthenticationRequestSchema
 >;
