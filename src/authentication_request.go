@@ -246,7 +246,6 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "redirect_uri is invalid", "", "")
 	}
 
-	// TODO: テスト
 	allowRules := []*models.ClientAllowRule{}
 
 	if client.IsAllow {
@@ -258,8 +257,6 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		}
 	}
 
-	// リファラー
-	// TODO: テスト
 	refererUrl, err := url.Parse(c.Request().Referer())
 	if err != nil {
 		return nil, err
@@ -272,6 +269,7 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		return nil, err
 	}
 	// リファラーが設定されている場合はチェックする
+	// ホストのみのチェック
 	if len(dbReferer) != 0 {
 		ok := false
 		for _, referrer := range dbReferer {
