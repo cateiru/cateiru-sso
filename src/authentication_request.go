@@ -114,7 +114,6 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 }
 
 // ユーザーが認証可能かチェックする
-// TODO: テスト
 func (a *AuthenticationRequest) CheckUserAuthenticationPossible(ctx context.Context, db *sql.DB, user *models.User) (bool, error) {
 	// ルールが存在しない場合はすべてが認証可能
 	if len(a.AllowRules) == 0 {
