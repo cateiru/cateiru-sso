@@ -697,8 +697,7 @@ var CloudRunStagingConfig = &Config{
 
 	UseCDN: false, // NOTE: ステージング環境はCloudStorageから直接
 	CDNHost: &url.URL{
-		Host:   "storage.googleapis.com",
-		Path:   "/oreore-me-staging",
+		Host:   "cdn.staging.oreore.me",
 		Scheme: "https",
 	},
 	FastlyApiToken: "token", // NOTE: ステージング環境はCloudStorageから直接
