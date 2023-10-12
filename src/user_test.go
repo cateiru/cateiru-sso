@@ -408,6 +408,36 @@ func TestUserUpdateHandler(t *testing.T) {
 		require.EqualError(t, err, "code=400, message=user already exists, unique=12")
 	})
 
+	t.Run("失敗: ユーザ名がuser_nameにすでに存在している", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		userName, err := lib.RandomStr(5)
+		require.NoError(t, err)
+
+		dbUserName := models.UserName{
+			UserName: userName,
+			UserID:   u2.ID,
+			Period:   time.Now().Add(24 * time.Hour),
+		}
+		require.NoError(t, dbUserName.Insert(ctx, DB, boil.Infer()))
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_name", userName)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateHandler(c)
+		require.EqualError(t, err, "code=400, message=user already exists, unique=12")
+	})
+
 	t.Run("失敗: genderの値が不正", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)

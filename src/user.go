@@ -138,6 +138,17 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyExistUser, "user already exists")
 		}
 
+		existUserUserName, err := models.UserNames(
+			models.UserNameWhere.UserName.EQ(userName),
+			models.UserNameWhere.Period.GT(time.Now()),
+		).Exists(ctx, h.DB)
+		if err != nil {
+			return err
+		}
+		if existUserUserName {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyExistUser, "user already exists")
+		}
+
 		user.UserName = userName
 	}
 
