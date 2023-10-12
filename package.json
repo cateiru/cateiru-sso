@@ -39,7 +39,7 @@
     "react-password-strength-bar": "^0.4.1",
     "recoil": "^0.7.7",
     "swr": "^2.2.0",
-    "zod": "^3.21.4"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "@chakra-ui/storybook-addon": "^5.0.1",
