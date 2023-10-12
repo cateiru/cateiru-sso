@@ -218,9 +218,20 @@ func (h *Handler) UserUserNameHandler(c echo.Context) error {
 		message = "ユーザー名は既に使用されています"
 	}
 
+	existUserUserName, err := models.UserNames(
+		models.UserNameWhere.UserName.EQ(userName),
+		models.UserNameWhere.Period.GT(time.Now()),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if existUserUserName {
+		message = "このユーザー名は使用できません"
+	}
+
 	return c.JSON(http.StatusOK, &UserUserNameResponse{
 		UserName: userName,
-		Ok:       !existUser,
+		Ok:       !existUser && !existUserUserName,
 		Message:  message,
 	})
 }

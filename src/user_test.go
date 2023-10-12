@@ -524,6 +524,7 @@ func TestUserUserNameHandler(t *testing.T) {
 
 		require.False(t, response.Ok)
 		require.Equal(t, response.UserName, u2.UserName)
+		require.Equal(t, response.Message, "ユーザー名は既に使用されています")
 	})
 
 	t.Run("自分のユーザー名はOK", func(t *testing.T) {
@@ -548,6 +549,7 @@ func TestUserUserNameHandler(t *testing.T) {
 
 		require.True(t, response.Ok)
 		require.Equal(t, response.UserName, u.UserName)
+		require.Equal(t, response.Message, "ユーザー名は使用可能です")
 	})
 
 	t.Run("ユーザ名が存在しない", func(t *testing.T) {
@@ -575,6 +577,7 @@ func TestUserUserNameHandler(t *testing.T) {
 
 		require.True(t, response.Ok)
 		require.Equal(t, response.UserName, userName)
+		require.Equal(t, response.Message, "ユーザー名は使用可能です")
 	})
 
 	t.Run("ユーザー名は存在しないが、不正な値", func(t *testing.T) {
@@ -599,6 +602,45 @@ func TestUserUserNameHandler(t *testing.T) {
 
 		require.False(t, response.Ok)
 		require.Equal(t, response.UserName, "a")
+		require.Equal(t, response.Message, "ユーザー名は3文字以上15文字以下で半角英数字と'_'のみ使用できます")
+	})
+
+	t.Run("user_nameに含まれている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		userName, err := lib.RandomStr(5)
+		require.NoError(t, err)
+
+		dbUserName := models.UserName{
+			UserName: userName,
+			UserID:   u2.ID,
+			Period:   time.Now().Add(24 * time.Hour),
+		}
+		require.NoError(t, dbUserName.Insert(ctx, DB, boil.Infer()))
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_name", userName)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUserNameHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserUserNameResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.False(t, response.Ok)
+		require.Equal(t, response.UserName, userName)
+		require.Equal(t, response.Message, "このユーザー名は使用できません")
 	})
 }
 
