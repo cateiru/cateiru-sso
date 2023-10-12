@@ -347,7 +347,7 @@ func TestUserUpdateHandler(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("自分のユーザー名は更新可能", func(t *testing.T) {
+	t.Run("成功: 自分のユーザー名は更新可能", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
@@ -355,6 +355,34 @@ func TestUserUpdateHandler(t *testing.T) {
 
 		form := easy.NewMultipart()
 		form.Insert("user_name", u.UserName)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUpdateHandler(c)
+		require.NoError(t, err)
+	})
+
+	t.Run("成功: ユーザ名がuser_nameにすでに存在しているが持っている場合", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		userName, err := lib.RandomStr(5)
+		require.NoError(t, err)
+
+		dbUserName := models.UserName{
+			UserName: userName,
+			UserID:   u.ID,
+			Period:   time.Now().Add(24 * time.Hour),
+		}
+		require.NoError(t, dbUserName.Insert(ctx, DB, boil.Infer()))
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_name", userName)
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
 		m.Cookie(cookies)
@@ -671,6 +699,41 @@ func TestUserUserNameHandler(t *testing.T) {
 		require.False(t, response.Ok)
 		require.Equal(t, response.UserName, userName)
 		require.Equal(t, response.Message, "このユーザー名は使用できません")
+	})
+
+	t.Run("user_nameに含まれているが自分で作ったものなのでOK", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		userName, err := lib.RandomStr(5)
+		require.NoError(t, err)
+
+		dbUserName := models.UserName{
+			UserName: userName,
+			UserID:   u.ID,
+			Period:   time.Now().Add(24 * time.Hour),
+		}
+		require.NoError(t, dbUserName.Insert(ctx, DB, boil.Infer()))
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		form := easy.NewMultipart()
+		form.Insert("user_name", userName)
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.UserUserNameHandler(c)
+		require.NoError(t, err)
+
+		response := src.UserUserNameResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.True(t, response.Ok)
+		require.Equal(t, response.UserName, userName)
+		require.Equal(t, response.Message, "ユーザー名は使用可能です")
 	})
 }
 

@@ -140,6 +140,7 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 
 		existUserUserName, err := models.UserNames(
 			models.UserNameWhere.UserName.EQ(userName),
+			models.UserNameWhere.UserID.NEQ(user.ID),
 			models.UserNameWhere.Period.GT(time.Now()),
 		).Exists(ctx, h.DB)
 		if err != nil {
@@ -231,6 +232,7 @@ func (h *Handler) UserUserNameHandler(c echo.Context) error {
 
 	existUserUserName, err := models.UserNames(
 		models.UserNameWhere.UserName.EQ(userName),
+		models.UserNameWhere.UserID.NEQ(u.ID),
 		models.UserNameWhere.Period.GT(time.Now()),
 	).Exists(ctx, h.DB)
 	if err != nil {
