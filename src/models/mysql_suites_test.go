@@ -70,6 +70,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("UserBrands", testUserBrandsUpsert)
 
+	t.Run("UserNames", testUserNamesUpsert)
+
 	t.Run("Webauthns", testWebauthnsUpsert)
 
 	t.Run("WebauthnSessions", testWebauthnSessionsUpsert)

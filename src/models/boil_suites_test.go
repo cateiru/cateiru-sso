@@ -44,6 +44,7 @@ func TestParent(t *testing.T) {
 	t.Run("Staffs", testStaffs)
 	t.Run("Users", testUsers)
 	t.Run("UserBrands", testUserBrands)
+	t.Run("UserNames", testUserNames)
 	t.Run("Webauthns", testWebauthns)
 	t.Run("WebauthnSessions", testWebauthnSessions)
 }
@@ -81,6 +82,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Staffs", testStaffsDelete)
 	t.Run("Users", testUsersDelete)
 	t.Run("UserBrands", testUserBrandsDelete)
+	t.Run("UserNames", testUserNamesDelete)
 	t.Run("Webauthns", testWebauthnsDelete)
 	t.Run("WebauthnSessions", testWebauthnSessionsDelete)
 }
@@ -118,6 +120,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Staffs", testStaffsQueryDeleteAll)
 	t.Run("Users", testUsersQueryDeleteAll)
 	t.Run("UserBrands", testUserBrandsQueryDeleteAll)
+	t.Run("UserNames", testUserNamesQueryDeleteAll)
 	t.Run("Webauthns", testWebauthnsQueryDeleteAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsQueryDeleteAll)
 }
@@ -155,6 +158,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Staffs", testStaffsSliceDeleteAll)
 	t.Run("Users", testUsersSliceDeleteAll)
 	t.Run("UserBrands", testUserBrandsSliceDeleteAll)
+	t.Run("UserNames", testUserNamesSliceDeleteAll)
 	t.Run("Webauthns", testWebauthnsSliceDeleteAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsSliceDeleteAll)
 }
@@ -192,6 +196,7 @@ func TestExists(t *testing.T) {
 	t.Run("Staffs", testStaffsExists)
 	t.Run("Users", testUsersExists)
 	t.Run("UserBrands", testUserBrandsExists)
+	t.Run("UserNames", testUserNamesExists)
 	t.Run("Webauthns", testWebauthnsExists)
 	t.Run("WebauthnSessions", testWebauthnSessionsExists)
 }
@@ -229,6 +234,7 @@ func TestFind(t *testing.T) {
 	t.Run("Staffs", testStaffsFind)
 	t.Run("Users", testUsersFind)
 	t.Run("UserBrands", testUserBrandsFind)
+	t.Run("UserNames", testUserNamesFind)
 	t.Run("Webauthns", testWebauthnsFind)
 	t.Run("WebauthnSessions", testWebauthnSessionsFind)
 }
@@ -266,6 +272,7 @@ func TestBind(t *testing.T) {
 	t.Run("Staffs", testStaffsBind)
 	t.Run("Users", testUsersBind)
 	t.Run("UserBrands", testUserBrandsBind)
+	t.Run("UserNames", testUserNamesBind)
 	t.Run("Webauthns", testWebauthnsBind)
 	t.Run("WebauthnSessions", testWebauthnSessionsBind)
 }
@@ -303,6 +310,7 @@ func TestOne(t *testing.T) {
 	t.Run("Staffs", testStaffsOne)
 	t.Run("Users", testUsersOne)
 	t.Run("UserBrands", testUserBrandsOne)
+	t.Run("UserNames", testUserNamesOne)
 	t.Run("Webauthns", testWebauthnsOne)
 	t.Run("WebauthnSessions", testWebauthnSessionsOne)
 }
@@ -340,6 +348,7 @@ func TestAll(t *testing.T) {
 	t.Run("Staffs", testStaffsAll)
 	t.Run("Users", testUsersAll)
 	t.Run("UserBrands", testUserBrandsAll)
+	t.Run("UserNames", testUserNamesAll)
 	t.Run("Webauthns", testWebauthnsAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsAll)
 }
@@ -377,6 +386,7 @@ func TestCount(t *testing.T) {
 	t.Run("Staffs", testStaffsCount)
 	t.Run("Users", testUsersCount)
 	t.Run("UserBrands", testUserBrandsCount)
+	t.Run("UserNames", testUserNamesCount)
 	t.Run("Webauthns", testWebauthnsCount)
 	t.Run("WebauthnSessions", testWebauthnSessionsCount)
 }
@@ -414,6 +424,7 @@ func TestHooks(t *testing.T) {
 	t.Run("Staffs", testStaffsHooks)
 	t.Run("Users", testUsersHooks)
 	t.Run("UserBrands", testUserBrandsHooks)
+	t.Run("UserNames", testUserNamesHooks)
 	t.Run("Webauthns", testWebauthnsHooks)
 	t.Run("WebauthnSessions", testWebauthnSessionsHooks)
 }
@@ -483,6 +494,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Users", testUsersInsertWhitelist)
 	t.Run("UserBrands", testUserBrandsInsert)
 	t.Run("UserBrands", testUserBrandsInsertWhitelist)
+	t.Run("UserNames", testUserNamesInsert)
+	t.Run("UserNames", testUserNamesInsertWhitelist)
 	t.Run("Webauthns", testWebauthnsInsert)
 	t.Run("Webauthns", testWebauthnsInsertWhitelist)
 	t.Run("WebauthnSessions", testWebauthnSessionsInsert)
@@ -696,6 +709,7 @@ func TestReload(t *testing.T) {
 	t.Run("Staffs", testStaffsReload)
 	t.Run("Users", testUsersReload)
 	t.Run("UserBrands", testUserBrandsReload)
+	t.Run("UserNames", testUserNamesReload)
 	t.Run("Webauthns", testWebauthnsReload)
 	t.Run("WebauthnSessions", testWebauthnSessionsReload)
 }
@@ -733,6 +747,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Staffs", testStaffsReloadAll)
 	t.Run("Users", testUsersReloadAll)
 	t.Run("UserBrands", testUserBrandsReloadAll)
+	t.Run("UserNames", testUserNamesReloadAll)
 	t.Run("Webauthns", testWebauthnsReloadAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsReloadAll)
 }
@@ -770,6 +785,7 @@ func TestSelect(t *testing.T) {
 	t.Run("Staffs", testStaffsSelect)
 	t.Run("Users", testUsersSelect)
 	t.Run("UserBrands", testUserBrandsSelect)
+	t.Run("UserNames", testUserNamesSelect)
 	t.Run("Webauthns", testWebauthnsSelect)
 	t.Run("WebauthnSessions", testWebauthnSessionsSelect)
 }
@@ -807,6 +823,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Staffs", testStaffsUpdate)
 	t.Run("Users", testUsersUpdate)
 	t.Run("UserBrands", testUserBrandsUpdate)
+	t.Run("UserNames", testUserNamesUpdate)
 	t.Run("Webauthns", testWebauthnsUpdate)
 	t.Run("WebauthnSessions", testWebauthnSessionsUpdate)
 }
@@ -844,6 +861,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Staffs", testStaffsSliceUpdateAll)
 	t.Run("Users", testUsersSliceUpdateAll)
 	t.Run("UserBrands", testUserBrandsSliceUpdateAll)
+	t.Run("UserNames", testUserNamesSliceUpdateAll)
 	t.Run("Webauthns", testWebauthnsSliceUpdateAll)
 	t.Run("WebauthnSessions", testWebauthnSessionsSliceUpdateAll)
 }

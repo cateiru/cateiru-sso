@@ -36,6 +36,7 @@ var TableNames = struct {
 	Staff                         string
 	User                          string
 	UserBrand                     string
+	UserName                      string
 	Webauthn                      string
 	WebauthnSession               string
 }{
@@ -71,6 +72,7 @@ var TableNames = struct {
 	Staff:                         "staff",
 	User:                          "user",
 	UserBrand:                     "user_brand",
+	UserName:                      "user_name",
 	Webauthn:                      "webauthn",
 	WebauthnSession:               "webauthn_session",
 }
