@@ -567,7 +567,7 @@ var CloudRunStagingConfig = &Config{
 	ReCaptchaAllowScore: 50,
 
 	DatabaseConfig: &mysql.Config{
-		DBName:               "cateiru-sso-staging",
+		DBName:               "oreore-staging",
 		User:                 os.Getenv("DB_USER"),
 		Passwd:               os.Getenv("DB_PASSWORD"),
 		Addr:                 fmt.Sprintf("/cloudsql/%s", os.Getenv("INSTANCE_CONNECTION_NAME")),
