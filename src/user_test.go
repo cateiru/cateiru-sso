@@ -363,6 +363,12 @@ func TestUserUpdateHandler(t *testing.T) {
 
 		err = h.UserUpdateHandler(c)
 		require.NoError(t, err)
+
+		userName, err := models.UserNames(
+			models.UserNameWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, userName.UserName, u.UserName, "更新前のユーザー名がuser_nameに入っている")
 	})
 
 	t.Run("成功: ユーザ名がuser_nameにすでに存在しているが持っている場合", func(t *testing.T) {

@@ -12,6 +12,5 @@ CREATE TABLE `user_name` (
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     PRIMARY KEY (`id`),
-    INDEX `user_name_user_name_period` (`user_name`, `period`),
-    INDEX `user_name_user_name_id` (`user_name`, `user_id`)
+    INDEX `user_name_user_name_id_period` (`user_name`, `user_id`, `period`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;

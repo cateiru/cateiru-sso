@@ -150,6 +150,16 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyExistUser, "user already exists")
 		}
 
+		// 古いユーザー名をuser_nameテーブルにinsertする
+		dbUserName := models.UserName{
+			UserName: user.UserName,
+			UserID:   user.ID,
+			Period:   time.Now().Add(h.C.UserNamePeriod),
+		}
+		if err := dbUserName.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+
 		user.UserName = userName
 	}
 
