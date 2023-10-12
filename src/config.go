@@ -145,7 +145,7 @@ type Config struct {
 
 	// ---- Clientの設定
 
-	// クライアントのセッション有効期限お
+	// クライアントのセッション有効期限
 	ClientSessionPeriod time.Duration
 	// クライアントのリフレッシュトークン有効期限
 	ClientRefreshPeriod time.Duration
@@ -158,6 +158,9 @@ type Config struct {
 	ClientRedirectURLMaxCreated int
 	// クライアントのリファラーURL最大数
 	ClientReferrerURLMaxCreated int
+
+	// ユーザー名更新時の過去のユーザー名の有効期限
+	UserNamePeriod time.Duration
 }
 
 var configs = []*Config{
@@ -361,6 +364,8 @@ var LocalConfig = &Config{
 	OrgClientMaxCreated:         100,
 	ClientRedirectURLMaxCreated: 10,
 	ClientReferrerURLMaxCreated: 10,
+
+	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 }
 
 var CloudRunConfig = &Config{
@@ -539,6 +544,8 @@ var CloudRunConfig = &Config{
 	OrgClientMaxCreated:         100,
 	ClientRedirectURLMaxCreated: 10,
 	ClientReferrerURLMaxCreated: 10,
+
+	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 }
 
 var CloudRunStagingConfig = &Config{
@@ -719,6 +726,8 @@ var CloudRunStagingConfig = &Config{
 	OrgClientMaxCreated:         100,
 	ClientRedirectURLMaxCreated: 10,
 	ClientReferrerURLMaxCreated: 10,
+
+	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 }
 
 var TestConfig = &Config{
@@ -880,6 +889,8 @@ var TestConfig = &Config{
 	OrgClientMaxCreated:         6, // テスト時のinsertを削減するために小さくしている
 	ClientRedirectURLMaxCreated: 5,
 	ClientReferrerURLMaxCreated: 5,
+
+	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 }
 
 func InitConfig(mode string) *Config {
