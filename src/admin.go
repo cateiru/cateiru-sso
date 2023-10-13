@@ -1280,3 +1280,24 @@ func (h *Handler) AdminDeleteRegisterSessionHandler(c echo.Context) error {
 
 	return nil
 }
+
+func (h *Handler) AdminUserNameHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	userNames, err := models.UserNames(
+		models.UserNameWhere.Period.GT(time.Now()),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, userNames)
+}

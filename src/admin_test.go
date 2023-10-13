@@ -2154,3 +2154,50 @@ func TestAdminDeleteRegisterSessionHandler(t *testing.T) {
 		require.EqualError(t, err, "code=404, message=register session not found")
 	})
 }
+
+func TestAdminUserNameHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminUserNameHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	}, func(c echo.Context) echo.Context {
+		return c
+	})
+
+	t.Run("成功: 一覧を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		userName, err := lib.RandomStr(10)
+		require.NoError(t, err)
+
+		// 最低1つが返ってくることを確認するため1つだけ追加しておく
+		un := models.UserName{
+			UserName: userName,
+			UserID:   u.ID,
+			Period:   time.Now().Add(h.C.UserNamePeriod),
+		}
+		err = un.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		c := m.Echo()
+
+		err = h.AdminUserNameHandler(c)
+		require.NoError(t, err)
+
+		response := []models.UserName{}
+		require.NoError(t, m.Json(&response))
+
+		require.NotEqual(t, len(response), 0)
+	})
+}
