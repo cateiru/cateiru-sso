@@ -20,6 +20,16 @@ export const Staff = () => {
         >
           ユーザー一覧
         </Button>
+        <Button
+          variant="outline"
+          colorScheme="cateiru"
+          w="100%"
+          as={Link}
+          mt="1rem"
+          href="/staff/user_names"
+        >
+          予約されているユーザー名の一覧
+        </Button>
       </Card>
       <Card
         title="ブランド"
