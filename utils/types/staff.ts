@@ -120,3 +120,17 @@ export type RegisterSession = z.infer<typeof RegisterSessionSchema>;
 
 export const RegisterSessionsSchema = z.array(RegisterSessionSchema);
 export type RegisterSessions = z.infer<typeof RegisterSessionsSchema>;
+
+export const UserNameSchema = z.object({
+  id: z.number(),
+  user_name: z.string(),
+  user_id: z.string(),
+  period: z.string().datetime({offset: true}),
+
+  created_at: z.string().datetime({offset: true}),
+  updated_at: z.string().datetime({offset: true}),
+});
+export type UserName = z.infer<typeof UserNameSchema>;
+
+export const UsernamesSchema = z.array(UserNameSchema);
+export type UserNames = z.infer<typeof UsernamesSchema>;

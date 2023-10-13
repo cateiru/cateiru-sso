@@ -1299,5 +1299,9 @@ func (h *Handler) AdminUserNameHandler(c echo.Context) error {
 		return err
 	}
 
+	if userNames == nil {
+		userNames = []*models.UserName{}
+	}
+
 	return c.JSON(http.StatusOK, userNames)
 }

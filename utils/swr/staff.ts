@@ -12,6 +12,7 @@ import {
   StaffClientsSchema,
   StaffUsersSchema,
   UserDetailSchema,
+  UsernamesSchema,
 } from '../types/staff';
 
 export async function orgsFeather() {
@@ -218,6 +219,29 @@ export async function staffRegisterSessionsFeather() {
   }
 
   const data = RegisterSessionsSchema.safeParse(await res.json());
+  if (data.success) {
+    return data.data;
+  }
+  console.error(data.error);
+  throw new HTTPError(data.error.message);
+}
+
+export async function staffUserNameFetcher() {
+  const res = await fetch(api('/v2/admin/user_name'), {
+    credentials: 'include',
+    mode: 'cors',
+  });
+
+  if (!res.ok) {
+    const data = ErrorSchema.safeParse(await res.json());
+    if (data.success) {
+      throw data.data;
+    }
+    console.error(data.error.message);
+    throw new HTTPError(data.error.message);
+  }
+
+  const data = UsernamesSchema.safeParse(await res.json());
   if (data.success) {
     return data.data;
   }
