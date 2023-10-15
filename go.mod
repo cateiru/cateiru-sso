@@ -15,7 +15,7 @@ require (
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/mailgun/mailgun-go v2.0.0+incompatible
-	github.com/mileusna/useragent v1.2.1
+	github.com/mileusna/useragent v1.3.4
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/pquerna/otp v1.4.0
 	github.com/scottleedavis/go-exif-remove v0.0.0-20230314195146-7e059d593405
