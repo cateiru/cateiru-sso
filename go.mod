@@ -8,7 +8,7 @@ require (
 	github.com/cateiru/go-http-easy-test/v2 v2.0.1
 	github.com/fastly/go-fastly/v7 v7.5.5
 	github.com/friendsofgo/errors v0.9.2
-	github.com/go-sql-driver/mysql v1.7.0
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/go-webauthn/webauthn v0.8.2
 	github.com/google/uuid v1.3.0
 	github.com/jarcoal/httpmock v1.3.0
