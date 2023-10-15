@@ -70,6 +70,7 @@ func (c *CloudStorage) Write(ctx context.Context, path string, data io.Reader, c
 	writer := object.NewWriter(ctx)
 	defer writer.Close()
 	writer.ContentType = contentType
+	writer.CacheControl = "no-store" // CDN側でキャッシュするためCloud Storage側ではキャッシュしない
 
 	_, err = io.Copy(writer, data)
 	if err != nil {
