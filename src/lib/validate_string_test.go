@@ -216,7 +216,6 @@ func TestValidateContentType(t *testing.T) {
 			"image/gif",
 			"image/jpeg",
 			"image/png",
-			"image/webp",
 		}
 
 		for _, c := range contentTypes {
@@ -230,6 +229,7 @@ func TestValidateContentType(t *testing.T) {
 			"image/bmp",
 			"image/tiff",
 			"image/svg+xml",
+			"image/webp",
 		}
 
 		for _, c := range contentTypes {

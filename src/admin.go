@@ -681,8 +681,14 @@ func (h *Handler) AdminOrgCreateHandler(c echo.Context) error {
 		if !lib.ValidateContentType(contentType) {
 			return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
 		}
+
+		img, err := lib.ValidateImage(file, h.C.ImageSizePixel, h.C.ImageSizePixel)
+		if err != nil {
+			return err
+		}
+
 		path := filepath.Join("org", orgId.String())
-		if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+		if err := h.Storage.Write(ctx, path, img, contentType); err != nil {
 			return err
 		}
 
@@ -782,8 +788,14 @@ func (h *Handler) AdminOrgUpdateHandler(c echo.Context) error {
 		if !lib.ValidateContentType(contentType) {
 			return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
 		}
+
+		img, err := lib.ValidateImage(file, h.C.ImageSizePixel, h.C.ImageSizePixel)
+		if err != nil {
+			return err
+		}
+
 		path := filepath.Join("org", orgId)
-		if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+		if err := h.Storage.Write(ctx, path, img, contentType); err != nil {
 			return err
 		}
 

@@ -476,9 +476,16 @@ func (h *Handler) UserAvatarHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	defer file.Close()
+
 	contentType := fileHeader.Header.Get("Content-Type")
 	if !lib.ValidateContentType(contentType) {
 		return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
+	}
+
+	image, err := lib.ValidateImage(file, h.C.ImageSizePixel, h.C.ImageSizePixel)
+	if err != nil {
+		return err
 	}
 
 	user, err := h.Session.SimpleLogin(ctx, c)
@@ -487,7 +494,7 @@ func (h *Handler) UserAvatarHandler(c echo.Context) error {
 	}
 
 	path := filepath.Join("avatar", user.ID)
-	if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+	if err := h.Storage.Write(ctx, path, image, contentType); err != nil {
 		return err
 	}
 

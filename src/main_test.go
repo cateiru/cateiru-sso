@@ -53,7 +53,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Print("-----------------------------\n")
 		fmt.Print("データベースに接続できません。\n\n")
-		fmt.Println("* データベースを立ち上げる場合は`./scripts/docker-compose-db.sh up -d`を実行してください。")
+		fmt.Println("* データベースを立ち上げる場合は`docker compose up -d`を実行してください。")
 		fmt.Println("* すでにデータベースを立ち上げている場合は`src/config.go`の設定を見直してください。")
 		fmt.Print("-----------------------------\n\n")
 		panic(err)

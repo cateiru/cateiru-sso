@@ -33,6 +33,7 @@ func ValidateImage(data io.Reader, width, height int) (*bytes.Buffer, error) {
 		return nil, err
 	}
 
+	// exif 削除
 	noExifBytes, err := exifremove.Remove(buffer.Bytes())
 	if err != nil {
 		return nil, err

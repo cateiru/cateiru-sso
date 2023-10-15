@@ -490,8 +490,14 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		if !lib.ValidateContentType(contentType) {
 			return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
 		}
+
+		img, err := lib.ValidateImage(file, h.C.ImageSizePixel, h.C.ImageSizePixel)
+		if err != nil {
+			return err
+		}
+
 		path := filepath.Join("client_icon", clientId.String())
-		if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+		if err := h.Storage.Write(ctx, path, img, contentType); err != nil {
 			return err
 		}
 
@@ -722,8 +728,14 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 			if !lib.ValidateContentType(contentType) {
 				return NewHTTPError(http.StatusBadRequest, "invalid Content-Type")
 			}
+
+			img, err := lib.ValidateImage(file, h.C.ImageSizePixel, h.C.ImageSizePixel)
+			if err != nil {
+				return err
+			}
+
 			path := filepath.Join("client_icon", clientId)
-			if err := h.Storage.Write(ctx, path, file, contentType); err != nil {
+			if err := h.Storage.Write(ctx, path, img, contentType); err != nil {
 				return err
 			}
 			// ローカル環境では /[bucket-name]/avatar/[image] となるので

@@ -161,6 +161,10 @@ type Config struct {
 
 	// ユーザー名更新時の過去のユーザー名の有効期限
 	UserNamePeriod time.Duration
+
+	// 画像サイズ
+	// ユーザーアバターなどこのサイズにリサイズされます
+	ImageSizePixel int
 }
 
 var configs = []*Config{
@@ -366,6 +370,8 @@ var LocalConfig = &Config{
 	ClientReferrerURLMaxCreated: 10,
 
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
+
+	ImageSizePixel: 1000,
 }
 
 var CloudRunConfig = &Config{
@@ -546,6 +552,8 @@ var CloudRunConfig = &Config{
 	ClientReferrerURLMaxCreated: 10,
 
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
+
+	ImageSizePixel: 1000,
 }
 
 var CloudRunStagingConfig = &Config{
@@ -728,6 +736,8 @@ var CloudRunStagingConfig = &Config{
 	ClientReferrerURLMaxCreated: 10,
 
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
+
+	ImageSizePixel: 1000,
 }
 
 var TestConfig = &Config{
@@ -891,6 +901,8 @@ var TestConfig = &Config{
 	ClientReferrerURLMaxCreated: 5,
 
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
+
+	ImageSizePixel: 1000,
 }
 
 func InitConfig(mode string) *Config {
