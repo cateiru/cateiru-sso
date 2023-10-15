@@ -202,7 +202,6 @@ func TestRegisterWebauthn(t *testing.T) {
 		session := &webauthn.SessionData{
 			Challenge:        challenge,
 			UserID:           []byte(userId),
-			UserDisplayName:  "test taro",
 			UserVerification: protocol.VerificationRequired,
 		}
 		row := types.JSON{}
@@ -293,7 +292,6 @@ func TestLoginWebauthn(t *testing.T) {
 		session := &webauthn.SessionData{
 			Challenge:        challenge,
 			UserID:           userId,
-			UserDisplayName:  "test taro",
 			UserVerification: protocol.VerificationRequired,
 		}
 		row := types.JSON{}
