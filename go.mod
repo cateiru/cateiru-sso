@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/jarcoal/httpmock v1.3.1
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
-	github.com/labstack/echo/v4 v4.11.1
+	github.com/labstack/echo/v4 v4.11.2
 	github.com/mailgun/mailgun-go v2.0.0+incompatible
 	github.com/mileusna/useragent v1.2.1
 	github.com/oklog/ulid/v2 v2.1.0
@@ -26,9 +26,9 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.14.1
 	github.com/volatiletech/strmangle v0.0.4
 	go.uber.org/zap v1.24.0
-	golang.org/x/crypto v0.11.0
+	golang.org/x/crypto v0.14.0
 	golang.org/x/image v0.13.0
-	golang.org/x/net v0.12.0
+	golang.org/x/net v0.17.0
 	golang.org/x/text v0.13.0
 )
 
@@ -98,7 +98,7 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.132.0 // indirect
