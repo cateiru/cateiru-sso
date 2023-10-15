@@ -371,7 +371,7 @@ var LocalConfig = &Config{
 
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 
-	ImageSizePixel: 1000,
+	ImageSizePixel: 500,
 }
 
 var CloudRunConfig = &Config{
@@ -553,7 +553,7 @@ var CloudRunConfig = &Config{
 
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 
-	ImageSizePixel: 1000,
+	ImageSizePixel: 500,
 }
 
 var CloudRunStagingConfig = &Config{
@@ -737,7 +737,7 @@ var CloudRunStagingConfig = &Config{
 
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 
-	ImageSizePixel: 1000,
+	ImageSizePixel: 500,
 }
 
 var TestConfig = &Config{
@@ -902,7 +902,7 @@ var TestConfig = &Config{
 
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 
-	ImageSizePixel: 1000,
+	ImageSizePixel: 500,
 }
 
 func InitConfig(mode string) *Config {
