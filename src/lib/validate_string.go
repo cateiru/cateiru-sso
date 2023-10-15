@@ -17,7 +17,6 @@ var allowContentType = []string{
 	"image/gif",
 	"image/jpeg",
 	"image/png",
-	"image/webp",
 }
 
 // orgのロール

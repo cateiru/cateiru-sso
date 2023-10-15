@@ -1,23 +1,42 @@
 package lib
 
 import (
+	"bytes"
 	"image"
+	"image/png"
 	"io"
 
+	exifremove "github.com/scottleedavis/go-exif-remove"
 	"golang.org/x/image/draw"
+
+	_ "image/gif"
+	_ "image/jpeg"
 )
 
-// TODO
-func ValidateImage(data io.Reader) error {
-	imgSrc, _, err := image.Decode(data)
+// 画像のリサイズをExif削除を行う
+func ValidateImage(data io.Reader, width, height int) (*bytes.Buffer, error) {
+	img, _, err := image.Decode(data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	rctSrc := imgSrc.Bounds()
+	rctSrc := img.Bounds()
 
-	imgDst := image.NewRGBA(image.Rect(0, 0, rctSrc.Dx()/4, rctSrc.Dy()/4))
-	draw.CatmullRom.Scale(imgDst, imgDst.Bounds(), imgSrc, rctSrc, draw.Over, nil)
+	imgDst := image.NewRGBA(image.Rect(0, 0, width, height))
+	draw.CatmullRom.Scale(imgDst, imgDst.Bounds(), img, rctSrc, draw.Over, nil)
 
-	return nil
+	buffer := &bytes.Buffer{}
+	writer := io.Writer(buffer)
+
+	err = png.Encode(writer, imgDst)
+	if err != nil {
+		return nil, err
+	}
+
+	noExifBytes, err := exifremove.Remove(buffer.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.NewBuffer(noExifBytes), nil
 }
