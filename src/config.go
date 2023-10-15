@@ -710,12 +710,12 @@ var CloudRunStagingConfig = &Config{
 	InternalBasicAuthUserName: "user",
 	InternalBasicAuthPassword: "password",
 
-	UseCDN: false, // NOTE: ステージング環境はCloudStorageから直接
+	UseCDN: true,
 	CDNHost: &url.URL{
 		Host:   "cdn.staging.oreore.me",
 		Scheme: "https",
 	},
-	FastlyApiToken: "token", // NOTE: ステージング環境はCloudStorageから直接
+	FastlyApiToken: os.Getenv("FASTLY_API_TOKEN"),
 
 	StorageBucketName: "oreore-me-staging",
 
