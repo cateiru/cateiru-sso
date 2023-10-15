@@ -186,6 +186,8 @@ github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 h1:7HZCaLC5+BZpm
 github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4/go.mod h1:5tD+neXqOorC30/tWg0LCSkrqj/AR6gu8yY8/fpw1q0=
 github.com/fastly/go-fastly/v7 v7.5.4 h1:IFO4sN2PHEQlq4KwO8WNI8HiiuVI9TgND7RpkgaEnwo=
 github.com/fastly/go-fastly/v7 v7.5.4/go.mod h1:/Z2GD7NuxV3vVMAyrtckg1WvZVnCuM2Z8ok/z70XTEQ=
+github.com/fastly/go-fastly/v7 v7.5.5 h1:M3ePbU6a8BTPZzjaPoU4+O+pQspiBalF5HgVNomHlJI=
+github.com/fastly/go-fastly/v7 v7.5.5/go.mod h1:/Z2GD7NuxV3vVMAyrtckg1WvZVnCuM2Z8ok/z70XTEQ=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
