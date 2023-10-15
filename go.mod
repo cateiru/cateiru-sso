@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	cloud.google.com/go/storage v1.33.0
-	github.com/cateiru/go-client-hints/v2 v2.1.0
+	github.com/cateiru/go-client-hints/v2 v2.1.1
 	github.com/cateiru/go-http-easy-test/v2 v2.0.1
 	github.com/fastly/go-fastly/v7 v7.5.4
 	github.com/friendsofgo/errors v0.9.2
@@ -19,7 +19,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/pquerna/otp v1.4.0
 	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.14.1
