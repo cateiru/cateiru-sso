@@ -145,7 +145,7 @@ func (c *CDNMock) SoftPurge(url string) error {
 // --- StorageMock
 
 func (c *StorageMock) Read(ctx context.Context, path string) ([]byte, string, error) {
-	file, err := os.OpenFile("test_sample_image.png", os.O_RDONLY, 666)
+	file, err := os.OpenFile("test_sample_image.png", os.O_RDONLY, 0666)
 	if err != nil {
 		return []byte{}, "", err
 	}
