@@ -14,6 +14,7 @@ interface Props {
   orgId: string;
   apiEndpoint: string;
   handleSuccess: () => void;
+  defaultRole?: string;
 }
 
 export interface JoinFormData {
@@ -29,7 +30,7 @@ export const OrgJoinUser: React.FC<Props> = props => {
     formState: {isSubmitting, errors},
   } = useForm<JoinFormData>({
     defaultValues: {
-      role: 'guest',
+      role: props.defaultRole ?? 'guest',
     },
   });
   const {request} = useRequest(props.apiEndpoint);

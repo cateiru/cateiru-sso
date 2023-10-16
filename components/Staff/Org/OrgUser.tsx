@@ -55,6 +55,7 @@ export const OrgUser: React.FC<Props> = ({users, orgId}) => {
         orgId={orgId}
         handleSuccess={purge}
         apiEndpoint="/v2/admin/org/member"
+        defaultRole="owner"
       />
       <TableContainer mt="1rem">
         <Table variant="simple">
