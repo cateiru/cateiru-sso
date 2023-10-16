@@ -1118,6 +1118,7 @@ func TestClientUpdateHandler(t *testing.T) {
 		form.Insert("referrer_url_count", "2")
 		form.Insert("referrer_url_0", "https://aaaa.test")
 		form.Insert("referrer_url_1", "https://bbbb.test")
+		form.Insert("org_member_only", "true")
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
@@ -1133,6 +1134,7 @@ func TestClientUpdateHandler(t *testing.T) {
 
 		require.Equal(t, "new!!! name", response.Name)
 		require.Equal(t, response.ClientSecret, clientSecret)
+		require.True(t, response.OrgMemberOnly)
 
 		// スコープ
 		scopes, err := models.ClientScopes(

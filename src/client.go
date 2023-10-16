@@ -616,6 +616,7 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 	isAllowForm := c.FormValue("is_allow")
 	prompt := c.FormValue("prompt")
 	scope := c.FormValue("scopes")
+	orgMemberOnly := c.FormValue("org_member_only")
 
 	redirectUrlForms, err := h.FormValues(c, "redirect_url")
 	if err != nil {
@@ -768,6 +769,10 @@ func (h *Handler) ClientUpdateHandler(c echo.Context) error {
 		client.Description = null.NewString(description, description != "")
 		client.IsAllow = isAllow
 		client.Prompt = null.NewString(prompt, prompt != "")
+
+		if client.OrgID.Valid {
+			client.OrgMemberOnly = orgMemberOnly == "true"
+		}
 
 		if _, err := client.Update(ctx, h.DB, boil.Infer()); err != nil {
 			return err
