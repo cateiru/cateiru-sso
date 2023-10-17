@@ -12,22 +12,29 @@ import {
   Link,
   ListItem,
   Stack,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
+  Tr,
   UnorderedList,
   keyframes,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import {
+  TbDiscountCheck,
   TbExternalLink,
   TbFileDescription,
   TbPlugConnected,
   TbSquareKey,
   TbUserQuestion,
 } from 'react-icons/tb';
+import {PublicAuthenticationRequest} from '../../utils/types/auth';
 import {validateScope} from '../../utils/validate';
 import {Avatar} from '../Common/Chakra/Avatar';
 import {Tooltip} from '../Common/Chakra/Tooltip';
-import {useShadowColor} from '../Common/useColor';
 
 const rotate = keyframes`
 0%,
@@ -43,30 +50,21 @@ interface Props {
   userName: string;
   userImage?: string;
 
-  clientName: string;
-  description?: string;
-  clientImage?: string;
-
-  registerUserName: string;
-  registerUserImage?: string;
-
-  orgName?: string;
-  orgImage?: string;
-  orgMemberOnly: boolean;
-
-  scopes?: string[];
-  redirectUri: string;
+  data: PublicAuthenticationRequest;
 
   onSubmit: () => Promise<void>;
   onCancel: () => Promise<void>;
 }
 
 export const Consent: React.FC<Props> = props => {
-  const shadowColor = useShadowColor();
+  const shadow = useColorModeValue(
+    '0px 0px 5px -2px #242838',
+    '0px 0px 10px -2px #000000'
+  );
   const [isLoadingSubmit, setIsLoadingSubmit] = React.useState(false);
   const [isLoadingCancel, setIsLoadingCancel] = React.useState(false);
 
-  const redirectUriHost = new URL(props.redirectUri);
+  const redirectUriHost = new URL(props.data.redirect_uri);
   redirectUriHost.pathname = '';
 
   const onSubmit = () => {
@@ -99,7 +97,7 @@ export const Consent: React.FC<Props> = props => {
     <Flex
       w={{base: '96%', sm: '450px'}}
       minH={{base: '600px', sm: '700px'}}
-      boxShadow={{base: 'none', sm: `0px 0px 10px -2px ${shadowColor}`}}
+      boxShadow={shadow}
       borderRadius="10px"
       mx="auto"
       py="2rem"
@@ -112,7 +110,7 @@ export const Consent: React.FC<Props> = props => {
           background="linear-gradient(132deg, #e23d3d 0%, #ec44bd 100%);"
           backgroundClip="text"
         >
-          {props.clientName}
+          {props.data.client_name}
         </Heading>
       </Center>
       <Text textAlign="center" fontWeight="bold">
@@ -138,19 +136,27 @@ export const Consent: React.FC<Props> = props => {
             }}
           />
         </Center>
-        <Tooltip label={props.clientName} placement="top">
-          <Avatar src={props.clientImage} justifyContent="flex-end" size="lg" />
+        <Tooltip label={props.data.client_name} placement="top">
+          <Avatar
+            src={props.data.image ?? ''}
+            justifyContent="flex-end"
+            size="lg"
+          />
         </Tooltip>
       </Center>
 
-      {props.orgMemberOnly && (
+      {props.data.org_member_only && (
         <Text textAlign="center" my=".5rem" fontSize=".8rem">
           このクライアントは組織に所属しているユーザーのみ有効です。
         </Text>
       )}
 
-      <Accordion mt="1rem" defaultIndex={[0]} allowMultiple>
-        {props.description && (
+      <Accordion
+        mt="1rem"
+        defaultIndex={props.data.client_description ? [0, 1] : [0]}
+        allowMultiple
+      >
+        {props.data.client_description && (
           <AccordionItem>
             <Text as="h2">
               <AccordionButton>
@@ -169,7 +175,7 @@ export const Consent: React.FC<Props> = props => {
             </Text>
             <AccordionPanel mx=".5rem">
               <Text as="pre" whiteSpace="pre-wrap" w="100%">
-                {props.description}
+                {props.data.client_description}
               </Text>
             </AccordionPanel>
           </AccordionItem>
@@ -192,7 +198,7 @@ export const Consent: React.FC<Props> = props => {
           </Text>
           <AccordionPanel>
             <UnorderedList pl="1rem" mb=".5rem">
-              {props.scopes?.map(v => {
+              {props.data.scopes?.map(v => {
                 return (
                   <ListItem key={`scope-${v}`}>{validateScope(v)}</ListItem>
                 );
@@ -211,28 +217,61 @@ export const Consent: React.FC<Props> = props => {
                 textAlign="left"
                 fontWeight="bold"
               >
-                {`作成者${props.orgName ? '・組織' : ''}に関する情報`}
+                {`作成者${props.data.org_name ? '・組織' : ''}に関する情報`}
               </Text>
               <AccordionIcon />
             </AccordionButton>
           </Text>
           <AccordionPanel>
-            {props.orgName && (
+            {props.data.org_name && (
               <Text mb="1rem">
                 ※このクライアントは、組織
                 <Text as="span" fontWeight="bold" lineHeight="32px" mx=".5rem">
-                  <Avatar src={props.orgImage} size="sm" mr=".2rem" />
-                  {props.orgName}
+                  <Avatar
+                    src={props.data.org_image ?? ''}
+                    size="sm"
+                    mr=".2rem"
+                  />
+                  {props.data.org_name}
                 </Text>
                 によって管理されています。
               </Text>
             )}
             <Flex alignItems="center">
-              <Avatar src={props.registerUserImage} />
+              <Avatar src={props.data.register_user_image ?? ''} size="sm" />
               <Text ml=".5rem" fontWeight="bold">
-                {props.registerUserName}
+                {props.data.register_user_name}
               </Text>
             </Flex>
+          </AccordionPanel>
+        </AccordionItem>
+        <AccordionItem>
+          <Text as="h2">
+            <AccordionButton>
+              <TbDiscountCheck size="20px" />
+              <Text
+                ml=".5rem"
+                as="span"
+                flex="1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                OpenIDに関する情報
+              </Text>
+              <AccordionIcon />
+            </AccordionButton>
+          </Text>
+          <AccordionPanel px="0">
+            <TableContainer>
+              <Table variant="simple">
+                <Tbody>
+                  <Tr>
+                    <Td>inches</Td>
+                    <Td>millimetres (mm)</Td>
+                  </Tr>
+                </Tbody>
+              </Table>
+            </TableContainer>
           </AccordionPanel>
         </AccordionItem>
       </Accordion>

@@ -19,17 +19,22 @@ export const Default: Story = {
     userName: faker.internet.userName(),
     userImage: faker.image.url(),
 
-    clientName: faker.internet.displayName(),
-    description: faker.lorem.paragraph(),
-    clientImage: faker.image.url(),
+    data: {
+      client_name: faker.internet.displayName(),
+      client_id: faker.string.uuid(),
+      client_description: faker.lorem.paragraph(),
+      image: faker.image.url(),
 
-    orgMemberOnly: false,
+      org_name: null,
+      org_image: null,
+      org_member_only: false,
 
-    registerUserName: faker.internet.userName(),
-    registerUserImage: faker.image.url(),
-
-    scopes: ['openid', 'profile', 'email'],
-    redirectUri: faker.internet.url(),
+      redirect_uri: faker.internet.url(),
+      response_type: 'code',
+      scopes: ['openid', 'profile', 'email'],
+      register_user_name: faker.internet.userName(),
+      register_user_image: faker.image.url(),
+    },
 
     onSubmit: () => {
       return new Promise(resolve => {
@@ -54,15 +59,22 @@ export const NoDescription: Story = {
   args: {
     userName: faker.internet.userName(),
 
-    clientName: faker.internet.displayName(),
-    clientImage: faker.image.url(),
+    data: {
+      client_name: faker.internet.displayName(),
+      client_id: faker.string.uuid(),
+      client_description: null,
+      image: faker.image.url(),
 
-    orgMemberOnly: false,
+      org_name: null,
+      org_image: null,
+      org_member_only: false,
 
-    registerUserName: faker.internet.userName(),
-
-    scopes: ['openid', 'profile', 'email'],
-    redirectUri: faker.internet.url(),
+      redirect_uri: faker.internet.url(),
+      response_type: 'code',
+      scopes: ['openid', 'profile', 'email'],
+      register_user_name: faker.internet.userName(),
+      register_user_image: null,
+    },
 
     onSubmit: () => {
       return new Promise(resolve => {
@@ -88,17 +100,22 @@ export const TooLongDescription: Story = {
     userName: faker.internet.userName(),
     userImage: faker.image.url(),
 
-    clientName: faker.internet.displayName(),
-    description: Array(100).fill('a').join('\n'),
-    clientImage: faker.image.url(),
+    data: {
+      client_name: faker.internet.displayName(),
+      client_id: faker.string.uuid(),
+      client_description: Array(100).fill('a').join('\n'),
+      image: faker.image.url(),
 
-    orgMemberOnly: false,
+      org_name: faker.company.name(),
+      org_image: faker.image.url(),
+      org_member_only: false,
 
-    registerUserName: faker.internet.userName(),
-    registerUserImage: faker.image.url(),
-
-    scopes: ['openid', 'profile', 'email'],
-    redirectUri: faker.internet.url(),
+      redirect_uri: faker.internet.url(),
+      response_type: 'code',
+      scopes: ['openid', 'profile', 'email'],
+      register_user_name: faker.internet.userName(),
+      register_user_image: faker.image.url(),
+    },
 
     onSubmit: () => {
       return new Promise(resolve => {
@@ -123,16 +140,22 @@ export const NoImage: Story = {
   args: {
     userName: faker.internet.userName(),
 
-    clientName: faker.internet.displayName(),
-    description: faker.lorem.paragraph(),
+    data: {
+      client_name: faker.internet.displayName(),
+      client_id: faker.string.uuid(),
+      client_description: faker.lorem.paragraph(),
+      image: null,
 
-    orgMemberOnly: false,
+      org_name: faker.company.name(),
+      org_image: faker.image.url(),
+      org_member_only: false,
 
-    registerUserName: faker.internet.userName(),
-    registerUserImage: faker.image.url(),
-
-    scopes: ['openid', 'profile'],
-    redirectUri: faker.internet.url(),
+      redirect_uri: faker.internet.url(),
+      response_type: 'code',
+      scopes: ['openid', 'profile'],
+      register_user_name: faker.internet.userName(),
+      register_user_image: faker.image.url(),
+    },
 
     onSubmit: () => {
       return new Promise(resolve => {
@@ -157,19 +180,22 @@ export const Org: Story = {
   args: {
     userName: faker.internet.userName(),
 
-    clientName: faker.internet.displayName(),
-    description: faker.lorem.paragraph(),
-    clientImage: faker.image.url(),
+    data: {
+      client_name: faker.internet.displayName(),
+      client_id: faker.string.uuid(),
+      client_description: faker.lorem.paragraph(),
+      image: null,
 
-    registerUserName: faker.internet.userName(),
-    registerUserImage: faker.image.url(),
+      org_name: faker.company.name(),
+      org_image: faker.image.url(),
+      org_member_only: false,
 
-    orgName: faker.company.name(),
-    orgImage: faker.image.url(),
-    orgMemberOnly: false,
-
-    scopes: ['openid', 'profile', 'email'],
-    redirectUri: faker.internet.url(),
+      redirect_uri: faker.internet.url(),
+      response_type: 'code',
+      scopes: ['openid', 'profile'],
+      register_user_name: faker.internet.userName(),
+      register_user_image: faker.image.url(),
+    },
 
     onSubmit: () => {
       return new Promise(resolve => {
@@ -194,19 +220,22 @@ export const OrgMemberOnly: Story = {
   args: {
     userName: faker.internet.userName(),
 
-    clientName: faker.internet.displayName(),
-    description: faker.lorem.paragraph(),
-    clientImage: faker.image.url(),
+    data: {
+      client_name: faker.internet.displayName(),
+      client_id: faker.string.uuid(),
+      client_description: faker.lorem.paragraph(),
+      image: faker.image.url(),
 
-    registerUserName: faker.internet.userName(),
-    registerUserImage: faker.image.url(),
+      org_name: faker.company.name(),
+      org_image: faker.image.url(),
+      org_member_only: true,
 
-    orgName: faker.company.name(),
-    orgImage: faker.image.url(),
-    orgMemberOnly: true,
-
-    scopes: ['openid', 'profile', 'email'],
-    redirectUri: faker.internet.url(),
+      redirect_uri: faker.internet.url(),
+      response_type: 'code',
+      scopes: ['openid', 'profile'],
+      register_user_name: faker.internet.userName(),
+      register_user_image: faker.image.url(),
+    },
 
     onSubmit: () => {
       return new Promise(resolve => {

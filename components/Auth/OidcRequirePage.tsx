@@ -39,16 +39,7 @@ export const OidcRequirePage = () => {
       <Consent
         userName={user?.user.user_name ?? ''}
         userImage={user?.user.avatar ?? undefined}
-        clientName={data.client_name}
-        description={data.client_description ?? undefined}
-        clientImage={data.image ?? undefined}
-        registerUserName={data.register_user_name}
-        registerUserImage={data.register_user_image ?? undefined}
-        orgName={data.org_name ?? undefined}
-        orgImage={data.org_image ?? undefined}
-        orgMemberOnly={data.org_member_only}
-        scopes={data.scopes}
-        redirectUri={data.redirect_uri}
+        data={data}
         // TODO: API側実装してから
         onSubmit={async () => {
           alert('submit');
