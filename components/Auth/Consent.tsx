@@ -245,7 +245,7 @@ export const Consent: React.FC<Props> = props => {
             </Flex>
           </AccordionPanel>
         </AccordionItem>
-        <AccordionItem>
+        <AccordionItem borderBottom="none">
           <Text as="h2">
             <AccordionButton>
               <TbDiscountCheck size="20px" />
@@ -261,13 +261,17 @@ export const Consent: React.FC<Props> = props => {
               <AccordionIcon />
             </AccordionButton>
           </Text>
-          <AccordionPanel px="0">
+          <AccordionPanel px="0" pb="0">
             <TableContainer>
               <Table variant="simple">
                 <Tbody>
                   <Tr>
-                    <Td>inches</Td>
-                    <Td>millimetres (mm)</Td>
+                    <Td fontWeight="bold">クライアントID</Td>
+                    <Td>{props.data.client_id}</Td>
+                  </Tr>
+                  <Tr>
+                    <Td fontWeight="bold">レスポンスタイプ</Td>
+                    <Td>{props.data.response_type}</Td>
                   </Tr>
                 </Tbody>
               </Table>
