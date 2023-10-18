@@ -45,6 +45,9 @@ export const useOidcRequire = () => {
       return;
     }
 
+    // TODO: サーバに送る
+    console.log(oauthLoginSession);
+
     const res = await fetch(api('/v2/oidc/require'), {
       credentials: 'include',
       mode: 'cors',
@@ -73,6 +76,7 @@ export const useOidcRequire = () => {
     const data = PublicAuthenticationRequestSchema.safeParse(response);
     if (data.success) {
       setData(data.data);
+      setOAuthLoginSession(undefined);
       return data.data;
     }
 

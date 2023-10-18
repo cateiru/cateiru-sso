@@ -4,6 +4,8 @@ import {
   parseRequestOptionsFromJSON,
 } from '@github/webauthn-json/browser-ponyfill';
 import React from 'react';
+import {useRecoilValue} from 'recoil';
+import {OAuthLoginSessionState} from '../../utils/state/atom';
 import {LoginResponseSchema} from '../../utils/types/login';
 import {UserMe} from '../../utils/types/user';
 import {useRequest} from '../Common/useRequest';
@@ -15,12 +17,21 @@ interface Returns {
 
 export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
   const toast = useToast();
+  const oauthLoginSession = useRecoilValue(OAuthLoginSessionState);
 
   const [isConditionSupported, setIsConditionSupported] = React.useState(true);
   const abortRef = React.useRef<AbortController>();
 
   const {request: getBeginKey} = useRequest('/v2/login/begin_webauthn');
   const {request: pushCredential} = useRequest('/v2/login/webathn');
+
+  const oauthLoginSessionHeader = React.useMemo(() => {
+    return oauthLoginSession
+      ? {
+          'Oauth-Login-Session': oauthLoginSession.login_session_token,
+        }
+      : undefined;
+  }, [oauthLoginSession]);
 
   React.useEffect(() => {
     const abort = new AbortController();
@@ -78,6 +89,7 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
         body: JSON.stringify(credential),
         headers: {
           'Content-Type': 'application/json',
+          ...oauthLoginSessionHeader,
         },
         method: 'POST',
       });
@@ -146,6 +158,7 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
       body: JSON.stringify(credential),
       headers: {
         'Content-Type': 'application/json',
+        ...oauthLoginSessionHeader,
       },
       method: 'POST',
     });
