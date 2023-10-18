@@ -85,10 +85,11 @@ type PublicAuthenticationRequest struct {
 
 	RegisterUserName  string      `json:"register_user_name"`
 	RegisterUserImage null.String `json:"register_user_image"`
+}
 
-	// ログインを求める
-	RequireLogin      bool   `json:"require_login"`
-	LoginSessionToken string `json:"login_session_token,omitempty"`
+type NoLoginPublicAuthenticationRequest struct {
+	LoginSessionToken string    `json:"login_session_token"`
+	LimitDate         time.Time `json:"limit_date"`
 }
 
 // プレビュー用のレスポンスを返す
@@ -133,32 +134,32 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 
 		RegisterUserName:  user.UserName,
 		RegisterUserImage: user.Avatar,
-
-		// ログインしているはずなのでfalse
-		RequireLogin: false,
 	}, nil
 }
 
 // ログインが必要な場合のプレビュー用レスポンスを返す
-func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, config *Config, db *sql.DB) (*PublicAuthenticationRequest, error) {
+// TODO: テスト
+func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, config *Config, db *sql.DB) (*NoLoginPublicAuthenticationRequest, error) {
 	token, err := lib.RandomStr(31)
 	if err != nil {
 		return nil, err
 	}
 
+	limit := time.Now().Add(config.OauthLoginSessionPeriod)
+
 	oauthLoginSession := models.OauthLoginSession{
 		Token:        token,
 		ClientID:     a.Client.ClientID,
 		ReferrerHost: null.NewString(a.RefererHost, a.RefererHost != ""),
-		Period:       time.Now().Add(config.OauthLoginSessionPeriod),
+		Period:       limit,
 	}
 	if err := oauthLoginSession.Insert(ctx, db, boil.Infer()); err != nil {
 		return nil, err
 	}
 
-	return &PublicAuthenticationRequest{
-		RequireLogin:      true,
+	return &NoLoginPublicAuthenticationRequest{
 		LoginSessionToken: token,
+		LimitDate:         limit,
 	}, nil
 }
 
@@ -373,6 +374,6 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 
 		Client:      client,
 		AllowRules:  allowRules,
-		RefererHost: referrerHost,
+		RefererHost: referrerHost, // TODO: テスト
 	}, nil
 }

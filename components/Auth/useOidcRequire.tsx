@@ -1,6 +1,10 @@
+import {useRouter} from 'next/navigation';
 import React from 'react';
+import {useRecoilState} from 'recoil';
 import {api} from '../../utils/api';
+import {OAuthLoginSessionState} from '../../utils/state/atom';
 import {
+  NoLoginPublicAuthenticationRequestSchema,
   PublicAuthenticationRequest,
   PublicAuthenticationRequestSchema,
 } from '../../utils/types/auth';
@@ -18,6 +22,10 @@ export const useOidcRequire = () => {
   const [data, setData] = React.useState<PublicAuthenticationRequest | null>(
     null
   );
+  const [oauthLoginSession, setOAuthLoginSession] = useRecoilState(
+    OAuthLoginSessionState
+  );
+  const router = useRouter();
 
   const {getFormParams} = useOidc();
 
@@ -66,6 +74,20 @@ export const useOidcRequire = () => {
     if (data.success) {
       setData(data.data);
       return data.data;
+    }
+
+    const noLoginData =
+      NoLoginPublicAuthenticationRequestSchema.safeParse(response);
+    if (noLoginData.success) {
+      setOAuthLoginSession(noLoginData.data);
+
+      const url = new URL(window.location.href);
+
+      const relativeUrl = url.pathname + url.search;
+
+      // ログインページへリダイレクトする
+      router.replace(`/login?redirect_to=${encodeURIComponent(relativeUrl)}`);
+      return;
     }
 
     setError({
