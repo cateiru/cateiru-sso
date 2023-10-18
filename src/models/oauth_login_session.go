@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -23,12 +24,12 @@ import (
 
 // OauthLoginSession is an object representing the database table.
 type OauthLoginSession struct {
-	Token        string    `boil:"token" json:"token" toml:"token" yaml:"token"`
-	ClientID     string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	ReferrerHost string    `boil:"referrer_host" json:"referrer_host" toml:"referrer_host" yaml:"referrer_host"`
-	Period       time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
-	CreatedAt    time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt    time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	Token        string      `boil:"token" json:"token" toml:"token" yaml:"token"`
+	ClientID     string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	ReferrerHost null.String `boil:"referrer_host" json:"referrer_host,omitempty" toml:"referrer_host" yaml:"referrer_host,omitempty"`
+	Period       time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
+	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *oauthLoginSessionR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L oauthLoginSessionL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -71,14 +72,14 @@ var OauthLoginSessionTableColumns = struct {
 var OauthLoginSessionWhere = struct {
 	Token        whereHelperstring
 	ClientID     whereHelperstring
-	ReferrerHost whereHelperstring
+	ReferrerHost whereHelpernull_String
 	Period       whereHelpertime_Time
 	CreatedAt    whereHelpertime_Time
 	UpdatedAt    whereHelpertime_Time
 }{
 	Token:        whereHelperstring{field: "`oauth_login_session`.`token`"},
 	ClientID:     whereHelperstring{field: "`oauth_login_session`.`client_id`"},
-	ReferrerHost: whereHelperstring{field: "`oauth_login_session`.`referrer_host`"},
+	ReferrerHost: whereHelpernull_String{field: "`oauth_login_session`.`referrer_host`"},
 	Period:       whereHelpertime_Time{field: "`oauth_login_session`.`period`"},
 	CreatedAt:    whereHelpertime_Time{field: "`oauth_login_session`.`created_at`"},
 	UpdatedAt:    whereHelpertime_Time{field: "`oauth_login_session`.`updated_at`"},

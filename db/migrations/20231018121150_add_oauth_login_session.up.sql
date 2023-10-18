@@ -3,7 +3,7 @@ CREATE TABLE `oauth_login_session` (
 
     `client_id` VARCHAR(31) NOT NULL,
 
-    `referrer_host` VARCHAR(128) NOT NULL,
+    `referrer_host` VARCHAR(128) DEFAULT NULL,
 
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
