@@ -135,6 +135,7 @@ var ClientRels = struct {
 	ClientReferrers      string
 	ClientScopes         string
 	LoginClientHistories string
+	OauthLoginSessions   string
 	OauthSessions        string
 }{
 	OwnerUser:            "OwnerUser",
@@ -143,6 +144,7 @@ var ClientRels = struct {
 	ClientReferrers:      "ClientReferrers",
 	ClientScopes:         "ClientScopes",
 	LoginClientHistories: "LoginClientHistories",
+	OauthLoginSessions:   "OauthLoginSessions",
 	OauthSessions:        "OauthSessions",
 }
 
@@ -154,6 +156,7 @@ type clientR struct {
 	ClientReferrers      ClientReferrerSlice     `boil:"ClientReferrers" json:"ClientReferrers" toml:"ClientReferrers" yaml:"ClientReferrers"`
 	ClientScopes         ClientScopeSlice        `boil:"ClientScopes" json:"ClientScopes" toml:"ClientScopes" yaml:"ClientScopes"`
 	LoginClientHistories LoginClientHistorySlice `boil:"LoginClientHistories" json:"LoginClientHistories" toml:"LoginClientHistories" yaml:"LoginClientHistories"`
+	OauthLoginSessions   OauthLoginSessionSlice  `boil:"OauthLoginSessions" json:"OauthLoginSessions" toml:"OauthLoginSessions" yaml:"OauthLoginSessions"`
 	OauthSessions        OauthSessionSlice       `boil:"OauthSessions" json:"OauthSessions" toml:"OauthSessions" yaml:"OauthSessions"`
 }
 
@@ -202,6 +205,13 @@ func (r *clientR) GetLoginClientHistories() LoginClientHistorySlice {
 		return nil
 	}
 	return r.LoginClientHistories
+}
+
+func (r *clientR) GetOauthLoginSessions() OauthLoginSessionSlice {
+	if r == nil {
+		return nil
+	}
+	return r.OauthLoginSessions
 }
 
 func (r *clientR) GetOauthSessions() OauthSessionSlice {
@@ -579,6 +589,20 @@ func (o *Client) LoginClientHistories(mods ...qm.QueryMod) loginClientHistoryQue
 	)
 
 	return LoginClientHistories(queryMods...)
+}
+
+// OauthLoginSessions retrieves all the oauth_login_session's OauthLoginSessions with an executor.
+func (o *Client) OauthLoginSessions(mods ...qm.QueryMod) oauthLoginSessionQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`oauth_login_session`.`client_id`=?", o.ClientID),
+	)
+
+	return OauthLoginSessions(queryMods...)
 }
 
 // OauthSessions retrieves all the oauth_session's OauthSessions with an executor.
@@ -1285,6 +1309,120 @@ func (clientL) LoadLoginClientHistories(ctx context.Context, e boil.ContextExecu
 	return nil
 }
 
+// LoadOauthLoginSessions allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (clientL) LoadOauthLoginSessions(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
+	var slice []*Client
+	var object *Client
+
+	if singular {
+		var ok bool
+		object, ok = maybeClient.(*Client)
+		if !ok {
+			object = new(Client)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClient))
+			}
+		}
+	} else {
+		s, ok := maybeClient.(*[]*Client)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClient)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClient))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientR{}
+		}
+		args = append(args, object.ClientID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`oauth_login_session`),
+		qm.WhereIn(`oauth_login_session.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load oauth_login_session")
+	}
+
+	var resultSlice []*OauthLoginSession
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice oauth_login_session")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on oauth_login_session")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for oauth_login_session")
+	}
+
+	if len(oauthLoginSessionAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.OauthLoginSessions = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &oauthLoginSessionR{}
+			}
+			foreign.R.Client = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ClientID == foreign.ClientID {
+				local.R.OauthLoginSessions = append(local.R.OauthLoginSessions, foreign)
+				if foreign.R == nil {
+					foreign.R = &oauthLoginSessionR{}
+				}
+				foreign.R.Client = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadOauthSessions allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (clientL) LoadOauthSessions(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClient interface{}, mods queries.Applicator) error {
@@ -1702,6 +1840,59 @@ func (o *Client) AddLoginClientHistories(ctx context.Context, exec boil.ContextE
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &loginClientHistoryR{
+				Client: o,
+			}
+		} else {
+			rel.R.Client = o
+		}
+	}
+	return nil
+}
+
+// AddOauthLoginSessions adds the given related objects to the existing relationships
+// of the client, optionally inserting them as new records.
+// Appends related to o.R.OauthLoginSessions.
+// Sets related.R.Client appropriately.
+func (o *Client) AddOauthLoginSessions(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*OauthLoginSession) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ClientID = o.ClientID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `oauth_login_session` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+				strmangle.WhereClause("`", "`", 0, oauthLoginSessionPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ClientID, rel.Token}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ClientID = o.ClientID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &clientR{
+			OauthLoginSessions: related,
+		}
+	} else {
+		o.R.OauthLoginSessions = append(o.R.OauthLoginSessions, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &oauthLoginSessionR{
 				Client: o,
 			}
 		} else {

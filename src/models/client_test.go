@@ -884,6 +884,84 @@ func testClientToManyLoginClientHistories(t *testing.T) {
 	}
 }
 
+func testClientToManyOauthLoginSessions(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c OauthLoginSession
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, true, clientColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Client struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, oauthLoginSessionDBTypes, false, oauthLoginSessionColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, oauthLoginSessionDBTypes, false, oauthLoginSessionColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.ClientID = a.ClientID
+	c.ClientID = a.ClientID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.OauthLoginSessions().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.ClientID == b.ClientID {
+			bFound = true
+		}
+		if v.ClientID == c.ClientID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := ClientSlice{&a}
+	if err = a.L.LoadOauthLoginSessions(ctx, tx, false, (*[]*Client)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.OauthLoginSessions); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.OauthLoginSessions = nil
+	if err = a.L.LoadOauthLoginSessions(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.OauthLoginSessions); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
 func testClientToManyOauthSessions(t *testing.T) {
 	var err error
 	ctx := context.Background()
@@ -1329,6 +1407,81 @@ func testClientToManyAddOpLoginClientHistories(t *testing.T) {
 		}
 
 		count, err := a.LoginClientHistories().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+func testClientToManyAddOpOauthLoginSessions(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Client
+	var b, c, d, e OauthLoginSession
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, clientDBTypes, false, strmangle.SetComplement(clientPrimaryKeyColumns, clientColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*OauthLoginSession{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, oauthLoginSessionDBTypes, false, strmangle.SetComplement(oauthLoginSessionPrimaryKeyColumns, oauthLoginSessionColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*OauthLoginSession{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddOauthLoginSessions(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ClientID != first.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, first.ClientID)
+		}
+		if a.ClientID != second.ClientID {
+			t.Error("foreign key was wrong value", a.ClientID, second.ClientID)
+		}
+
+		if first.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Client != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.OauthLoginSessions[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.OauthLoginSessions[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.OauthLoginSessions().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
