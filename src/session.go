@@ -50,6 +50,8 @@ type Session struct {
 	DB *sql.DB
 }
 
+var ErrorLoginFailed = NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+
 func NewSession(c *Config, db *sql.DB) *Session {
 	return &Session{
 		SessionCookie:    c.SessionCookie,
@@ -369,7 +371,7 @@ func (s *Session) loginFailed(ctx context.Context, cookies []*http.Cookie, refre
 		return nil, []*http.Cookie{}, err
 	}
 
-	return nil, cookies, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+	return nil, cookies, ErrorLoginFailed
 }
 
 // ログアウトする
