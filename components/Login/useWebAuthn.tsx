@@ -28,7 +28,7 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
   const oauthLoginSessionHeader = React.useMemo(() => {
     return oauthLoginSession
       ? {
-          'Oauth-Login-Session': oauthLoginSession.login_session_token,
+          'X-Oauth-Login-Session': oauthLoginSession.login_session_token,
         }
       : undefined;
   }, [oauthLoginSession]);

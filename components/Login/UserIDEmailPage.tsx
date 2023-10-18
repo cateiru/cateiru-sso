@@ -66,7 +66,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
 
     const oauthLoginSessionHeader = oauthLoginSession
       ? {
-          'Oauth-Login-Session': oauthLoginSession.login_session_token,
+          'X-Oauth-Login-Session': oauthLoginSession.login_session_token,
         }
       : undefined;
 
