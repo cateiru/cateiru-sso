@@ -687,7 +687,7 @@ func testOauthLoginSessionsSelect(t *testing.T) {
 }
 
 var (
-	oauthLoginSessionDBTypes = map[string]string{`Token`: `varchar`, `ClientID`: `varchar`, `ReferrerHost`: `varchar`, `Period`: `datetime`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	oauthLoginSessionDBTypes = map[string]string{`Token`: `varchar`, `ClientID`: `varchar`, `ReferrerHost`: `varchar`, `LoginOk`: `tinyint`, `Period`: `datetime`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_                        = bytes.MinRead
 )
 

@@ -27,6 +27,7 @@ type OauthLoginSession struct {
 	Token        string      `boil:"token" json:"token" toml:"token" yaml:"token"`
 	ClientID     string      `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
 	ReferrerHost null.String `boil:"referrer_host" json:"referrer_host,omitempty" toml:"referrer_host" yaml:"referrer_host,omitempty"`
+	LoginOk      bool        `boil:"login_ok" json:"login_ok" toml:"login_ok" yaml:"login_ok"`
 	Period       time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
 	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
@@ -39,6 +40,7 @@ var OauthLoginSessionColumns = struct {
 	Token        string
 	ClientID     string
 	ReferrerHost string
+	LoginOk      string
 	Period       string
 	CreatedAt    string
 	UpdatedAt    string
@@ -46,6 +48,7 @@ var OauthLoginSessionColumns = struct {
 	Token:        "token",
 	ClientID:     "client_id",
 	ReferrerHost: "referrer_host",
+	LoginOk:      "login_ok",
 	Period:       "period",
 	CreatedAt:    "created_at",
 	UpdatedAt:    "updated_at",
@@ -55,6 +58,7 @@ var OauthLoginSessionTableColumns = struct {
 	Token        string
 	ClientID     string
 	ReferrerHost string
+	LoginOk      string
 	Period       string
 	CreatedAt    string
 	UpdatedAt    string
@@ -62,6 +66,7 @@ var OauthLoginSessionTableColumns = struct {
 	Token:        "oauth_login_session.token",
 	ClientID:     "oauth_login_session.client_id",
 	ReferrerHost: "oauth_login_session.referrer_host",
+	LoginOk:      "oauth_login_session.login_ok",
 	Period:       "oauth_login_session.period",
 	CreatedAt:    "oauth_login_session.created_at",
 	UpdatedAt:    "oauth_login_session.updated_at",
@@ -73,6 +78,7 @@ var OauthLoginSessionWhere = struct {
 	Token        whereHelperstring
 	ClientID     whereHelperstring
 	ReferrerHost whereHelpernull_String
+	LoginOk      whereHelperbool
 	Period       whereHelpertime_Time
 	CreatedAt    whereHelpertime_Time
 	UpdatedAt    whereHelpertime_Time
@@ -80,6 +86,7 @@ var OauthLoginSessionWhere = struct {
 	Token:        whereHelperstring{field: "`oauth_login_session`.`token`"},
 	ClientID:     whereHelperstring{field: "`oauth_login_session`.`client_id`"},
 	ReferrerHost: whereHelpernull_String{field: "`oauth_login_session`.`referrer_host`"},
+	LoginOk:      whereHelperbool{field: "`oauth_login_session`.`login_ok`"},
 	Period:       whereHelpertime_Time{field: "`oauth_login_session`.`period`"},
 	CreatedAt:    whereHelpertime_Time{field: "`oauth_login_session`.`created_at`"},
 	UpdatedAt:    whereHelpertime_Time{field: "`oauth_login_session`.`updated_at`"},
@@ -113,9 +120,9 @@ func (r *oauthLoginSessionR) GetClient() *Client {
 type oauthLoginSessionL struct{}
 
 var (
-	oauthLoginSessionAllColumns            = []string{"token", "client_id", "referrer_host", "period", "created_at", "updated_at"}
+	oauthLoginSessionAllColumns            = []string{"token", "client_id", "referrer_host", "login_ok", "period", "created_at", "updated_at"}
 	oauthLoginSessionColumnsWithoutDefault = []string{"token", "client_id", "referrer_host"}
-	oauthLoginSessionColumnsWithDefault    = []string{"period", "created_at", "updated_at"}
+	oauthLoginSessionColumnsWithDefault    = []string{"login_ok", "period", "created_at", "updated_at"}
 	oauthLoginSessionPrimaryKeyColumns     = []string{"token"}
 	oauthLoginSessionGeneratedColumns      = []string{}
 )

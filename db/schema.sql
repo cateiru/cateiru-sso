@@ -826,6 +826,8 @@ CREATE TABLE `oauth_login_session` (
 
     `referrer_host` VARCHAR(128) DEFAULT NULL,
 
+    `login_ok` BOOLEAN NOT NULL DEFAULT 0,
+
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
