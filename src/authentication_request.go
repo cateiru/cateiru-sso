@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#AuthRequest
@@ -62,7 +64,8 @@ type AuthenticationRequest struct {
 
 	Client *models.Client
 
-	AllowRules []*models.ClientAllowRule
+	AllowRules  []*models.ClientAllowRule
+	RefererHost string
 }
 
 // preview で返す用のもの
@@ -137,9 +140,25 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 }
 
 // ログインが必要な場合のプレビュー用レスポンスを返す
-func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, db *sql.DB) (*PublicAuthenticationRequest, error) {
+func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, config *Config, db *sql.DB) (*PublicAuthenticationRequest, error) {
+	token, err := lib.RandomStr(31)
+	if err != nil {
+		return nil, err
+	}
+
+	oauthLoginSession := models.OauthLoginSession{
+		Token:        token,
+		ClientID:     a.Client.ClientID,
+		ReferrerHost: null.NewString(a.RefererHost, a.RefererHost != ""),
+		Period:       time.Now().Add(config.OauthLoginSessionPeriod),
+	}
+	if err := oauthLoginSession.Insert(ctx, db, boil.Infer()); err != nil {
+		return nil, err
+	}
+
 	return &PublicAuthenticationRequest{
-		RequireLogin: true,
+		RequireLogin:      true,
+		LoginSessionToken: token,
 	}, nil
 }
 
@@ -319,12 +338,14 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 	if err != nil {
 		return nil, err
 	}
+	referrerHost := ""
 	// リファラーが設定されている場合はチェックする
 	// ホストのみのチェック
 	if len(dbReferer) != 0 {
 		ok := false
 		for _, referrer := range dbReferer {
 			if referrer.Host == refererUrl.Host {
+				referrerHost = referrer.Host
 				ok = true
 				break
 			}
@@ -350,7 +371,8 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		LoginHint:   null.NewString(loginHint, loginHint != ""),
 		AcrValues:   null.NewString(acrValues, acrValues != ""),
 
-		Client:     client,
-		AllowRules: allowRules,
+		Client:      client,
+		AllowRules:  allowRules,
+		RefererHost: referrerHost,
 	}, nil
 }

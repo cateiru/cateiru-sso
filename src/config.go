@@ -165,6 +165,8 @@ type Config struct {
 	// 画像サイズ
 	// ユーザーアバターなどこのサイズにリサイズされます
 	ImageSizePixel int
+
+	OauthLoginSessionPeriod time.Duration
 }
 
 var configs = []*Config{
@@ -372,6 +374,8 @@ var LocalConfig = &Config{
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 
 	ImageSizePixel: 500,
+
+	OauthLoginSessionPeriod: 5 * time.Minute,
 }
 
 var CloudRunConfig = &Config{
@@ -554,6 +558,8 @@ var CloudRunConfig = &Config{
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 
 	ImageSizePixel: 500,
+
+	OauthLoginSessionPeriod: 5 * time.Minute,
 }
 
 var CloudRunStagingConfig = &Config{
@@ -738,6 +744,8 @@ var CloudRunStagingConfig = &Config{
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 
 	ImageSizePixel: 500,
+
+	OauthLoginSessionPeriod: 5 * time.Minute,
 }
 
 var TestConfig = &Config{
@@ -903,6 +911,8 @@ var TestConfig = &Config{
 	UserNamePeriod: 30 * 24 * time.Hour, // 30days
 
 	ImageSizePixel: 500,
+
+	OauthLoginSessionPeriod: 5 * time.Minute,
 }
 
 func InitConfig(mode string) *Config {

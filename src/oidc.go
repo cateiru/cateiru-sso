@@ -19,8 +19,12 @@ func (h *Handler) OIDCRequireHandler(c echo.Context) error {
 
 	u, err := h.Session.SimpleLogin(ctx, c, true)
 	if errors.Is(err, ErrorLoginFailed) {
-		// 未ログインの場合は
-		return err
+		// 未ログインの場合は200でトークンを返す
+		response, err := authenticationRequest.GetPreviewRequireLoginResponse(ctx, h.C, h.DB)
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, response)
 	}
 	if err != nil {
 		return err
