@@ -14,18 +14,12 @@ OP_DATABASES=(
 HOST="db"
 
 MIGRATIONS_PATH="/migrations"
-
-# -f オプションでも使いたいので、ここで判定する
-if [ -n "$1" ]; then
-    FILE="-f $1"
-else
-    FILE=""
-fi
+ARGS="$@"
 
 for OP_DATABASE in "${OP_DATABASES[@]}" ; do
     echo "Migrate ${OP_DATABASE}..."
 
     MYSQL_DSN="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${HOST}:3306)/${OP_DATABASE}"
-    docker compose $FILE exec db bash -c "migrate -path ${MIGRATIONS_PATH} -database \"${MYSQL_DSN}\" up"
+    docker compose exec db bash -c "migrate -path ${MIGRATIONS_PATH} -database \"${MYSQL_DSN}\" $ARGS"
 done
 

@@ -1,6 +1,7 @@
 package src
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -11,12 +12,16 @@ import (
 func (h *Handler) OIDCRequireHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	u, err := h.Session.SimpleLogin(ctx, c, true)
+	authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
 	if err != nil {
 		return err
 	}
 
-	authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
+	u, err := h.Session.SimpleLogin(ctx, c, true)
+	if errors.Is(err, ErrorLoginFailed) {
+		// 未ログインの場合は
+		return err
+	}
 	if err != nil {
 		return err
 	}

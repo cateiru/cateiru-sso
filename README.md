@@ -58,7 +58,7 @@ docker compose up
 
 # go-migrateを使用してマイグレーションを実行します
 # ローカル環境で使用するDBとテスト環境で使用するDBの2つでマイグレーションが実行されます。
-./script/migrate.sh
+./script/migrate.sh up
 ```
 
 ## Environments

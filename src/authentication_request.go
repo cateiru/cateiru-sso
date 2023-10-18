@@ -82,6 +82,10 @@ type PublicAuthenticationRequest struct {
 
 	RegisterUserName  string      `json:"register_user_name"`
 	RegisterUserImage null.String `json:"register_user_image"`
+
+	// ログインを求める
+	RequireLogin      bool   `json:"require_login"`
+	LoginSessionToken string `json:"login_session_token,omitempty"`
 }
 
 // プレビュー用のレスポンスを返す
@@ -126,6 +130,16 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 
 		RegisterUserName:  user.UserName,
 		RegisterUserImage: user.Avatar,
+
+		// ログインしているはずなのでfalse
+		RequireLogin: false,
+	}, nil
+}
+
+// ログインが必要な場合のプレビュー用レスポンスを返す
+func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, db *sql.DB) (*PublicAuthenticationRequest, error) {
+	return &PublicAuthenticationRequest{
+		RequireLogin: true,
 	}, nil
 }
 
