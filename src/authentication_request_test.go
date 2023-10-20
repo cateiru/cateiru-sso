@@ -85,6 +85,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.Equal(t, authenticationRequest.Client.ClientID, clientId)
 		require.False(t, authenticationRequest.Client.IsAllow)
 		require.Equal(t, authenticationRequest.AllowRules, []*models.ClientAllowRule{})
+		require.Equal(t, authenticationRequest.RefererHost, "", "リファラーチェックはしていないので空")
 	})
 
 	t.Run("成功: AllowRuleが設定されている", func(t *testing.T) {
@@ -166,6 +167,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.True(t, authenticationRequest.Client.IsAllow)
 		require.Len(t, authenticationRequest.AllowRules, 1)
 		require.Equal(t, authenticationRequest.AllowRules[0].EmailDomain, null.NewString("example.test", true))
+		require.Equal(t, authenticationRequest.RefererHost, "", "リファラーチェックはしていないので空")
 	})
 
 	t.Run("成功: リファラー設定済み", func(t *testing.T) {
@@ -216,8 +218,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 			c := m.Echo()
 
-			_, err = h.NewAuthenticationRequest(ctx, c)
+			authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
 			require.NoError(t, err)
+
+			require.Equal(t, authenticationRequest.RefererHost, "example.test")
 		})
 
 		t.Run("unsafe-url", func(t *testing.T) {
@@ -266,8 +270,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 			c := m.Echo()
 
-			_, err = h.NewAuthenticationRequest(ctx, c)
+			authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
 			require.NoError(t, err)
+
+			require.Equal(t, authenticationRequest.RefererHost, "example.test")
 		})
 	})
 

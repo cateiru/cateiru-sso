@@ -374,6 +374,6 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 
 		Client:      client,
 		AllowRules:  allowRules,
-		RefererHost: referrerHost, // TODO: テスト
+		RefererHost: referrerHost,
 	}, nil
 }
