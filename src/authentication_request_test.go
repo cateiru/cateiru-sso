@@ -856,6 +856,71 @@ func TestGetPreviewResponse(t *testing.T) {
 	})
 }
 
+func TestGetPreviewRequireLoginResponse(t *testing.T) {
+	ctx := context.Background()
+
+	email := RandomEmail(t)
+	u := RegisterUser(t, ctx, email)
+
+	clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+	client, err := models.Clients(models.ClientWhere.ClientID.EQ(clientId)).One(ctx, DB)
+	require.NoError(t, err)
+
+	t.Run("成功", func(t *testing.T) {
+		a := src.AuthenticationRequest{
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			ResponseType: lib.ResponseTypeAuthorizationCode,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State:        null.NewString("state_test", true),
+			ResponseMode: lib.ResponseModeQuery,
+			Nonce:        null.NewString("nonce_test", true),
+			Display:      lib.DisplayPage,
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+			},
+			MaxAge: uint64(0),
+			UiLocales: []string{
+				"ja_JP",
+			},
+			IdTokenHint: null.NewString("id_token_hint_test", true),
+			LoginHint:   null.NewString("login_hint_test", true),
+			AcrValues:   null.NewString("acr_values_test", true),
+
+			Client: client,
+
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+				{
+					UserID: null.NewString("user_id", true),
+				},
+			},
+			RefererHost: "example.test",
+		}
+
+		request, err := a.GetPreviewRequireLoginResponse(ctx, C, DB)
+		require.NoError(t, err)
+
+		token, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(request.LoginSessionToken),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, token.ClientID, client.ClientID)
+		require.Equal(t, token.ReferrerHost.String, a.RefererHost)
+		require.Equal(t, token.Period.Unix(), request.LimitDate.Unix())
+
+	})
+}
+
 func TestCheckUserAuthenticationPossible(t *testing.T) {
 	ctx := context.Background()
 

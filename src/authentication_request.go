@@ -138,7 +138,6 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 }
 
 // ログインが必要な場合のプレビュー用レスポンスを返す
-// TODO: テスト
 func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, config *Config, db *sql.DB) (*NoLoginPublicAuthenticationRequest, error) {
 	token, err := lib.RandomStr(31)
 	if err != nil {
