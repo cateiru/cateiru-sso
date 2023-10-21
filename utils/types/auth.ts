@@ -16,6 +16,8 @@ export const PublicAuthenticationRequestSchema = z.object({
 
   register_user_name: z.string(),
   register_user_image: z.string().nullable(),
+
+  prompts: z.array(z.string()),
 });
 export type PublicAuthenticationRequest = z.infer<
   typeof PublicAuthenticationRequestSchema

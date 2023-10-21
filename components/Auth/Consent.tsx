@@ -4,6 +4,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  Badge,
   Box,
   Button,
   Center,
@@ -272,6 +273,18 @@ export const Consent: React.FC<Props> = props => {
                   <Tr>
                     <Td fontWeight="bold">レスポンスタイプ</Td>
                     <Td>{props.data.response_type}</Td>
+                  </Tr>
+                  <Tr>
+                    <Td fontWeight="bold">プロンプト</Td>
+                    <Td>
+                      {props.data.prompts.map(v => {
+                        return (
+                          <Badge key={`prompts-${v}`} colorScheme="cateiru">
+                            {v}
+                          </Badge>
+                        );
+                      })}
+                    </Td>
                   </Tr>
                 </Tbody>
               </Table>
