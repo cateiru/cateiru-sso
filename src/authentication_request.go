@@ -85,6 +85,8 @@ type PublicAuthenticationRequest struct {
 
 	RegisterUserName  string      `json:"register_user_name"`
 	RegisterUserImage null.String `json:"register_user_image"`
+
+	Prompts []lib.Prompt `json:"prompts"`
 }
 
 type NoLoginPublicAuthenticationRequest struct {
@@ -134,6 +136,8 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 
 		RegisterUserName:  user.UserName,
 		RegisterUserImage: user.Avatar,
+
+		Prompts: a.Prompts,
 	}, nil
 }
 

@@ -775,6 +775,10 @@ func TestGetPreviewResponse(t *testing.T) {
 
 			RegisterUserName:  u.UserName,
 			RegisterUserImage: u.Avatar,
+
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+			},
 		})
 	})
 
@@ -853,6 +857,10 @@ func TestGetPreviewResponse(t *testing.T) {
 
 			RegisterUserName:  u.UserName,
 			RegisterUserImage: u.Avatar,
+
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+			},
 		})
 	})
 }
