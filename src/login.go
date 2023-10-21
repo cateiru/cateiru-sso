@@ -148,6 +148,14 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		c.SetCookie(cookie)
 	}
 
+	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
+	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
+	if oauthLoginSessionToken != "" {
+		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
+			return err
+		}
+	}
+
 	isStaff, err := models.Staffs(
 		models.StaffWhere.UserID.EQ(user.ID),
 	).Exists(ctx, h.DB)
@@ -293,6 +301,14 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		c.SetCookie(cookie)
 	}
 
+	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
+	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
+	if oauthLoginSessionToken != "" {
+		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
+			return err
+		}
+	}
+
 	isStaff, err := models.Staffs(
 		models.StaffWhere.UserID.EQ(user.ID),
 	).Exists(ctx, h.DB)
@@ -422,6 +438,14 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 	}
 	for _, cookie := range registerSession.InsertCookie(h.C) {
 		c.SetCookie(cookie)
+	}
+
+	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
+	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
+	if oauthLoginSessionToken != "" {
+		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
+			return err
+		}
 	}
 
 	isStaff, err := models.Staffs(

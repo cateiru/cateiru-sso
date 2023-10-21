@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/cateiru-sso/src/lib"
@@ -1067,5 +1068,69 @@ func TestCheckUserAuthenticationPossible(t *testing.T) {
 		ok, err := a.CheckUserAuthenticationPossible(ctx, DB, &u)
 		require.NoError(t, err)
 		require.False(t, ok)
+	})
+}
+
+func TestSetLoggedInOauthLoginSession(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("LoginOkがtrueになっている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			Token:        token,
+			ClientID:     clientId,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(1 * time.Hour),
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		err = src.SetLoggedInOauthLoginSession(ctx, DB, token)
+		require.NoError(t, err)
+
+		s, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.True(t, s.LoginOk)
+	})
+
+	t.Run("トークンが存在しない", func(t *testing.T) {
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		err = src.SetLoggedInOauthLoginSession(ctx, DB, token)
+		require.NoError(t, err, "エラーにはならない")
+	})
+
+	t.Run("トークンが有効期限切れ", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			Token:        token,
+			ClientID:     clientId,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(-1 * time.Hour), // 過去
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		err = src.SetLoggedInOauthLoginSession(ctx, DB, token)
+		require.NoError(t, err)
+
+		s, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.False(t, s.LoginOk, "有効期限が切れているので更新されていない")
 	})
 }

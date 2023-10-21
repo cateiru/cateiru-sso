@@ -376,3 +376,25 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		RefererHost: referrerHost,
 	}, nil
 }
+
+func SetLoggedInOauthLoginSession(ctx context.Context, db *sql.DB, token string) error {
+	oauthLoginSession, err := models.OauthLoginSessions(
+		models.OauthLoginSessionWhere.Token.EQ(token),
+		models.OauthLoginSessionWhere.Period.GT(time.Now()),
+	).One(ctx, db)
+	if errors.Is(err, sql.ErrNoRows) {
+		// トークンが不正だった場合は無視する
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	oauthLoginSession.LoginOk = true
+
+	if _, err := oauthLoginSession.Update(ctx, db, boil.Infer()); err != nil {
+		return err
+	}
+
+	return nil
+}
