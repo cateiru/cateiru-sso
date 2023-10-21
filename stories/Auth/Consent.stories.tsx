@@ -34,6 +34,8 @@ export const Default: Story = {
       scopes: ['openid', 'profile', 'email'],
       register_user_name: faker.internet.userName(),
       register_user_image: faker.image.url(),
+
+      prompts: ['consent'],
     },
 
     onSubmit: () => {
@@ -74,6 +76,8 @@ export const NoDescription: Story = {
       scopes: ['openid', 'profile', 'email'],
       register_user_name: faker.internet.userName(),
       register_user_image: null,
+
+      prompts: ['consent'],
     },
 
     onSubmit: () => {
@@ -115,6 +119,8 @@ export const TooLongDescription: Story = {
       scopes: ['openid', 'profile', 'email'],
       register_user_name: faker.internet.userName(),
       register_user_image: faker.image.url(),
+
+      prompts: ['consent'],
     },
 
     onSubmit: () => {
@@ -155,6 +161,8 @@ export const NoImage: Story = {
       scopes: ['openid', 'profile'],
       register_user_name: faker.internet.userName(),
       register_user_image: faker.image.url(),
+
+      prompts: ['consent'],
     },
 
     onSubmit: () => {
@@ -195,6 +203,8 @@ export const Org: Story = {
       scopes: ['openid', 'profile'],
       register_user_name: faker.internet.userName(),
       register_user_image: faker.image.url(),
+
+      prompts: ['consent'],
     },
 
     onSubmit: () => {
@@ -235,6 +245,8 @@ export const OrgMemberOnly: Story = {
       scopes: ['openid', 'profile'],
       register_user_name: faker.internet.userName(),
       register_user_image: faker.image.url(),
+
+      prompts: ['consent'],
     },
 
     onSubmit: () => {

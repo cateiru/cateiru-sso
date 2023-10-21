@@ -12,6 +12,7 @@ nProgress.configure({showSpinner: false, speed: 400, minimum: 0.25});
 interface Returns {
   switch: (id: string, name: string) => void;
   loading: boolean;
+  redirect: () => void;
 }
 
 export const useSwitchAccount = (): Returns => {
@@ -49,12 +50,7 @@ export const useSwitchAccount = (): Returns => {
             title: `ユーザー ${name} にログインしました`,
             status: 'success',
           });
-          const redirectTo = params.get('redirect_to');
-          if (typeof redirectTo === 'string') {
-            router.push(formatRedirectUrl(redirectTo));
-          } else {
-            router.push('/profile');
-          }
+          onRedirect();
           setLoading(false);
         }, 500);
         return;
@@ -64,8 +60,28 @@ export const useSwitchAccount = (): Returns => {
     f();
   };
 
+  const onRedirect = () => {
+    const redirectTo = params.get('redirect_to');
+    if (typeof redirectTo === 'string') {
+      router.push(formatRedirectUrl(redirectTo));
+    } else {
+      router.push('/profile');
+    }
+  };
+
+  const redirect = () => {
+    nProgress.start();
+    setLoading(true);
+
+    onRedirect();
+
+    setLoading(false);
+    nProgress.done();
+  };
+
   return {
     loading,
     switch: switchAccount,
+    redirect,
   };
 };

@@ -1,4 +1,4 @@
-import {useRouter} from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
 import {useRecoilState} from 'recoil';
 import {api} from '../../utils/api';
@@ -26,6 +26,7 @@ export const useOidcRequire = () => {
     OAuthLoginSessionState
   );
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {getFormParams} = useOidc();
 
@@ -73,8 +74,23 @@ export const useOidcRequire = () => {
       }
     }
 
+    const url = new URL(window.location.href);
+    url.searchParams.set('redirect_done', '1');
+    const relativeUrl = url.pathname + url.search;
+    const redirectDone = !!searchParams.get('redirect_done');
+
     const data = PublicAuthenticationRequestSchema.safeParse(response);
     if (data.success) {
+      // promptに`select_account`がある場合、アカウント選択画面を表示させる
+      if (data.data.prompts.includes('select_account') && !redirectDone) {
+        router.replace(
+          `/switch_account?redirect_to=${encodeURIComponent(
+            relativeUrl
+          )}&oauth=1`
+        );
+        return;
+      }
+
       setData(data.data);
       setOAuthLoginSession(undefined);
       return data.data;
@@ -84,10 +100,6 @@ export const useOidcRequire = () => {
       NoLoginPublicAuthenticationRequestSchema.safeParse(response);
     if (noLoginData.success) {
       setOAuthLoginSession(noLoginData.data);
-
-      const url = new URL(window.location.href);
-
-      const relativeUrl = url.pathname + url.search;
 
       // ログインページへリダイレクトする
       router.replace(`/login?redirect_to=${encodeURIComponent(relativeUrl)}`);

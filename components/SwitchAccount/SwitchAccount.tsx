@@ -1,12 +1,15 @@
 'use client';
 
 import {Box, Divider, Heading} from '@chakra-ui/react';
+import {useSearchParams} from 'next/navigation';
 import {useBorderColor, useShadowColor} from '../Common/useColor';
 import {AccountList} from './AccountList';
 
 export const SwitchAccount = () => {
   const borderColor = useBorderColor();
   const shadowColor = useShadowColor();
+
+  const isOauth = !!useSearchParams().get('oauth');
 
   return (
     <Box
@@ -26,13 +29,13 @@ export const SwitchAccount = () => {
           mx=".5rem"
           fontSize={{base: '1.5rem', sm: '1.8rem'}}
         >
-          ログインするアカウントを
+          {isOauth ? '使用するアカウントを' : 'ログインするアカウントを'}
           <br />
           選択してください
         </Heading>
         <Divider mt="1.5rem" w="90%" mx="auto" />
       </Box>
-      <AccountList />
+      <AccountList isOauth={isOauth} />
     </Box>
   );
 };

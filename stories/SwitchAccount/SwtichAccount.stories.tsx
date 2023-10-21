@@ -81,6 +81,45 @@ export const Default: Story = {
   },
 };
 
+export const Oauth: Story = {
+  parameters: {
+    layout: 'fullscreen',
+    mockData: [
+      {
+        url: api('/v2/account/list'),
+        method: 'GET',
+        status: 200,
+        response: [
+          {
+            id: user.id,
+            user_name: user.user_name,
+          },
+          {
+            id: faker.string.uuid(),
+            user_name: faker.internet.userName(),
+          },
+          {
+            id: faker.string.uuid(),
+            user_name: faker.internet.userName(),
+            avatar: faker.image.avatar(),
+          },
+        ],
+      },
+    ],
+    nextjs: {
+      appDirectory: true,
+      query: {
+        oauth: '1',
+      },
+      navigation: {
+        query: {
+          oauth: '1',
+        },
+      },
+    },
+  },
+};
+
 export const ManyUser: Story = {
   parameters: {
     layout: 'fullscreen',

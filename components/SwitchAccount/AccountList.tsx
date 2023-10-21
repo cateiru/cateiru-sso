@@ -25,7 +25,11 @@ import {Spinner} from '../Common/Icons/Spinner';
 import {Link} from '../Common/Next/Link';
 import {useSwitchAccount} from './useSwitchAccount';
 
-export const AccountList = () => {
+interface Props {
+  isOauth: boolean;
+}
+
+export const AccountList: React.FC<Props> = ({isOauth}) => {
   const checkMarkColor = useColorModeValue('#68D391', '#38A169');
   const hoverColor = useColorModeValue('gray.100', 'gray.600');
 
@@ -36,7 +40,7 @@ export const AccountList = () => {
     '/v2/account/list',
     accountUserFeather
   );
-  const {switch: s, loading} = useSwitchAccount();
+  const {switch: s, loading, redirect} = useSwitchAccount();
 
   React.useEffect(() => {
     // ログイン状態 -> ログアウトしたときのみデータをパージする
@@ -101,12 +105,14 @@ export const AccountList = () => {
 
             return (
               <Tr
-                _hover={isCurrentUser ? {} : {bgColor: hoverColor}}
+                _hover={isCurrentUser && !isOauth ? {} : {bgColor: hoverColor}}
                 w="100%"
                 key={account.id}
                 onClick={() => {
                   if (!isCurrentUser) {
                     s(account.id, account.user_name);
+                  } else if (isOauth) {
+                    redirect();
                   }
                 }}
                 cursor="pointer"
@@ -128,21 +134,23 @@ export const AccountList = () => {
                     @{account.user_name}
                   </Text>
                 </Td>
-                {isCurrentUser ? (
-                  <Td p="0" pr="1rem">
-                    <Tooltip label="現在ログインしているユーザーです">
-                      <Box>
-                        <TbCheck
-                          size="30px"
-                          color={checkMarkColor}
-                          strokeWidth="3px"
-                        />
-                      </Box>
-                    </Tooltip>
-                  </Td>
-                ) : (
-                  <Td p="0">{loading && <Spinner />}</Td>
-                )}
+                <Td p="0" pr="1rem">
+                  {loading ? (
+                    <Spinner />
+                  ) : (
+                    isCurrentUser && (
+                      <Tooltip label="現在ログインしているユーザーです">
+                        <Box>
+                          <TbCheck
+                            size="30px"
+                            color={checkMarkColor}
+                            strokeWidth="3px"
+                          />
+                        </Box>
+                      </Tooltip>
+                    )
+                  )}
+                </Td>
               </Tr>
             );
           })}
