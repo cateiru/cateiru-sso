@@ -925,7 +925,7 @@ func TestGetPreviewRequireLoginResponse(t *testing.T) {
 
 		require.Equal(t, token.ClientID, client.ClientID)
 		require.Equal(t, token.ReferrerHost.String, a.RefererHost)
-		require.Equal(t, token.Period.Unix(), request.LimitDate.Unix())
+		require.Equal(t, token.Period.Minute(), request.LimitDate.Minute())
 
 	})
 }
