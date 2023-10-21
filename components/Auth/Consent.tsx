@@ -279,7 +279,11 @@ export const Consent: React.FC<Props> = props => {
                     <Td>
                       {props.data.prompts.map(v => {
                         return (
-                          <Badge key={`prompts-${v}`} colorScheme="cateiru">
+                          <Badge
+                            key={`prompts-${v}`}
+                            colorScheme="cateiru"
+                            mr=".5rem"
+                          >
                             {v}
                           </Badge>
                         );

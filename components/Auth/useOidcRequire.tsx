@@ -54,6 +54,9 @@ export const useOidcRequire = () => {
       mode: 'cors',
       method: 'POST',
       body: params,
+      headers: {
+        Referer: document.referrer,
+      },
     });
 
     const response = await res.json();
