@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -87,6 +88,8 @@ type PublicAuthenticationRequest struct {
 	RegisterUserImage null.String `json:"register_user_image"`
 
 	Prompts []lib.Prompt `json:"prompts"`
+
+	LoginSession *NoLoginPublicAuthenticationRequest `json:"login_session,omitempty"`
 }
 
 type NoLoginPublicAuthenticationRequest struct {
@@ -95,7 +98,7 @@ type NoLoginPublicAuthenticationRequest struct {
 }
 
 // プレビュー用のレスポンスを返す
-func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.DB) (*PublicAuthenticationRequest, error) {
+func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSessionPeriod time.Duration, db *sql.DB) (*PublicAuthenticationRequest, error) {
 
 	orgName := null.NewString("", false)
 	orgImage := null.NewString("", false)
@@ -120,6 +123,21 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 		return nil, err
 	}
 
+	// prompt = login の場合、ログインセッションを作成する
+	// max_age が設定されている場合はその秒数で有効期限を設定する
+	var loginSession *NoLoginPublicAuthenticationRequest = nil
+	if slices.Contains(a.Prompts, lib.PromptLogin) {
+		period := loginSessionPeriod
+		if a.MaxAge != 0 {
+			period = time.Duration(a.MaxAge) * time.Second
+		}
+
+		loginSession, err = a.GetPreviewRequireLoginResponse(ctx, period, db)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &PublicAuthenticationRequest{
 		ClientId:          a.Client.ClientID,
 		ClientName:        a.Client.Name,
@@ -138,17 +156,19 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, db *sql.
 		RegisterUserImage: user.Avatar,
 
 		Prompts: a.Prompts,
+
+		LoginSession: loginSession,
 	}, nil
 }
 
 // ログインが必要な場合のプレビュー用レスポンスを返す
-func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, config *Config, db *sql.DB) (*NoLoginPublicAuthenticationRequest, error) {
+func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, period time.Duration, db *sql.DB) (*NoLoginPublicAuthenticationRequest, error) {
 	token, err := lib.RandomStr(31)
 	if err != nil {
 		return nil, err
 	}
 
-	limit := time.Now().Add(config.OauthLoginSessionPeriod)
+	limit := time.Now().Add(period)
 
 	oauthLoginSession := models.OauthLoginSession{
 		Token:        token,

@@ -753,7 +753,7 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 		}
 
-		response, err := a.GetPreviewResponse(ctx, DB)
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		require.Equal(t, *response, src.PublicAuthenticationRequest{
@@ -835,7 +835,7 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 		}
 
-		response, err := a.GetPreviewResponse(ctx, DB)
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		require.Equal(t, *response, src.PublicAuthenticationRequest{
@@ -915,7 +915,7 @@ func TestGetPreviewRequireLoginResponse(t *testing.T) {
 			RefererHost: "example.test",
 		}
 
-		request, err := a.GetPreviewRequireLoginResponse(ctx, C, DB)
+		request, err := a.GetPreviewRequireLoginResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		token, err := models.OauthLoginSessions(
