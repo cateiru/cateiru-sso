@@ -136,8 +136,17 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
-	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
+	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
+	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
+	if oauthLoginSessionToken != "" {
+		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
+			return err
+		}
+	} else {
+		// FIXME: 別の方法で実装したい
+		if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
+		}
 	}
 
 	session, err := h.Session.NewRegisterSession(ctx, user, ua, ip)
@@ -146,14 +155,6 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 	}
 	for _, cookie := range session.InsertCookie(h.C) {
 		c.SetCookie(cookie)
-	}
-
-	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
-	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
-	if oauthLoginSessionToken != "" {
-		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
-			return err
-		}
 	}
 
 	isStaff, err := models.Staffs(
@@ -239,8 +240,12 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		return err
 	}
 
-	if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
-		return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
+	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
+	if oauthLoginSessionToken == "" {
+		// FIXME: 別の方法で実装したい
+		if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
+		}
 	}
 
 	p, err := models.Passwords(
@@ -302,7 +307,6 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 
 	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
-	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
 	if oauthLoginSessionToken != "" {
 		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
 			return err

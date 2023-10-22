@@ -325,6 +325,91 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		require.True(t, response.User.JoinedOrganization)
 	})
 
+	t.Run("成功: X-Oauth-Login-Session がある場合、LoginOkがtrueになっている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			Token:        token,
+			ClientID:     clientId,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(1 * time.Hour),
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		webauthnSession := registerWebauthnSession(2)
+
+		m, err := easy.NewJson("/", http.MethodPost, "")
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		m.R.Header.Add("User-Agent", `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36`)
+		m.R.Header.Add("X-Oauth-Login-Session", token)
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.NoError(t, err)
+
+		updatedSession, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.True(t, updatedSession.LoginOk)
+	})
+
+	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			Token:        token,
+			ClientID:     clientId,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(1 * time.Hour),
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		TestWebAuthnUser = &u2
+
+		cookies := RegisterSession(t, ctx, &u2)
+
+		webauthnSession := registerWebauthnSession(2)
+
+		m, err := easy.NewJson("/", http.MethodPost, "")
+		require.NoError(t, err)
+		cookie := &http.Cookie{
+			Name:  C.WebAuthnSessionCookie.Name,
+			Value: webauthnSession,
+		}
+		m.Cookie([]*http.Cookie{cookie})
+		m.Cookie(cookies)
+		m.R.Header.Add("User-Agent", `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36`)
+		m.R.Header.Add("X-Oauth-Login-Session", token)
+		c := m.Echo()
+
+		err = h.LoginWebauthnHandler(c)
+		require.NoError(t, err)
+
+		updatedSession, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.True(t, updatedSession.LoginOk)
+	})
+
 	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
@@ -601,6 +686,89 @@ func TestLoginPasswordHandler(t *testing.T) {
 		require.True(t, existOtpSession)
 
 		require.Equal(t, response.OTP.LoginUser.Avatar, u.Avatar)
+	})
+
+	t.Run("成功: 成功: X-Oauth-Login-Session がある場合、LoginOkがtrueになっている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			Token:        token,
+			ClientID:     clientId,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(1 * time.Hour),
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		RegisterPassword(t, ctx, &u2, "password123ABC123123")
+
+		form := easy.NewMultipart()
+		form.Insert("username_or_email", u2.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Oauth-Login-Session", token)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.NoError(t, err)
+
+		updatedSession, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.True(t, updatedSession.LoginOk)
+	})
+
+	t.Run("成功: 成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			Token:        token,
+			ClientID:     clientId,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(1 * time.Hour),
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		RegisterPassword(t, ctx, &u2, "password123ABC123123")
+
+		cookies := RegisterSession(t, ctx, &u2)
+
+		form := easy.NewMultipart()
+		form.Insert("username_or_email", u2.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Oauth-Login-Session", token)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.NoError(t, err)
+
+		updatedSession, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(token),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.True(t, updatedSession.LoginOk)
 	})
 
 	t.Run("失敗: パスワードが空", func(t *testing.T) {
