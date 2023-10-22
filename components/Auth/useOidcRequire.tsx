@@ -84,6 +84,13 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
 
     const data = PublicAuthenticationRequestSchema.safeParse(response);
     if (data.success) {
+      // promptに`none`がある場合、同意画面は表示させずにsubmitする
+      // loginやselect_accountは無視する
+      if (data.data.prompts.includes('none')) {
+        submit();
+        return;
+      }
+
       // promptに`select_account`がある場合、アカウント選択画面を表示させる
       if (data.data.prompts.includes('select_account') && !redirectDone) {
         router.replace(
@@ -91,11 +98,6 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
             relativeUrl
           )}&oauth=1`
         );
-        return;
-      }
-      // promptに`none`がある場合、同意画面は表示させずにsubmitする
-      if (data.data.prompts.includes('none')) {
-        submit();
         return;
       }
 
