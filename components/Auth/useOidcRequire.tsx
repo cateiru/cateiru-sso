@@ -16,7 +16,7 @@ import {
 } from '../../utils/types/error';
 import {useOidc} from './useOidc';
 
-export const useOidcRequire = () => {
+export const useOidcRequire = (submit: () => Promise<void>) => {
   const [oidcError, setOidcError] = React.useState<OidcErrorType | null>(null);
   const [error, setError] = React.useState<ErrorType | null>(null);
   const [data, setData] = React.useState<PublicAuthenticationRequest | null>(
@@ -91,6 +91,11 @@ export const useOidcRequire = () => {
             relativeUrl
           )}&oauth=1`
         );
+        return;
+      }
+      // promptに`none`がある場合、同意画面は表示させずにsubmitする
+      if (data.data.prompts.includes('none')) {
+        submit();
         return;
       }
 

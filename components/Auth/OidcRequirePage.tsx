@@ -8,9 +8,11 @@ import {Error, OidcError} from '../Common/Error/Error';
 import {Spinner} from '../Common/Icons/Spinner';
 import {Consent} from './Consent';
 import {useOidcRequire} from './useOidcRequire';
+import {useOidcSubmit} from './useOidcSubmit';
 
 export const OidcRequirePage = () => {
-  const {require, data, error, oidcError} = useOidcRequire();
+  const {submit, cancel} = useOidcSubmit();
+  const {require, data, error, oidcError} = useOidcRequire(submit);
 
   const user = useRecoilValue(UserState);
 
@@ -40,13 +42,8 @@ export const OidcRequirePage = () => {
         userName={user?.user.user_name ?? ''}
         userImage={user?.user.avatar ?? undefined}
         data={data}
-        // TODO: API側実装してから
-        onSubmit={async () => {
-          alert('submit');
-        }}
-        onCancel={async () => {
-          alert('cancel');
-        }}
+        onSubmit={submit}
+        onCancel={cancel}
       />
     </Box>
   );
