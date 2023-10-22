@@ -706,7 +706,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 		require.Equal(t, response.OTP.LoginUser.Avatar, u.Avatar)
 	})
 
-	t.Run("成功: 成功: X-Oauth-Login-Session がある場合、LoginOkがtrueになっている", func(t *testing.T) {
+	t.Run("成功: X-Oauth-Login-Session がある場合、LoginOkがtrueになっている", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 		clientId, _ := RegisterClient(t, ctx, &u, "openid")
@@ -753,7 +753,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 		require.Equal(t, loginTryHistory.Identifier, int8(2))
 	})
 
-	t.Run("成功: 成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
+	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 		clientId, _ := RegisterClient(t, ctx, &u, "openid")
@@ -801,6 +801,52 @@ func TestLoginPasswordHandler(t *testing.T) {
 		).One(ctx, DB)
 		require.NoError(t, err)
 		require.Equal(t, loginTryHistory.Identifier, int8(2))
+	})
+
+	// 実装上の問題で使えない
+	// FIXME: 使えるようにしたい
+	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログインしていてOTPが設定されていても使用されない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			Token:        token,
+			ClientID:     clientId,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(1 * time.Hour),
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		RegisterPassword(t, ctx, &u2, "password123ABC123123")
+		RegisterOTP(t, ctx, &u2)
+
+		cookies := RegisterSession(t, ctx, &u2)
+
+		form := easy.NewMultipart()
+		form.Insert("username_or_email", u2.Email)
+		form.Insert("recaptcha", "hogehoge")
+		form.Insert("password", "password123ABC123123")
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+		m.R.Header.Add("X-Oauth-Login-Session", token)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.LoginPasswordHandler(c)
+		require.NoError(t, err)
+
+		response := new(src.LoginResponse)
+		require.NoError(t, m.Json(response))
+		require.NotNil(t, response)
+
+		require.NotNil(t, response.User)
+		require.Nil(t, response.OTP)
 	})
 
 	t.Run("失敗: パスワードが空", func(t *testing.T) {
