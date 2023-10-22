@@ -143,7 +143,6 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 		return nil
 	}
 
-	// TODO: テスト
 	// prompt = login の場合、ログインセッションを作成する
 	if slices.Contains(a.Prompts, lib.PromptLogin) {
 		if sessionToken != "" {
@@ -153,16 +152,16 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 				models.OauthLoginSessionWhere.Period.GT(time.Now()),
 			).One(ctx, db)
 			if errors.Is(err, sql.ErrNoRows) {
-				// セッション切れなどでトークンが有効ではなかった場合は
+				// セッション切れなどでトークンが有効ではなかった場合は再度ログインセッションを作る
 				if err := registerLoginSession(); err != nil {
 					return nil, err
 				}
 			}
-			if err != nil {
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return nil, err
 			}
 			// QUESTION: ただのエラーで良いんだっけ？
-			if !loginSession.LoginOk {
+			if loginSession != nil && !loginSession.LoginOk {
 				return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "no login", "", "")
 			}
 		} else {
@@ -170,7 +169,6 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 				return nil, err
 			}
 		}
-
 	}
 
 	return &PublicAuthenticationRequest{

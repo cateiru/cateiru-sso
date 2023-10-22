@@ -863,6 +863,333 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("成功: promptにloginがある場合はトークンも作成する", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		a := src.AuthenticationRequest{
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			ResponseType: lib.ResponseTypeAuthorizationCode,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State:        null.NewString("state_test", true),
+			ResponseMode: lib.ResponseModeQuery,
+			Nonce:        null.NewString("nonce_test", true),
+			Display:      lib.DisplayPage,
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+				lib.PromptLogin,
+			},
+			MaxAge: uint64(0),
+			UiLocales: []string{
+				"ja_JP",
+			},
+			IdTokenHint: null.NewString("id_token_hint_test", true),
+			LoginHint:   null.NewString("login_hint_test", true),
+			AcrValues:   null.NewString("acr_values_test", true),
+
+			Client: client,
+
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+				{
+					UserID: null.NewString("user_id", true),
+				},
+			},
+		}
+
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, "")
+		require.NoError(t, err)
+
+		require.NotNil(t, response.LoginSession)
+
+		s, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(response.LoginSession.LoginSessionToken),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, s.ClientID, client.ClientID)
+	})
+
+	t.Run("成功: promptにloginがあり引数のトークンがすでにログイン済みの場合は何もしない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			ClientID:     client.ClientID,
+			Token:        token,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(10 * time.Hour),
+			LoginOk:      true, // ログイン済み
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		a := src.AuthenticationRequest{
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			ResponseType: lib.ResponseTypeAuthorizationCode,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State:        null.NewString("state_test", true),
+			ResponseMode: lib.ResponseModeQuery,
+			Nonce:        null.NewString("nonce_test", true),
+			Display:      lib.DisplayPage,
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+				lib.PromptLogin,
+			},
+			MaxAge: uint64(0),
+			UiLocales: []string{
+				"ja_JP",
+			},
+			IdTokenHint: null.NewString("id_token_hint_test", true),
+			LoginHint:   null.NewString("login_hint_test", true),
+			AcrValues:   null.NewString("acr_values_test", true),
+
+			Client: client,
+
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+				{
+					UserID: null.NewString("user_id", true),
+				},
+			},
+		}
+
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, token)
+		require.NoError(t, err)
+
+		require.Nil(t, response.LoginSession)
+	})
+
+	t.Run("成功: promptにloginがあり引数のトークンが不正の場合はログインセッションが作られる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		a := src.AuthenticationRequest{
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			ResponseType: lib.ResponseTypeAuthorizationCode,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State:        null.NewString("state_test", true),
+			ResponseMode: lib.ResponseModeQuery,
+			Nonce:        null.NewString("nonce_test", true),
+			Display:      lib.DisplayPage,
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+				lib.PromptLogin,
+			},
+			MaxAge: uint64(0),
+			UiLocales: []string{
+				"ja_JP",
+			},
+			IdTokenHint: null.NewString("id_token_hint_test", true),
+			LoginHint:   null.NewString("login_hint_test", true),
+			AcrValues:   null.NewString("acr_values_test", true),
+
+			Client: client,
+
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+				{
+					UserID: null.NewString("user_id", true),
+				},
+			},
+		}
+
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, token)
+		require.NoError(t, err)
+
+		require.NotNil(t, response.LoginSession)
+
+		s, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(response.LoginSession.LoginSessionToken),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, s.ClientID, client.ClientID)
+	})
+
+	t.Run("成功: promptにloginがあり引数のトークンが有効期限切れの場合は新たにログインセッションが作られる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			ClientID:     client.ClientID,
+			Token:        token,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(-10 * time.Hour), // 有効期限切れ
+			LoginOk:      true,                            // ログイン済み
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		a := src.AuthenticationRequest{
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			ResponseType: lib.ResponseTypeAuthorizationCode,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State:        null.NewString("state_test", true),
+			ResponseMode: lib.ResponseModeQuery,
+			Nonce:        null.NewString("nonce_test", true),
+			Display:      lib.DisplayPage,
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+				lib.PromptLogin,
+			},
+			MaxAge: uint64(0),
+			UiLocales: []string{
+				"ja_JP",
+			},
+			IdTokenHint: null.NewString("id_token_hint_test", true),
+			LoginHint:   null.NewString("login_hint_test", true),
+			AcrValues:   null.NewString("acr_values_test", true),
+
+			Client: client,
+
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+				{
+					UserID: null.NewString("user_id", true),
+				},
+			},
+		}
+
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, token)
+		require.NoError(t, err)
+
+		require.NotNil(t, response.LoginSession)
+
+		s, err := models.OauthLoginSessions(
+			models.OauthLoginSessionWhere.Token.EQ(response.LoginSession.LoginSessionToken),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, s.ClientID, client.ClientID)
+	})
+
+	t.Run("失敗: promptにloginがあり引数のトークンはあるがログインしていない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(clientId),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		token, err := lib.RandomStr(31)
+		require.NoError(t, err)
+		session := models.OauthLoginSession{
+			ClientID:     client.ClientID,
+			Token:        token,
+			ReferrerHost: null.NewString("", false),
+			Period:       time.Now().Add(10 * time.Hour),
+			LoginOk:      false, // 未ログイン
+		}
+		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
+
+		a := src.AuthenticationRequest{
+			Scopes: []string{
+				"openid",
+				"profile",
+			},
+			ResponseType: lib.ResponseTypeAuthorizationCode,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State:        null.NewString("state_test", true),
+			ResponseMode: lib.ResponseModeQuery,
+			Nonce:        null.NewString("nonce_test", true),
+			Display:      lib.DisplayPage,
+			Prompts: []lib.Prompt{
+				lib.PromptConsent,
+				lib.PromptLogin,
+			},
+			MaxAge: uint64(0),
+			UiLocales: []string{
+				"ja_JP",
+			},
+			IdTokenHint: null.NewString("id_token_hint_test", true),
+			LoginHint:   null.NewString("login_hint_test", true),
+			AcrValues:   null.NewString("acr_values_test", true),
+
+			Client: client,
+
+			AllowRules: []*models.ClientAllowRule{
+				{
+					EmailDomain: null.NewString("example.test", true),
+				},
+				{
+					UserID: null.NewString("user_id", true),
+				},
+			},
+		}
+
+		_, err = a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, token)
+		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=no login")
+	})
 }
 
 func TestGetLoginSession(t *testing.T) {
