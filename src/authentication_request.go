@@ -144,6 +144,8 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 	}
 
 	// prompt = login の場合、ログインセッションを作成する
+	// - トークンがすでにログイン済みだった場合はプレビューを返す
+	// - トークンが有効期限切れなどで存在しない場合は再度トークンを作り直す
 	if slices.Contains(a.Prompts, lib.PromptLogin) {
 		if sessionToken != "" {
 			// セッションがある場合はDBから引いてきて、有効かつログイン済みの場合はそのまま通す
