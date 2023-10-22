@@ -865,7 +865,7 @@ func TestGetPreviewResponse(t *testing.T) {
 	})
 }
 
-func TestGetPreviewRequireLoginResponse(t *testing.T) {
+func TestGetLoginSession(t *testing.T) {
 	ctx := context.Background()
 
 	email := RandomEmail(t)
@@ -915,7 +915,7 @@ func TestGetPreviewRequireLoginResponse(t *testing.T) {
 			RefererHost: "example.test",
 		}
 
-		request, err := a.GetPreviewRequireLoginResponse(ctx, C.OauthLoginSessionPeriod, DB)
+		request, err := a.GetLoginSession(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		token, err := models.OauthLoginSessions(

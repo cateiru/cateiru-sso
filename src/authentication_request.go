@@ -89,10 +89,10 @@ type PublicAuthenticationRequest struct {
 
 	Prompts []lib.Prompt `json:"prompts"`
 
-	LoginSession *NoLoginPublicAuthenticationRequest `json:"login_session,omitempty"`
+	LoginSession *PublicAuthenticationLoginSession `json:"login_session,omitempty"`
 }
 
-type NoLoginPublicAuthenticationRequest struct {
+type PublicAuthenticationLoginSession struct {
 	LoginSessionToken string    `json:"login_session_token"`
 	LimitDate         time.Time `json:"limit_date"`
 }
@@ -125,14 +125,14 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 
 	// prompt = login の場合、ログインセッションを作成する
 	// max_age が設定されている場合はその秒数で有効期限を設定する
-	var loginSession *NoLoginPublicAuthenticationRequest = nil
+	var loginSession *PublicAuthenticationLoginSession = nil
 	if slices.Contains(a.Prompts, lib.PromptLogin) {
 		period := loginSessionPeriod
 		if a.MaxAge != 0 {
 			period = time.Duration(a.MaxAge) * time.Second
 		}
 
-		loginSession, err = a.GetPreviewRequireLoginResponse(ctx, period, db)
+		loginSession, err = a.GetLoginSession(ctx, period, db)
 		if err != nil {
 			return nil, err
 		}
@@ -161,8 +161,8 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 	}, nil
 }
 
-// ログインが必要な場合のプレビュー用レスポンスを返す
-func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Context, period time.Duration, db *sql.DB) (*NoLoginPublicAuthenticationRequest, error) {
+// ログインが必要な場合のセッションを返す
+func (a *AuthenticationRequest) GetLoginSession(ctx context.Context, period time.Duration, db *sql.DB) (*PublicAuthenticationLoginSession, error) {
 	token, err := lib.RandomStr(31)
 	if err != nil {
 		return nil, err
@@ -180,7 +180,7 @@ func (a *AuthenticationRequest) GetPreviewRequireLoginResponse(ctx context.Conte
 		return nil, err
 	}
 
-	return &NoLoginPublicAuthenticationRequest{
+	return &PublicAuthenticationLoginSession{
 		LoginSessionToken: token,
 		LimitDate:         limit,
 	}, nil

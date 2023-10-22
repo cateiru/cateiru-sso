@@ -1,5 +1,5 @@
 import {type AtomEffect, atom} from 'recoil';
-import {NoLoginPublicAuthenticationRequest} from '../types/auth';
+import {PublicAuthenticationLoginSession} from '../types/auth';
 import {UserMe} from '../types/user';
 
 // const localStorageEffect =
@@ -54,7 +54,7 @@ export const UserState = atom<UserMe | null | undefined>({
 });
 
 export const OAuthLoginSessionState = atom<
-  NoLoginPublicAuthenticationRequest | undefined
+  PublicAuthenticationLoginSession | undefined
 >({
   key: 'OauthLoginSession',
   default: undefined,

@@ -4,7 +4,7 @@ import {useRecoilState} from 'recoil';
 import {api} from '../../utils/api';
 import {OAuthLoginSessionState} from '../../utils/state/atom';
 import {
-  NoLoginPublicAuthenticationRequestSchema,
+  PublicAuthenticationLoginSessionSchema,
   PublicAuthenticationRequest,
   PublicAuthenticationRequestSchema,
 } from '../../utils/types/auth';
@@ -91,6 +91,23 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
         return;
       }
 
+      if (data.data.prompts.includes('login') && !redirectDone) {
+        // prompt = login 時にセッションが来ないことはないが
+        // 念のためチェックする
+        if (data.data.login_session === null) {
+          setError({
+            message: 'error',
+          });
+          return;
+        }
+
+        setOAuthLoginSession(data.data.login_session);
+
+        // ログインページへリダイレクトする
+        router.replace(`/login?redirect_to=${encodeURIComponent(relativeUrl)}`);
+        return;
+      }
+
       // promptに`select_account`がある場合、アカウント選択画面を表示させる
       if (data.data.prompts.includes('select_account') && !redirectDone) {
         router.replace(
@@ -107,7 +124,7 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
     }
 
     const noLoginData =
-      NoLoginPublicAuthenticationRequestSchema.safeParse(response);
+      PublicAuthenticationLoginSessionSchema.safeParse(response);
     if (noLoginData.success) {
       setOAuthLoginSession(noLoginData.data);
 
