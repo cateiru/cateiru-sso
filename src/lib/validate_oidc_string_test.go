@@ -101,12 +101,12 @@ func TestValidatePrompt(t *testing.T) {
 		require.Equal(t, lib.ValidatePrompt("select_account"), lib.PromptSelectAccount)
 	})
 
-	t.Run("値が空の場合はnoneになる", func(t *testing.T) {
-		require.Equal(t, lib.ValidatePrompt(""), lib.PromptNone)
+	t.Run("値が空の場合はconsentになる", func(t *testing.T) {
+		require.Equal(t, lib.ValidatePrompt(""), lib.PromptConsent)
 	})
 
-	t.Run("値が不正の場合はnoneになる", func(t *testing.T) {
-		require.Equal(t, lib.ValidatePrompt("aaaa"), lib.PromptNone)
+	t.Run("値が不正の場合はconsentになる", func(t *testing.T) {
+		require.Equal(t, lib.ValidatePrompt("aaaa"), lib.PromptConsent)
 	})
 }
 

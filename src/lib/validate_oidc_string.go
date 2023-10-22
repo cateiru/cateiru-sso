@@ -126,7 +126,8 @@ func ValidatePrompt(s string) Prompt {
 		return PromptSelectAccount
 	}
 
-	return PromptNone
+	// デフォルトで同意画面が表示されてほしいので consent を返す
+	return PromptConsent
 }
 
 // max-age
