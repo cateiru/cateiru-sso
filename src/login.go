@@ -155,7 +155,10 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 			return err
 		}
 		if userMe != nil {
-			return c.JSON(http.StatusOK, userMe)
+			return c.JSON(http.StatusOK, LoginResponse{
+				User: userMe,
+				OTP:  nil,
+			})
 		}
 	} else {
 		if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
@@ -286,7 +289,10 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 			return err
 		}
 		if userMe != nil {
-			return c.JSON(http.StatusOK, userMe)
+			return c.JSON(http.StatusOK, LoginResponse{
+				User: userMe,
+				OTP:  nil, // FIXME: OTPも使えるようにする
+			})
 		}
 	} else {
 		if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
