@@ -316,7 +316,7 @@ export const Consent: React.FC<Props> = props => {
             キャンセル
           </Button>
         </Stack>
-        <Text mt=".5rem">
+        <Text mt="1rem">
           許可すると、
           <Link
             href={redirectUriHost.toString()}
