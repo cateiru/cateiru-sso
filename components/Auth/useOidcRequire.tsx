@@ -49,15 +49,26 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
     // TODO: サーバに送る
     console.log(oauthLoginSession);
 
-    const res = await fetch(api('/v2/oidc/require'), {
-      credentials: 'include',
-      mode: 'cors',
-      method: 'POST',
-      body: params,
-      headers: {
-        Referer: document.referrer,
-      },
-    });
+    let res;
+
+    try {
+      res = await fetch(api('/v2/oidc/require'), {
+        credentials: 'include',
+        mode: 'cors',
+        method: 'POST',
+        body: params,
+        headers: {
+          Referer: document.referrer,
+        },
+      });
+    } catch (e) {
+      if (e instanceof Error) {
+        setError({
+          message: e.message,
+        });
+      }
+      return;
+    }
 
     const response = await res.json();
 
@@ -104,7 +115,9 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
         setOAuthLoginSession(data.data.login_session);
 
         // ログインページへリダイレクトする
-        router.replace(`/login?redirect_to=${encodeURIComponent(relativeUrl)}`);
+        router.replace(
+          `/login?redirect_to=${encodeURIComponent(relativeUrl)}&oauth=1`
+        );
         return;
       }
 

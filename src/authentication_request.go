@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
-	"slices"
 	"strings"
 	"time"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"golang.org/x/exp/slices"
 )
 
 // https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#AuthRequest
@@ -123,6 +123,7 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 		return nil, err
 	}
 
+	// TODO: テスト
 	// prompt = login の場合、ログインセッションを作成する
 	// max_age が設定されている場合はその秒数で有効期限を設定する
 	var loginSession *PublicAuthenticationLoginSession = nil
@@ -137,6 +138,7 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 			return nil, err
 		}
 	}
+	S.Info(a.Prompts)
 
 	return &PublicAuthenticationRequest{
 		ClientId:          a.Client.ClientID,

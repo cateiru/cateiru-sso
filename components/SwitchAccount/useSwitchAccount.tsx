@@ -11,8 +11,8 @@ nProgress.configure({showSpinner: false, speed: 400, minimum: 0.25});
 
 interface Returns {
   switch: (id: string, name: string) => void;
-  loading: boolean;
-  redirect: () => void;
+  loading: string | null;
+  redirect: (id: string) => void;
 }
 
 export const useSwitchAccount = (): Returns => {
@@ -25,7 +25,7 @@ export const useSwitchAccount = (): Returns => {
   const router = useRouter();
   const params = useSearchParams();
   const toast = useToast();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState<null | string>(null);
 
   const switchAccount = (id: string, name: string) => {
     const f = async () => {
@@ -42,7 +42,7 @@ export const useSwitchAccount = (): Returns => {
       });
 
       if (res) {
-        setLoading(true);
+        setLoading(id);
 
         setTimeout(async () => {
           setUser(undefined);
@@ -51,7 +51,7 @@ export const useSwitchAccount = (): Returns => {
             status: 'success',
           });
           onRedirect();
-          setLoading(false);
+          setLoading(null);
         }, 500);
         return;
       }
@@ -69,13 +69,13 @@ export const useSwitchAccount = (): Returns => {
     }
   };
 
-  const redirect = () => {
+  const redirect = (id: string) => {
     nProgress.start();
-    setLoading(true);
+    setLoading(id);
 
     onRedirect();
 
-    setLoading(false);
+    setLoading(null);
     nProgress.done();
   };
 

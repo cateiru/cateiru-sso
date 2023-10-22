@@ -27,7 +27,7 @@ export const PublicAuthenticationRequestSchema = z.object({
 
   prompts: z.array(z.string()),
 
-  login_session: PublicAuthenticationLoginSessionSchema.nullable(),
+  login_session: PublicAuthenticationLoginSessionSchema.optional(),
 });
 export type PublicAuthenticationRequest = z.infer<
   typeof PublicAuthenticationRequestSchema

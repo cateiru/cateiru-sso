@@ -112,7 +112,7 @@ export const AccountList: React.FC<Props> = ({isOauth}) => {
                   if (!isCurrentUser) {
                     s(account.id, account.user_name);
                   } else if (isOauth) {
-                    redirect();
+                    redirect(account.id);
                   }
                 }}
                 cursor="pointer"
@@ -135,7 +135,7 @@ export const AccountList: React.FC<Props> = ({isOauth}) => {
                   </Text>
                 </Td>
                 <Td p="0" pr="1rem">
-                  {loading ? (
+                  {loading !== null && loading === account.id ? (
                     <Spinner />
                   ) : (
                     isCurrentUser && (
