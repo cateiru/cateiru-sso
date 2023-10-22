@@ -753,7 +753,7 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 		}
 
-		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, "")
 		require.NoError(t, err)
 
 		require.Equal(t, *response, src.PublicAuthenticationRequest{
@@ -835,7 +835,7 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 		}
 
-		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, "")
 		require.NoError(t, err)
 
 		require.Equal(t, *response, src.PublicAuthenticationRequest{

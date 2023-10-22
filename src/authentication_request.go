@@ -98,7 +98,7 @@ type PublicAuthenticationLoginSession struct {
 }
 
 // プレビュー用のレスポンスを返す
-func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSessionPeriod time.Duration, db *sql.DB) (*PublicAuthenticationRequest, error) {
+func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSessionPeriod time.Duration, db *sql.DB, sessionToken string) (*PublicAuthenticationRequest, error) {
 
 	orgName := null.NewString("", false)
 	orgImage := null.NewString("", false)
@@ -123,11 +123,9 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 		return nil, err
 	}
 
-	// TODO: テスト
-	// prompt = login の場合、ログインセッションを作成する
-	// max_age が設定されている場合はその秒数で有効期限を設定する
 	var loginSession *PublicAuthenticationLoginSession = nil
-	if slices.Contains(a.Prompts, lib.PromptLogin) {
+	registerLoginSession := func() error {
+		// max_age が設定されている場合はその秒数で有効期限を設定する
 		period := loginSessionPeriod
 		if a.MaxAge != 0 {
 			period = time.Duration(a.MaxAge) * time.Second
@@ -135,10 +133,40 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 
 		loginSession, err = a.GetLoginSession(ctx, period, db)
 		if err != nil {
-			return nil, err
+			return err
 		}
+		return nil
 	}
-	S.Info(a.Prompts)
+
+	// TODO: テスト
+	// prompt = login の場合、ログインセッションを作成する
+	if slices.Contains(a.Prompts, lib.PromptLogin) {
+		if sessionToken != "" {
+			// セッションがある場合はDBから引いてきて、有効かつログイン済みの場合はそのまま通す
+			loginSession, err := models.OauthLoginSessions(
+				models.OauthLoginSessionWhere.Token.EQ(sessionToken),
+				models.OauthLoginSessionWhere.Period.GT(time.Now()),
+			).One(ctx, db)
+			if errors.Is(err, sql.ErrNoRows) {
+				// セッション切れなどでトークンが有効ではなかった場合は
+				if err := registerLoginSession(); err != nil {
+					return nil, err
+				}
+			}
+			if err != nil {
+				return nil, err
+			}
+			// QUESTION: ただのエラーで良いんだっけ？
+			if !loginSession.LoginOk {
+				return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "no login", "", "")
+			}
+		} else {
+			if err := registerLoginSession(); err != nil {
+				return nil, err
+			}
+		}
+
+	}
 
 	return &PublicAuthenticationRequest{
 		ClientId:          a.Client.ClientID,

@@ -46,10 +46,24 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
       return;
     }
 
-    // TODO: サーバに送る
-    console.log(oauthLoginSession);
+    // セッションの有効期限を見ておく
+    if (
+      typeof oauthLoginSession !== 'undefined' &&
+      new Date(oauthLoginSession?.limit_date) < new Date()
+    ) {
+      setError({
+        message: 'ログインセッションの有効期限が切れました。',
+      });
+      return;
+    }
 
     let res;
+
+    const headers: HeadersInit = {Referer: document.referrer};
+
+    if (typeof oauthLoginSession !== 'undefined') {
+      headers['X-Oauth-Login-Session'] = oauthLoginSession.login_session_token;
+    }
 
     try {
       res = await fetch(api('/v2/oidc/require'), {
@@ -57,9 +71,7 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
         mode: 'cors',
         method: 'POST',
         body: params,
-        headers: {
-          Referer: document.referrer,
-        },
+        headers: headers,
       });
     } catch (e) {
       if (e instanceof Error) {
@@ -102,16 +114,11 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
         return;
       }
 
-      if (data.data.prompts.includes('login') && !redirectDone) {
-        // prompt = login 時にセッションが来ないことはないが
-        // 念のためチェックする
-        if (data.data.login_session === null) {
-          setError({
-            message: 'error',
-          });
-          return;
-        }
-
+      // login後は login_session は undefined になる
+      if (
+        data.data.prompts.includes('login') &&
+        typeof data.data.login_session !== 'undefined'
+      ) {
         setOAuthLoginSession(data.data.login_session);
 
         // ログインページへリダイレクトする
