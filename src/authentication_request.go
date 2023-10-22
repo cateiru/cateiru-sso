@@ -97,6 +97,11 @@ type PublicAuthenticationLoginSession struct {
 	LimitDate         time.Time `json:"limit_date"`
 }
 
+type OauthResponse struct {
+	RedirectUrl string `json:"redirect_url"`
+	Code        string `json:"code"`
+}
+
 // プレビュー用のレスポンスを返す
 func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSessionPeriod time.Duration, db *sql.DB, sessionToken string) (*PublicAuthenticationRequest, error) {
 
@@ -261,15 +266,30 @@ func (a *AuthenticationRequest) CheckUserAuthenticationPossible(ctx context.Cont
 	return ok, nil
 }
 
+// TODO: test
+func (a *AuthenticationRequest) Submit(ctx context.Context, db *sql.DB) (*OauthResponse, error) {
+	return &OauthResponse{}, nil
+}
+
+// TODO: test
+func (a *AuthenticationRequest) Cancel(ctx context.Context, db *sql.DB) (*OauthResponse, error) {
+	return &OauthResponse{}, nil
+}
+
 // Authentication Request を取得する
 // RFCではGETかPOSTでx-www-form-urlencodedでリクエストを送るとあるが、
 // これはjs側で対応するのでjs - サーバ間は multipart/form-data で送る
 func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) (*AuthenticationRequest, error) {
 
-	// Request Type
-	requestType := c.FormValue("response_type")
-	validatedResponseType := lib.ValidateResponseType(requestType)
+	// Response Type
+	responseType := c.FormValue("response_type")
+	validatedResponseType := lib.ValidateResponseType(responseType)
 	if validatedResponseType == lib.ResponseTypeInvalid {
+		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "request_type is invalid", "", "")
+	}
+
+	if validatedResponseType != lib.ResponseTypeAuthorizationCode {
+		// 一旦 Authorization Code Flow のみ対応
 		return nil, NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "request_type is invalid", "", "")
 	}
 
