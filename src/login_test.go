@@ -340,6 +340,10 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		}
 		require.NoError(t, session.Insert(ctx, DB, boil.Infer()))
 
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+		TestWebAuthnUser = &u2
+
 		webauthnSession := registerWebauthnSession(2)
 
 		m, err := easy.NewJson("/", http.MethodPost, "")
@@ -362,6 +366,13 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		require.True(t, updatedSession.LoginOk)
+
+		// ログイントライ履歴は 2 で保存される
+		loginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, loginTryHistory.Identifier, int8(2))
 	})
 
 	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
@@ -408,6 +419,13 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		require.True(t, updatedSession.LoginOk)
+
+		// ログイントライ履歴は 2 で保存される
+		loginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, loginTryHistory.Identifier, int8(2))
 	})
 
 	t.Run("失敗: application/jsonじゃない", func(t *testing.T) {
@@ -726,6 +744,13 @@ func TestLoginPasswordHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		require.True(t, updatedSession.LoginOk)
+
+		// ログイントライ履歴は 2 で保存される
+		loginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, loginTryHistory.Identifier, int8(2))
 	})
 
 	t.Run("成功: 成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
@@ -769,6 +794,13 @@ func TestLoginPasswordHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		require.True(t, updatedSession.LoginOk)
+
+		// ログイントライ履歴は 2 で保存される
+		loginTryHistory, err := models.LoginTryHistories(
+			models.LoginTryHistoryWhere.UserID.EQ(u2.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, loginTryHistory.Identifier, int8(2))
 	})
 
 	t.Run("失敗: パスワードが空", func(t *testing.T) {

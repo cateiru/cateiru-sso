@@ -42,4 +42,5 @@ export type LoginTryHistoryList = z.infer<typeof LoginTryHistoryListScheme>;
 export const LOGIN_TRY_IDENTIFIER: {[key: number]: string} = {
   0: 'ログイン',
   1: 'パスワード再登録',
+  2: 'OAuthログイン',
 };

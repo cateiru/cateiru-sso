@@ -1,6 +1,7 @@
 package src
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net"
@@ -104,6 +105,7 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 	if c.Request().Header.Get("Content-Type") != "application/json" {
 		return NewHTTPError(http.StatusBadRequest, "invalid content-type")
 	}
+	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
 
 	webauthnToken, err := c.Cookie(h.C.WebAuthnSessionCookie.Name)
 	if err != nil {
@@ -121,6 +123,11 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		return err
 	}
 
+	var loginTryHistoryIdentifier int8 = 0
+	if oauthLoginSessionToken != "" {
+		loginTryHistoryIdentifier = 2
+	}
+
 	// ログイントライ履歴を追加する
 	loginTryHistory := models.LoginTryHistory{
 		UserID:   user.ID,
@@ -130,20 +137,27 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		IsMobile: null.NewBool(ua.IsMobile, true),
 		IP:       net.ParseIP(ip),
 
-		Identifier: 0,
+		Identifier: loginTryHistoryIdentifier,
 	}
 	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 
 	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
-	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
 	if oauthLoginSessionToken != "" {
 		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
 			return err
 		}
+
+		// セッションを作り直したくないのでそのまま返してしまう
+		userMe, err := h.LoginNoRegisterSession(ctx, c, user.ID)
+		if err != nil {
+			return err
+		}
+		if userMe != nil {
+			return c.JSON(http.StatusOK, userMe)
+		}
 	} else {
-		// FIXME: 別の方法で実装したい
 		if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
 			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
 		}
@@ -201,6 +215,7 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	if password == "" {
 		return NewHTTPError(http.StatusBadRequest, "password is empty")
 	}
+	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
 
 	ip := c.RealIP()
 	ua, err := h.ParseUA(c.Request())
@@ -225,6 +240,11 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		return err
 	}
 
+	var loginTryHistoryIdentifier int8 = 0
+	if oauthLoginSessionToken != "" {
+		loginTryHistoryIdentifier = 2
+	}
+
 	// ログイントライ履歴を保存する
 	loginTryHistory := models.LoginTryHistory{
 		UserID:   user.ID,
@@ -234,18 +254,10 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		IsMobile: null.NewBool(ua.IsMobile, true),
 		IP:       net.ParseIP(ip),
 
-		Identifier: 0,
+		Identifier: loginTryHistoryIdentifier,
 	}
 	if err := loginTryHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
-	}
-
-	oauthLoginSessionToken := c.Request().Header.Get("X-Oauth-Login-Session")
-	if oauthLoginSessionToken == "" {
-		// FIXME: 別の方法で実装したい
-		if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
-			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
-		}
 	}
 
 	p, err := models.Passwords(
@@ -260,6 +272,26 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 
 	if !h.Password.VerifyPassword(password, p.Hash, p.Salt) {
 		return NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "invalid password")
+	}
+
+	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
+	if oauthLoginSessionToken != "" {
+		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
+			return err
+		}
+
+		// セッションを作り直したくないのでそのまま返してしまう
+		userMe, err := h.LoginNoRegisterSession(ctx, c, user.ID)
+		if err != nil {
+			return err
+		}
+		if userMe != nil {
+			return c.JSON(http.StatusOK, userMe)
+		}
+	} else {
+		if ok := h.Session.IsLoggedIn(ctx, c.Cookies(), user); ok {
+			return NewHTTPUniqueError(http.StatusBadRequest, ErrAlreadyLoggedIn, "already logged in")
+		}
 	}
 
 	otpRegistered, err := models.Otps(
@@ -304,13 +336,6 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 	}
 	for _, cookie := range session.InsertCookie(h.C) {
 		c.SetCookie(cookie)
-	}
-
-	// X-Oauth-Login-Session が設定されている場合、そのセッションの `login_ok = true` にする
-	if oauthLoginSessionToken != "" {
-		if err := SetLoggedInOauthLoginSession(ctx, h.DB, oauthLoginSessionToken); err != nil {
-			return err
-		}
 	}
 
 	isStaff, err := models.Staffs(
@@ -476,4 +501,41 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 		User: &userMe,
 		OTP:  nil,
 	})
+}
+
+func (h *Handler) LoginNoRegisterSession(ctx context.Context, c echo.Context, userId string) (*UserMeResponse, error) {
+	sessionUser, err := h.Session.SimpleLogin(ctx, c, true)
+	if errors.Is(err, ErrorLoginFailed) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// ユーザーが違う = 違うユーザーでログインしている
+	if sessionUser.ID != userId {
+		return nil, nil
+	}
+
+	isStaff, err := models.Staffs(
+		models.StaffWhere.UserID.EQ(sessionUser.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return nil, err
+	}
+
+	JoinedOrganization, err := models.OrganizationUsers(
+		models.OrganizationUserWhere.UserID.EQ(sessionUser.ID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return nil, err
+	}
+
+	userMe := &UserMeResponse{
+		UserInfo:           sessionUser,
+		IsStaff:            isStaff,
+		JoinedOrganization: JoinedOrganization,
+	}
+
+	return userMe, nil
 }
