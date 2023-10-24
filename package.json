@@ -38,7 +38,6 @@
     "react-icons": "^4.11.0",
     "react-password-checklist": "^1.4.3",
     "react-password-strength-bar": "^0.4.1",
-    "recoil": "^0.7.7",
     "swr": "^2.2.4",
     "zod": "^3.22.4"
   },
@@ -70,7 +69,6 @@
     "eslint-plugin-storybook": "^0.6.15",
     "gts": "^4.0.1",
     "storybook": "^7.4.6",
-    "storybook-addon-jotai": "^0.0.6",
     "storybook-addon-mock": "^4.3.0",
     "typescript": "^5.2.2"
   }
