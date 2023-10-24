@@ -1,7 +1,5 @@
-import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
 import {ProfileForm} from '../../components/Profile/ProfileForm';
-import {UserState} from '../../utils/state/atom';
 
 const meta: Meta<typeof ProfileForm> = {
   title: 'CateiruSSO/Profile/ProfileForm',

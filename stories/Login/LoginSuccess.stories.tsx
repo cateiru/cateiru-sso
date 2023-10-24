@@ -1,7 +1,5 @@
-import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
 import {LoginSuccess} from '../../components/Login/LoginSuccess';
-import {UserState} from '../../utils/state/atom';
 
 const meta: Meta<typeof LoginSuccess> = {
   title: 'CateiruSSO/Login/LoginSuccess',

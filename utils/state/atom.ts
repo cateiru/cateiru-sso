@@ -7,6 +7,7 @@ export function atomWithBroadcast<Value = undefined | null | object>(
 ) {
   const baseAtom = atom<Value>(initializeValue);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const listeners = new Set<(event: MessageEvent<Value>) => void>();
   const channel = new BroadcastChannel(key);
   channel.onmessage = event => {

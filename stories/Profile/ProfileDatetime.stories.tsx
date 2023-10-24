@@ -1,7 +1,5 @@
-import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
 import {ProfileDatetime} from '../../components/Profile/ProfileDatetime';
-import {UserState} from '../../utils/state/atom';
 
 const meta: Meta<typeof ProfileDatetime> = {
   title: 'CateiruSSO/Profile/ProfileDatetime',
