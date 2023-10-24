@@ -5,6 +5,7 @@ import {
   MenuItem,
   MenuList,
 } from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import {usePathname} from 'next/navigation';
 import React from 'react';
 import {
@@ -17,7 +18,6 @@ import {
   TbUserPlus,
   TbUsers,
 } from 'react-icons/tb';
-import {useAtomValue} from 'jotai';
 import {UserState} from '../../../utils/state/atom';
 import {Link} from '../Next/Link';
 import {useLogout} from '../useLogout';

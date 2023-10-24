@@ -18,9 +18,9 @@ import {
   Tr,
   useDisclosure,
 } from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import React from 'react';
 import {useForm} from 'react-hook-form';
-import {useAtomValue} from 'jotai';
 import {useSWRConfig} from 'swr';
 import {UserState} from '../../../utils/state/atom';
 import {Staff} from '../../../utils/types/staff';

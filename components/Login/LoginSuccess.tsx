@@ -1,7 +1,7 @@
 import {Heading, VStack, useColorModeValue} from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
-import {useAtomValue} from 'jotai';
 import {formatRedirectUrl} from '../../utils/format';
 import {UserState} from '../../utils/state/atom';
 import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
