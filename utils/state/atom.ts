@@ -55,7 +55,9 @@ export function atomWithBroadcast<Value = undefined | null | object>(
   return returnedAtom;
 }
 
-export const UserState = atomWithBroadcast<UserMe | null | undefined>(
-  'user',
-  undefined
-);
+// export const UserState = atomWithBroadcast<UserMe | null | undefined>(
+//   'user',
+//   undefined
+// );
+
+export const UserState = atom<UserMe | null | undefined>(undefined);
