@@ -1,7 +1,12 @@
 import {OidcRequirePage} from '../../components/Auth/OidcRequirePage';
+import {Session} from '../../components/Common/Session';
 
 const Page = () => {
-  return <OidcRequirePage />;
+  return (
+    <Session noRedirect>
+      <OidcRequirePage />
+    </Session>
+  );
 };
 
 export default Page;
