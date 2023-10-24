@@ -1,6 +1,6 @@
 import {Center, Text, useColorModeValue, useToast} from '@chakra-ui/react';
+import {useSetAtom} from 'jotai';
 import React from 'react';
-import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
@@ -22,7 +22,7 @@ export const OtpPage: React.FC<Props> = props => {
   const descriptionTextColor = useSecondaryColor();
   const accentColor = useColorModeValue('my.primary', 'my.secondary');
 
-  const setUser = useSetRecoilState(UserState);
+  const setUser = useSetAtom(UserState);
   const {getRecaptchaToken} = useRecaptcha();
   const toast = useToast();
   const oauthLoginSession = useGetOauthLoginSession();

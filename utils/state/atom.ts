@@ -1,54 +1,60 @@
-import {type AtomEffect, atom} from 'recoil';
-import {PublicAuthenticationLoginSession} from '../types/auth';
+import {atom} from 'jotai';
 import {UserMe} from '../types/user';
 
-// const localStorageEffect =
-//   (key: string) =>
-//   ({setSelf, onSet}: any) => {
-//     if (process.browser) {
-//       const savedValue = localStorage.getItem(key);
-//       if (savedValue !== null) {
-//         setSelf(JSON.parse(savedValue));
-//       }
+export function atomWithBroadcast<Value = undefined | null | object>(
+  key: string,
+  initializeValue: Value
+) {
+  const baseAtom = atom<Value>(initializeValue);
 
-//       onSet((newValue: DefaultValue | string) => {
-//         if (newValue instanceof DefaultValue) {
-//           localStorage.removeItem(key);
-//         } else {
-//           localStorage.setItem(key, JSON.stringify(newValue));
-//         }
-//       });
-//     }
-//   };
-
-interface BroadcastMessage<T> {
-  id: string;
-  value: T;
-}
-const tabId = Math.random().toString(32).substring(2);
-const broadcastEffect =
-  <T>(key: string): AtomEffect<T> =>
-  ({setSelf, onSet}) => {
-    const bc = new BroadcastChannel(key);
-    bc.addEventListener('message', event => {
-      const data: BroadcastMessage<T> = event.data;
-      if (data.id !== tabId) {
-        setSelf(data.value);
-      }
-    });
-
-    onSet(newValue => {
-      const value = typeof newValue === 'undefined' ? null : newValue;
-
-      bc.postMessage({
-        id: tabId,
-        value: value,
-      } as BroadcastMessage<T>);
-    });
+  const listeners = new Set<(event: MessageEvent<Value>) => void>();
+  const channel = new BroadcastChannel(key);
+  channel.onmessage = event => {
+    listeners.forEach(l => l(event));
   };
 
-export const UserState = atom<UserMe | null | undefined>({
-  key: 'User',
-  default: undefined,
-  effects: [broadcastEffect('user')],
-});
+  const broadcastAtom = atom<
+    Value,
+    [{isEvent: boolean; value: Value}],
+    unknown
+  >(
+    get => get(baseAtom),
+    (get, set, update) => {
+      set(baseAtom, update.value);
+
+      if (!update.isEvent) {
+        const data = get(baseAtom);
+        // undefinedの場合、別タブ側でも`/user/me`をfetchしてしまうのでnullを渡す
+        if (typeof data === 'undefined') {
+          channel.postMessage(null);
+        } else {
+          channel.postMessage(data);
+        }
+      }
+    }
+  );
+
+  broadcastAtom.onMount = setAtom => {
+    const listener = (event: MessageEvent<Value>) => {
+      setAtom({isEvent: true, value: event.data});
+    };
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
+  };
+
+  const returnedAtom = atom<Value, [Value], unknown>(
+    get => get(broadcastAtom),
+    (_, set, update) => {
+      set(broadcastAtom, {isEvent: false, value: update});
+    }
+  );
+
+  return returnedAtom;
+}
+
+export const UserState = atomWithBroadcast<UserMe | null | undefined>(
+  'user',
+  undefined
+);

@@ -20,9 +20,9 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
+import {useAtom} from 'jotai';
 import React from 'react';
 import AvatarEditor from 'react-avatar-editor';
-import {useRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {colorTheme} from '../../utils/theme';
 import {UserAvatarSchema} from '../../utils/types/user';
@@ -31,7 +31,7 @@ import {useDeleteColor} from '../Common/useColor';
 import {useRequest} from '../Common/useRequest';
 
 export const UpdateAvatar = () => {
-  const [user, setUser] = useRecoilState(UserState);
+  const [user, setUser] = useAtom(UserState);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const editorRef = React.useRef<AvatarEditor>(null);

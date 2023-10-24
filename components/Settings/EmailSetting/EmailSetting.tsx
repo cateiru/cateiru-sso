@@ -1,8 +1,8 @@
 'use client';
 
 import {Box, useToast} from '@chakra-ui/react';
+import {useAtom} from 'jotai';
 import React from 'react';
-import {useRecoilState} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../../utils/types/error';
 import {
@@ -16,7 +16,7 @@ import {EmailFormData, EmailSettingForm} from './EmailSettingForm';
 import {EmailSettingVerifyForm} from './EmailSettingVerifyForm';
 
 export const EmailSetting = () => {
-  const [user, setUser] = useRecoilState(UserState);
+  const [user, setUser] = useAtom(UserState);
   const {getRecaptchaToken} = useRecaptcha();
   const toast = useToast();
 

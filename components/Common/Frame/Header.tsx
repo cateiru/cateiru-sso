@@ -6,9 +6,9 @@ import {
   Skeleton,
   Spacer,
 } from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import React from 'react';
 import {TbLogin} from 'react-icons/tb';
-import {useRecoilValue} from 'recoil';
 import {UserState} from '../../../utils/state/atom';
 import {Avatar} from '../Chakra/Avatar';
 import {Tooltip} from '../Chakra/Tooltip';
@@ -18,7 +18,7 @@ import {HeaderTitle} from './HeaderTitle';
 import {Menu} from './Menu';
 
 export const Header = React.memo(() => {
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
 
   const HeaderTools = React.useCallback(() => {
     if (user === null) {

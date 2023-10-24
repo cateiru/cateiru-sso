@@ -10,9 +10,9 @@ import {
   Button,
   Center,
 } from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import React from 'react';
 import {TbCheck, TbUserPlus} from 'react-icons/tb';
-import {useRecoilValue} from 'recoil';
 import useSWR, {useSWRConfig} from 'swr';
 import {UserState} from '../../utils/state/atom';
 import {accountUserFeather} from '../../utils/swr/account';
@@ -33,7 +33,7 @@ export const AccountList: React.FC<Props> = ({isOauth}) => {
   const checkMarkColor = useColorModeValue('#68D391', '#38A169');
   const hoverColor = useColorModeValue('gray.100', 'gray.600');
 
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
   const [userState, setUserState] = React.useState(false);
   const {mutate} = useSWRConfig();
   const {data, error} = useSWR<AccountUserList, ErrorType>(

@@ -25,10 +25,10 @@ import {
   UnorderedList,
   useDisclosure,
 } from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import React from 'react';
 import {useForm} from 'react-hook-form';
 import {TbEdit, TbTrash} from 'react-icons/tb';
-import {useRecoilValue} from 'recoil';
 import useSWR, {useSWRConfig} from 'swr';
 import {badgeColor} from '../../utils/color';
 import {UserState} from '../../utils/state/atom';
@@ -61,7 +61,7 @@ export interface EditRoleForm {
 }
 
 export const OrganizationMember: React.FC<Props> = ({id}) => {
-  const u = useRecoilValue(UserState);
+  const u = useAtomValue(UserState);
 
   const {data, error} = useSWR<OrganizationUserList, ErrorType>(
     `/v2/org/member?org_id=${id}`,

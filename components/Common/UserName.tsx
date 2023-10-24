@@ -1,11 +1,11 @@
 import {Text, TextProps} from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import React from 'react';
-import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {useSecondaryColor} from './useColor';
 
 export const UserName = React.memo<TextProps>(props => {
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
 
   const userNameColor = useSecondaryColor();
 

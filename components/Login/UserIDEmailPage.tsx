@@ -1,6 +1,6 @@
 import {Button, Center, Divider, useToast} from '@chakra-ui/react';
+import {useSetAtom} from 'jotai';
 import React from 'react';
-import {useSetRecoilState} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
@@ -22,7 +22,7 @@ interface Props extends DefaultPageProps {
 export const UserIDEmailPage: React.FC<Props> = props => {
   const buttonColor = useSecondaryColor();
 
-  const setUser = useSetRecoilState(UserState);
+  const setUser = useSetAtom(UserState);
   const {getRecaptchaToken} = useRecaptcha();
   const toast = useToast();
   const getOauthLoginSession = useGetOauthLoginSession();

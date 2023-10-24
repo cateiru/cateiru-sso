@@ -8,6 +8,7 @@ import {
   IconButton,
   Text,
 } from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import {
   TbAddressBook,
   TbBuildingSkyscraper,
@@ -15,7 +16,6 @@ import {
   TbSettings,
   TbTool,
 } from 'react-icons/tb';
-import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {Tooltip} from '../Common/Chakra/Tooltip';
 import {Margin} from '../Common/Margin';
@@ -29,7 +29,7 @@ import {UpdateAvatar} from './UpdateAvatar';
 
 export const Profile = () => {
   const textColor = useSecondaryColor();
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
 
   return (
     <Margin>

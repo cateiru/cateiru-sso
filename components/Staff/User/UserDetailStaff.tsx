@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import {useForm} from 'react-hook-form';
-import {useRecoilValue} from 'recoil';
+import {useAtomValue} from 'jotai';
 import {useSWRConfig} from 'swr';
 import {UserState} from '../../../utils/state/atom';
 import {Staff} from '../../../utils/types/staff';
@@ -41,7 +41,7 @@ export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
 
   const {request: staffRequest} = useRequest('/v2/admin/staff');
   const {mutate} = useSWRConfig();
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
 
   const {isOpen, onOpen, onClose} = useDisclosure();
 

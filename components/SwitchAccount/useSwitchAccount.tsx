@@ -1,8 +1,8 @@
 import {useToast} from '@chakra-ui/react';
+import {useSetAtom} from 'jotai';
 import {useRouter, useSearchParams} from 'next/navigation';
 import nProgress from 'nprogress';
 import React from 'react';
-import {useSetRecoilState} from 'recoil';
 import {formatRedirectUrl} from '../../utils/format';
 import {UserState} from '../../utils/state/atom';
 import {useRequest} from '../Common/useRequest';
@@ -16,7 +16,7 @@ interface Returns {
 }
 
 export const useSwitchAccount = (): Returns => {
-  const setUser = useSetRecoilState(UserState);
+  const setUser = useSetAtom(UserState);
   const {request} = useRequest('/v2/account/switch', {
     errorCallback: () => {
       nProgress.done();

@@ -1,8 +1,8 @@
 import {useToast} from '@chakra-ui/react';
 import cookie from 'cookie';
+import {useAtom} from 'jotai';
 import {useRouter} from 'next/navigation';
 import React from 'react';
-import {useRecoilState} from 'recoil';
 import {api} from '../../utils/api';
 import {config} from '../../utils/config';
 import {UserState} from '../../utils/state/atom';
@@ -10,7 +10,7 @@ import {ErrorSchema, ErrorUniqueMessage} from '../../utils/types/error';
 import {UserMeSchema} from '../../utils/types/user';
 
 export const useSession = () => {
-  const [user, setUser] = useRecoilState(UserState);
+  const [user, setUser] = useAtom(UserState);
   const toast = useToast();
   const router = useRouter();
 

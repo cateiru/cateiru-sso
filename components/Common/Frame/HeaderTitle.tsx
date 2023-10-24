@@ -1,12 +1,12 @@
 import {Flex, Text} from '@chakra-ui/react';
-import {useRecoilValue} from 'recoil';
+import {useAtomValue} from 'jotai';
 import {config} from '../../../utils/config';
 import {UserState} from '../../../utils/state/atom';
 import {Logo} from '../Icons/Logo';
 import {Link as NextLink} from '../Next/Link';
 
 export const HeaderTitle = () => {
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
 
   return (
     <NextLink href={user ? '/profile' : '/'}>

@@ -7,16 +7,16 @@ import {
   Select,
 } from '@chakra-ui/react';
 import {format} from 'date-fns';
+import {useAtomValue} from 'jotai';
 import React from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
-import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {NameForm} from '../Common/Form/NameForm';
 import {UserNameForm} from '../Common/Form/UserNameForm';
 import {ProfileFormData, useUpdateProfile} from './useUpdateProfile';
 
 export const ProfileForm = () => {
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
   const {updateProfile} = useUpdateProfile();
   const methods = useForm<ProfileFormData>({
     defaultValues: {

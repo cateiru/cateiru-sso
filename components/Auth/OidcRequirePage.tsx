@@ -1,8 +1,8 @@
 'use client';
 
 import {Box, Center} from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import React from 'react';
-import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {Error, OidcError} from '../Common/Error/Error';
 import {Spinner} from '../Common/Icons/Spinner';
@@ -14,7 +14,7 @@ export const OidcRequirePage = () => {
   const {submit, cancel} = useOidcSubmit();
   const {require, data, error, oidcError} = useOidcRequire(submit);
 
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
 
   React.useEffect(() => {
     require();

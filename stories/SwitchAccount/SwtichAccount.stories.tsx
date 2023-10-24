@@ -2,11 +2,9 @@ import {faker} from '@faker-js/faker';
 import type {Meta, StoryObj} from '@storybook/react';
 import {SwitchAccount} from '../../components/SwitchAccount/SwitchAccount';
 import {api} from '../../utils/api';
-import {UserState} from '../../utils/state/atom';
-import {RecoilController} from '../RecoilController';
 
 const user = {
-  id: '1234abc',
+  id: '123',
   user_name: faker.internet.userName(),
   email: faker.internet.email(),
   family_name: faker.person.lastName(),
@@ -23,30 +21,7 @@ const user = {
 
 const meta: Meta<typeof SwitchAccount> = {
   title: 'CateiruSSO/SwitchAccount/SwitchAccount',
-  component: () => {
-    return (
-      <RecoilController
-        recoilState={UserState}
-        defaultValue={undefined}
-        setValues={[
-          {
-            key: 'no login',
-            value: null,
-          },
-          {
-            key: 'login',
-            value: {
-              user: user,
-              is_staff: false,
-              joined_organization: false,
-            },
-          },
-        ]}
-      >
-        <SwitchAccount />
-      </RecoilController>
-    );
-  },
+  component: SwitchAccount,
   tags: ['autodocs'],
 };
 

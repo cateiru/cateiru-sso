@@ -1,5 +1,5 @@
 import {useToast} from '@chakra-ui/react';
-import {useRecoilState} from 'recoil';
+import {useAtom} from 'jotai';
 import {UserState} from '../../utils/state/atom';
 import {UserSchema} from '../../utils/types/user';
 import {type NameFormData} from '../Common/Form/NameForm';
@@ -16,7 +16,7 @@ interface Returns {
 }
 
 export const useUpdateProfile = (): Returns => {
-  const [user, setUser] = useRecoilState(UserState);
+  const [user, setUser] = useAtom(UserState);
   const toast = useToast();
   const {request} = useRequest('/v2/user/');
 

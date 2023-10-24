@@ -1,8 +1,8 @@
 'use client';
 
+import {useAtomValue} from 'jotai';
 import {usePathname, useRouter} from 'next/navigation';
 import React from 'react';
-import {useRecoilValue} from 'recoil';
 import {config} from '../../utils/config';
 import {UserState} from '../../utils/state/atom';
 
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export const Session: React.FC<Props> = props => {
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
   const router = useRouter();
   const pathname = usePathname();
   const [ok, setOk] = React.useState(false);

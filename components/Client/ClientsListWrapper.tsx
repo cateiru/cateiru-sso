@@ -1,10 +1,10 @@
 'use client';
 
 import {Center, Heading, Link, Select, Skeleton, Text} from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import {useParams, usePathname, useRouter} from 'next/navigation';
 import React from 'react';
 import {TbExternalLink} from 'react-icons/tb';
-import {useRecoilValue} from 'recoil';
 import useSWR from 'swr';
 import {routeChangeStart} from '../../utils/event';
 import {UserState} from '../../utils/state/atom';
@@ -29,7 +29,7 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
   const id: string | undefined =
     typeof params?.id === 'string' ? params.id : undefined;
 
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
   const {data, error} = useSWR<SimpleOrganizationList, ErrorType>(
     id ? `/v2/org/list/simple?org_id=${id}` : '/v2/org/list/simple',
     () => orgSimpleListFeather(id, user?.joined_organization)

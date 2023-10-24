@@ -17,7 +17,7 @@ import {
   TbUserPlus,
   TbUsers,
 } from 'react-icons/tb';
-import {useRecoilValue} from 'recoil';
+import {useAtomValue} from 'jotai';
 import {UserState} from '../../../utils/state/atom';
 import {Link} from '../Next/Link';
 import {useLogout} from '../useLogout';
@@ -26,7 +26,7 @@ const fontSize = {base: '1.2rem', sm: '1rem'};
 const height = {base: '40px', sm: '32px'};
 
 export const Menu = React.memo<{children: React.ReactNode}>(({children}) => {
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
 
   const {logout} = useLogout();
   const pathname = usePathname();

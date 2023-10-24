@@ -1,12 +1,12 @@
 import {Text} from '@chakra-ui/react';
+import {useAtomValue} from 'jotai';
 import React from 'react';
-import {useRecoilValue} from 'recoil';
 import {UserState} from '../../utils/state/atom';
 import {useSecondaryColor} from '../Common/useColor';
 
 export const ProfileDatetime = () => {
   const textColor = useSecondaryColor();
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
 
   const created = React.useCallback(() => {
     if (user?.user.created_at) {

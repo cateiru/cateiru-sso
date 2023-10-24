@@ -1,13 +1,13 @@
 import {Heading, VStack, useColorModeValue} from '@chakra-ui/react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
-import {useRecoilValue} from 'recoil';
+import {useAtomValue} from 'jotai';
 import {formatRedirectUrl} from '../../utils/format';
 import {UserState} from '../../utils/state/atom';
 import {CheckMark, CheckmarkProps} from '../Common/Icons/CheckMark';
 
 export const LoginSuccess: React.FC = () => {
-  const user = useRecoilValue(UserState);
+  const user = useAtomValue(UserState);
   const router = useRouter();
   const params = useSearchParams();
   const checkmarkProps = useColorModeValue<CheckmarkProps, CheckmarkProps>(
