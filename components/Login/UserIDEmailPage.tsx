@@ -1,7 +1,7 @@
 import {Button, Center, Divider, useToast} from '@chakra-ui/react';
 import React from 'react';
-import {useRecoilValue, useSetRecoilState} from 'recoil';
-import {OAuthLoginSessionState, UserState} from '../../utils/state/atom';
+import {useSetRecoilState} from 'recoil';
+import {UserState} from '../../utils/state/atom';
 import {ErrorUniqueMessage} from '../../utils/types/error';
 import {LoginResponseSchema, LoginUser} from '../../utils/types/login';
 import {Margin} from '../Common/Margin';
@@ -11,6 +11,7 @@ import {useRecaptcha} from '../Common/useRecaptcha';
 import {useRequest} from '../Common/useRequest';
 import {type DefaultPageProps, LoginStep} from './Login';
 import {UserIDEmailForm} from './UserIDEmailForm';
+import {useGetOauthLoginSession} from './useGetOauthLoginSession';
 import {useWebAuthn} from './useWebAuthn';
 
 interface Props extends DefaultPageProps {
@@ -24,7 +25,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
   const setUser = useSetRecoilState(UserState);
   const {getRecaptchaToken} = useRecaptcha();
   const toast = useToast();
-  const oauthLoginSession = useRecoilValue(OAuthLoginSessionState);
+  const getOauthLoginSession = useGetOauthLoginSession();
 
   const {request} = useRequest('/v2/login/password', {
     customError: e => {
@@ -64,19 +65,13 @@ export const UserIDEmailPage: React.FC<Props> = props => {
     }
     form.append('recaptcha', recaptchaToken);
 
-    const oauthLoginSessionHeader = oauthLoginSession
-      ? {
-          'X-Oauth-Login-Session': oauthLoginSession.login_session_token,
-        }
-      : undefined;
-
     const res = await request({
       method: 'POST',
       body: form,
       credentials: 'include',
       mode: 'cors',
       headers: {
-        ...oauthLoginSessionHeader,
+        ...getOauthLoginSession(),
       },
     });
 

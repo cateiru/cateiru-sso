@@ -1,8 +1,6 @@
 import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
-import {useRecoilState} from 'recoil';
 import {api} from '../../utils/api';
-import {OAuthLoginSessionState} from '../../utils/state/atom';
 import {
   PublicAuthenticationLoginSessionSchema,
   PublicAuthenticationRequest,
@@ -14,6 +12,7 @@ import {
   OidcErrorSchema,
   OidcErrorType,
 } from '../../utils/types/error';
+import {useGetOauthLoginSession} from '../Login/useGetOauthLoginSession';
 import {useOidc} from './useOidc';
 
 export const useOidcRequire = (submit: () => Promise<void>) => {
@@ -22,11 +21,9 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
   const [data, setData] = React.useState<PublicAuthenticationRequest | null>(
     null
   );
-  const [oauthLoginSession, setOAuthLoginSession] = useRecoilState(
-    OAuthLoginSessionState
-  );
   const router = useRouter();
   const searchParams = useSearchParams();
+  const getOauthLoginSession = useGetOauthLoginSession();
 
   const {getFormParams} = useOidc();
 
@@ -46,24 +43,7 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
       return;
     }
 
-    // セッションの有効期限を見ておく
-    if (
-      typeof oauthLoginSession !== 'undefined' &&
-      new Date(oauthLoginSession?.limit_date) < new Date()
-    ) {
-      setError({
-        message: 'ログインセッションの有効期限が切れました。',
-      });
-      return;
-    }
-
     let res;
-
-    const headers: HeadersInit = {Referer: document.referrer};
-
-    if (typeof oauthLoginSession !== 'undefined') {
-      headers['X-Oauth-Login-Session'] = oauthLoginSession.login_session_token;
-    }
 
     try {
       res = await fetch(api('/v2/oidc/require'), {
@@ -71,7 +51,10 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
         mode: 'cors',
         method: 'POST',
         body: params,
-        headers: headers,
+        headers: {
+          Referer: document.referrer,
+          ...getOauthLoginSession(),
+        },
       });
     } catch (e) {
       if (e instanceof Error) {
@@ -100,9 +83,19 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
       }
     }
 
-    const url = new URL(window.location.href);
-    url.searchParams.set('redirect_done', '1');
-    const relativeUrl = url.pathname + url.search;
+    const getUrl = (searchParams?: {[key: string]: string}) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('redirect_done', '1');
+
+      if (typeof searchParams !== 'undefined') {
+        Object.keys(searchParams).forEach(key => {
+          url.searchParams.set(key, searchParams[key]);
+        });
+      }
+
+      return url.pathname + url.search;
+    };
+
     const redirectDone = !!searchParams.get('redirect_done');
 
     const data = PublicAuthenticationRequestSchema.safeParse(response);
@@ -119,11 +112,15 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
         data.data.prompts.includes('login') &&
         typeof data.data.login_session !== 'undefined'
       ) {
-        setOAuthLoginSession(data.data.login_session);
-
         // ログインページへリダイレクトする
         router.replace(
-          `/login?redirect_to=${encodeURIComponent(relativeUrl)}&oauth=1`
+          `/login?redirect_to=${encodeURIComponent(
+            getUrl({
+              oauth_login_session: data.data.login_session.login_session_token,
+            })
+          )}&oauth=1&oauth_login_session=${
+            data.data.login_session.login_session_token
+          }`
         );
         return;
       }
@@ -131,25 +128,26 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
       // promptに`select_account`がある場合、アカウント選択画面を表示させる
       if (data.data.prompts.includes('select_account') && !redirectDone) {
         router.replace(
-          `/switch_account?redirect_to=${encodeURIComponent(
-            relativeUrl
-          )}&oauth=1`
+          `/switch_account?redirect_to=${encodeURIComponent(getUrl())}&oauth=1`
         );
         return;
       }
 
       setData(data.data);
-      setOAuthLoginSession(undefined);
       return data.data;
     }
 
     const noLoginData =
       PublicAuthenticationLoginSessionSchema.safeParse(response);
     if (noLoginData.success) {
-      setOAuthLoginSession(noLoginData.data);
-
       // ログインページへリダイレクトする
-      router.replace(`/login?redirect_to=${encodeURIComponent(relativeUrl)}`);
+      router.replace(
+        `/login?redirect_to=${encodeURIComponent(
+          getUrl({
+            oauth_login_session: noLoginData.data.login_session_token,
+          })
+        )}&oauth_login_session=${noLoginData.data.login_session_token}`
+      );
       return;
     }
 

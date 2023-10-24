@@ -52,10 +52,3 @@ export const UserState = atom<UserMe | null | undefined>({
   default: undefined,
   effects: [broadcastEffect('user')],
 });
-
-export const OAuthLoginSessionState = atom<
-  PublicAuthenticationLoginSession | undefined
->({
-  key: 'OauthLoginSession',
-  default: undefined,
-});
