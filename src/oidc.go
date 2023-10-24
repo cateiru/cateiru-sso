@@ -12,7 +12,7 @@ import (
 func (h *Handler) OIDCRequireHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	request, err := h.NewOidcRequest(ctx, c)
+	authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func (h *Handler) OIDCRequireHandler(c echo.Context) error {
 	u, err := h.Session.SimpleLogin(ctx, c, true)
 	if errors.Is(err, ErrorLoginFailed) {
 		// 未ログインの場合は200でトークンを返す
-		response, err := request.GetLoginSession(ctx, h.C.OauthLoginSessionPeriod, h.DB)
+		response, err := authenticationRequest.GetLoginSession(ctx, h.C.OauthLoginSessionPeriod, h.DB)
 		if err != nil {
 			return err
 		}
@@ -30,7 +30,7 @@ func (h *Handler) OIDCRequireHandler(c echo.Context) error {
 		return err
 	}
 
-	ok, err := request.CheckUserAuthenticationPossible(ctx, h.DB, u)
+	ok, err := authenticationRequest.CheckUserAuthenticationPossible(ctx, h.DB, u)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (h *Handler) OIDCRequireHandler(c echo.Context) error {
 
 	oauthToken := c.Request().Header.Get("X-Oauth-Login-Session")
 
-	previewResponse, err := request.GetPreviewResponse(ctx, h.C.OauthLoginSessionPeriod, h.DB, oauthToken)
+	previewResponse, err := authenticationRequest.GetPreviewResponse(ctx, h.C.OauthLoginSessionPeriod, h.DB, oauthToken)
 	if err != nil {
 		return err
 	}
