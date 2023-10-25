@@ -94,18 +94,11 @@ export const EmailSetting = () => {
         setToken('');
 
         // Email更新
-        setUser(v => {
-          if (v) {
-            return {
-              ...v,
-              user: {
-                ...v.user,
-                email: data.data.email,
-              },
-            };
-          }
-          return v;
-        });
+        if (user) {
+          const u = {...user};
+          u.user.email = data.data.email;
+          setUser(u);
+        }
       } else {
         console.error(data.error);
       }

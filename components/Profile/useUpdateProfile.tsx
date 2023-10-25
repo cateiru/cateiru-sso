@@ -47,12 +47,12 @@ export const useUpdateProfile = (): Returns => {
     if (res) {
       const data = UserSchema.safeParse(await res.json());
       if (data.success) {
-        setUser(v => {
-          if (v) {
-            return {...v, user: data.data};
-          }
-          return v;
-        });
+        if (user) {
+          setUser({
+            ...user,
+            user: data.data,
+          });
+        }
 
         toast({
           title: 'プロフィールを更新しました',
