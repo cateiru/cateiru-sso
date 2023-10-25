@@ -112,30 +112,24 @@ export const UpdateAvatar = () => {
 
                 // 一旦avatarをnullにしてから、画像を追加する
                 // 更新時などでもURLは同一なため
-                setUser(u => {
-                  if (u) {
-                    const user = {...u.user};
-                    user.avatar = null;
-                    return {
-                      ...u,
-                      user: user,
-                    };
-                  }
-                  return u;
-                });
+                if (user) {
+                  const _user = {...user.user};
+                  _user.avatar = null;
+                  setUser({
+                    ...user,
+                    user: _user,
+                  });
+                }
 
                 setTimeout(() => {
-                  setUser(u => {
-                    if (u) {
-                      const user = {...u.user};
-                      user.avatar = data.data.avatar;
-                      return {
-                        ...u,
-                        user: user,
-                      };
-                    }
-                    return u;
-                  });
+                  if (user) {
+                    const _user = {...user.user};
+                    _user.avatar = data.data.avatar;
+                    setUser({
+                      ...user,
+                      user: _user,
+                    });
+                  }
                 }, 100);
               } else {
                 console.error(data.error);
@@ -161,17 +155,14 @@ export const UpdateAvatar = () => {
     });
 
     if (res) {
-      setUser(u => {
-        if (u) {
-          const user = {...u.user};
-          user.avatar = null;
-          return {
-            ...u,
-            user: user,
-          };
-        }
-        return u;
-      });
+      if (user) {
+        const _user = {...user.user};
+        _user.avatar = null;
+        setUser({
+          ...user,
+          user: _user,
+        });
+      }
       setLoading(false);
     }
   };
