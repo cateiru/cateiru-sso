@@ -118,7 +118,7 @@ CREATE TABLE `staff` (
 CREATE TABLE `user_name` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-    `user_name` VARCHAR(15) NOT NULL,
+    `user_name` VARCHAR(15) NOT NULL COLLATE utf8_general_ci,
 
     `user_id` VARCHAR(32) NOT NULL,
 
