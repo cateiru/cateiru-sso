@@ -99,7 +99,6 @@ type PublicAuthenticationLoginSession struct {
 
 type OauthResponse struct {
 	RedirectUrl string `json:"redirect_url"`
-	Code        string `json:"code"`
 }
 
 // プレビュー用のレスポンスを返す
@@ -267,13 +266,52 @@ func (a *AuthenticationRequest) CheckUserAuthenticationPossible(ctx context.Cont
 }
 
 // TODO: test
-func (a *AuthenticationRequest) Submit(ctx context.Context, db *sql.DB) (*OauthResponse, error) {
-	return &OauthResponse{}, nil
+func (a *AuthenticationRequest) Submit(ctx context.Context, db *sql.DB, user *models.User, oauthSessionPeriod time.Duration) (*OauthResponse, error) {
+	code, err := lib.RandomStr(63)
+	if err != nil {
+		return nil, err
+	}
+
+	oauthSession := models.OauthSession{
+		Code:   code,
+		UserID: user.ID,
+
+		ClientID: a.Client.ClientID,
+
+		State: a.State,
+
+		Period: time.Now().Add(oauthSessionPeriod),
+	}
+	if err := oauthSession.Insert(ctx, db, boil.Infer()); err != nil {
+		return nil, err
+	}
+
+	url := a.RedirectUri
+
+	query := url.Query()
+	query.Add("code", code)
+	if a.State.Valid {
+		query.Add("state", a.State.String)
+	}
+
+	return &OauthResponse{
+		RedirectUrl: url.String(),
+	}, nil
 }
 
 // TODO: test
 func (a *AuthenticationRequest) Cancel(ctx context.Context, db *sql.DB) (*OauthResponse, error) {
-	return &OauthResponse{}, nil
+	url := a.RedirectUri
+
+	query := url.Query()
+	query.Add("error", "access_denied")
+	if a.State.Valid {
+		query.Add("state", a.State.String)
+	}
+
+	return &OauthResponse{
+		RedirectUrl: url.String(),
+	}, nil
 }
 
 // Authentication Request を取得する
