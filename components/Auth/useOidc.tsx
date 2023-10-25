@@ -5,37 +5,21 @@ export const useOidc = () => {
   const searchParams = useSearchParams();
 
   const getParams = (): OidcParams => {
-    const scope = searchParams.get('scope');
-    const responseType = searchParams.get('response_type');
-    const clientId = searchParams.get('client_id');
-    const redirectUri = searchParams.get('redirect_uri');
-    const state = searchParams.get('state');
-
-    const responseMode = searchParams.get('response_mode');
-    const nonce = searchParams.get('nonce');
-    const display = searchParams.get('display');
-    const prompt = searchParams.get('prompt');
-    const maxAge = searchParams.get('max_age');
-    const uiLocales = searchParams.get('ui_locales');
-    const idTokenHint = searchParams.get('id_token_hint');
-    const loginHint = searchParams.get('login_hint');
-    const acrValues = searchParams.get('acr_values');
-
     const data = OidcParamsSchema.safeParse({
-      scope,
-      response_type: responseType,
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      state,
-      response_mode: responseMode,
-      nonce,
-      display,
-      prompt,
-      max_age: maxAge,
-      ui_locales: uiLocales,
-      id_token_hint: idTokenHint,
-      login_hint: loginHint,
-      acr_values: acrValues,
+      scope: searchParams.get('scope'),
+      response_type: searchParams.get('response_type'),
+      client_id: searchParams.get('client_id'),
+      redirect_uri: searchParams.get('redirect_uri'),
+      state: searchParams.get('state'),
+      response_mode: searchParams.get('response_mode'),
+      nonce: searchParams.get('nonce'),
+      display: searchParams.get('display'),
+      prompt: searchParams.get('prompt'),
+      max_age: searchParams.get('max_age'),
+      ui_locales: searchParams.get('ui_locales'),
+      id_token_hint: searchParams.get('id_token_hint'),
+      login_hint: searchParams.get('login_hint'),
+      acr_values: searchParams.get('acr_values'),
     });
 
     if (data.success) {
