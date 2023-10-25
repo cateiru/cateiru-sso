@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,12 +23,12 @@ import (
 
 // UserName is an object representing the database table.
 type UserName struct {
-	ID        uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserName  null.String `boil:"user_name" json:"user_name,omitempty" toml:"user_name" yaml:"user_name,omitempty"`
-	UserID    string      `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Period    time.Time   `boil:"period" json:"period" toml:"period" yaml:"period"`
-	CreatedAt time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID        uint64    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserName  string    `boil:"user_name" json:"user_name" toml:"user_name" yaml:"user_name"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Period    time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *userNameR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userNameL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -94,14 +93,14 @@ func (w whereHelperuint64) NIN(slice []uint64) qm.QueryMod {
 
 var UserNameWhere = struct {
 	ID        whereHelperuint64
-	UserName  whereHelpernull_String
+	UserName  whereHelperstring
 	UserID    whereHelperstring
 	Period    whereHelpertime_Time
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperuint64{field: "`user_name`.`id`"},
-	UserName:  whereHelpernull_String{field: "`user_name`.`user_name`"},
+	UserName:  whereHelperstring{field: "`user_name`.`user_name`"},
 	UserID:    whereHelperstring{field: "`user_name`.`user_id`"},
 	Period:    whereHelpertime_Time{field: "`user_name`.`period`"},
 	CreatedAt: whereHelpertime_Time{field: "`user_name`.`created_at`"},
