@@ -33,7 +33,7 @@ func (h *Handler) InternalAvatarHandler(c echo.Context) error {
 	// キャッシュ設定
 	// ブラウザキャッシュは行わずにCDNのみのキャッシュにする
 	// こうすることで、画像が更新されてもリロードで変えることができる
-	c.Response().Header().Set("Cache-Control", "s-maxage=31536000, stale-while-revalidate")
+	c.Response().Header().Set("Cache-Control", "s-maxage=31536000")
 
 	return c.Blob(http.StatusOK, contentType, data)
 }
