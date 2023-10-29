@@ -25,7 +25,7 @@ func TestInternalAvatarHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		cacheControl := m.Response().Header.Get("Cache-Control")
-		require.Equal(t, "s-maxage=31536000, stale-while-revalidate", cacheControl)
+		require.Equal(t, "s-maxage=31536000", cacheControl)
 
 		contentType := m.Response().Header.Get("Content-Type")
 		require.Equal(t, "image/png", contentType)
