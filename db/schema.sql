@@ -9,7 +9,7 @@ CREATE TABLE `user` (
     -- ログイン時にメールアドレスの代替としてログインできる
     -- アカウント登録時に、デフォルトはUUIDからランダムな文字列を作って入れる
     -- 検索する際にはutf8mb4_general_ciのコレクションを使用する
-    `user_name` VARCHAR(15) NOT NULL DEFAULT (LEFT(UUID(), 8)) COLLATE utf8_general_ci,
+    `user_name` VARCHAR(15) NOT NULL COLLATE utf8_general_ci,
 
     -- Email
     `email` VARCHAR(255) NOT NULL,

@@ -28,6 +28,9 @@ services:
       - ../db/my.cnf:/etc/mysql/conf.d/my.cnf
       - ../db/setup:/docker-entrypoint-initdb.d
       - ../db/migrations:/migrations
+      - ../scripts/docker:/scripts
+      - ../db/schema.sql:/schema.sql
+      - ../db/.dump_data/:/dump_data
     ports:
       - "127.0.0.1:3306:3306"
   gcs:
