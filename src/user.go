@@ -595,9 +595,31 @@ func RegisterUser(ctx context.Context, db boil.ContextExecutor, c *Config, email
 		id = ids[0]
 	}
 
+	// ユーザー名を生成して存在していないかチェックする
+	// 最大10回で諦める
+	userName := ""
+	for i := 0; i < 10; i++ {
+		generatedUserName, err := lib.RandomStr(8)
+		if err != nil {
+			return nil, err
+		}
+		existUser, err := models.Users(models.UserWhere.UserName.EQ(generatedUserName)).Exists(ctx, db)
+		if err != nil {
+			return nil, err
+		}
+		if !existUser {
+			userName = generatedUserName
+			break
+		}
+	}
+	if userName == "" {
+		return nil, NewHTTPUniqueError(http.StatusInternalServerError, ErrImpossibleRegisterAccount, "impossible register account")
+	}
+
 	u := models.User{
-		ID:    id,
-		Email: email,
+		ID:       id,
+		Email:    email,
+		UserName: userName,
 	}
 	if err := u.Insert(ctx, db, boil.Infer()); err != nil {
 		return nil, err
