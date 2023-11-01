@@ -1,8 +1,6 @@
-# Google Cloud Datastoreをローカルで実行します
-#
-# docker compose -f ./docker/docker-compose.db.yaml up を使用してコンテナを実行してください
 services:
   db:
+    platform: linux/amd64
     build:
       context: ..
       dockerfile_inline: |
@@ -14,6 +12,9 @@ services:
         RUN curl -s https://packagecloud.io/install/repositories/golang-migrate/migrate/script.deb.sh | bash \
           && apt install -y migrate
 
+        # Install https://github.com/k0kubun/sqldef/tree/v0.16.9
+        RUN curl -OL https://github.com/k0kubun/sqldef/releases/download/v0.16.9/mysqldef_linux_amd64.tar.gz \
+          && tar xf mysqldef_linux_amd64.tar.gz -C /usr/bin/
     container_name: db
     environment:
       MYSQL_USER: docker
