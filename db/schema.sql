@@ -753,6 +753,8 @@ CREATE TABLE `organization_user` (
     -- guest: クライアントにログインすることのみが可能なユーザー
     `role` ENUM('owner', 'member', 'guest') NOT NULL DEFAULT 'guest',
 
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     -- 管理用
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -25,6 +25,8 @@ setup_and_cleanup;
 # current にマイグレーションする
 MYSQL_DSN="mysql://$MYSQL_USER:$MYSQL_PASSWORD@tcp(db:3306)/$CURRENT_DB"
 migrate -path $MIGRATIONS_PATH -database "$MYSQL_DSN" up
+# go-migrate の schema_migrations テーブルを削除する
+mysql -u $DB_USER -p$DB_PASSWORD -h db -e "DROP TABLE $CURRENT_DB.schema_migrations;"
 
 # target に schema.sql をマイグレーションする
 mysql -u $DB_USER -p$DB_PASSWORD -h db $TARGET_DB < /schema.sql
@@ -33,4 +35,16 @@ mysql -u $DB_USER -p$DB_PASSWORD -h db $TARGET_DB < /schema.sql
 dump $CURRENT_DB
 dump $TARGET_DB
 
-mysqldef -u $DB_USER -p$DB_PASSWORD -h db $CURRENT_DB --enable-drop-table --dry-run < /dump_data/$TARGET_DB.sql
+UP=$(mysqldef -u $DB_USER -p$DB_PASSWORD -h db $CURRENT_DB --enable-drop-table --dry-run < /dump_data/$TARGET_DB.sql)
+DOWN=$(mysqldef -u $DB_USER -p$DB_PASSWORD -h db $TARGET_DB --enable-drop-table --dry-run < /dump_data/$CURRENT_DB.sql)
+
+TIMESTAMP=$(date "+%Y%m%d%H%M%S")
+MIGRATION_FILE_NAME=$1
+
+UP_FILE_PATH="$MIGRATIONS_PATH/${TIMESTAMP}_$MIGRATION_FILE_NAME.up.sql"
+DOWN_FILE_PATH="$MIGRATIONS_PATH/${TIMESTAMP}_$MIGRATION_FILE_NAME.down.sql"
+
+echo "$UP" > $UP_FILE_PATH
+echo "$DOWN" > $DOWN_FILE_PATH
+
+echo "\n\nCreated: ${TIMESTAMP}_$MIGRATION_FILE_NAME.(up|down).sql"
