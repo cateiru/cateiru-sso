@@ -321,5 +321,7 @@ certificates/*
 .storage/*
 
 db/.data/**
+db/.dump_data/**
 !db/.data/.gitkeep
+!db/.dump_data/.gitkeep
 tmp/*

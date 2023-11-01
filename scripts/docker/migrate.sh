@@ -16,7 +16,8 @@ setup_and_cleanup() {
 
 dump() {
     DB_NAME=$1
-    mysqldump -u $DB_USER -p$DB_PASSWORD -h db --lock-tables=false $DB_NAME > /dump_data/$DB_NAME.sql
+    rm -rf /dump_data/$DB_NAME.sql
+    mysqldump -u $DB_USER -p$DB_PASSWORD -h db --no-data --skip-add-drop-table --compact $DB_NAME > /dump_data/$DB_NAME.sql
 }
 
 setup_and_cleanup;
@@ -31,3 +32,5 @@ mysql -u $DB_USER -p$DB_PASSWORD -h db $TARGET_DB < /schema.sql
 # dumpする
 dump $CURRENT_DB
 dump $TARGET_DB
+
+mysqldef -u $DB_USER -p$DB_PASSWORD -h db $CURRENT_DB --enable-drop-table --dry-run < /dump_data/$TARGET_DB.sql
