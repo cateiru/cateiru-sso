@@ -4,9 +4,7 @@ IdP
 
 ## Quick Start
 
-- 必要なもの
-  - docker
-  - docker compose
+このリポジトリでは、`docker`があれば1コマンドで開発環境を構築できます。
 
 ```bash
 docker compose up
@@ -14,6 +12,15 @@ docker compose up
 # http://localhost:3000
 # （APIは http://localhost:8080 ）
 ```
+
+`docker compose`では、以下の4つのコンテナが立ち上がります。
+
+|name|種類|ポート|
+|:--|:--|:--:|
+|`backend_app`|Goのバックエンドサーバー|`8080`|
+|`frontend_app`|Next.jsサーバー|`3000`|
+|`db`|MySQLサーバー|`3306`|
+|`gcs`|オブジェクトストレージサーバー|`4443`|
 
 ### 管理画面に入る方法
 
@@ -38,9 +45,13 @@ docker compose up
 go mod download
 ./script/test
 
+# ----
+
 # Next.js lint
 pnpm i
 pnpm lint
+
+# ----
 
 # Storybook
 pnpm storybook
@@ -49,17 +60,13 @@ pnpm storybook
 
 ## データベースのマイグレーション
 
-```bash
-docker compose up
+このリポジトリでは、`mysqldef`を使用して簡単にマイグレーションを実行しています。
 
-# マイグレーション用の`up`, `down`ファイルを作成します。
-# `YYYYMMDDhhmmss_[name].[up|down].sql` のファイルが `db/migrations/` に追加されます。
-./script/setup_migrate.sh [name]
-
-# go-migrateを使用してマイグレーションを実行します
-# ローカル環境で使用するDBとテスト環境で使用するDBの2つでマイグレーションが実行されます。
-./script/migrate.sh up
-```
+1. `db/schema.sql`を編集します。
+2. `docker compose up -d`でDBを起動します。
+3. `./scripts/setup_migrate.sh [マイグレーション名]`を実行します。
+4. `db/migrations/`に`up`と`down`のDDLが作成されるので内容が問題ないか確認します。
+5. `./scripts/migrate.sh`を実行してデータベースにマイグレーションを実行します。
 
 ## Environments
 
