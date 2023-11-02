@@ -66,7 +66,8 @@ pnpm storybook
 2. `docker compose up -d`でDBを起動します。
 3. `./scripts/setup_migrate.sh [マイグレーション名]`を実行します。
 4. `db/migrations/`に`up`と`down`のDDLが作成されるので内容が問題ないか確認します。
-5. `./scripts/migrate.sh`を実行してデータベースにマイグレーションを実行します。
+5. `./scripts/migrate.sh up`を実行してデータベースにマイグレーションを実行します。
+6. `./scripts/sqlboiler.sh`を実行してSQLBoilerのモデルを出力します。
 
 ## Environments
 
@@ -125,7 +126,7 @@ FASTLY_API_TOKEN=[token]
 - [x] OTPのIssuer
 - [ ] ブランチ名
 - [x] ローカルデータベース
-- [ ] 本番データベース
+- [x] 本番データベース
 - [ ] Goのパッケージ名
 - [ ] Storybook
-- [ ] README
+- [x] README
