@@ -114,12 +114,16 @@ func RandomEmail(t *testing.T) string {
 func RegisterUser(t *testing.T, ctx context.Context, email string) models.User {
 	id := ulid.Make()
 
+	userName, err := lib.RandomStr(8)
+	require.NoError(t, err)
+
 	u := models.User{
-		ID:    id.String(),
-		Email: email,
+		ID:       id.String(),
+		Email:    email,
+		UserName: userName,
 	}
 
-	err := u.Insert(ctx, DB, boil.Infer())
+	err = u.Insert(ctx, DB, boil.Infer())
 	require.NoError(t, err)
 
 	dbU, err := models.Users(

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
@@ -20,10 +21,14 @@ func TestTxDB(t *testing.T) {
 		email := RandomEmail(t)
 		id := ulid.Make()
 
-		err := src.TxDB(ctx, DB, func(tx *sql.Tx) error {
+		userName, err := lib.RandomStr(8)
+		require.NoError(t, err)
+
+		err = src.TxDB(ctx, DB, func(tx *sql.Tx) error {
 			user := models.User{
-				ID:    id.String(),
-				Email: email,
+				ID:       id.String(),
+				Email:    email,
+				UserName: userName,
 			}
 
 			err := user.Insert(ctx, tx, boil.Infer())
@@ -42,10 +47,14 @@ func TestTxDB(t *testing.T) {
 		email := RandomEmail(t)
 		id := ulid.Make()
 
-		err := src.TxDB(ctx, DB, func(tx *sql.Tx) error {
+		userName, err := lib.RandomStr(8)
+		require.NoError(t, err)
+
+		err = src.TxDB(ctx, DB, func(tx *sql.Tx) error {
 			user := models.User{
-				ID:    id.String(),
-				Email: email,
+				ID:       id.String(),
+				Email:    email,
+				UserName: userName,
 			}
 
 			err := user.Insert(ctx, tx, boil.Infer())
