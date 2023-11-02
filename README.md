@@ -1,4 +1,6 @@
-# Oreore.me
+<img src="/public/top_1.png" align="center" />
+
+<h1 align="center">Oreore.me</h1>
 
 IdP
 
