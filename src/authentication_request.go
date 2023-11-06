@@ -265,8 +265,7 @@ func (a *AuthenticationRequest) CheckUserAuthenticationPossible(ctx context.Cont
 	return ok, nil
 }
 
-// TODO: test
-func (a *AuthenticationRequest) Submit(ctx context.Context, db *sql.DB, user *models.User, oauthSessionPeriod time.Duration) (*OauthResponse, error) {
+func (a AuthenticationRequest) Submit(ctx context.Context, db *sql.DB, user *models.User, oauthSessionPeriod time.Duration) (*OauthResponse, error) {
 	code, err := lib.RandomStr(63)
 	if err != nil {
 		return nil, err
@@ -294,13 +293,14 @@ func (a *AuthenticationRequest) Submit(ctx context.Context, db *sql.DB, user *mo
 		query.Add("state", a.State.String)
 	}
 
+	url.RawQuery = query.Encode()
+
 	return &OauthResponse{
 		RedirectUrl: url.String(),
 	}, nil
 }
 
-// TODO: test
-func (a *AuthenticationRequest) Cancel(ctx context.Context, db *sql.DB) (*OauthResponse, error) {
+func (a AuthenticationRequest) Cancel(ctx context.Context, db *sql.DB) (*OauthResponse, error) {
 	url := a.RedirectUri
 
 	query := url.Query()
@@ -308,6 +308,8 @@ func (a *AuthenticationRequest) Cancel(ctx context.Context, db *sql.DB) (*OauthR
 	if a.State.Valid {
 		query.Add("state", a.State.String)
 	}
+
+	url.RawQuery = query.Encode()
 
 	return &OauthResponse{
 		RedirectUrl: url.String(),

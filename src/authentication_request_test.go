@@ -1406,6 +1406,148 @@ func TestCheckUserAuthenticationPossible(t *testing.T) {
 	})
 }
 
+func TestSubmit(t *testing.T) {
+	ctx := context.Background()
+
+	email := RandomEmail(t)
+	clientUser := RegisterUser(t, ctx, email)
+
+	clientId, _ := RegisterClient(t, ctx, &clientUser, "openid", "profile")
+	client, err := models.Clients(models.ClientWhere.ClientID.EQ(clientId)).One(ctx, DB)
+	require.NoError(t, err)
+
+	t.Run("成功: submitできる", func(t *testing.T) {
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{},
+			Client:     client,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+		}
+
+		resp, err := a.Submit(ctx, DB, &user, C.OauthLoginSessionPeriod)
+		require.NoError(t, err)
+
+		u, err := url.Parse(resp.RedirectUrl)
+		require.NoError(t, err)
+
+		require.Equal(t, u.Scheme, "https")
+		require.Equal(t, u.Host, "example.test")
+		require.Equal(t, u.Path, "/")
+
+		code := u.Query().Get("code")
+		require.NotEmpty(t, code)
+
+		session, err := models.OauthSessions(
+			models.OauthSessionWhere.Code.EQ(code),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, session.ClientID, a.Client.ClientID)
+		require.Equal(t, session.UserID, user.ID)
+		require.False(t, session.State.Valid)
+	})
+
+	t.Run("成功: stateがある場合はstateも返す", func(t *testing.T) {
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{},
+			Client:     client,
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State: null.NewString("state_test", true),
+		}
+
+		resp, err := a.Submit(ctx, DB, &user, C.OauthLoginSessionPeriod)
+		require.NoError(t, err)
+
+		u, err := url.Parse(resp.RedirectUrl)
+		require.NoError(t, err)
+
+		require.Equal(t, u.Scheme, "https")
+		require.Equal(t, u.Host, "example.test")
+		require.Equal(t, u.Path, "/")
+		require.Equal(t, u.Query().Get("state"), "state_test")
+
+		code := u.Query().Get("code")
+		require.NotEmpty(t, code)
+
+		session, err := models.OauthSessions(
+			models.OauthSessionWhere.Code.EQ(code),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, session.ClientID, a.Client.ClientID)
+		require.Equal(t, session.UserID, user.ID)
+		require.Equal(t, session.State.String, "state_test")
+	})
+}
+
+func TestCancel(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("成功: cancelできる", func(t *testing.T) {
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{},
+			Client:     &models.Client{},
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+		}
+
+		resp, err := a.Cancel(ctx, DB)
+		require.NoError(t, err)
+
+		u, err := url.Parse(resp.RedirectUrl)
+		require.NoError(t, err)
+
+		require.Equal(t, u.Scheme, "https")
+		require.Equal(t, u.Host, "example.test")
+		require.Equal(t, u.Path, "/")
+		require.Equal(t, u.Query().Get("error"), "access_denied")
+	})
+
+	t.Run("成功: stateがある場合はstateも返す", func(t *testing.T) {
+		a := src.AuthenticationRequest{
+			AllowRules: []*models.ClientAllowRule{},
+			Client: &models.Client{
+				OrgID:         null.NewString("", false),
+				OrgMemberOnly: false,
+			},
+			RedirectUri: &url.URL{
+				Scheme: "https",
+				Host:   "example.test",
+				Path:   "/",
+			},
+			State: null.NewString("state_test", true),
+		}
+
+		resp, err := a.Cancel(ctx, DB)
+		require.NoError(t, err)
+
+		u, err := url.Parse(resp.RedirectUrl)
+		require.NoError(t, err)
+
+		require.Equal(t, u.Scheme, "https")
+		require.Equal(t, u.Host, "example.test")
+		require.Equal(t, u.Path, "/")
+		require.Equal(t, u.Query().Get("error"), "access_denied")
+		require.Equal(t, u.Query().Get("state"), "state_test")
+	})
+}
+
 func TestSetLoggedInOauthLoginSession(t *testing.T) {
 	ctx := context.Background()
 
