@@ -98,7 +98,7 @@ export const Consent: React.FC<Props> = props => {
     <Flex
       w={{base: '96%', sm: '450px'}}
       minH={{base: '600px', sm: '700px'}}
-      boxShadow={shadow}
+      boxShadow={{base: 'none', sm: shadow}}
       borderRadius="10px"
       mx="auto"
       py="2rem"
@@ -317,7 +317,7 @@ export const Consent: React.FC<Props> = props => {
           </Button>
         </Stack>
         <Text mt="1rem">
-          許可すると、
+          許可・キャンセルすると
           <Link
             href={redirectUriHost.toString()}
             isExternal
@@ -334,7 +334,7 @@ export const Consent: React.FC<Props> = props => {
               }}
             />
           </Link>
-          にリダイレクトします
+          にリダイレクトします。
         </Text>
       </Box>
     </Flex>
