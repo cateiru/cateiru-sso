@@ -38,9 +38,7 @@ func (h *Handler) OIDCRequireHandler(c echo.Context) error {
 		return NewOIDCError(http.StatusBadRequest, ErrInvalidRequestURI, "user is not allowed", "", "")
 	}
 
-	oauthToken := c.Request().Header.Get("X-Oauth-Login-Session")
-
-	previewResponse, err := authenticationRequest.GetPreviewResponse(ctx, h.C.OauthLoginSessionPeriod, h.DB, oauthToken)
+	previewResponse, err := authenticationRequest.GetPreviewResponse(ctx, h.C.OauthLoginSessionPeriod, h.DB)
 	if err != nil {
 		return err
 	}

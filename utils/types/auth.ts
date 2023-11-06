@@ -32,3 +32,10 @@ export const PublicAuthenticationRequestSchema = z.object({
 export type PublicAuthenticationRequest = z.infer<
   typeof PublicAuthenticationRequestSchema
 >;
+
+export const PublicAuthenticationOauthResponse = z.object({
+  redirect_uri: z.string().url(),
+});
+export type PublicAuthenticationOauthResponse = z.infer<
+  typeof PublicAuthenticationOauthResponse
+>;

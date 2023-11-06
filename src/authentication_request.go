@@ -67,6 +67,8 @@ type AuthenticationRequest struct {
 
 	AllowRules  []*models.ClientAllowRule
 	RefererHost string
+
+	OauthLoginToken null.String
 }
 
 // preview で返す用のもの
@@ -102,7 +104,7 @@ type OauthResponse struct {
 }
 
 // プレビュー用のレスポンスを返す
-func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSessionPeriod time.Duration, db *sql.DB, sessionToken string) (*PublicAuthenticationRequest, error) {
+func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSessionPeriod time.Duration, db *sql.DB) (*PublicAuthenticationRequest, error) {
 
 	orgName := null.NewString("", false)
 	orgImage := null.NewString("", false)
@@ -146,10 +148,10 @@ func (a *AuthenticationRequest) GetPreviewResponse(ctx context.Context, loginSes
 	// - トークンがすでにログイン済みだった場合はプレビューを返す
 	// - トークンが有効期限切れなどで存在しない場合は再度トークンを作り直す
 	if slices.Contains(a.Prompts, lib.PromptLogin) {
-		if sessionToken != "" {
+		if a.OauthLoginToken.Valid {
 			// セッションがある場合はDBから引いてきて、有効かつログイン済みの場合はそのまま通す
 			loginSession, err := models.OauthLoginSessions(
-				models.OauthLoginSessionWhere.Token.EQ(sessionToken),
+				models.OauthLoginSessionWhere.Token.EQ(a.OauthLoginToken.String),
 				models.OauthLoginSessionWhere.Period.GT(time.Now()),
 			).One(ctx, db)
 			if errors.Is(err, sql.ErrNoRows) {
@@ -265,6 +267,7 @@ func (a *AuthenticationRequest) CheckUserAuthenticationPossible(ctx context.Cont
 	return ok, nil
 }
 
+// submitしたときの処理
 func (a AuthenticationRequest) Submit(ctx context.Context, db *sql.DB, user *models.User, oauthSessionPeriod time.Duration) (*OauthResponse, error) {
 	code, err := lib.RandomStr(63)
 	if err != nil {
@@ -300,6 +303,7 @@ func (a AuthenticationRequest) Submit(ctx context.Context, db *sql.DB, user *mod
 	}, nil
 }
 
+// キャンセルボタン押したときの処理
 func (a AuthenticationRequest) Cancel(ctx context.Context, db *sql.DB) (*OauthResponse, error) {
 	url := a.RedirectUri
 
@@ -469,6 +473,8 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		}
 	}
 
+	oauthLoginToken := c.Request().Header.Get("X-Oauth-Login-Session")
+
 	return &AuthenticationRequest{
 		Scopes:       enableScopes,
 		ResponseType: validatedResponseType,
@@ -485,12 +491,14 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 		LoginHint:   null.NewString(loginHint, loginHint != ""),
 		AcrValues:   null.NewString(acrValues, acrValues != ""),
 
-		Client:      client,
-		AllowRules:  allowRules,
-		RefererHost: referrerHost,
+		Client:          client,
+		AllowRules:      allowRules,
+		RefererHost:     referrerHost,
+		OauthLoginToken: null.NewString(oauthLoginToken, oauthLoginToken != ""),
 	}, nil
 }
 
+// Oauthログインセッションをログイン済みにする
 func SetLoggedInOauthLoginSession(ctx context.Context, db *sql.DB, token string) error {
 	oauthLoginSession, err := models.OauthLoginSessions(
 		models.OauthLoginSessionWhere.Token.EQ(token),

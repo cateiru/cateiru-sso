@@ -87,6 +87,8 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.False(t, authenticationRequest.Client.IsAllow)
 		require.Equal(t, authenticationRequest.AllowRules, []*models.ClientAllowRule{})
 		require.Equal(t, authenticationRequest.RefererHost, "", "リファラーチェックはしていないので空")
+		require.False(t, authenticationRequest.OauthLoginToken.Valid)
+		require.Equal(t, authenticationRequest.OauthLoginToken.String, "")
 	})
 
 	t.Run("成功: AllowRuleが設定されている", func(t *testing.T) {
@@ -169,6 +171,8 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.Len(t, authenticationRequest.AllowRules, 1)
 		require.Equal(t, authenticationRequest.AllowRules[0].EmailDomain, null.NewString("example.test", true))
 		require.Equal(t, authenticationRequest.RefererHost, "", "リファラーチェックはしていないので空")
+		require.False(t, authenticationRequest.OauthLoginToken.Valid)
+		require.Equal(t, authenticationRequest.OauthLoginToken.String, "")
 	})
 
 	t.Run("成功: リファラー設定済み", func(t *testing.T) {
@@ -276,6 +280,50 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 			require.Equal(t, authenticationRequest.RefererHost, "example.test")
 		})
+	})
+
+	t.Run("成功: ヘッダーにトークンが付与されている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+
+		r := models.ClientRedirect{
+			ClientID: clientId,
+			URL:      "https://example.test",
+			Host:     "example.test",
+		}
+		err := r.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		form := easy.NewMultipart()
+
+		form.Insert("scope", "openid profile email")
+		form.Insert("response_type", "code")
+		form.Insert("client_id", clientId)
+		form.Insert("redirect_uri", "https://example.test")
+		form.Insert("state", "state_test")
+		form.Insert("response_mode", "query")
+		form.Insert("nonce", "nonce_test")
+		form.Insert("display", "page")
+		form.Insert("prompt", "login consent")
+		form.Insert("max_age", "3600")
+		form.Insert("ui_locales", "ja_JP")
+		form.Insert("id_token_hint", "id_token_hint_test")
+		form.Insert("login_hint", "login_hint_test")
+		form.Insert("acr_values", "acr_values_test")
+
+		m, err := easy.NewFormData("/", "POST", form)
+		require.NoError(t, err)
+
+		m.R.Header.Set("X-Oauth-Login-Session", "hogehoge")
+
+		c := m.Echo()
+
+		authenticationRequest, err := h.NewAuthenticationRequest(ctx, c)
+		require.NoError(t, err)
+
+		require.True(t, authenticationRequest.OauthLoginToken.Valid)
+		require.Equal(t, authenticationRequest.OauthLoginToken.String, "hogehoge")
 	})
 
 	t.Run("失敗: scopeが存在しない", func(t *testing.T) {
@@ -753,7 +801,7 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 		}
 
-		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, "")
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		require.Equal(t, *response, src.PublicAuthenticationRequest{
@@ -835,7 +883,7 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 		}
 
-		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, "")
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		require.Equal(t, *response, src.PublicAuthenticationRequest{
@@ -913,7 +961,7 @@ func TestGetPreviewResponse(t *testing.T) {
 			},
 		}
 
-		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, "")
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		require.NotNil(t, response.LoginSession)
@@ -983,9 +1031,11 @@ func TestGetPreviewResponse(t *testing.T) {
 					UserID: null.NewString("user_id", true),
 				},
 			},
+
+			OauthLoginToken: null.NewString(token, true),
 		}
 
-		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, token)
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		require.Nil(t, response.LoginSession)
@@ -1041,9 +1091,10 @@ func TestGetPreviewResponse(t *testing.T) {
 					UserID: null.NewString("user_id", true),
 				},
 			},
+			OauthLoginToken: null.NewString(token, true),
 		}
 
-		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, token)
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		require.NotNil(t, response.LoginSession)
@@ -1113,9 +1164,10 @@ func TestGetPreviewResponse(t *testing.T) {
 					UserID: null.NewString("user_id", true),
 				},
 			},
+			OauthLoginToken: null.NewString(token, true),
 		}
 
-		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, token)
+		response, err := a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.NoError(t, err)
 
 		require.NotNil(t, response.LoginSession)
@@ -1185,9 +1237,10 @@ func TestGetPreviewResponse(t *testing.T) {
 					UserID: null.NewString("user_id", true),
 				},
 			},
+			OauthLoginToken: null.NewString(token, true),
 		}
 
-		_, err = a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB, token)
+		_, err = a.GetPreviewResponse(ctx, C.OauthLoginSessionPeriod, DB)
 		require.EqualError(t, err, "code=400, error=invalid_request_uri, message=no login")
 	})
 }
