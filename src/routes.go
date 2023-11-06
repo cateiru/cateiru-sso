@@ -115,11 +115,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// OIDC
 	oidc := version.Group("/oidc")
 	oidc.POST("/require", h.OIDCRequireHandler)
-	oidc.POST("/cert/begin_webauthn", h.OIDCBeginWebAuthnHandler)
-	oidc.POST("/cert/webathn", h.OIDCWebAuthnHandler)
-	oidc.POST("/cert/password", h.OIDCPasswordHandler)
-	oidc.POST("/cert/otp", h.OIDCOTPHandler)
-	oidc.POST("/login", h.Root)
+	oidc.POST("/login", h.OIDCLoginHandler)
+	oidc.POST("/cancel", h.OIDCCancelHandler)
 
 	// 管理者用
 	admin := version.Group("/admin")
