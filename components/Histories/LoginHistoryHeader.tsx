@@ -8,6 +8,44 @@ import {Margin} from '../Common/Margin';
 import {UserName} from '../Common/UserName';
 import {useSecondaryColor} from '../Common/useColor';
 
+interface Histories {
+  title: string;
+  path: string;
+  description?: string | React.ReactNode;
+}
+
+const histories: Histories[] = [
+  {
+    title: 'ログイン履歴',
+    path: '/histories',
+    description: (
+      <>
+        このアカウントにログインした履歴です。
+        <br />
+        ログインした日時、IPアドレス、ブラウザ、OSが表示されます。
+      </>
+    ),
+  },
+  {
+    title: 'ログイントライ履歴',
+    path: '/histories/try',
+    description: (
+      <>
+        このアカウントにログインを試みた履歴です。
+        <br />
+        記録はログイン時とパスワード再登録時に成功、失敗時関わらずどちらも記録されます。
+        <br />
+        ログインした日時、IPアドレス、ブラウザ、OSが表示されます。
+      </>
+    ),
+  },
+  {
+    title: '操作履歴',
+    path: '/histories/operation',
+    description: 'プロフィール変更などの操作に関する履歴です。',
+  },
+];
+
 export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
   children,
 }) => {
@@ -16,39 +54,22 @@ export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
 
   const textColor = useSecondaryColor();
 
-  const title = React.useCallback(() => {
-    switch (pathname) {
-      case '/histories':
-        return 'ログイン履歴';
-      case '/histories/try':
-        return 'ログイントライ履歴';
-      default:
-        return 'ログイン履歴';
-    }
+  const history = React.useMemo(() => {
+    return histories.find(v => v.path === pathname);
   }, [pathname]);
 
   return (
     <Margin>
       <Heading mt="3rem" mb="1rem" textAlign="center">
-        {title()}
+        {history?.title ?? 'ログイン履歴'}
       </Heading>
-      <Text color={textColor} textAlign="center" mb=".5rem">
-        {title() === 'ログイン履歴' ? (
-          <>
-            このアカウントにログインした履歴です。
-            <br />
-            ログインした日時、IPアドレス、ブラウザ、OSが表示されます。
-          </>
-        ) : (
-          <>
-            このアカウントにログインを試みた履歴です。
-            <br />
-            記録はログイン時とパスワード再登録時に成功、失敗時関わらずどちらも記録されます。
-            <br />
-            ログインした日時、IPアドレス、ブラウザ、OSが表示されます。
-          </>
-        )}
-      </Text>
+      {history?.description ? (
+        <Text color={textColor} textAlign="center" mb=".5rem">
+          {history?.description}
+        </Text>
+      ) : (
+        ''
+      )}
       <UserName />
       <Select
         w={{base: '100%', md: '300px'}}
@@ -61,8 +82,13 @@ export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
         }}
         defaultValue={pathname}
       >
-        <option value="/histories">ログイン履歴</option>
-        <option value="/histories/try">ログイントライ履歴</option>
+        {histories.map(v => {
+          return (
+            <option value={v.path} key={`history-${v.path}`}>
+              {v.title}
+            </option>
+          );
+        })}
       </Select>
       {children}
     </Margin>
