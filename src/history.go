@@ -71,6 +71,20 @@ type LoginTryHistoryResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type OperationHistoryResponse struct {
+	ID uint `json:"id"`
+
+	Device   null.String `json:"device"`
+	OS       null.String `json:"os"`
+	Browser  null.String `json:"browser"`
+	IsMobile null.Bool   `json:"is_mobile"`
+	Ip       string      `json:"ip"`
+
+	Identifier int8 `json:"identifier"`
+
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type LoginHistoriesSlice struct {
 	LoginHistory models.LoginHistory `boil:",bind"`
 	Refresh      models.Refresh      `boil:",bind"`
@@ -388,4 +402,45 @@ func (h *Handler) HistoryLoginTryHistoryHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, formattedLoginTryHistories)
+}
+
+func (h *Handler) HistoryOperationHistoryHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+
+	// SELECT * FROM login_try_history
+	// WHERE user_id = ?
+	// ORDER BY created DESC
+	// LIMIT 50;
+	operationHistory, err := models.OperationHistories(
+		models.OperationHistoryWhere.UserID.EQ(u.ID),
+		qm.OrderBy("created_at DESC"),
+		qm.Limit(50),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	formattedOperationHistories := []OperationHistoryResponse{}
+	for _, l := range operationHistory {
+		formattedOperationHistories = append(formattedOperationHistories, OperationHistoryResponse{
+			ID: l.ID,
+
+			Device:   l.Device,
+			OS:       l.Os,
+			Browser:  l.Browser,
+			IsMobile: l.IsMobile,
+			Ip:       net.IP.To16(l.IP).String(),
+
+			Identifier: l.Identifier,
+
+			CreatedAt: l.CreatedAt,
+		})
+	}
+
+	return c.JSON(http.StatusOK, formattedOperationHistories)
 }

@@ -75,11 +75,12 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	// 履歴
 	history := version.Group("/history")
-	history.GET("/client/login", h.HistoryClientLoginHandler)  // ログインしているSSOクライアント
-	history.GET("/client", h.HistoryClientHandler)             // クライアントのログイン履歴
-	history.GET("/login_devices", h.HistoryLoginDeviceHandler) // 現在ログインしているデバイス
-	history.GET("/login", h.HistoryLoginHistoryHandler)        // ログイン履歴
-	history.GET("/try_login", h.HistoryLoginTryHistoryHandler) // ログイントライ履歴
+	history.GET("/client/login", h.HistoryClientLoginHandler)   // ログインしているSSOクライアント
+	history.GET("/client", h.HistoryClientHandler)              // クライアントのログイン履歴
+	history.GET("/login_devices", h.HistoryLoginDeviceHandler)  // 現在ログインしているデバイス
+	history.GET("/login", h.HistoryLoginHistoryHandler)         // ログイン履歴
+	history.GET("/try_login", h.HistoryLoginTryHistoryHandler)  // ログイントライ履歴
+	history.GET("/operation", h.HistoryOperationHistoryHandler) // 操作履歴
 
 	// 通知
 	notice := version.Group("/notice")

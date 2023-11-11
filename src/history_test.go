@@ -376,3 +376,51 @@ func TestHistoryLoginTryHistoryHandler(t *testing.T) {
 		require.Len(t, response, 1)
 	})
 }
+
+func TestHistoryOperationHistoryHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	SessionTest(t, h.HistoryOperationHistoryHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		operationHistory := models.OperationHistory{
+			UserID: u.ID,
+
+			IP: net.ParseIP("10.0.0.1"),
+		}
+		err := operationHistory.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		return m
+	})
+
+	t.Run("成功: ログイントライ履歴を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		operationHistory := models.OperationHistory{
+			UserID: u.ID,
+
+			IP: net.ParseIP("10.0.0.1"),
+		}
+		err := operationHistory.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+
+		c := m.Echo()
+
+		err = h.HistoryOperationHistoryHandler(c)
+		require.NoError(t, err)
+
+		response := []src.OperationHistoryResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Len(t, response, 1)
+	})
+}
