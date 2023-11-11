@@ -21,6 +21,7 @@ var TableNames = struct {
 	LoginTryHistory               string
 	OauthLoginSession             string
 	OauthSession                  string
+	OperationHistory              string
 	Organization                  string
 	OrganizationUser              string
 	Otp                           string
@@ -57,6 +58,7 @@ var TableNames = struct {
 	LoginTryHistory:               "login_try_history",
 	OauthLoginSession:             "oauth_login_session",
 	OauthSession:                  "oauth_session",
+	OperationHistory:              "operation_history",
 	Organization:                  "organization",
 	OrganizationUser:              "organization_user",
 	Otp:                           "otp",
