@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -195,6 +196,29 @@ func (h *Handler) UserUpdateHandler(c echo.Context) error {
 	}
 
 	if _, err := user.Update(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	ip := c.RealIP()
+	ua, err := h.ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+
+	// 履歴を残す
+	operationHistory := models.OperationHistory{
+		UserID: user.ID,
+
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+
+		IP: net.ParseIP(ip),
+
+		Identifier: 3,
+	}
+	if err := operationHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 
@@ -522,6 +546,29 @@ func (h *Handler) UserAvatarHandler(c echo.Context) error {
 		return err
 	}
 
+	ip := c.RealIP()
+	ua, err := h.ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+
+	// 履歴を残す
+	operationHistory := models.OperationHistory{
+		UserID: user.ID,
+
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+
+		IP: net.ParseIP(ip),
+
+		Identifier: 4,
+	}
+	if err := operationHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
 	return c.JSON(http.StatusOK, &UserAvatarResponse{
 		Avatar: url.String(),
 	})
@@ -564,6 +611,29 @@ func (h *Handler) UserDeleteAvatarHandler(c echo.Context) error {
 		Path:   p,
 	}
 	if err := h.CDN.Purge(url.String()); err != nil {
+		return err
+	}
+
+	ip := c.RealIP()
+	ua, err := h.ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+
+	// 履歴を残す
+	operationHistory := models.OperationHistory{
+		UserID: user.ID,
+
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+
+		IP: net.ParseIP(ip),
+
+		Identifier: 5,
+	}
+	if err := operationHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
 		return err
 	}
 

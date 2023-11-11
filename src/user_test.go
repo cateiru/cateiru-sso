@@ -249,6 +249,14 @@ func TestUserUpdateHandler(t *testing.T) {
 		require.Equal(t, dbUser.Gender, gender)
 		require.Equal(t, dbUser.Birthdate.Time.Format(time.DateOnly), birthDate.Format(time.DateOnly))
 		require.Equal(t, dbUser.LocaleID, locale)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.NotNil(t, operationHistory, "操作履歴が保存されている")
+		require.Equal(t, operationHistory.Identifier, int8(3))
 	})
 
 	t.Run("成功: family_name, middle_name, given_nameを指定しないと削除される", func(t *testing.T) {
@@ -1334,6 +1342,14 @@ func TestUserAvatarHandler(t *testing.T) {
 		_, contentType, err := storage.Read(ctx, path)
 		require.NoError(t, err)
 		require.Equal(t, contentType, "image/png")
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.NotNil(t, operationHistory, "操作履歴が保存されている")
+		require.Equal(t, operationHistory.Identifier, int8(4))
 	})
 
 	t.Run("成功: アバターを更新できる", func(t *testing.T) {
@@ -1367,6 +1383,14 @@ func TestUserAvatarHandler(t *testing.T) {
 		_, contentType, err := storage.Read(ctx, path)
 		require.NoError(t, err)
 		require.Equal(t, contentType, "image/png")
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.NotNil(t, operationHistory, "操作履歴が保存されている")
+		require.Equal(t, operationHistory.Identifier, int8(4))
 	})
 
 	t.Run("失敗: 画像が指定されていない", func(t *testing.T) {
@@ -1462,6 +1486,14 @@ func TestUserDeleteAvatarHandler(t *testing.T) {
 
 		_, _, err = s.Read(ctx, path)
 		require.ErrorIs(t, err, storage.ErrObjectNotExist)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.NotNil(t, operationHistory, "操作履歴が保存されている")
+		require.Equal(t, operationHistory.Identifier, int8(5))
 	})
 
 	t.Run("失敗: アバターは設定されていない", func(t *testing.T) {

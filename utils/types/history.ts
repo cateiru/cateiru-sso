@@ -44,3 +44,11 @@ export const LOGIN_TRY_IDENTIFIER: {[key: number]: string} = {
   1: 'パスワード再登録',
   2: 'OAuthログイン',
 };
+export const OPERATION_HISTORY_IDENTIFIER: {[key: number]: string} = {
+  1: 'OIDC許可',
+  2: 'OIDCキャンセル',
+
+  3: 'プロフィール更新',
+  4: 'アバター画像更新',
+  5: 'アバター画像削除',
+};
