@@ -84,6 +84,11 @@ func (h *Handler) OIDCCancelHandler(c echo.Context) error {
 		return err
 	}
 
+	// u, err := h.Session.SimpleLogin(ctx, c)
+	// if err != nil {
+	// 	return err
+	// }
+
 	response, err := authenticationRequest.Cancel(ctx, h.DB)
 	if err != nil {
 		return err

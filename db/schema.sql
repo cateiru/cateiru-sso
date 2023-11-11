@@ -753,8 +753,6 @@ CREATE TABLE `organization_user` (
     -- guest: クライアントにログインすることのみが可能なユーザー
     `role` ENUM('owner', 'member', 'guest') NOT NULL DEFAULT 'guest',
 
-    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     -- 管理用
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -816,4 +814,30 @@ CREATE TABLE `oauth_login_session` (
     FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY(`token`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 行動履歴
+CREATE TABLE `operation_history` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    -- INET6_ATON、INET6_NTOAを使用して格納する
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 識別子
+    `identifier` TINYINT NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `operation_history_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;

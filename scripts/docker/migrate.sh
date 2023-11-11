@@ -35,8 +35,8 @@ mysql -u $DB_USER -p$DB_PASSWORD -h db $TARGET_DB < /schema.sql
 dump $CURRENT_DB
 dump $TARGET_DB
 
-UP=$(mysqldef -u $DB_USER -p$DB_PASSWORD -h db $CURRENT_DB --enable-drop-table --dry-run < /dump_data/$TARGET_DB.sql)
-DOWN=$(mysqldef -u $DB_USER -p$DB_PASSWORD -h db $TARGET_DB --enable-drop-table --dry-run < /dump_data/$CURRENT_DB.sql)
+UP=$(mysqldef -u $DB_USER -p$DB_PASSWORD -h db $CURRENT_DB --enable-drop-table --dry-run < /dump_data/$TARGET_DB.sql | grep -v '^-- dry run --$')
+DOWN=$(mysqldef -u $DB_USER -p$DB_PASSWORD -h db $TARGET_DB --enable-drop-table --dry-run < /dump_data/$CURRENT_DB.sql | grep -v '^-- dry run --$')
 
 TIMESTAMP=$(date "+%Y%m%d%H%M%S")
 MIGRATION_FILE_NAME=$1
