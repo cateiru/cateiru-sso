@@ -54,7 +54,7 @@ steps:
         '${_REGION}',
       ]
   # Purge all cache Fastly CDN
-  - name: 'gcr.io/gcp-runtimes/ubuntu20_04'
+  - name: 'marketplace.gcr.io/google/ubuntu2004'
     id: 'purge-all-cache'
     entrypoint: 'curl'
     args:
