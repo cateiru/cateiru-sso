@@ -8,6 +8,8 @@
 #   _NEXT_PUBLIC_RE_CAPTCHA: reCAPTCHAのキー。未指定も可
 #   _NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: Google AnalyticsのID。未指定も可
 #   _NEXT_PUBLIC_PUBLICATION_TYPE: ステージングなどの場合はこの環境変数を設定することで明示的に表示できます。本番環境では指定しない。
+#   __FASTLY_SERVICE_ID: FastlyのサービスID
+#   _FASTLY_API_KEY: FastlyのAPIキー
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
@@ -50,6 +52,17 @@ steps:
         'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA',
         '--region',
         '${_REGION}',
+      ]
+  # Purge all cache Fastly CDN
+  - name: 'gcr.io/cloud-builders/curl'
+    id: 'purge-all-cache'
+    args:
+      [
+      '-i',
+      '-X POST'
+      'https://api.fastly.com/service/${_FASTLY_SERVICE_ID}/purge_all',
+      '-H "Fastly-Key: ${_FASTLY_API_KEY}"',
+      '-H "Accept: application/json"',
       ]
 substitutions:
   _REGION: asia-northeast1
