@@ -64,9 +64,9 @@ steps:
         'POST',
         'https://api.fastly.com/service/${_FASTLY_SERVICE_ID}/purge_all',
         '-H',
-        '"Fastly-Key: ${_FASTLY_API_KEY}"',
+        'Fastly-Key: ${_FASTLY_API_KEY}',
         '-H',
-        '"Accept: application/json"',
+        'Accept: application/json',
       ]
 substitutions:
   _REGION: asia-northeast1
