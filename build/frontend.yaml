@@ -1,0 +1,56 @@
+# Next.js フロントエンドのビルド定義
+# Next.jsは`NEXT_PUBLIC_`で始まる環境変数をビルド時に埋め込むため、
+# ここで、設定する必要がある。
+#
+# 設定が必要な環境変数:
+#   _SERVICE_NAME: サービス名
+#   _NEXT_PUBLIC_API_HOST: APIのホストURL
+#   _NEXT_PUBLIC_RE_CAPTCHA: reCAPTCHAのキー。未指定も可
+#   _NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: Google AnalyticsのID。未指定も可
+#   _NEXT_PUBLIC_PUBLICATION_TYPE: ステージングなどの場合はこの環境変数を設定することで明示的に表示できます。本番環境では指定しない。
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-docker-image'
+    args:
+      [
+        'build',
+        '-t',
+        'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA',
+        '.',
+        '-f',
+        '${_DOCKERFILE_PATH}',
+        '--build-arg',
+        'NEXT_PUBLIC_API_HOST=${_NEXT_PUBLIC_API_HOST}',
+        '--build-arg',
+        'NEXT_PUBLIC_RE_CAPTCHA=${_NEXT_PUBLIC_RE_CAPTCHA}',
+        '--build-arg',
+        'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${_NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}',
+        '--build-arg',
+        'NEXT_PUBLIC_PUBLICATION_TYPE=${_NEXT_PUBLIC_PUBLICATION_TYPE}',
+        '--build-arg',
+        'NEXT_PUBLIC_REVISION=${REVISION_ID}',
+        '--build-arg',
+        'NEXT_PUBLIC_BRANCH_NAME=${BRANCH_NAME}',
+      ]
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-docker-image'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA']
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloud-run'
+    args:
+      [
+        'run',
+        'deploy',
+        '${_SERVICE_NAME}',
+        '--image',
+        'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA',
+        '--region',
+        '${_REGION}',
+      ]
+substitutions:
+  _REGION: asia-northeast1
+images:
+  - gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA
