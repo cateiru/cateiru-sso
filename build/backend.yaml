@@ -23,6 +23,7 @@ steps:
   # Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-cloud-run'
+    entrypoint: gcloud
     args:
       [
         'run',
