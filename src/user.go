@@ -463,6 +463,10 @@ func (h *Handler) UserUpdateEmailRegisterHandler(c echo.Context) error {
 		return err
 	}
 
+	if err := h.SaveOperationHistory(ctx, c, user, 6); err != nil {
+		return err
+	}
+
 	return c.JSON(http.StatusOK, &UserUpdateEmailRegisterResponse{
 		Email: user.Email,
 	})

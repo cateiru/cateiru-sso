@@ -1135,6 +1135,13 @@ func TestUserUpdateEmailRegisterHandler(t *testing.T) {
 		).Exists(ctx, DB)
 		require.NoError(t, err)
 		require.False(t, existSession)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(6), "操作履歴が保存されている")
 	})
 
 	t.Run("失敗: codeが不正", func(t *testing.T) {

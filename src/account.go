@@ -489,6 +489,10 @@ func (h *Handler) AccountPasswordHandler(c echo.Context) error {
 		return err
 	}
 
+	if err := h.SaveOperationHistory(ctx, c, user, 7); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -532,6 +536,10 @@ func (h *Handler) AccountUpdatePasswordHandler(c echo.Context) error {
 		Hash:   hash,
 	}
 	if err := password.Upsert(ctx, h.DB, boil.Infer(), boil.Infer()); err != nil {
+		return err
+	}
+
+	if err := h.SaveOperationHistory(ctx, c, user, 7); err != nil {
 		return err
 	}
 
@@ -998,6 +1006,10 @@ func (h *Handler) AccountReRegisterPasswordHandler(c echo.Context) error {
 	// 使用済みフラグを立てる
 	session.Completed = true
 	if _, err := session.Update(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	if err := h.SaveOperationHistory(ctx, c, user, 7); err != nil {
 		return err
 	}
 

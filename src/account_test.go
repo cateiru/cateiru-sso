@@ -985,6 +985,13 @@ func TestAccountPasswordHandler(t *testing.T) {
 
 		ok := C.Password.VerifyPassword(password, pw.Hash, pw.Salt)
 		require.True(t, ok)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(7), "操作履歴が保存されている")
 	})
 
 	t.Run("失敗: すでに作成している", func(t *testing.T) {
@@ -1077,6 +1084,13 @@ func TestAccountUpdatePasswordHandler(t *testing.T) {
 
 		ok := C.Password.VerifyPassword(newPassword, pw.Hash, pw.Salt)
 		require.True(t, ok)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(7), "操作履歴が保存されている")
 	})
 
 	t.Run("失敗: 前のパスワードが空", func(t *testing.T) {
@@ -2123,6 +2137,13 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		isVerify := C.Password.VerifyPassword(newPassword, password.Hash, password.Salt)
 		require.True(t, isVerify)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(7))
 	})
 
 	t.Run("成功: パスワードを新規に作成できる", func(t *testing.T) {
@@ -2165,6 +2186,13 @@ func TestAccountReRegisterPasswordHandler(t *testing.T) {
 
 		isVerify := C.Password.VerifyPassword(newPassword, password.Hash, password.Salt)
 		require.True(t, isVerify)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(7))
 	})
 
 	t.Run("失敗: reCAPTCHA失敗", func(t *testing.T) {
