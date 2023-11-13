@@ -424,3 +424,28 @@ func TestHistoryOperationHistoryHandler(t *testing.T) {
 		require.Len(t, response, 1)
 	})
 }
+
+func TestSaveOperationHistory(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	t.Run("操作履歴が保存されている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.SaveOperationHistory(ctx, c, &u, 1)
+		require.NoError(t, err)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(1))
+	})
+}
