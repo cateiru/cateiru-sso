@@ -72,4 +72,8 @@ export const OPERATION_HISTORY_IDENTIFIER: {[key: number]: string} = {
   3: 'プロフィール更新',
   4: 'アバター画像更新',
   5: 'アバター画像削除',
+
+  20: 'クライアント作成',
+  21: '組織クライアント作成',
+  22: 'クライアント削除',
 };

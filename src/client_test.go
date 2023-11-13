@@ -387,6 +387,13 @@ func TestClientCreateHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Len(t, referrerUrls, 2)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(20), "操作ログが保存されている")
 	})
 
 	t.Run("成功: 画像を設定して新規作成", func(t *testing.T) {
@@ -538,6 +545,13 @@ func TestClientCreateHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Len(t, referrerUrls, 2)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(21), "操作ログが保存されている")
 	})
 
 	t.Run("失敗: promptの値が不正", func(t *testing.T) {
@@ -1636,6 +1650,13 @@ func TestClientDeleteHandler(t *testing.T) {
 		).Exists(ctx, h.DB)
 		require.NoError(t, err)
 		require.False(t, allows)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(22), "操作ログが保存されている")
 	})
 
 	t.Run("成功: ユーザーはorgに入っているので削除ができる", func(t *testing.T) {
@@ -1692,6 +1713,13 @@ func TestClientDeleteHandler(t *testing.T) {
 		).Exists(ctx, h.DB)
 		require.NoError(t, err)
 		require.False(t, allows)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(22), "操作ログが保存されている")
 	})
 
 	t.Run("失敗: クライアントIDが存在しない", func(t *testing.T) {

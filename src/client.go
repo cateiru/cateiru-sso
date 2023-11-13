@@ -580,6 +580,15 @@ func (h *Handler) ClientCreateHandler(c echo.Context) error {
 		return err
 	}
 
+	// 履歴を保存する
+	identifier := 20
+	if orgId != "" {
+		identifier = 21
+	}
+	if err := h.SaveOperationHistory(ctx, c, u, identifier); err != nil {
+		return err
+	}
+
 	response, err := getClientDetails(ctx, h.DB, clientId.String(), u)
 	if err != nil {
 		return err
@@ -932,6 +941,10 @@ func (h *Handler) ClientDeleteHandler(c echo.Context) error {
 		return nil
 	})
 	if err != nil {
+		return err
+	}
+
+	if err := h.SaveOperationHistory(ctx, c, u, 22); err != nil {
 		return err
 	}
 
