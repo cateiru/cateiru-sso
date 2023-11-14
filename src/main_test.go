@@ -24,6 +24,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/types"
+	"golang.org/x/exp/slices"
 )
 
 var DB *sql.DB
@@ -78,6 +79,10 @@ func resetDBTable(ctx context.Context, db *sql.DB) error {
 	}
 	defer rows.Close()
 
+	excludeTables := []string{
+		"schema_migrations",
+	}
+
 	if _, err := queries.Raw("SET FOREIGN_KEY_CHECKS = 0").ExecContext(ctx, db); err != nil {
 		return err
 	}
@@ -86,6 +91,10 @@ func resetDBTable(ctx context.Context, db *sql.DB) error {
 		table := ""
 		if err := rows.Scan(&table); err != nil {
 			return err
+		}
+
+		if slices.Contains(excludeTables, table) {
+			continue
 		}
 
 		// SQLインジェクションの影響は無いためSprintfを使用している
