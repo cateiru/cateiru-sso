@@ -1,16 +1,21 @@
 package src
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"net"
 	"net/http"
 	"path/filepath"
 	"strconv"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
+	"github.com/cateiru/cateiru-sso/src/models"
 	goclienthints "github.com/cateiru/go-client-hints/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/mileusna/useragent"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"go.uber.org/zap"
 )
 
@@ -115,6 +120,33 @@ func (h *Handler) ParseUA(r *http.Request) (*UserData, error) {
 		Device:   ua.Device,
 		IsMobile: ua.Mobile,
 	}, nil
+}
+
+// 操作履歴を残す
+func (h *Handler) SaveOperationHistory(ctx context.Context, c echo.Context, user *models.User, identifier int) error {
+	ip := c.RealIP()
+	ua, err := h.ParseUA(c.Request())
+	if err != nil {
+		return err
+	}
+
+	operationHistory := models.OperationHistory{
+		UserID: user.ID,
+
+		Device:   null.NewString(ua.Device, true),
+		Os:       null.NewString(ua.OS, true),
+		Browser:  null.NewString(ua.Browser, true),
+		IsMobile: null.NewBool(ua.IsMobile, true),
+
+		IP: net.ParseIP(ip),
+
+		Identifier: int8(identifier),
+	}
+	if err := operationHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // 複数のフォームを取得する

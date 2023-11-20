@@ -1,7 +1,6 @@
 package src
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -12,7 +11,6 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -445,31 +443,4 @@ func (h *Handler) HistoryOperationHistoryHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, formattedOperationHistories)
-}
-
-// 操作履歴を残す
-func (h *Handler) SaveOperationHistory(ctx context.Context, c echo.Context, user *models.User, identifier int) error {
-	ip := c.RealIP()
-	ua, err := h.ParseUA(c.Request())
-	if err != nil {
-		return err
-	}
-
-	operationHistory := models.OperationHistory{
-		UserID: user.ID,
-
-		Device:   null.NewString(ua.Device, true),
-		Os:       null.NewString(ua.OS, true),
-		Browser:  null.NewString(ua.Browser, true),
-		IsMobile: null.NewBool(ua.IsMobile, true),
-
-		IP: net.ParseIP(ip),
-
-		Identifier: int8(identifier),
-	}
-	if err := operationHistory.Insert(ctx, h.DB, boil.Infer()); err != nil {
-		return err
-	}
-
-	return nil
 }

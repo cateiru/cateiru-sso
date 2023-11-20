@@ -1,12 +1,14 @@
 package src_test
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
@@ -257,5 +259,30 @@ func TestFormValues(t *testing.T) {
 
 		err = handler(c)
 		require.EqualError(t, err, "code=400, message=key_2 is required")
+	})
+}
+
+func TestSaveOperationHistory(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	t.Run("操作履歴が保存されている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.SaveOperationHistory(ctx, c, &u, 1)
+		require.NoError(t, err)
+
+		operationHistory, err := models.OperationHistories(
+			models.OperationHistoryWhere.UserID.EQ(u.ID),
+		).One(ctx, DB)
+		require.NoError(t, err)
+
+		require.Equal(t, operationHistory.Identifier, int8(1))
 	})
 }
