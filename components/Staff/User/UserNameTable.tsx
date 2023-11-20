@@ -13,7 +13,6 @@ import {
 import Link from 'next/link';
 import {TbUser} from 'react-icons/tb';
 import useSWR from 'swr';
-import {formatDate} from '../../../utils/date';
 import {staffUserNameFetcher} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {UserNames} from '../../../utils/types/staff';
@@ -51,7 +50,7 @@ export const UserNameTable = () => {
             return (
               <Tr key={`user-name-${v.id}`}>
                 <Td fontWeight="bold">{v.user_name}</Td>
-                <Td color={textColor}>{formatDate(new Date(v.period))}</Td>
+                <Td color={textColor}>{new Date(v.period).toLocaleString()}</Td>
                 <Td>
                   <IconButton
                     as={Link}

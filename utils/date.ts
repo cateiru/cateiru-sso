@@ -1,35 +1,24 @@
-export const formatDate = (date: Date): string => {
-  const week = ['日', '月', '火', '水', '木', '金', '土'];
-
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const weekDay = week[date.getDay()];
-  const day = date.getDate();
-  const hour = date.getHours();
-  const minutes = date.getMinutes();
-
-  return `${year}年${month}月${day}日${weekDay}曜日 ${hour}:${(
-    '00' + minutes
-  ).slice(-2)}`;
-};
-
 export const hawManyDaysAgo = (date: Date): string => {
   const now = new Date();
   const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
 
+  const rtf = new Intl.RelativeTimeFormat('ja', {
+    numeric: 'always',
+  });
+
   if (diffSec < 0) {
     return '0秒前';
   } else if (diffSec < 60) {
-    return `${diffSec}秒前`;
+    return rtf.format(-diffSec, 'second');
   } else if (diffSec < 3600) {
-    return `${Math.floor(diffSec / 60)}分前`;
+    return rtf.format(-Math.floor(diffSec / 60), 'minute');
   } else if (diffSec < 86400) {
-    return `${Math.floor(diffSec / 3600)}時間前`;
+    return rtf.format(-Math.floor(diffSec / 3600), 'hour');
   } else if (diffSec < 86400 * 7) {
-    return `${Math.floor(diffSec / 86400)}日前`;
+    return rtf.format(-Math.floor(diffSec / 86400), 'day');
   } else if (diffSec < 86400 * 30) {
-    return `${Math.floor(diffSec / (86400 * 7))}週間前`;
+    return rtf.format(-Math.floor(diffSec / (86400 * 7)), 'week');
   } else {
-    return `${Math.floor(diffSec / (86400 * 30))}ヶ月以上前`;
+    return rtf.format(-Math.floor(diffSec / (86400 * 30)), 'month');
   }
 };

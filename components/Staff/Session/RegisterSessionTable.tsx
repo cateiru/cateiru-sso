@@ -15,7 +15,6 @@ import {
 import NextLink from 'next/link';
 import {TbTrashX} from 'react-icons/tb';
 import useSWR, {useSWRConfig} from 'swr';
-import {formatDate} from '../../../utils/date';
 import {staffRegisterSessionsFeather} from '../../../utils/swr/staff';
 import {ErrorType} from '../../../utils/types/error';
 import {RegisterSessions} from '../../../utils/types/staff';
@@ -113,7 +112,7 @@ export const RegisterSessionTable = () => {
                 </Td>
                 <Td>{v.send_count}</Td>
                 <Td>{v.retry_count}</Td>
-                <Td>{formatDate(new Date(v.period))}</Td>
+                <Td>{new Date(v.period).toLocaleString()}</Td>
                 <Td>
                   {v.org_id && (
                     <Button
