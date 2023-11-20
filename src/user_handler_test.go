@@ -1423,7 +1423,7 @@ func TestUserAvatarHandler(t *testing.T) {
 
 		cookies := RegisterSession(t, ctx, &u)
 
-		image, err := os.Open("./user_test.go")
+		image, err := os.Open("./user_handler_test.go")
 		require.NoError(t, err)
 		defer image.Close()
 		form := easy.NewMultipart()
