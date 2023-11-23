@@ -54,11 +54,19 @@ steps:
         '${_REGION}',
       ]
   # Purge all cache Fastly CDN
-  - name: 'marketplace.gcr.io/google/ubuntu2004'
+  - name: 'marketplace.gcr.io/google/ubuntu2204'
     id: 'purge-all-cache'
-    entrypoint: 'curl'
     args:
       [
+        'apt',
+        'update',
+        '&&',
+        'apt',
+        'install',
+        'curl',
+        '-y',
+        '&&',
+        'curl',
         '-i',
         '-X',
         'POST',
