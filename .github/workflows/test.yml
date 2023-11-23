@@ -55,7 +55,7 @@ jobs:
       - name: setup go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.20'
+          go-version: '1.21'
       - name: start database
         run: ./scripts/docker-compose-db.sh up -d
       - name: go module download
