@@ -81,6 +81,10 @@ pnpm storybook
 # Next.js側でAPIに接続する際に使用
 NEXT_PUBLIC_API_HOST=[API host]
 
+# SSRでサーバーがアクセスするAPIのホスト
+# 未指定の場合は `NEXT_PUBLIC_API_HOST` を使用
+NEXT_PUBLIC_SERVER_API_HOST=[API host]
+
 # reCAPTCHAのトークン
 NEXT_PUBLIC_RE_CAPTCHA=[token]
 
