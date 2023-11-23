@@ -1,10 +1,10 @@
 services:
-  backend_app:
+  backend:
     container_name: backend_app
     build:
       context: ..
       dockerfile_inline: |
-        FROM golang:1.20.4-alpine
+        FROM golang:1.21.4-alpine
 
         RUN apk update && apk add --no-cache ca-certificates curl tar && update-ca-certificates
         RUN go install github.com/cosmtrek/air@latest
@@ -23,7 +23,7 @@ services:
       - db
       - gcs
     command: air -c .air.toml
-  frontend_app:
+  frontend:
     container_name: frontend_app
     build:
       context: ..
@@ -37,6 +37,7 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-http://localhost:8080}
+      - NEXT_PUBLIC_SERVER_API_HOST=${NEXT_PUBLIC_SERVER_API_HOST:-http://backend:8080}
       - NEXT_PUBLIC_PUBLICATION_TYPE=local
     volumes:
       - ..:/app
