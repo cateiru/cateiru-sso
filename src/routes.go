@@ -168,8 +168,15 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	internal.GET("/worker", h.InternalWorkerHandler)
 
 	// API
-	api := e.Group("/api/v2")
-	api.POST("/v2/jwt_key", h.Root)
-	api.POST("/v2/key", h.Root)
-	api.POST("/v2/login", h.Root)
+	// APIにはCSRF設定をつけたくないので別で定義している
+	api := e.Group("/v2")
+	api.GET("/.well-known/openid-configuration", h.ApiOpenidConfigurationHandler)
+	// authorization endpoint
+	api.POST("/authorize", h.Root)
+	// token endpoint
+	api.POST("/token", h.Root)
+	api.POST("/userinfo", h.Root)
+	api.GET("/jwks.json", h.Root)
+	// Client Registration Endpoint
+	api.POST("/register", h.Root)
 }
