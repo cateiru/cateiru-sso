@@ -41,7 +41,12 @@ services:
       - NEXT_PUBLIC_PUBLICATION_TYPE=local
     volumes:
       - ..:/app
+      - oreore-next-cache:/app/.next
+      - oreore-node-modules:/app/node_modules
     depends_on:
       - db
       - gcs
     command: sh -c "pnpm i --frozen-lockfile && pnpm dev"
+volumes:
+  oreore-next-cache:
+  oreore-node-modules:
