@@ -2,7 +2,7 @@
 [TestApiOpenidConfigurationHandler/取得可能 - 1]
 src.OpenidConfiguration{
     Issuer:                                     "http://cateiru.test",
-    AuthorizationEndpoint:                      "http://localhost:8080/v2/authorize",
+    AuthorizationEndpoint:                      "http://cateiru.test/oidc",
     TokenEndpoint:                              "http://localhost:8080/v2/token",
     UserinfoEndpoint:                           "http://localhost:8080/v2/userinfo",
     JwksUri:                                    "http://localhost:8080/v2/jwks.json",

@@ -14,11 +14,11 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 	apiUrl := h.C.Host.String()
 	pageUrl := h.C.SiteHost.String()
 
-	authorizationEndpointUrl, err := url.Parse(apiUrl)
+	authorizationEndpointUrl, err := url.Parse(pageUrl)
 	if err != nil {
 		return err
 	}
-	authorizationEndpointUrl.Path = "/v2/authorize"
+	authorizationEndpointUrl.Path = "/oidc"
 
 	tokenEndpointUrl, err := url.Parse(apiUrl)
 	if err != nil {
