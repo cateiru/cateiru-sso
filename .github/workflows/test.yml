@@ -43,6 +43,8 @@ jobs:
         run: pnpm lint
       - name: build
         run: pnpm build
+        env:
+          NEXT_PUBLIC_SERVER_API_HOST: 'https://api.staging.oreore.me'
   go:
     name: go test
     runs-on: ubuntu-latest
