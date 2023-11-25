@@ -6,12 +6,16 @@ services:
       dockerfile_inline: |
         FROM golang:1.21.4-alpine
 
-        RUN apk update && apk add --no-cache ca-certificates curl tar && update-ca-certificates
-        RUN go install github.com/cosmtrek/air@latest
+        RUN apk update && apk add --no-cache ca-certificates git tar curl && update-ca-certificates
+        RUN go install github.com/cosmtrek/air@v1.49.0
 
         WORKDIR /app
 
-        RUN apk add openssh-client && mkdir /jwt && ssh-keygen -t rsa -f /jwt/jwt_key.rsa -N "" -m pem && ssh-keygen -f /jwt/jwt_key.rsa.pub -e -m pkcs8 > /jwt/jwt_key.rsa.pkcs8
+        # go-jose を使用して JWK を生成する
+        RUN git clone https://github.com/go-jose/go-jose.git /go-jose && \
+            cd /go-jose/jose-util && \
+            go install .
+        RUN jose-util generate-key --use sig --alg RS256
 
         COPY go.mod go.sum ./
         RUN go mod download
