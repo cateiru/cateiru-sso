@@ -171,10 +171,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// APIにはCSRF設定をつけたくないので別で定義している
 	api := e.Group("/v2")
 	api.GET("/.well-known/openid-configuration", h.ApiOpenidConfigurationHandler)
-	// authorization endpoint
-	api.POST("/authorize", h.Root)
 	// token endpoint
-	api.POST("/token", h.Root)
+	api.POST("/token", h.TokenEndpointHandler)
 	api.POST("/userinfo", h.Root)
 	api.GET("/jwks.json", h.Root)
 	// Client Registration Endpoint

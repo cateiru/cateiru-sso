@@ -116,3 +116,9 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 
 	return c.JSON(200, configuration)
 }
+
+// OIDC Token Endpoint
+// ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenEndpoint
+func (h *Handler) TokenEndpointHandler(c echo.Context) error {
+	return nil
+}
