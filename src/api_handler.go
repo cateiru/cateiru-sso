@@ -117,6 +117,8 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 	return c.JSON(200, configuration)
 }
 
+// JSON Web Key Set Endpoint
+// ref. https://openid-foundation-japan.github.io/rfc7517.ja.html#JWKSetParamReg
 func (h *Handler) JwksJsonHandler(c echo.Context) error {
 	return nil
 }
