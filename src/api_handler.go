@@ -32,11 +32,11 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 	}
 	userinfoEndpointUrl.Path = "/v2/userinfo"
 
-	jwksUri, err := url.Parse(apiUrl)
+	jwksUri, err := url.Parse(pageUrl)
 	if err != nil {
 		return err
 	}
-	jwksUri.Path = "/v2/jwks.json"
+	jwksUri.Path = "/.well-known/jwks.json"
 
 	registrationEndpointUrl, err := url.Parse(apiUrl)
 	if err != nil {
@@ -117,8 +117,18 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 	return c.JSON(200, configuration)
 }
 
+func (h *Handler) JwksJsonHandler(c echo.Context) error {
+	return nil
+}
+
 // OIDC Token Endpoint
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenEndpoint
 func (h *Handler) TokenEndpointHandler(c echo.Context) error {
+	return nil
+}
+
+// OIDC Userinfo Endpoint
+// ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#UserInfoRequest
+func (h *Handler) UserinfoEndpointHandler(c echo.Context) error {
 	return nil
 }
