@@ -122,8 +122,7 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 // JSON Web Key Set Endpoint
 // ref. https://openid-foundation-japan.github.io/rfc7517.ja.html#JWKSetParamReg
 func (h *Handler) JwksJsonHandler(c echo.Context) error {
-
-	publicKeyFilePath := path.Join(h.RootPath, "jwt", h.C.JWTPublicKeyFileName)
+	publicKeyFilePath := path.Join("/jwt", h.C.JWTPublicKeyFileName)
 
 	pub, err := lib.JsonWebKeys(publicKeyFilePath, "RS256", "sig", "")
 	if err != nil {

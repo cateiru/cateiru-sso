@@ -1,25 +1,30 @@
 package lib
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"os"
 
 	"github.com/go-jose/go-jose/v3"
-	"golang.org/x/crypto/ssh"
 )
 
 // jwk を返す
+// TODO: テスト
 func JsonWebKeys(publicKeyFileName string, algorithm string, use string, keyId string) (*jose.JSONWebKey, error) {
 	bytes, err := os.ReadFile(publicKeyFileName)
 	if err != nil {
 		return nil, err
 	}
-	key, err := ssh.ParsePublicKey(bytes)
-	if err != nil {
-		return nil, err
-	}
+
+	// ref. https://stackoverflow.com/questions/70718821/go-rsa-load-public-key
+	spkiBlock, _ := pem.Decode(bytes)
+	var publicKey *rsa.PublicKey
+	pubInterface, _ := x509.ParsePKIXPublicKey(spkiBlock.Bytes)
+	publicKey = pubInterface.(*rsa.PublicKey)
 
 	pub := jose.JSONWebKey{
-		Key:       key,
+		Key:       publicKey,
 		KeyID:     keyId,
 		Algorithm: algorithm,
 		Use:       use,
