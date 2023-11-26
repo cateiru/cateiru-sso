@@ -36,6 +36,7 @@ type Handler struct {
 	Password  lib.PasswordInterface
 	Storage   lib.CloudStorageInterface
 	CDN       lib.CDNInterface
+	RootPath  string
 }
 
 func NewHandler(db *sql.DB, config *Config, path string) (*Handler, error) {
@@ -85,6 +86,7 @@ func NewHandler(db *sql.DB, config *Config, path string) (*Handler, error) {
 		Password:  config.Password,
 		Storage:   storage,
 		CDN:       cdn,
+		RootPath:  path,
 	}, nil
 }
 
