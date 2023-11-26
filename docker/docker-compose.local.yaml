@@ -6,12 +6,13 @@ services:
       dockerfile_inline: |
         FROM golang:1.21.4-alpine
 
-        RUN apk update && apk add --no-cache ca-certificates git tar curl && update-ca-certificates
+        RUN apk update && apk add --no-cache ca-certificates tar curl && update-ca-certificates
         RUN go install github.com/cosmtrek/air@v1.49.0
 
         WORKDIR /app
 
         RUN apk add openssh-client && \
+            mkdir -p /jwt && \
             ssh-keygen -t rsa -f /jwt/jwt -N "" -m pem && \
             ssh-keygen -f /jwt/jwt.pub -e -m pkcs8 > /jwt/jwt.pkcs8
 

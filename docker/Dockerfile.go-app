@@ -4,8 +4,8 @@ RUN apk update && apk add --no-cache ca-certificates git && update-ca-certificat
 
 WORKDIR /go/src
 
-
 RUN apk add openssh-client && \
+    mkdir /jwt && \
     ssh-keygen -t rsa -f /jwt/jwt -N "" -m pem && \
     ssh-keygen -f /jwt/jwt.pub -e -m pkcs8 > /jwt/jwt.pkcs8
 
@@ -27,8 +27,8 @@ FROM scratch as runner
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/main /app/main
+COPY --from=builder /jwt /jwt/
 
-COPY jwt /jwt/
 COPY templates /templates/
 
 ENTRYPOINT ["/app/main"]
