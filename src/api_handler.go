@@ -1,7 +1,9 @@
 package src
 
 import (
+	"net/http"
 	"net/url"
+	"path"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/labstack/echo/v4"
@@ -120,7 +122,15 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 // JSON Web Key Set Endpoint
 // ref. https://openid-foundation-japan.github.io/rfc7517.ja.html#JWKSetParamReg
 func (h *Handler) JwksJsonHandler(c echo.Context) error {
-	return nil
+
+	publicKeyFilePath := path.Join(h.RootPath, "jwt", h.C.JWTPublicKeyFileName)
+
+	pub, err := lib.JsonWebKeys(publicKeyFilePath, "RS256", "sig", "")
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, pub)
 }
 
 // OIDC Token Endpoint
