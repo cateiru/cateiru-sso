@@ -167,6 +167,9 @@ type Config struct {
 	ImageSizePixel int
 
 	OauthLoginSessionPeriod time.Duration
+
+	// JWT
+	JWTPublicKeyFileName string
 }
 
 var configs = []*Config{
@@ -376,6 +379,8 @@ var LocalConfig = &Config{
 	ImageSizePixel: 500,
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
+
+	JWTPublicKeyFileName: "jwt.pub",
 }
 
 var CloudRunConfig = &Config{
@@ -560,6 +565,8 @@ var CloudRunConfig = &Config{
 	ImageSizePixel: 500,
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
+
+	JWTPublicKeyFileName: "jwt.pub",
 }
 
 var CloudRunStagingConfig = &Config{
@@ -746,6 +753,8 @@ var CloudRunStagingConfig = &Config{
 	ImageSizePixel: 500,
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
+
+	JWTPublicKeyFileName: "jwt.pub",
 }
 
 var TestConfig = &Config{
@@ -913,6 +922,8 @@ var TestConfig = &Config{
 	ImageSizePixel: 500,
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
+
+	JWTPublicKeyFileName: "jwt.pub",
 }
 
 func InitConfig(mode string) *Config {
