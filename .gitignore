@@ -326,3 +326,6 @@ db/.dump_data/**
 !db/.dump_data/.gitkeep
 tmp/*
 .pnpm-store
+jwt/**
+!jwt/.gitkeep
+
