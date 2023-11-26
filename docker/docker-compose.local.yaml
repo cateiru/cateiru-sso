@@ -11,11 +11,9 @@ services:
 
         WORKDIR /app
 
-        # go-jose を使用して JWK を生成する
-        RUN git clone https://github.com/go-jose/go-jose.git /go-jose && \
-            cd /go-jose/jose-util && \
-            go install .
-        RUN jose-util generate-key --use sig --alg RS256
+        RUN apk add openssh-client && \
+            ssh-keygen -t rsa -f /jwt/jwt -N "" -m pem && \
+            ssh-keygen -f /jwt/jwt.pub -e -m pkcs8 > /jwt/jwt.pkcs8
 
         COPY go.mod go.sum ./
         RUN go mod download
