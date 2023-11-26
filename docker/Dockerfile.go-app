@@ -29,8 +29,8 @@ FROM scratch as runner
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/main /app/main
-COPY --from=builder /jwt /jwt/
 
+COPY jwt /jwt/
 COPY templates /templates/
 
 ENTRYPOINT ["/app/main"]
