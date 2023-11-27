@@ -14,7 +14,7 @@ services:
         RUN apk add openssh-client && \
             mkdir -p /jwt && \
             ssh-keygen -t rsa -f /jwt/jwt -N "" -m pem && \
-            ssh-keygen -f /jwt/jwt.pub -e -m pkcs8 > /jwt/jwt.pkcs8
+            ssh-keygen -f /jwt/jwt.pub -e -m pkcs8 > /jwt/jwt.pub.pkcs8
 
         COPY go.mod go.sum ./
         RUN go mod download

@@ -380,7 +380,7 @@ var LocalConfig = &Config{
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
-	JWTPublicKeyFileName: "jwt.pkcs8",
+	JWTPublicKeyFileName: "jwt.pub.pkcs8",
 }
 
 var CloudRunConfig = &Config{
@@ -566,7 +566,7 @@ var CloudRunConfig = &Config{
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
-	JWTPublicKeyFileName: "jwt.pkcs8",
+	JWTPublicKeyFileName: "jwt.pub.pkcs8",
 }
 
 var CloudRunStagingConfig = &Config{
@@ -754,7 +754,7 @@ var CloudRunStagingConfig = &Config{
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
-	JWTPublicKeyFileName: "jwt.pkcs8",
+	JWTPublicKeyFileName: "jwt.pub.pkcs8",
 }
 
 var TestConfig = &Config{
@@ -923,7 +923,7 @@ var TestConfig = &Config{
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
-	JWTPublicKeyFileName: "jwt.pkcs8",
+	JWTPublicKeyFileName: "jwt.pub.pkcs8",
 }
 
 func InitConfig(mode string) *Config {
