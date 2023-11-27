@@ -1,0 +1,19 @@
+
+[TestJsonWebKeys - 1]
+&jose.JSONWebKey{
+    Key: &rsa.PublicKey{
+        N:  &big.Int{
+            neg: false,
+            abs: {0xe00fbf03a716a077, 0xdeede5b467a7c411, 0xe423600f17aa7b43, 0x31dcb8f284485436, 0x2d0ceda8e36d39b3, 0x106f4599beb6ef96, 0xdc6cb8e3ccd3fa2c, 0xf51ae002a9334945, 0x5e7ade995d5dbf8e, 0xc49c75ac88851aa2, 0xc979fddd3a62d504, 0x934c7d3b5318ea46, 0xd0fd3407da0be5a0, 0x6f84eeb73acee947, 0xf7267864daa72873, 0x19ecf197974db18b, 0x3d7e066b37c087, 0xf3c0585f32c39ed8, 0x5f445c2a093db878, 0x811a4116601c12ab, 0x8b16b938ab71d160, 0x5f8566090602d3eb, 0xb9362195ed3a4e48, 0xcad35a91fd23f627, 0x5494908f535174ce, 0x3d4459c213fccd0, 0xbf289d0ac498838b, 0xa1bfed383ba80701, 0xcebf7f12380c1489, 0xac6d99017d0869d4, 0x193fa4fe731f5ee5, 0x162413fe55eef995, 0xa8dbbdd2673d8821, 0x5edf4148e24eff7, 0xa8f8b0a05d08c334, 0x38bda93a6a035d4d, 0xed6be4c263f1908c, 0x6e37a98c38ee5535, 0x77755cf8edd6e9ea, 0x323b083c642859b, 0x1a7159dc5ef56782, 0xd0bd6b876aa90444, 0x5e78665053a1aae0, 0x86233cad0b0ccbce, 0x6e2b7a3cda2655f, 0xc4498e9210d198d7, 0xfca952458a4f7e43, 0xaa3397bc294f9b05},
+        },
+        E:  65537,
+    },
+    KeyID:                       "test",
+    Algorithm:                   "RS256",
+    Use:                         "sig",
+    Certificates:                nil,
+    CertificatesURL:             (*url.URL)(nil),
+    CertificateThumbprintSHA1:   nil,
+    CertificateThumbprintSHA256: nil,
+}
+---
