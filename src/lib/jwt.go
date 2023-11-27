@@ -10,7 +10,6 @@ import (
 )
 
 // jwk を返す
-// TODO: テスト
 func JsonWebKeys(publicKeyFileName string, algorithm string, use string, keyId string) (*jose.JSONWebKey, error) {
 	bytes, err := os.ReadFile(publicKeyFileName)
 	if err != nil {
