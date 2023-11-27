@@ -5,7 +5,7 @@ src.OpenidConfiguration{
     AuthorizationEndpoint:                      "http://cateiru.test/oidc",
     TokenEndpoint:                              "http://localhost:8080/v2/token",
     UserinfoEndpoint:                           "http://localhost:8080/v2/userinfo",
-    JwksUri:                                    "http://localhost:8080/v2/jwks.json",
+    JwksUri:                                    "http://cateiru.test/.well-known/jwks.json",
     RegistrationEndpoint:                       "http://localhost:8080/v2/register",
     ScopesSupported:                            {"openid", "profile", "email"},
     ResponseTypesSupported:                     {"code"},
