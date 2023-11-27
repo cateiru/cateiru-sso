@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const JWT_PUBLIC_KEY_PATH = "jwt/jwt.pkcs8"
+const JWT_PUBLIC_KEY_PATH = "jwt/test.pub.pkcs8"
 
 func TestJsonWebKeys(t *testing.T) {
 	resp, err := lib.JsonWebKeys(JWT_PUBLIC_KEY_PATH, "RS256", "sig", "test")
