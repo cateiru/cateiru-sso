@@ -35,7 +35,6 @@ func JsonWebKeys(publicKeyFilePath string, algorithm string, use string, keyId s
 
 // JWTを署名する
 // 秘密鍵は都度生成
-// TODO: テスト
 func SignJwt(claims jwt.Claims, secretKeyFilePath string) (string, error) {
 	secret, err := os.ReadFile(secretKeyFilePath)
 	if err != nil {
