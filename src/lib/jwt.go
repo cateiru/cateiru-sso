@@ -36,13 +36,17 @@ func JsonWebKeys(publicKeyFilePath string, algorithm string, use string, keyId s
 // JWTを署名する
 // 秘密鍵は都度生成
 // TODO: テスト
-func SignJwt(claims *jwt.Claims, secretKeyFilePath string) (string, error) {
+func SignJwt(claims jwt.Claims, secretKeyFilePath string) (string, error) {
 	secret, err := os.ReadFile(secretKeyFilePath)
 	if err != nil {
 		return "", err
 	}
+	signKey, err := jwt.ParseRSAPrivateKeyFromPEM(secret)
+	if err != nil {
+		return "", err
+	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, *claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
-	return token.SignedString(secret)
+	return token.SignedString(signKey)
 }
