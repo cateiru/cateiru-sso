@@ -22,7 +22,7 @@ src.OpenidConfiguration{
     RequestObjectSigningAlgValuesSupported:     nil,
     RequestObjectEncryptionAlgValuesSupported:  nil,
     RequestObjectEncryptionEncValuesSupported:  nil,
-    TokenEndpointAuthMethodsSupported:          {"client_secret_basic"},
+    TokenEndpointAuthMethodsSupported:          {"client_secret_basic", "client_secret_post"},
     TokenEndpointAuthSigningAlgValuesSupported: nil,
     DisplayValuesSupported:                     nil,
     ClaimTypesSupported:                        nil,

@@ -75,9 +75,9 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 		IdTokenSigningAlgValuesSupported: []string{
 			"RS256",
 		},
-		// XXX: これでいいのか？
 		TokenEndpointAuthMethodsSupported: []string{
 			"client_secret_basic",
+			"client_secret_post",
 		},
 		ClaimsSupported: []string{
 			"iss",
@@ -141,6 +141,13 @@ func (h *Handler) TokenEndpointHandler(c echo.Context) error {
 	_, err := h.ClientAuthentication(ctx, c)
 	if err != nil {
 		return err
+	}
+
+	grantType := c.FormValue("grant_type")
+	_ = c.QueryParam("code")
+
+	if !lib.ValidateTokenEndpointGrantType(grantType) {
+		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidRequest, "Invalid grant_type", "", "")
 	}
 
 	return nil
