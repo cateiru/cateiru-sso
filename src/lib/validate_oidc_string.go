@@ -158,6 +158,8 @@ func ValidateTokenEndpointGrantType(s string) bool {
 	switch s {
 	case "authorization_code":
 		return true
+	case "refresh_token":
+		return true
 	}
 
 	return false

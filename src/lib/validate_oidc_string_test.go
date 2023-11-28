@@ -135,8 +135,8 @@ func TestValidateTokenEndpointGrantType(t *testing.T) {
 		require.True(t, lib.ValidateTokenEndpointGrantType("authorization_code"))
 	})
 
-	t.Run("失敗: refresh_token", func(t *testing.T) {
-		require.False(t, lib.ValidateTokenEndpointGrantType("refresh_token"))
+	t.Run("成功: refresh_token", func(t *testing.T) {
+		require.True(t, lib.ValidateTokenEndpointGrantType("refresh_token"))
 	})
 
 	t.Run("失敗: client_credentials", func(t *testing.T) {
