@@ -43,10 +43,10 @@ func TestHTTPError(t *testing.T) {
 			e := src.NewOIDCError(http.StatusBadRequest, src.ErrLoginRequired, "message", "uri", "state")
 
 			require.Equal(t, e.Code, http.StatusBadRequest)
-			require.Equal(t, e.AuthenticationErrorResponse.Error, src.ErrLoginRequired)
-			require.Equal(t, e.AuthenticationErrorResponse.ErrorDescription, "message")
-			require.Equal(t, e.AuthenticationErrorResponse.ErrorURI, "uri")
-			require.Equal(t, e.AuthenticationErrorResponse.State, "state")
+			require.Equal(t, e.OAuthErrorResponse.Error, src.ErrLoginRequired)
+			require.Equal(t, e.OAuthErrorResponse.ErrorDescription, "message")
+			require.Equal(t, e.OAuthErrorResponse.ErrorURI, "uri")
+			require.Equal(t, e.OAuthErrorResponse.State, "state")
 
 			require.Equal(t, e.Error(), "code=400, error=login_required, message=message, error_uri=uri, state=state")
 		})

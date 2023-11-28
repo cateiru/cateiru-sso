@@ -87,6 +87,34 @@ const (
 	ErrRegistrationNotSupported = "registration_not_supported"
 )
 
+// OIDC（OAuth2）の Token Error Response エラーコード
+// ref. https://openid-foundation-japan.github.io/rfc6749.ja.html#token-errors
+const (
+	// リクエストに必要なパラメーターが含まれていない、サポートされない(グラントタイプ以外の)パラメーター値が含まれている、
+	// パラメーターが重複している、複数のクレデンシャルが含まれている、クライアント認証のための複数のメカニズムが利用されている、もしくは異常値が設定されている。
+	ErrTokenInvalidRequest = "invalid_request"
+
+	// クライアント認証に失敗した
+	// (例: 未知のクライアントである、クライアント認証情報が含まれていない、サポートされない認証方式が利用されている)。
+	// 認可サーバーはどのHTTP認証スキームがサポートされているかを示すためにHTTP ステータスコード 401 (Unauthorized) を返してもよい (MAY)。
+	// もしクライアントが Authorization リクエストヘッダー経由で認証を試みた場合、認可サーバーはHTTP ステータスコード 401 (Unauthorized) と共に、
+	// WWW-Authenticate レスポンスヘッダーにクライアントが利用すべき認証スキームを含めなければならない (MUST)。
+	ErrTokenInvalidClient = "invalid_client"
+
+	// 提供された認可グラント (例えば認可コード, リソースオーナークレデンシャル)またはリフレッシュトークン が不正、
+	// 有効期限切れ、失効している、認可リクエストで用いられたリダイレクトURIとマッチしていない、他のクライアントに対して発行されたものである。
+	ErrTokenInvalidGrant = "invalid_grant"
+
+	// 認証されたクライアントが当該のグラントタイプを利用する様に認可されていない。
+	ErrTokenUnauthorizedClient = "unauthorized_client"
+
+	// グラントタイプが認可サーバーによってサポートされていない。
+	ErrTokenUnsupportedGrantType = "unsupported_grant_type"
+
+	// 要求されたスコープが不正, 未知, 異常, リソースオーナーによって与えられた範囲を超えている。
+	ErrTokenInvalidScope = "invalid_scope"
+)
+
 type HTTPError struct {
 	Code       int         `json:"-"`
 	Message    interface{} `json:"message"`
@@ -102,7 +130,7 @@ type OIDCError struct {
 	File string `json:"-"`
 	Line int    `json:"-"`
 
-	AuthenticationErrorResponse
+	OAuthErrorResponse
 }
 
 func NewHTTPError(code int, message ...any) *HTTPError {
@@ -151,7 +179,7 @@ func NewOIDCError(status int, code string, message string, uri string, state str
 		File: file,
 		Line: line,
 
-		AuthenticationErrorResponse: AuthenticationErrorResponse{
+		OAuthErrorResponse: OAuthErrorResponse{
 			Error:            code,
 			ErrorDescription: message,
 			ErrorURI:         uri,
@@ -171,12 +199,12 @@ func (he *HTTPError) Error() string {
 }
 
 func (oe *OIDCError) Error() string {
-	m := fmt.Sprintf("code=%d, error=%v, message=%v", oe.Code, oe.AuthenticationErrorResponse.Error, oe.AuthenticationErrorResponse.ErrorDescription)
-	if oe.AuthenticationErrorResponse.ErrorURI != "" {
-		m += fmt.Sprintf(", error_uri=%v", oe.AuthenticationErrorResponse.ErrorURI)
+	m := fmt.Sprintf("code=%d, error=%v, message=%v", oe.Code, oe.OAuthErrorResponse.Error, oe.OAuthErrorResponse.ErrorDescription)
+	if oe.OAuthErrorResponse.ErrorURI != "" {
+		m += fmt.Sprintf(", error_uri=%v", oe.OAuthErrorResponse.ErrorURI)
 	}
-	if oe.AuthenticationErrorResponse.State != "" {
-		m += fmt.Sprintf(", state=%v", oe.AuthenticationErrorResponse.State)
+	if oe.OAuthErrorResponse.State != "" {
+		m += fmt.Sprintf(", state=%v", oe.OAuthErrorResponse.State)
 	}
 	return m
 }
