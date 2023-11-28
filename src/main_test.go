@@ -381,7 +381,7 @@ func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []s
 
 // SSOクライアントを作成する
 // 戻り値は、(clientID, clientSecret)
-func RegisterClient(t *testing.T, ctx context.Context, u *models.User, scopes ...string) (string, string) {
+func RegisterClient(t *testing.T, ctx context.Context, u *models.User, scopes ...string) *models.Client {
 	clientID := ulid.Make()
 
 	secret, err := lib.RandomStr(63)
@@ -407,7 +407,7 @@ func RegisterClient(t *testing.T, ctx context.Context, u *models.User, scopes ..
 		require.NoError(t, err)
 	}
 
-	return clientID.String(), secret
+	return &client
 }
 
 func RegisterOrgClient(t *testing.T, ctx context.Context, orgId string, memberOnly bool, u *models.User, scopes ...string) (string, string) {

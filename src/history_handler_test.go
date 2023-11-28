@@ -49,8 +49,8 @@ func TestHistoryClientLoginHandler(t *testing.T) {
 	}
 
 	SessionTest(t, h.HistoryClientLoginHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u)
-		registerClientRefresh(clientId, u)
+		client := RegisterClient(t, ctx, u)
+		registerClientRefresh(client.ClientID, u)
 
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
@@ -62,8 +62,8 @@ func TestHistoryClientLoginHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
-		registerClientRefresh(clientId, &u)
+		client := RegisterClient(t, ctx, &u)
+		registerClientRefresh(client.ClientID, &u)
 
 		cookies := RegisterSession(t, ctx, &u)
 
@@ -80,7 +80,7 @@ func TestHistoryClientLoginHandler(t *testing.T) {
 		require.NoError(t, m.Json(&response))
 
 		require.Len(t, response, 1)
-		require.Equal(t, response[0].Client.ClientID, clientId)
+		require.Equal(t, response[0].Client.ClientID, client.ClientID)
 	})
 
 	t.Run("成功: クライアントが存在していなくても返る", func(t *testing.T) {
@@ -154,10 +154,10 @@ func TestHistoryClientHandler(t *testing.T) {
 	adminEmail := RandomEmail(t)
 	adminUser := RegisterUser(t, ctx, adminEmail)
 
-	clientId, _ := RegisterClient(t, ctx, &adminUser)
+	client := RegisterClient(t, ctx, &adminUser)
 
 	SessionTest(t, h.HistoryClientHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		registerClientLoginHistory(clientId, u)
+		registerClientLoginHistory(client.ClientID, u)
 
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
@@ -169,7 +169,7 @@ func TestHistoryClientHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		registerClientLoginHistory(clientId, &u)
+		registerClientLoginHistory(client.ClientID, &u)
 
 		cookies := RegisterSession(t, ctx, &u)
 
@@ -191,9 +191,9 @@ func TestHistoryClientHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		registerClientLoginHistory(clientId, &u)
+		registerClientLoginHistory(client.ClientID, &u)
 		time.Sleep(1 * time.Second)
-		registerClientLoginHistory(clientId, &u)
+		registerClientLoginHistory(client.ClientID, &u)
 
 		cookies := RegisterSession(t, ctx, &u)
 

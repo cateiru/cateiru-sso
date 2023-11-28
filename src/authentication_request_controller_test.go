@@ -23,10 +23,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("成功: リファラー未設定", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -37,7 +37,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -83,7 +83,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.True(t, authenticationRequest.AcrValues.Valid)
 		require.Equal(t, authenticationRequest.AcrValues.String, "acr_values_test")
 
-		require.Equal(t, authenticationRequest.Client.ClientID, clientId)
+		require.Equal(t, authenticationRequest.Client.ClientID, client.ClientID)
 		require.False(t, authenticationRequest.Client.IsAllow)
 		require.Equal(t, authenticationRequest.AllowRules, []*models.ClientAllowRule{})
 		require.Equal(t, authenticationRequest.RefererHost, "", "リファラーチェックはしていないので空")
@@ -94,10 +94,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("成功: AllowRuleが設定されている", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -105,12 +105,9 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.NoError(t, err)
 
 		// AllowRuleを設定する
-		RegisterAllowRules(t, ctx, clientId, false, "example.test")
+		RegisterAllowRules(t, ctx, client.ClientID, false, "example.test")
 
 		// クライアントを更新する
-		client, err := models.Clients(models.ClientWhere.ClientID.EQ(clientId)).One(ctx, DB)
-		require.NoError(t, err)
-
 		client.IsAllow = true
 
 		_, err = client.Update(ctx, DB, boil.Infer())
@@ -120,7 +117,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -166,7 +163,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.True(t, authenticationRequest.AcrValues.Valid)
 		require.Equal(t, authenticationRequest.AcrValues.String, "acr_values_test")
 
-		require.Equal(t, authenticationRequest.Client.ClientID, clientId)
+		require.Equal(t, authenticationRequest.Client.ClientID, client.ClientID)
 		require.True(t, authenticationRequest.Client.IsAllow)
 		require.Len(t, authenticationRequest.AllowRules, 1)
 		require.Equal(t, authenticationRequest.AllowRules[0].EmailDomain, null.NewString("example.test", true))
@@ -179,10 +176,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		t.Run("originの場合", func(t *testing.T) {
 			email := RandomEmail(t)
 			u := RegisterUser(t, ctx, email)
-			clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+			client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 			r := models.ClientRedirect{
-				ClientID: clientId,
+				ClientID: client.ClientID,
 				URL:      "https://example.test",
 				Host:     "example.test",
 			}
@@ -190,7 +187,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 			require.NoError(t, err)
 
 			referrer := models.ClientReferrer{
-				ClientID: clientId,
+				ClientID: client.ClientID,
 				Host:     "example.test",
 				URL:      "https://example.test",
 			}
@@ -201,7 +198,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 			form.Insert("scope", "openid profile email")
 			form.Insert("response_type", "code")
-			form.Insert("client_id", clientId)
+			form.Insert("client_id", client.ClientID)
 			form.Insert("redirect_uri", "https://example.test")
 			form.Insert("state", "state_test")
 			form.Insert("response_mode", "query")
@@ -232,10 +229,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		t.Run("unsafe-url", func(t *testing.T) {
 			email := RandomEmail(t)
 			u := RegisterUser(t, ctx, email)
-			clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+			client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 			r := models.ClientRedirect{
-				ClientID: clientId,
+				ClientID: client.ClientID,
 				URL:      "https://example.test",
 				Host:     "example.test",
 			}
@@ -243,7 +240,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 			require.NoError(t, err)
 
 			referrer := models.ClientReferrer{
-				ClientID: clientId,
+				ClientID: client.ClientID,
 				Host:     "example.test",
 				URL:      "https://example.test",
 			}
@@ -254,7 +251,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 			form.Insert("scope", "openid profile email")
 			form.Insert("response_type", "code")
-			form.Insert("client_id", clientId)
+			form.Insert("client_id", client.ClientID)
 			form.Insert("redirect_uri", "https://example.test")
 			form.Insert("state", "state_test")
 			form.Insert("response_mode", "query")
@@ -285,10 +282,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("成功: ヘッダーにトークンが付与されている", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -299,7 +296,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -329,10 +326,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: scopeが存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -342,7 +339,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		form := easy.NewMultipart()
 
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -367,10 +364,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: scopeにopenidが存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -381,7 +378,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -406,10 +403,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: request_typeが存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -419,7 +416,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		form := easy.NewMultipart()
 
 		form.Insert("scope", "openid profile email")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -444,10 +441,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: request_typeの値が不正", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -458,7 +455,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "hogehoge")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -536,10 +533,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: redirect_uriが存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -550,7 +547,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
 		form.Insert("nonce", "nonce_test")
@@ -574,10 +571,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: redirect_uriの値が不正", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -588,7 +585,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "hogehoge")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -613,10 +610,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: クライアントに登録しているRedirectURIがない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -627,7 +624,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example2.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -652,10 +649,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: 設定されているリファラーに存在しない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -663,7 +660,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.NoError(t, err)
 
 		referrer := models.ClientReferrer{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			Host:     "example.test",
 			URL:      "https://example.test",
 		}
@@ -674,7 +671,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -701,10 +698,10 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	t.Run("失敗: リファラーが設定されているけど、リファラーが空", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -712,7 +709,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		require.NoError(t, err)
 
 		referrer := models.ClientReferrer{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			Host:     "example.test",
 			URL:      "https://example.test",
 		}
@@ -723,7 +720,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -916,11 +913,7 @@ func TestGetPreviewResponse(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
-		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
-		).One(ctx, DB)
-		require.NoError(t, err)
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		a := src.AuthenticationRequest{
 			Scopes: []string{
@@ -977,11 +970,7 @@ func TestGetPreviewResponse(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
-		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
-		).One(ctx, DB)
-		require.NoError(t, err)
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1045,11 +1034,7 @@ func TestGetPreviewResponse(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
-		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
-		).One(ctx, DB)
-		require.NoError(t, err)
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1110,11 +1095,7 @@ func TestGetPreviewResponse(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
-		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
-		).One(ctx, DB)
-		require.NoError(t, err)
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1183,11 +1164,7 @@ func TestGetPreviewResponse(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
-		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
-		).One(ctx, DB)
-		require.NoError(t, err)
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1251,9 +1228,7 @@ func TestGetLoginSession(t *testing.T) {
 	email := RandomEmail(t)
 	u := RegisterUser(t, ctx, email)
 
-	clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
-	client, err := models.Clients(models.ClientWhere.ClientID.EQ(clientId)).One(ctx, DB)
-	require.NoError(t, err)
+	client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 	t.Run("成功", func(t *testing.T) {
 		a := src.AuthenticationRequest{
@@ -1465,9 +1440,7 @@ func TestSubmit(t *testing.T) {
 	email := RandomEmail(t)
 	clientUser := RegisterUser(t, ctx, email)
 
-	clientId, _ := RegisterClient(t, ctx, &clientUser, "openid", "profile")
-	client, err := models.Clients(models.ClientWhere.ClientID.EQ(clientId)).One(ctx, DB)
-	require.NoError(t, err)
+	client := RegisterClient(t, ctx, &clientUser, "openid", "profile")
 
 	t.Run("成功: submitできる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -1607,13 +1580,13 @@ func TestSetLoggedInOauthLoginSession(t *testing.T) {
 	t.Run("LoginOkがtrueになっている", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, &u, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
 		session := models.OauthLoginSession{
 			Token:        token,
-			ClientID:     clientId,
+			ClientID:     client.ClientID,
 			ReferrerHost: null.NewString("", false),
 			Period:       time.Now().Add(1 * time.Hour),
 		}
@@ -1641,13 +1614,13 @@ func TestSetLoggedInOauthLoginSession(t *testing.T) {
 	t.Run("トークンが有効期限切れ", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, &u, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
 		session := models.OauthLoginSession{
 			Token:        token,
-			ClientID:     clientId,
+			ClientID:     client.ClientID,
 			ReferrerHost: null.NewString("", false),
 			Period:       time.Now().Add(-1 * time.Hour), // 過去
 		}

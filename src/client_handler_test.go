@@ -32,11 +32,11 @@ func TestClientHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, clientSecret := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		cookie := RegisterSession(t, ctx, &u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -48,12 +48,12 @@ func TestClientHandler(t *testing.T) {
 		response := src.ClientDetailResponse{}
 		require.NoError(t, m.Json(&response))
 
-		require.Equal(t, response.ClientID, clientId)
+		require.Equal(t, response.ClientID, client.ClientID)
 
 		require.Len(t, response.RedirectUrls, 0)
 		require.Len(t, response.ReferrerUrls, 0)
 		require.Len(t, response.Scopes, 2)
-		require.Equal(t, response.ClientSecret, clientSecret)
+		require.Equal(t, response.ClientSecret, client.ClientSecret)
 	})
 
 	t.Run("成功: client_idを指定しないと自分のすべてのクライアントを取得できる", func(t *testing.T) {
@@ -172,11 +172,11 @@ func TestClientHandler(t *testing.T) {
 		email2 := RandomEmail(t)
 		u2 := RegisterUser(t, ctx, email2)
 
-		clientId, _ := RegisterClient(t, ctx, &u2, "openid", "profile")
+		client := RegisterClient(t, ctx, &u2, "openid", "profile")
 
 		cookie := RegisterSession(t, ctx, &u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -945,10 +945,10 @@ func TestClientUpdateHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.ClientUpdateHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u)
+		client := RegisterClient(t, ctx, u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -970,12 +970,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, clientSecret := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1000,25 +1000,25 @@ func TestClientUpdateHandler(t *testing.T) {
 		require.NoError(t, m.Json(&response))
 
 		require.Equal(t, "new!!! name", response.Name)
-		require.Equal(t, response.ClientSecret, clientSecret)
+		require.Equal(t, response.ClientSecret, client.ClientSecret)
 
 		// スコープ
 		scopes, err := models.ClientScopes(
-			models.ClientScopeWhere.ClientID.EQ(clientId),
+			models.ClientScopeWhere.ClientID.EQ(client.ClientID),
 		).Count(ctx, h.DB)
 		require.NoError(t, err)
 		require.Equal(t, 3, int(scopes))
 
 		// リダイレクトURL
 		redirectUrls, err := models.ClientRedirects(
-			models.ClientRedirectWhere.ClientID.EQ(clientId),
+			models.ClientRedirectWhere.ClientID.EQ(client.ClientID),
 		).Count(ctx, h.DB)
 		require.NoError(t, err)
 		require.Equal(t, 2, int(redirectUrls))
 
 		// リファラーURL
 		referrerUrls, err := models.ClientReferrers(
-			models.ClientReferrerWhere.ClientID.EQ(clientId),
+			models.ClientReferrerWhere.ClientID.EQ(client.ClientID),
 		).Count(ctx, h.DB)
 		require.NoError(t, err)
 		require.Equal(t, 2, int(referrerUrls))
@@ -1028,12 +1028,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, clientSecret := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1059,24 +1059,24 @@ func TestClientUpdateHandler(t *testing.T) {
 		response := src.ClientResponse{}
 		require.NoError(t, m.Json(&response))
 
-		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
+		newClient, err := models.Clients(
+			models.ClientWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, h.DB)
 		require.NoError(t, err)
 
-		require.NotEqual(t, clientSecret, client.ClientSecret)
+		require.NotEqual(t, client.ClientSecret, newClient.ClientSecret)
 	})
 
 	t.Run("成功: 画像を更新", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1236,12 +1236,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email2 := RandomEmail(t)
 		u2 := RegisterUser(t, ctx, email2)
 
-		clientId, _ := RegisterClient(t, ctx, &u2)
+		client := RegisterClient(t, ctx, &u2)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1340,12 +1340,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1373,12 +1373,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1404,12 +1404,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1435,12 +1435,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1466,12 +1466,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1499,12 +1499,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1530,12 +1530,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1561,12 +1561,12 @@ func TestClientUpdateHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		form.Insert("name", "new!!! name")
 		form.Insert("is_allow", "false")
@@ -1596,9 +1596,9 @@ func TestClientDeleteHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.ClientDeleteHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u)
+		client := RegisterClient(t, ctx, u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodDelete, "")
 		require.NoError(t, err)
 
 		return m
@@ -1608,11 +1608,11 @@ func TestClientDeleteHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodDelete, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -1622,31 +1622,31 @@ func TestClientDeleteHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		clientExists, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
+			models.ClientWhere.ClientID.EQ(client.ClientID),
 		).Exists(ctx, h.DB)
 		require.NoError(t, err)
 		require.False(t, clientExists)
 
 		scopes, err := models.ClientScopes(
-			models.ClientScopeWhere.ClientID.EQ(clientId),
+			models.ClientScopeWhere.ClientID.EQ(client.ClientID),
 		).Exists(ctx, h.DB)
 		require.NoError(t, err)
 		require.False(t, scopes)
 
 		redirects, err := models.ClientRedirects(
-			models.ClientRedirectWhere.ClientID.EQ(clientId),
+			models.ClientRedirectWhere.ClientID.EQ(client.ClientID),
 		).Exists(ctx, h.DB)
 		require.NoError(t, err)
 		require.False(t, redirects)
 
 		referrers, err := models.ClientReferrers(
-			models.ClientReferrerWhere.ClientID.EQ(clientId),
+			models.ClientReferrerWhere.ClientID.EQ(client.ClientID),
 		).Exists(ctx, h.DB)
 		require.NoError(t, err)
 		require.False(t, referrers)
 
 		allows, err := models.ClientAllowRules(
-			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+			models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
 		).Exists(ctx, h.DB)
 		require.NoError(t, err)
 		require.False(t, allows)
@@ -1758,14 +1758,14 @@ func TestClientDeleteHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		email2 := RandomEmail(t)
 		u2 := RegisterUser(t, ctx, email2)
 
 		cookie := RegisterSession(t, ctx, &u2)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodDelete, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -1851,9 +1851,9 @@ func TestClientDeleteImageHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.ClientDeleteImageHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u)
+		client := RegisterClient(t, ctx, u)
 
-		path := filepath.Join("client_icon", clientId)
+		path := filepath.Join("client_icon", client.ClientID)
 		url := &url.URL{
 			Scheme: C.CDNHost.Scheme,
 			Host:   C.CDNHost.Host,
@@ -1861,7 +1861,7 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		}
 
 		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
+			models.ClientWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, DB)
 		require.NoError(t, err)
 
@@ -1870,7 +1870,7 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		_, err = client.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodDelete, "")
 		require.NoError(t, err)
 
 		return m
@@ -1880,9 +1880,9 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		path := filepath.Join("client_icon", clientId)
+		path := filepath.Join("client_icon", client.ClientID)
 		url := &url.URL{
 			Scheme: C.CDNHost.Scheme,
 			Host:   C.CDNHost.Host,
@@ -1890,7 +1890,7 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		}
 
 		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
+			models.ClientWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, DB)
 		require.NoError(t, err)
 
@@ -1901,7 +1901,7 @@ func TestClientDeleteImageHandler(t *testing.T) {
 
 		cookie := RegisterSession(t, ctx, &u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodDelete, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -1911,7 +1911,7 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		client, err = models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
+			models.ClientWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, DB)
 		require.NoError(t, err)
 
@@ -1972,11 +1972,11 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodDelete, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -2022,14 +2022,14 @@ func TestClientDeleteImageHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		email2 := RandomEmail(t)
 		u2 := RegisterUser(t, ctx, email2)
 
 		cookie := RegisterSession(t, ctx, &u2)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodDelete, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -2127,9 +2127,9 @@ func TestClientAllowUserHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.ClientAllowUserHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u)
+		client := RegisterClient(t, ctx, u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodDelete, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodDelete, "")
 		require.NoError(t, err)
 
 		return m
@@ -2139,15 +2139,15 @@ func TestClientAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		for i := 0; i < 2; i++ {
-			RegisterAllowRules(t, ctx, clientId, false, fmt.Sprintf("%daaa.test", i))
+			RegisterAllowRules(t, ctx, client.ClientID, false, fmt.Sprintf("%daaa.test", i))
 		}
 
 		cookie := RegisterSession(t, ctx, &u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -2233,14 +2233,14 @@ func TestClientAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		email2 := RandomEmail(t)
 		u2 := RegisterUser(t, ctx, email2)
 
 		cookie := RegisterSession(t, ctx, &u2)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -2312,10 +2312,10 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.ClientAddAllowUserHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u)
+		client := RegisterClient(t, ctx, u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("user_name_or_email", u.Email)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
@@ -2328,12 +2328,12 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("user_name_or_email", u.Email)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
@@ -2346,7 +2346,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		rule, err := models.ClientAllowRules(
-			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+			models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, h.DB)
 		require.NoError(t, err)
 
@@ -2358,12 +2358,12 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("email_domain", "cateiru.test")
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
@@ -2376,7 +2376,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		rule, err := models.ClientAllowRules(
-			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+			models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, h.DB)
 		require.NoError(t, err)
 
@@ -2465,7 +2465,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		email2 := RandomEmail(t)
 		u2 := RegisterUser(t, ctx, email2)
@@ -2473,7 +2473,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		cookie := RegisterSession(t, ctx, &u2)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("email_domain", "cateiru.test")
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
@@ -2490,12 +2490,12 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
 		require.NoError(t, err)
@@ -2511,12 +2511,12 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("user_name_or_email", u.Email)
 		form.Insert("email_domain", "cateiru.test")
 
@@ -2591,10 +2591,10 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		rule := models.ClientAllowRule{
-			ClientID:    clientId,
+			ClientID:    client.ClientID,
 			EmailDomain: null.NewString("cateiru.test", true),
 			UserID:      null.NewString("", false),
 		}
@@ -2604,7 +2604,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("email_domain", "cateiru.test")
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
@@ -2621,10 +2621,10 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
 		rule := models.ClientAllowRule{
-			ClientID:    clientId,
+			ClientID:    client.ClientID,
 			EmailDomain: null.NewString("", false),
 			UserID:      null.NewString(u.ID, true),
 		}
@@ -2634,7 +2634,7 @@ func TestClientAddAllowUserHandler(t *testing.T) {
 		cookie := RegisterSession(t, ctx, &u)
 
 		form := easy.NewMultipart()
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("user_name_or_email", u.Email)
 
 		m, err := easy.NewFormData("/", http.MethodPost, form)
@@ -2653,11 +2653,11 @@ func TestClientDeleteAllowUserHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.ClientDeleteAllowUserHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u)
+		client := RegisterClient(t, ctx, u)
 
-		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		RegisterAllowRules(t, ctx, client.ClientID, false, "cateiru.test")
 		rule, err := models.ClientAllowRules(
-			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+			models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, h.DB)
 		require.NoError(t, err)
 
@@ -2671,11 +2671,11 @@ func TestClientDeleteAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		RegisterAllowRules(t, ctx, client.ClientID, false, "cateiru.test")
 		rule, err := models.ClientAllowRules(
-			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+			models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, h.DB)
 		require.NoError(t, err)
 
@@ -2771,11 +2771,11 @@ func TestClientDeleteAllowUserHandler(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		RegisterAllowRules(t, ctx, clientId, false, "cateiru.test")
+		RegisterAllowRules(t, ctx, client.ClientID, false, "cateiru.test")
 		rule, err := models.ClientAllowRules(
-			models.ClientAllowRuleWhere.ClientID.EQ(clientId),
+			models.ClientAllowRuleWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, h.DB)
 		require.NoError(t, err)
 

@@ -328,13 +328,13 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	t.Run("成功: X-Oauth-Login-Session がある場合、LoginOkがtrueになっている", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, &u, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
 		session := models.OauthLoginSession{
 			Token:        token,
-			ClientID:     clientId,
+			ClientID:     client.ClientID,
 			ReferrerHost: null.NewString("", false),
 			Period:       time.Now().Add(1 * time.Hour),
 		}
@@ -378,13 +378,13 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, &u, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
 		session := models.OauthLoginSession{
 			Token:        token,
-			ClientID:     clientId,
+			ClientID:     client.ClientID,
 			ReferrerHost: null.NewString("", false),
 			Period:       time.Now().Add(1 * time.Hour),
 		}
@@ -709,13 +709,13 @@ func TestLoginPasswordHandler(t *testing.T) {
 	t.Run("成功: X-Oauth-Login-Session がある場合、LoginOkがtrueになっている", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, &u, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
 		session := models.OauthLoginSession{
 			Token:        token,
-			ClientID:     clientId,
+			ClientID:     client.ClientID,
 			ReferrerHost: null.NewString("", false),
 			Period:       time.Now().Add(1 * time.Hour),
 		}
@@ -756,13 +756,13 @@ func TestLoginPasswordHandler(t *testing.T) {
 	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, &u, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
 		session := models.OauthLoginSession{
 			Token:        token,
-			ClientID:     clientId,
+			ClientID:     client.ClientID,
 			ReferrerHost: null.NewString("", false),
 			Period:       time.Now().Add(1 * time.Hour),
 		}
@@ -808,13 +808,13 @@ func TestLoginPasswordHandler(t *testing.T) {
 	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログインしていてOTPが設定されていても使用されない", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, &u, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
 		session := models.OauthLoginSession{
 			Token:        token,
-			ClientID:     clientId,
+			ClientID:     client.ClientID,
 			ReferrerHost: null.NewString("", false),
 			Period:       time.Now().Add(1 * time.Hour),
 		}

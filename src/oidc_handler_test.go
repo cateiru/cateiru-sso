@@ -21,10 +21,10 @@ func TestOIDCRequireHandler(t *testing.T) {
 	t.Run("成功: プレビューを取得できる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -37,7 +37,7 @@ func TestOIDCRequireHandler(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -63,16 +63,16 @@ func TestOIDCRequireHandler(t *testing.T) {
 		require.NoError(t, m.Json(&response))
 
 		// GetPreviewResponse のテストて見ているのでここでは必要最低限で見る
-		require.Equal(t, response.ClientId, clientId)
+		require.Equal(t, response.ClientId, client.ClientID)
 	})
 
 	t.Run("ログインしていないと、トークンを返す", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -83,7 +83,7 @@ func TestOIDCRequireHandler(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -113,11 +113,11 @@ func TestOIDCRequireHandler(t *testing.T) {
 	t.Run("失敗: ユーザーチェック不可", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		// Allow Ruleを設定してユーザーを弾く
 		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
+			models.ClientWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, DB)
 		require.NoError(t, err)
 
@@ -127,7 +127,7 @@ func TestOIDCRequireHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -136,7 +136,7 @@ func TestOIDCRequireHandler(t *testing.T) {
 
 		// ルール作成
 		allowRule := models.ClientAllowRule{
-			ClientID:    clientId,
+			ClientID:    client.ClientID,
 			EmailDomain: null.NewString("nya.test", true),
 		}
 		require.NoError(t, allowRule.Insert(ctx, DB, boil.Infer()))
@@ -147,7 +147,7 @@ func TestOIDCRequireHandler(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", "state_test")
 		form.Insert("response_mode", "query")
@@ -176,10 +176,10 @@ func TestOIDCLoginHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.OIDCLoginHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u, "openid", "profile")
+		client := RegisterClient(t, ctx, u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -193,7 +193,7 @@ func TestOIDCLoginHandler(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", state)
 		form.Insert("response_mode", "query")
@@ -214,10 +214,10 @@ func TestOIDCLoginHandler(t *testing.T) {
 	t.Run("成功: submitできる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -233,7 +233,7 @@ func TestOIDCLoginHandler(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", state)
 		form.Insert("response_mode", "query")
@@ -286,11 +286,11 @@ func TestOIDCLoginHandler(t *testing.T) {
 	t.Run("失敗: ユーザーチェック不可", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		// Allow Ruleを設定してユーザーを弾く
 		client, err := models.Clients(
-			models.ClientWhere.ClientID.EQ(clientId),
+			models.ClientWhere.ClientID.EQ(client.ClientID),
 		).One(ctx, DB)
 		require.NoError(t, err)
 
@@ -300,7 +300,7 @@ func TestOIDCLoginHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -309,7 +309,7 @@ func TestOIDCLoginHandler(t *testing.T) {
 
 		// ルール作成
 		allowRule := models.ClientAllowRule{
-			ClientID:    clientId,
+			ClientID:    client.ClientID,
 			EmailDomain: null.NewString("nya.test", true),
 		}
 		require.NoError(t, allowRule.Insert(ctx, DB, boil.Infer()))
@@ -323,7 +323,7 @@ func TestOIDCLoginHandler(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", state)
 		form.Insert("response_mode", "query")
@@ -352,10 +352,10 @@ func TestOIDCCancelHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	SessionTest(t, h.OIDCCancelHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u, "openid", "profile")
+		client := RegisterClient(t, ctx, u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -369,7 +369,7 @@ func TestOIDCCancelHandler(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", state)
 		form.Insert("response_mode", "query")
@@ -390,10 +390,10 @@ func TestOIDCCancelHandler(t *testing.T) {
 	t.Run("成功: キャンセルできる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		r := models.ClientRedirect{
-			ClientID: clientId,
+			ClientID: client.ClientID,
 			URL:      "https://example.test",
 			Host:     "example.test",
 		}
@@ -409,7 +409,7 @@ func TestOIDCCancelHandler(t *testing.T) {
 
 		form.Insert("scope", "openid profile email")
 		form.Insert("response_type", "code")
-		form.Insert("client_id", clientId)
+		form.Insert("client_id", client.ClientID)
 		form.Insert("redirect_uri", "https://example.test")
 		form.Insert("state", state)
 		form.Insert("response_mode", "query")

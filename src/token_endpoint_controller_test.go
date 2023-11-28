@@ -19,9 +19,9 @@ func TestClientAuthentication(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, clientSecret := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		base64Value := base64.StdEncoding.EncodeToString([]byte(clientId + ":" + clientSecret))
+		base64Value := base64.StdEncoding.EncodeToString([]byte(client.ClientID + ":" + client.ClientSecret))
 
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
@@ -33,16 +33,16 @@ func TestClientAuthentication(t *testing.T) {
 		returnClient, err := h.ClientAuthentication(ctx, c)
 		require.NoError(t, err)
 
-		require.Equal(t, clientId, returnClient.ClientID)
+		require.Equal(t, client.ClientID, returnClient.ClientID)
 	})
 
 	t.Run("成功: POST", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, clientSecret := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", clientId, clientSecret)
+		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", client.ClientID, client.ClientSecret)
 
 		m, err := easy.NewMock(pathParam, http.MethodGet, "")
 		require.NoError(t, err)
@@ -52,7 +52,7 @@ func TestClientAuthentication(t *testing.T) {
 		returnClient, err := h.ClientAuthentication(ctx, c)
 		require.NoError(t, err)
 
-		require.Equal(t, clientId, returnClient.ClientID)
+		require.Equal(t, client.ClientID, returnClient.ClientID)
 	})
 
 	t.Run("失敗: どの認証も無い", func(t *testing.T) {
@@ -72,9 +72,9 @@ func TestClientAuthentication(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, clientSecret := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		base64Value := base64.StdEncoding.EncodeToString([]byte(clientId + ":" + clientSecret))
+		base64Value := base64.StdEncoding.EncodeToString([]byte(client.ClientID + ":" + client.ClientSecret))
 
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
@@ -104,9 +104,9 @@ func TestClientAuthentication(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		_, clientSecret := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		base64Value := base64.StdEncoding.EncodeToString([]byte("invalid_client" + ":" + clientSecret))
+		base64Value := base64.StdEncoding.EncodeToString([]byte("invalid_client" + ":" + client.ClientSecret))
 
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
@@ -123,9 +123,9 @@ func TestClientAuthentication(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		_, clientSecret := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", "invalid_client", clientSecret)
+		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", "invalid_client", client.ClientSecret)
 
 		m, err := easy.NewMock(pathParam, http.MethodGet, "")
 		require.NoError(t, err)
@@ -140,9 +140,9 @@ func TestClientAuthentication(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		base64Value := base64.StdEncoding.EncodeToString([]byte(clientId + ":" + "invalid_client_secret"))
+		base64Value := base64.StdEncoding.EncodeToString([]byte(client.ClientID + ":" + "invalid_client_secret"))
 
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
@@ -159,9 +159,9 @@ func TestClientAuthentication(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		clientId, _ := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, &u)
 
-		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", clientId, "invalid_client_secret")
+		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", client.ClientID, "invalid_client_secret")
 
 		m, err := easy.NewMock(pathParam, http.MethodGet, "")
 		require.NoError(t, err)

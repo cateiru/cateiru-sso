@@ -1892,9 +1892,9 @@ func TestAdminClientDetailHandler(t *testing.T) {
 	h := NewTestHandler(t)
 
 	StaffAndSessionTest(t, h.AdminClientsHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
-		clientId, _ := RegisterClient(t, ctx, u, "openid", "profile")
+		client := RegisterClient(t, ctx, u, "openid", "profile")
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodGet, "")
 		require.NoError(t, err)
 		return m
 	}, func(c echo.Context) echo.Context {
@@ -1906,11 +1906,11 @@ func TestAdminClientDetailHandler(t *testing.T) {
 		u := RegisterUser(t, ctx, email)
 		ToStaff(t, ctx, &u)
 
-		clientId, _ := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, &u, "openid", "profile")
 
 		cookie := RegisterSession(t, ctx, &u)
 
-		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", clientId), http.MethodGet, "")
+		m, err := easy.NewMock(fmt.Sprintf("/?client_id=%s", client.ClientID), http.MethodGet, "")
 		require.NoError(t, err)
 		m.Cookie(cookie)
 
@@ -1921,7 +1921,7 @@ func TestAdminClientDetailHandler(t *testing.T) {
 		response := src.StaffClientDetailResponse{}
 		require.NoError(t, m.Json(&response))
 
-		require.Equal(t, response.Client.ClientID, clientId)
+		require.Equal(t, response.Client.ClientID, client.ClientID)
 		require.Len(t, response.Scopes, 2) // openid, profile
 	})
 
