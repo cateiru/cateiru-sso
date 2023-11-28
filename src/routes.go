@@ -174,7 +174,9 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	api.GET("/.well-known/jwks.json", h.JwksJsonHandler)
 
 	// token endpoint
+	api.GET("/token", h.TokenEndpointHandler)
 	api.POST("/token", h.TokenEndpointHandler)
+
 	api.POST("/userinfo", h.Root)
 	// Client Registration Endpoint
 	api.POST("/register", h.Root)
