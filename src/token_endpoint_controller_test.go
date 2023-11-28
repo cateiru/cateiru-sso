@@ -16,10 +16,7 @@ func TestClientAuthentication(t *testing.T) {
 	h := NewTestHandler(t)
 
 	t.Run("成功: Basic認証", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, nil)
 
 		base64Value := base64.StdEncoding.EncodeToString([]byte(client.ClientID + ":" + client.ClientSecret))
 
@@ -37,10 +34,7 @@ func TestClientAuthentication(t *testing.T) {
 	})
 
 	t.Run("成功: POST", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, nil)
 
 		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", client.ClientID, client.ClientSecret)
 
@@ -69,10 +63,7 @@ func TestClientAuthentication(t *testing.T) {
 	})
 
 	t.Run("失敗: Basic認証でAuthorizationの形式が不正", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, nil)
 
 		base64Value := base64.StdEncoding.EncodeToString([]byte(client.ClientID + ":" + client.ClientSecret))
 
@@ -101,10 +92,7 @@ func TestClientAuthentication(t *testing.T) {
 	})
 
 	t.Run("失敗: Basic認証でクライアントが存在しない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, nil)
 
 		base64Value := base64.StdEncoding.EncodeToString([]byte("invalid_client" + ":" + client.ClientSecret))
 
@@ -120,10 +108,7 @@ func TestClientAuthentication(t *testing.T) {
 	})
 
 	t.Run("失敗: POSTでクライアントが存在しない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, nil)
 
 		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", "invalid_client", client.ClientSecret)
 
@@ -137,10 +122,7 @@ func TestClientAuthentication(t *testing.T) {
 	})
 
 	t.Run("失敗: Basic認証でクライアントシークレットが不正", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, nil)
 
 		base64Value := base64.StdEncoding.EncodeToString([]byte(client.ClientID + ":" + "invalid_client_secret"))
 
@@ -156,10 +138,7 @@ func TestClientAuthentication(t *testing.T) {
 	})
 
 	t.Run("失敗: POSTでクライアントシークレットが不正", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u)
+		client := RegisterClient(t, ctx, nil)
 
 		pathParam := fmt.Sprintf("/?client_id=%s&client_secret=%s", client.ClientID, "invalid_client_secret")
 

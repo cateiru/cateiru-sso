@@ -380,8 +380,14 @@ func RegisterOTP(t *testing.T, ctx context.Context, u *models.User) (string, []s
 }
 
 // SSOクライアントを作成する
-// 戻り値は、(clientID, clientSecret)
+// u は nil にすると勝手に作成します
 func RegisterClient(t *testing.T, ctx context.Context, u *models.User, scopes ...string) *models.Client {
+	if u == nil {
+		email := RandomEmail(t)
+		user := RegisterUser(t, ctx, email)
+		u = &user
+	}
+
 	clientID := ulid.Make()
 
 	secret, err := lib.RandomStr(63)

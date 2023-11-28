@@ -326,9 +326,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	})
 
 	t.Run("成功: X-Oauth-Login-Session がある場合、LoginOkがtrueになっている", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, nil, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -376,9 +374,7 @@ func TestLoginWebauthnHandler(t *testing.T) {
 	})
 
 	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, nil, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -707,9 +703,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 	})
 
 	t.Run("成功: X-Oauth-Login-Session がある場合、LoginOkがtrueになっている", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, nil, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -754,9 +748,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 	})
 
 	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログイン済みでもエラーにはならない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, nil, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -806,9 +798,7 @@ func TestLoginPasswordHandler(t *testing.T) {
 	// 実装上の問題で使えない
 	// FIXME: 使えるようにしたい
 	t.Run("成功: X-Oauth-Login-Session がある場合、すでにログインしていてOTPが設定されていても使用されない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, nil, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)

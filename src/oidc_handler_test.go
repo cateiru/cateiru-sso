@@ -67,9 +67,7 @@ func TestOIDCRequireHandler(t *testing.T) {
 	})
 
 	t.Run("ログインしていないと、トークンを返す", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,

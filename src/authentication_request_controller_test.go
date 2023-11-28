@@ -21,9 +21,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	h := NewTestHandler(t)
 
 	t.Run("成功: リファラー未設定", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -92,9 +90,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("成功: AllowRuleが設定されている", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -174,9 +170,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 
 	t.Run("成功: リファラー設定済み", func(t *testing.T) {
 		t.Run("originの場合", func(t *testing.T) {
-			email := RandomEmail(t)
-			u := RegisterUser(t, ctx, email)
-			client := RegisterClient(t, ctx, &u, "openid", "profile")
+			client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 			r := models.ClientRedirect{
 				ClientID: client.ClientID,
@@ -227,9 +221,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		})
 
 		t.Run("unsafe-url", func(t *testing.T) {
-			email := RandomEmail(t)
-			u := RegisterUser(t, ctx, email)
-			client := RegisterClient(t, ctx, &u, "openid", "profile")
+			client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 			r := models.ClientRedirect{
 				ClientID: client.ClientID,
@@ -280,9 +272,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("成功: ヘッダーにトークンが付与されている", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -324,9 +314,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: scopeが存在しない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -362,9 +350,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: scopeにopenidが存在しない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -401,9 +387,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: request_typeが存在しない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -439,9 +423,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: request_typeの値が不正", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -531,9 +513,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: redirect_uriが存在しない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -569,9 +549,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: redirect_uriの値が不正", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -608,9 +586,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: クライアントに登録しているRedirectURIがない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -647,9 +623,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: 設定されているリファラーに存在しない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -696,9 +670,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 	})
 
 	t.Run("失敗: リファラーが設定されているけど、リファラーが空", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		r := models.ClientRedirect{
 			ClientID: client.ClientID,
@@ -910,10 +882,7 @@ func TestGetPreviewResponse(t *testing.T) {
 	})
 
 	t.Run("成功: promptにloginがある場合はトークンも作成する", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		a := src.AuthenticationRequest{
 			Scopes: []string{
@@ -967,10 +936,7 @@ func TestGetPreviewResponse(t *testing.T) {
 	})
 
 	t.Run("成功: promptにloginがあり引数のトークンがすでにログイン済みの場合は何もしない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1031,10 +997,7 @@ func TestGetPreviewResponse(t *testing.T) {
 	})
 
 	t.Run("成功: promptにloginがあり引数のトークンが不正の場合はログインセッションが作られる", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1092,10 +1055,7 @@ func TestGetPreviewResponse(t *testing.T) {
 	})
 
 	t.Run("成功: promptにloginがあり引数のトークンが有効期限切れの場合は新たにログインセッションが作られる", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1161,10 +1121,7 @@ func TestGetPreviewResponse(t *testing.T) {
 	})
 
 	t.Run("失敗: promptにloginがあり引数のトークンはあるがログインしていない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		client := RegisterClient(t, ctx, &u, "openid", "profile")
+		client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1225,10 +1182,7 @@ func TestGetPreviewResponse(t *testing.T) {
 func TestGetLoginSession(t *testing.T) {
 	ctx := context.Background()
 
-	email := RandomEmail(t)
-	u := RegisterUser(t, ctx, email)
-
-	client := RegisterClient(t, ctx, &u, "openid", "profile")
+	client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 	t.Run("成功", func(t *testing.T) {
 		a := src.AuthenticationRequest{
@@ -1437,10 +1391,7 @@ func TestCheckUserAuthenticationPossible(t *testing.T) {
 func TestSubmit(t *testing.T) {
 	ctx := context.Background()
 
-	email := RandomEmail(t)
-	clientUser := RegisterUser(t, ctx, email)
-
-	client := RegisterClient(t, ctx, &clientUser, "openid", "profile")
+	client := RegisterClient(t, ctx, nil, "openid", "profile")
 
 	t.Run("成功: submitできる", func(t *testing.T) {
 		email := RandomEmail(t)
@@ -1578,9 +1529,7 @@ func TestSetLoggedInOauthLoginSession(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("LoginOkがtrueになっている", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, nil, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
@@ -1612,9 +1561,7 @@ func TestSetLoggedInOauthLoginSession(t *testing.T) {
 	})
 
 	t.Run("トークンが有効期限切れ", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, &u, "openid")
+		client := RegisterClient(t, ctx, nil, "openid")
 
 		token, err := lib.RandomStr(31)
 		require.NoError(t, err)
