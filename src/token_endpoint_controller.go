@@ -13,7 +13,7 @@ import (
 )
 
 // Token Endpoint の認証
-// `client_secret_basic` と `client_secret_post` に対応する
+// `client_secret_basic` と `client_secret_post` に対応している
 // TODO: テスト
 // ref. https://openid-foundation-japan.github.io/rfc6749.ja.html#client-password
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#ClientAuthentication
@@ -78,7 +78,7 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 		return client, nil
 	}
 
-	// WWW-Authenticate を付与
+	// どの認証方式でも無い場合は、WWW-Authenticate を付与して 401 を返す
 	c.Response().Header().Set("WWW-Authenticate", "Basic")
 
 	return nil, NewOIDCError(http.StatusUnauthorized, ErrTokenInvalidClient, "Invalid client authentication", "", "")
