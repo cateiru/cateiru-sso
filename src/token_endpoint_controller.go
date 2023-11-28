@@ -85,6 +85,7 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 }
 
 // TODO
+// ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequest
 func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Context, client *models.Client) error {
 	_ = c.QueryParam("code")
 
@@ -92,6 +93,7 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 }
 
 // TODO
+// ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#RefreshingAccessToken
 func (h *Handler) TokenEndpointRefreshToken(ctx context.Context, c echo.Context, client *models.Client) error {
 	return nil
 }
