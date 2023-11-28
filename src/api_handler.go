@@ -155,7 +155,7 @@ func (h *Handler) TokenEndpointHandler(c echo.Context) error {
 		return h.TokenEndpointRefreshToken(ctx, c, client)
 
 	default:
-		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidRequest, "Invalid grant_type", "", "")
+		return NewOIDCError(http.StatusBadRequest, ErrTokenUnsupportedGrantType, "unsupported grant type", "", "")
 
 	}
 }
