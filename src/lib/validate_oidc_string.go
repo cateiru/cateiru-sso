@@ -153,3 +153,12 @@ func ValidateMaxAge(s string) uint64 {
 func ValidateUiLocales(s string) []string {
 	return []string{"ja_JP"}
 }
+
+func ValidateTokenEndpointGrantType(s string) bool {
+	switch s {
+	case "authorization_code":
+		return true
+	}
+
+	return false
+}

@@ -129,3 +129,29 @@ func TestValidateMaxAge(t *testing.T) {
 func TestValidateUiLocales(t *testing.T) {
 	require.Equal(t, lib.ValidateUiLocales("hoge"), []string{"ja_JP"}, "決め打ちでja_JPになる")
 }
+
+func TestValidateTokenEndpointGrantType(t *testing.T) {
+	t.Run("成功: authorization_code", func(t *testing.T) {
+		require.True(t, lib.ValidateTokenEndpointGrantType("authorization_code"))
+	})
+
+	t.Run("失敗: refresh_token", func(t *testing.T) {
+		require.False(t, lib.ValidateTokenEndpointGrantType("refresh_token"))
+	})
+
+	t.Run("失敗: client_credentials", func(t *testing.T) {
+		require.False(t, lib.ValidateTokenEndpointGrantType("client_credentials"))
+	})
+
+	t.Run("失敗: password", func(t *testing.T) {
+		require.False(t, lib.ValidateTokenEndpointGrantType("password"))
+	})
+
+	t.Run("失敗: 値が空", func(t *testing.T) {
+		require.False(t, lib.ValidateTokenEndpointGrantType(""))
+	})
+
+	t.Run("失敗: 値が不正", func(t *testing.T) {
+		require.False(t, lib.ValidateTokenEndpointGrantType("aaaa"))
+	})
+}
