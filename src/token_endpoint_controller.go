@@ -83,3 +83,15 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 
 	return nil, NewOIDCError(http.StatusUnauthorized, ErrTokenInvalidClient, "Invalid client authentication", "", "")
 }
+
+// TODO
+func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Context, client *models.Client) error {
+	_ = c.QueryParam("code")
+
+	return nil
+}
+
+// TODO
+func (h *Handler) TokenEndpointRefreshToken(ctx context.Context, c echo.Context, client *models.Client) error {
+	return nil
+}

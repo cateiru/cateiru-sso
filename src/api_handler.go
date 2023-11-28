@@ -138,19 +138,26 @@ func (h *Handler) TokenEndpointHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	// 認証
-	_, err := h.ClientAuthentication(ctx, c)
+	client, err := h.ClientAuthentication(ctx, c)
 	if err != nil {
 		return err
 	}
 
 	grantType := c.FormValue("grant_type")
-	_ = c.QueryParam("code")
+	formattedGrantType := lib.ValidateTokenEndpointGrantType(grantType)
 
-	if !lib.ValidateTokenEndpointGrantType(grantType) {
+	switch formattedGrantType {
+
+	case lib.TokenEndpointGrantTypeAuthorizationCode:
+		return h.TokenEndpointAuthorizationCode(ctx, c, client)
+
+	case lib.TokenEndpointGrantTypeRefreshToken:
+		return h.TokenEndpointRefreshToken(ctx, c, client)
+
+	default:
 		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidRequest, "Invalid grant_type", "", "")
-	}
 
-	return nil
+	}
 }
 
 // OIDC Userinfo Endpoint
