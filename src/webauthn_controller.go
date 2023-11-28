@@ -264,9 +264,7 @@ func (h *Handler) LoginWebauthn(ctx context.Context, body io.Reader, webauthnSes
 
 	_, err = h.WebAuthn.FinishLogin(handler, *session, response)
 	if protocolError, ok := err.(*protocol.Error); ok {
-		if protocolError.Details == "Failed to lookup Client-side Discoverable Credential" {
-			return nil, NewHTTPUniqueError(http.StatusBadRequest, ErrLoginFailed, "Failed to lookup Client-side Discoverable Credential")
-		}
+		return nil, NewHTTPUniqueError(http.StatusBadRequest, ErrLoginFailed, protocolError.Details)
 	}
 	if err != nil {
 		return nil, NewHTTPError(http.StatusForbidden, err)
