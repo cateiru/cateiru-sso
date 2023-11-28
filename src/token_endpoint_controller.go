@@ -22,7 +22,7 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 	basic := c.Request().Header.Get("Authorization")
 	if basic != "" {
 		splitBasic := strings.Split(basic, " ")
-		if len(splitBasic) != 2 && splitBasic[0] != "Basic" {
+		if len(splitBasic) != 2 || splitBasic[0] != "Basic" {
 			return nil, NewOIDCError(http.StatusBadRequest, ErrTokenInvalidRequest, "Invalid Authorization Header", "", "")
 		}
 
