@@ -836,7 +836,7 @@ func TestAdminOrgDetailHandler(t *testing.T) {
 
 		InviteUserInOrg(t, ctx, orgId, &u2, "member")
 
-		clientId, _ := RegisterOrgClient(t, ctx, orgId, false, &u2, "openid", "profile")
+		client := RegisterOrgClient(t, ctx, orgId, false, &u2, "openid", "profile")
 
 		ToStaff(t, ctx, &u)
 
@@ -858,7 +858,7 @@ func TestAdminOrgDetailHandler(t *testing.T) {
 		require.Len(t, response.Users, 1)
 
 		require.Len(t, response.Clients, 1)
-		require.Equal(t, response.Clients[0].ClientID, clientId)
+		require.Equal(t, response.Clients[0].ClientID, client.ClientID)
 	})
 
 	t.Run("成功: orgユーザーがいない", func(t *testing.T) {

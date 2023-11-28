@@ -416,7 +416,7 @@ func RegisterClient(t *testing.T, ctx context.Context, u *models.User, scopes ..
 	return &client
 }
 
-func RegisterOrgClient(t *testing.T, ctx context.Context, orgId string, memberOnly bool, u *models.User, scopes ...string) (string, string) {
+func RegisterOrgClient(t *testing.T, ctx context.Context, orgId string, memberOnly bool, u *models.User, scopes ...string) *models.Client {
 	clientID := ulid.Make()
 
 	secret, err := lib.RandomStr(63)
@@ -445,7 +445,7 @@ func RegisterOrgClient(t *testing.T, ctx context.Context, orgId string, memberOn
 		require.NoError(t, err)
 	}
 
-	return clientID.String(), secret
+	return &client
 }
 
 // クライアントのAllow Ruleを作成する
