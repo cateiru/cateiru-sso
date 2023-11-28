@@ -54,6 +54,14 @@ const (
 	PromptSelectAccount Prompt = "select_account"
 )
 
+type TokenEndpointGrantType string
+
+const (
+	TokenEndpointGrantTypeInvalid           TokenEndpointGrantType = ""
+	TokenEndpointGrantTypeAuthorizationCode TokenEndpointGrantType = "authorization_code"
+	TokenEndpointGrantTypeRefreshToken      TokenEndpointGrantType = "refresh_token"
+)
+
 func ValidateScope(s string) bool {
 	for _, allow := range AllowScopes {
 		if allow == s {
@@ -154,13 +162,13 @@ func ValidateUiLocales(s string) []string {
 	return []string{"ja_JP"}
 }
 
-func ValidateTokenEndpointGrantType(s string) bool {
+func ValidateTokenEndpointGrantType(s string) TokenEndpointGrantType {
 	switch s {
 	case "authorization_code":
-		return true
+		return TokenEndpointGrantTypeAuthorizationCode
 	case "refresh_token":
-		return true
+		return TokenEndpointGrantTypeRefreshToken
 	}
 
-	return false
+	return TokenEndpointGrantTypeInvalid
 }

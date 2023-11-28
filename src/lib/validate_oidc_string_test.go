@@ -132,26 +132,26 @@ func TestValidateUiLocales(t *testing.T) {
 
 func TestValidateTokenEndpointGrantType(t *testing.T) {
 	t.Run("成功: authorization_code", func(t *testing.T) {
-		require.True(t, lib.ValidateTokenEndpointGrantType("authorization_code"))
+		require.Equal(t, lib.ValidateTokenEndpointGrantType("authorization_code"), lib.TokenEndpointGrantTypeAuthorizationCode)
 	})
 
 	t.Run("成功: refresh_token", func(t *testing.T) {
-		require.True(t, lib.ValidateTokenEndpointGrantType("refresh_token"))
+		require.Equal(t, lib.ValidateTokenEndpointGrantType("refresh_token"), lib.TokenEndpointGrantTypeRefreshToken)
 	})
 
 	t.Run("失敗: client_credentials", func(t *testing.T) {
-		require.False(t, lib.ValidateTokenEndpointGrantType("client_credentials"))
+		require.Equal(t, lib.ValidateTokenEndpointGrantType("client_credentials"), lib.TokenEndpointGrantTypeInvalid)
 	})
 
 	t.Run("失敗: password", func(t *testing.T) {
-		require.False(t, lib.ValidateTokenEndpointGrantType("password"))
+		require.Equal(t, lib.ValidateTokenEndpointGrantType("password"), lib.TokenEndpointGrantTypeInvalid)
 	})
 
-	t.Run("失敗: 値が空", func(t *testing.T) {
-		require.False(t, lib.ValidateTokenEndpointGrantType(""))
+	t.Run("失敗: 値が空の場合はinvalidになる", func(t *testing.T) {
+		require.Equal(t, lib.ValidateTokenEndpointGrantType(""), lib.TokenEndpointGrantTypeInvalid)
 	})
 
-	t.Run("失敗: 値が不正", func(t *testing.T) {
-		require.False(t, lib.ValidateTokenEndpointGrantType("aaaa"))
+	t.Run("失敗: 値が不正の場合はinvalidになる", func(t *testing.T) {
+		require.Equal(t, lib.ValidateTokenEndpointGrantType("aaaa"), lib.TokenEndpointGrantTypeInvalid)
 	})
 }
