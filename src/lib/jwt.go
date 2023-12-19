@@ -8,7 +8,7 @@ import (
 )
 
 // jwk を返す
-func JsonWebKeys(publicKeyFilePath string, algorithm string, use string, keyId string) (*jwk.Key, error) {
+func JsonWebKeys(publicKeyFilePath string, algorithm string, use string, keyId string) (jwk.Key, error) {
 	bytes, err := os.ReadFile(publicKeyFilePath)
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func JsonWebKeys(publicKeyFilePath string, algorithm string, use string, keyId s
 	keyset.Set(jwk.AlgorithmKey, algorithm)
 	keyset.Set(jwk.KeyUsageKey, use)
 
-	return &keyset, nil
+	return keyset, nil
 }
 
 // JWTを署名する

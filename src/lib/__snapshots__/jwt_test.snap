@@ -1,6 +1,6 @@
 
 [TestJsonWebKeys - 1]
-&&jwk.rsaPublicKey{
+&jwk.rsaPublicKey{
     algorithm:              &"RS256",
     e:                      {0x1, 0x0, 0x1},
     keyID:                  &"test",
