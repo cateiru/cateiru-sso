@@ -28,3 +28,21 @@ func TestApiOpenidConfigurationHandler(t *testing.T) {
 		snaps.MatchSnapshot(t, response)
 	})
 }
+
+func TestJwksJsonHandler(t *testing.T) {
+	h := NewTestHandler(t)
+
+	t.Run("取得可能", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.JwksJsonHandler(c)
+		require.NoError(t, err)
+
+		data := m.W.Body.Bytes()
+
+		snaps.MatchSnapshot(t, string(data))
+	})
+}

@@ -3,7 +3,6 @@ package src
 import (
 	"net/http"
 	"net/url"
-	"path"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/labstack/echo/v4"
@@ -11,7 +10,7 @@ import (
 )
 
 type JwksResponse struct {
-	Keys *jwk.Key `json:"keys"`
+	Keys jwk.Key `json:"keys"`
 }
 
 // OpenID Connect Discovery 1.0 incorporating errata set 1 で定義されている、 `.well-known/openid-configuration` のエンドポイント
@@ -127,14 +126,12 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 // JSON Web Key Set Endpoint
 // ref. https://openid-foundation-japan.github.io/rfc7517.ja.html#JWKSetParamReg
 func (h *Handler) JwksJsonHandler(c echo.Context) error {
-	publicKeyFilePath := path.Join("/jwt", h.C.JWTPublicKeyFileName)
-
-	keySet, err := lib.JsonWebKeys(publicKeyFilePath, "RS256", "sig", h.C.JWTKid)
+	keySet, err := lib.JsonWebKeys(h.C.JWTPublicKeyFilePath, "RS256", "sig", h.C.JWTKid)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, JwksResponse{
+	return c.JSON(http.StatusOK, &JwksResponse{
 		Keys: keySet,
 	})
 }
