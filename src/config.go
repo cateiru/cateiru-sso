@@ -170,6 +170,7 @@ type Config struct {
 
 	// JWT
 	JWTPublicKeyFileName string
+	JWTKid               string
 }
 
 var configs = []*Config{
@@ -381,6 +382,8 @@ var LocalConfig = &Config{
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
 	JWTPublicKeyFileName: "jwt.pub.pkcs8",
+
+	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 }
 
 var CloudRunConfig = &Config{
@@ -567,6 +570,8 @@ var CloudRunConfig = &Config{
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
 	JWTPublicKeyFileName: "jwt.pub.pkcs8",
+
+	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 }
 
 var CloudRunStagingConfig = &Config{
@@ -755,6 +760,8 @@ var CloudRunStagingConfig = &Config{
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
 	JWTPublicKeyFileName: "jwt.pub.pkcs8",
+
+	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 }
 
 var TestConfig = &Config{
@@ -924,6 +931,8 @@ var TestConfig = &Config{
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
 	JWTPublicKeyFileName: "jwt.pub.pkcs8",
+
+	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 }
 
 func InitConfig(mode string) *Config {

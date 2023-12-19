@@ -1,36 +1,29 @@
 package lib
 
 import (
-	"crypto/x509"
-	"encoding/pem"
 	"os"
 
-	"github.com/go-jose/go-jose/v3"
 	"github.com/golang-jwt/jwt"
+	"github.com/lestrrat-go/jwx/v2/jwk"
 )
 
 // jwk を返す
-func JsonWebKeys(publicKeyFilePath string, algorithm string, use string, keyId string) (*jose.JSONWebKey, error) {
+func JsonWebKeys(publicKeyFilePath string, algorithm string, use string, keyId string) (*jwk.Key, error) {
 	bytes, err := os.ReadFile(publicKeyFilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	// ref. https://stackoverflow.com/questions/70718821/go-rsa-load-public-key
-	spkiBlock, _ := pem.Decode(bytes)
-	publicKey, err := x509.ParsePKIXPublicKey(spkiBlock.Bytes)
+	keyset, err := jwk.ParseKey(bytes, jwk.WithPEM(true))
 	if err != nil {
 		return nil, err
 	}
 
-	pub := jose.JSONWebKey{
-		Key:       publicKey,
-		KeyID:     keyId,
-		Algorithm: algorithm,
-		Use:       use,
-	}
+	keyset.Set(jwk.KeyIDKey, keyId)
+	keyset.Set(jwk.AlgorithmKey, algorithm)
+	keyset.Set(jwk.KeyUsageKey, use)
 
-	return &pub, nil
+	return &keyset, nil
 }
 
 // JWTを署名する
