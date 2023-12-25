@@ -544,8 +544,8 @@ CREATE TABLE `oauth_session` (
     -- クライアントのID
     `client_id` VARCHAR(31) NOT NULL,
 
-    -- CSRF, XSRFで使用される`state`を格納するやつ
-    `state` VARCHAR(31) DEFAULT NULL,
+    -- CSRF, XSRFで使用される`nonce.`を格納するやつ
+    `nonce` VARCHAR(31) DEFAULT NULL,
 
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
