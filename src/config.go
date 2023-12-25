@@ -169,8 +169,9 @@ type Config struct {
 	OauthLoginSessionPeriod time.Duration
 
 	// JWT
-	JWTPublicKeyFilePath string
-	JWTKid               string
+	JWTPublicKeyFilePath  string
+	JWTPrivateKeyFilePath string
+	JWTKid                string
 }
 
 var configs = []*Config{
@@ -381,7 +382,8 @@ var LocalConfig = &Config{
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
-	JWTPublicKeyFilePath: "/jwt/jwt.pub.pkcs8",
+	JWTPublicKeyFilePath:  "/jwt/jwt.pub.pkcs8",
+	JWTPrivateKeyFilePath: "/jwt/jwt",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 }
@@ -569,7 +571,8 @@ var CloudRunConfig = &Config{
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
-	JWTPublicKeyFilePath: "/jwt/jwt.pub.pkcs8",
+	JWTPublicKeyFilePath:  "/jwt/jwt.pub.pkcs8",
+	JWTPrivateKeyFilePath: "/jwt/jwt",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 }
@@ -759,7 +762,8 @@ var CloudRunStagingConfig = &Config{
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
-	JWTPublicKeyFilePath: "/jwt/jwt.pub.pkcs8",
+	JWTPublicKeyFilePath:  "/jwt/jwt.pub.pkcs8",
+	JWTPrivateKeyFilePath: "/jwt/jwt",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 }
@@ -930,7 +934,8 @@ var TestConfig = &Config{
 
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
-	JWTPublicKeyFilePath: "lib/jwt/test.pub.pkcs8",
+	JWTPublicKeyFilePath:  "lib/jwt/test.pub.pkcs8",
+	JWTPrivateKeyFilePath: "/jwt/jwt",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 }
