@@ -175,7 +175,6 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 			Nonce:    oauthSession.Nonce.String,
 		},
 	}
-
 	idToken, err := lib.SignJwt(claims, h.C.JWTPrivateKeyFilePath)
 	if err != nil {
 		return err
