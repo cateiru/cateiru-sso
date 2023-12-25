@@ -280,7 +280,7 @@ func (a AuthenticationRequest) Submit(ctx context.Context, db *sql.DB, user *mod
 
 		ClientID: a.Client.ClientID,
 
-		State: a.State,
+		Nonce: a.Nonce,
 
 		Period: time.Now().Add(oauthSessionPeriod),
 	}
@@ -425,7 +425,7 @@ func (h *Handler) NewAuthenticationRequest(ctx context.Context, c echo.Context) 
 
 	existRedirect, err := models.ClientRedirects(
 		models.ClientRedirectWhere.ClientID.EQ(client.ClientID),
-		models.ClientRedirectWhere.URL.EQ(redirectUri),
+		models.ClientRedirectWhere.URL.EQ(parsedRedirectUri.String()),
 	).Exists(ctx, h.DB)
 	if err != nil {
 		return nil, err

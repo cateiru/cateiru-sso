@@ -1427,7 +1427,7 @@ func TestSubmit(t *testing.T) {
 
 		require.Equal(t, session.ClientID, a.Client.ClientID)
 		require.Equal(t, session.UserID, user.ID)
-		require.False(t, session.State.Valid)
+		require.False(t, session.Nonce.Valid)
 	})
 
 	t.Run("成功: stateがある場合はstateも返す", func(t *testing.T) {
@@ -1443,6 +1443,7 @@ func TestSubmit(t *testing.T) {
 				Path:   "/",
 			},
 			State: null.NewString("state_test", true),
+			Nonce: null.NewString("nonce_test", true),
 		}
 
 		resp, err := a.Submit(ctx, DB, &user, C.OauthLoginSessionPeriod)
@@ -1466,7 +1467,7 @@ func TestSubmit(t *testing.T) {
 
 		require.Equal(t, session.ClientID, a.Client.ClientID)
 		require.Equal(t, session.UserID, user.ID)
-		require.Equal(t, session.State.String, "state_test")
+		require.Equal(t, session.Nonce.String, "nonce_test")
 	})
 }
 
