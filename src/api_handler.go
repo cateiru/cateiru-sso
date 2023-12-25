@@ -141,17 +141,21 @@ func (h *Handler) JwksJsonHandler(c echo.Context) error {
 func (h *Handler) TokenEndpointHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
+	// レスポンスのキャッシュを無効化
+	// ref. https://openid-foundation-japan.github.io/rfc6749.ja.html#token-response
+	c.Response().Header().Set("Cache-Control", "no-store")
+	c.Response().Header().Set("Pragma", "no-cache")
+
 	// 認証
 	client, err := h.ClientAuthentication(ctx, c)
 	if err != nil {
 		return err
 	}
 
-	grantType := c.FormValue("grant_type")
+	grantType := c.QueryParam("grant_type")
 	formattedGrantType := lib.ValidateTokenEndpointGrantType(grantType)
 
 	switch formattedGrantType {
-
 	case lib.TokenEndpointGrantTypeAuthorizationCode:
 		return h.TokenEndpointAuthorizationCode(ctx, c, client)
 

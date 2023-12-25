@@ -172,6 +172,9 @@ type Config struct {
 	JWTPublicKeyFilePath  string
 	JWTPrivateKeyFilePath string
 	JWTKid                string
+
+	// OIDC
+	OIDCIssuer string
 }
 
 var configs = []*Config{
@@ -386,6 +389,8 @@ var LocalConfig = &Config{
 	JWTPrivateKeyFilePath: "/jwt/jwt",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
+
+	OIDCIssuer: "oreore-local",
 }
 
 var CloudRunConfig = &Config{
@@ -575,6 +580,8 @@ var CloudRunConfig = &Config{
 	JWTPrivateKeyFilePath: "/jwt/jwt",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
+
+	OIDCIssuer: "oreore-me",
 }
 
 var CloudRunStagingConfig = &Config{
@@ -766,6 +773,8 @@ var CloudRunStagingConfig = &Config{
 	JWTPrivateKeyFilePath: "/jwt/jwt",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
+
+	OIDCIssuer: "oreore-staging",
 }
 
 var TestConfig = &Config{
@@ -938,6 +947,8 @@ var TestConfig = &Config{
 	JWTPrivateKeyFilePath: "/jwt/jwt",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
+
+	OIDCIssuer: "oreore-test",
 }
 
 func InitConfig(mode string) *Config {

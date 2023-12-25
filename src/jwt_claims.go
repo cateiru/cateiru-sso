@@ -64,10 +64,10 @@ type IDTokenClaimsBase struct {
 	Acr string `json:"acr,omitempty"`
 
 	// Authentication Methods References. 認証時に用いられた認証方式を示す識別子文字列の JSON 配列
-	Amr string `json:"amr"`
+	Amr string `json:"amr,omitempty"`
 
 	// ID Token 発行対象である認可された関係者 (authorized party).
-	Azp string `json:"azp"`
+	Azp string `json:"azp,omitempty"`
 }
 
 // OIDCのスタンダードクレーム
