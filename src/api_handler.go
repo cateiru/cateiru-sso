@@ -152,7 +152,12 @@ func (h *Handler) TokenEndpointHandler(c echo.Context) error {
 		return err
 	}
 
-	grantType := c.QueryParam("grant_type")
+	param, err := h.QueryBodyParam(c)
+	if err != nil {
+		return err
+	}
+
+	grantType := param.Get("grant_type")
 	formattedGrantType := lib.ValidateTokenEndpointGrantType(grantType)
 
 	switch formattedGrantType {
