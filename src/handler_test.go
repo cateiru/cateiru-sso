@@ -293,6 +293,22 @@ func TestQueryBodyParam(t *testing.T) {
 		require.Equal(t, values.Get("key"), "value")
 	})
 
+	t.Run("成功 X-WWW-Form-Urlencoded のように大文字の場合でも問題なく取得可能", func(t *testing.T) {
+		query := url.Values{}
+		query.Set("key", "value")
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+		c.Request().Header.Set("Content-Type", "application/X-WWW-Form-Urlencoded")
+
+		values, err := h.QueryBodyParam(c)
+		require.NoError(t, err)
+
+		require.Equal(t, values.Get("key"), "value")
+	})
+
 	t.Run("失敗: form-dataからは取得できない", func(t *testing.T) {
 		form := easy.NewMultipart()
 		form.Insert("key", "value")

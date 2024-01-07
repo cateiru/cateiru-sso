@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
@@ -188,7 +189,7 @@ func (h *Handler) FormValues(c echo.Context, key string, optional ...bool) ([]st
 
 // URLクエリパラメータ、またはBodyパラメータを取得する
 func (h *Handler) QueryBodyParam(c echo.Context) (url.Values, error) {
-	contentType := c.Request().Header.Get("Content-Type")
+	contentType := strings.ToLower(c.Request().Header.Get("Content-Type"))
 	if contentType == "" {
 		return c.QueryParams(), nil
 	}
