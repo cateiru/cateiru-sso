@@ -946,7 +946,7 @@ var TestConfig = &Config{
 	OauthLoginSessionPeriod: 5 * time.Minute,
 
 	JWTPublicKeyFilePath:  "lib/jwt/test.pub.pkcs8",
-	JWTPrivateKeyFilePath: "/jwt/jwt",
+	JWTPrivateKeyFilePath: "lib/jwt/test",
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 

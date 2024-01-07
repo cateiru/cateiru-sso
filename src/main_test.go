@@ -469,6 +469,30 @@ func RegisterAllowRules(t *testing.T, ctx context.Context, clientId string, isUs
 	}
 }
 
+func RegisterOauthSession(t *testing.T, ctx context.Context, clientId string, user *models.User) *models.OauthSession {
+	code, err := lib.RandomStr(63)
+	require.NoError(t, err)
+
+	nonce, err := lib.RandomStr(31)
+	require.NoError(t, err)
+
+	oauthSession := &models.OauthSession{
+		Code:   code,
+		UserID: user.ID,
+
+		ClientID: clientId,
+
+		Nonce:    null.StringFrom(nonce),
+		AuthTime: time.Now(),
+
+		Period: time.Now().Add(1 * time.Hour), // 適当
+	}
+	err = oauthSession.Insert(ctx, DB, boil.Infer())
+	require.NoError(t, err)
+
+	return oauthSession
+}
+
 func RegisterBrand(t *testing.T, ctx context.Context, name string, description string, u ...*models.User) string {
 	brandId, err := lib.RandomStr(31)
 	require.NoError(t, err)

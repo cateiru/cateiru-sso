@@ -5,10 +5,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
@@ -154,6 +156,66 @@ func TestClientAuthentication(t *testing.T) {
 		_, err = h.ClientAuthentication(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request, message=Invalid client_secret")
 	})
+}
+
+func TestTokenEndpointAuthorizationCode(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	t.Run("成功: レスポンスを受け取れる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		client := RegisterClient(t, ctx, nil)
+
+		redirectUri, err := url.Parse("https://example.test/hogehoge")
+		require.NoError(t, err)
+		redirect := models.ClientRedirect{
+			ClientID: client.ClientID,
+			Host:     redirectUri.Host,
+			URL:      redirectUri.String(),
+		}
+		err = redirect.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		oauthSession := RegisterOauthSession(t, ctx, client.ClientID, &u)
+
+		query := url.Values{}
+		query.Set("code", oauthSession.Code)
+		query.Set("redirect_uri", redirectUri.String())
+		query.Set("client_id", client.ClientID)
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.TokenEndpointAuthorizationCode(ctx, c, client)
+		require.NoError(t, err)
+
+		response := src.TokenEndpointResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.TokenType, "Bearer")
+		require.Equal(t, response.ExpiresIn, int64(h.C.IDTokenExpire)/10000000)
+
+		idToken := response.IDToken
+		require.NotEmpty(t, idToken)
+	})
+
+	t.Run("成功: クライアントIDが空の場合はチェックを行わない", func(t *testing.T) {})
+
+	t.Run("失敗: codeが存在しない値", func(t *testing.T) {})
+
+	t.Run("失敗: codeが空", func(t *testing.T) {})
+
+	t.Run("失敗: リダイレクトURIが存在しない", func(t *testing.T) {})
+
+	t.Run("失敗: リダイレクトURIの形式が不正", func(t *testing.T) {})
+
+	t.Run("失敗: リダイレクトURIが空", func(t *testing.T) {})
+
+	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {})
+
 }
 
 func TestUserToStandardClaims(t *testing.T) {

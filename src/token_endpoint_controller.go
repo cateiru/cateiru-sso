@@ -82,9 +82,14 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 		return client, nil
 	}
 
+	param, err := h.QueryBodyParam(c)
+	if err != nil {
+		return nil, err
+	}
+
 	// client_secret_post
-	clientId := c.QueryParam("client_id")
-	clientSecret := c.QueryParam("client_secret")
+	clientId := param.Get("client_id")
+	clientSecret := param.Get("client_secret")
 	if clientId != "" || clientSecret != "" {
 		client, err := models.Clients(
 			models.ClientWhere.ClientID.EQ(clientId),
@@ -114,9 +119,14 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequest
 // validation: https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequestValidation
 func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Context, client *models.Client) error {
-	code := c.QueryParam("code")
-	redirectUri := c.QueryParam("redirect_uri")
-	clientId := c.QueryParam("client_id")
+	param, err := h.QueryBodyParam(c)
+	if err != nil {
+		return err
+	}
+
+	code := param.Get("code")
+	redirectUri := param.Get("redirect_uri")
+	clientId := param.Get("client_id")
 
 	parsedRedirectUri, redirectUriOk := lib.ValidateURL(redirectUri)
 	if !redirectUriOk {
@@ -197,7 +207,7 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 		AccessToken:  "TODO",
 		TokenType:    "Bearer",
 		RefreshToken: "TODO",
-		ExpiresIn:    time.Now().Add(h.C.IDTokenExpire).Unix(),
+		ExpiresIn:    int64(h.C.IDTokenExpire) / 10000000, // time.Duration はマイクロ秒なので秒に変換
 		IDToken:      idToken,
 	})
 }
