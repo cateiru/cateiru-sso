@@ -547,6 +547,9 @@ CREATE TABLE `oauth_session` (
     -- CSRF, XSRFで使用される`nonce.`を格納するやつ
     `nonce` VARCHAR(31) DEFAULT NULL,
 
+    -- 認証が発生した時刻
+    `auth_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     -- 有効期限
     `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
