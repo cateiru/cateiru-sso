@@ -208,12 +208,15 @@ func (h *Handler) TokenEndpointRefreshToken(ctx context.Context, c echo.Context,
 	return nil
 }
 
-// TODO: テスト
 func UserToStandardClaims(user *models.User) (*StandardClaims, error) {
 	standardClaims := &StandardClaims{
 		Name:              user.UserName,
+		GivenName:         user.GivenName.String,
+		FamilyName:        user.FamilyName.String,
+		MiddleName:        user.MiddleName.String,
 		Nickname:          user.UserName,
 		PreferredUsername: user.UserName,
+		Picture:           user.Avatar.String,
 
 		Email:         user.Email,
 		EmailVerified: true, // 必ず確認しているのでtrue
@@ -225,23 +228,9 @@ func UserToStandardClaims(user *models.User) (*StandardClaims, error) {
 		UpdatedAt: user.UpdatedAt.Unix(),
 	}
 
-	if user.GivenName.Valid {
-		standardClaims.GivenName = user.GivenName.String
-	}
-	if user.FamilyName.Valid {
-		standardClaims.FamilyName = user.FamilyName.String
-	}
-	if user.MiddleName.Valid {
-		standardClaims.MiddleName = user.MiddleName.String
-	}
-
-	if user.Avatar.Valid {
-		standardClaims.Picture = user.Avatar.String
-	}
-
 	if user.Birthdate.Valid {
 		standardClaims.BirthDate = user.Birthdate.Time.Format(time.DateOnly)
 	}
 
-	return nil, nil
+	return standardClaims, nil
 }

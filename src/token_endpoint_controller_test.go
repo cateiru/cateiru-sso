@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
+	"github.com/cateiru/cateiru-sso/src"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/stretchr/testify/require"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func TestClientAuthentication(t *testing.T) {
@@ -149,5 +153,50 @@ func TestClientAuthentication(t *testing.T) {
 
 		_, err = h.ClientAuthentication(ctx, c)
 		require.EqualError(t, err, "code=400, error=invalid_request, message=Invalid client_secret")
+	})
+}
+
+func TestUserToStandardClaims(t *testing.T) {
+	t.Run("StandardClaimsに変換できる", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		claims, err := src.UserToStandardClaims(&u)
+		require.NoError(t, err)
+
+		require.NotNil(t, claims)
+
+		require.Equal(t, claims.Name, u.UserName)
+		require.Equal(t, claims.GivenName, u.GivenName.String)
+		require.Equal(t, claims.FamilyName, u.FamilyName.String)
+		require.Equal(t, claims.MiddleName, u.MiddleName.String)
+		require.Equal(t, claims.Nickname, u.UserName)
+		require.Equal(t, claims.PreferredUsername, u.UserName)
+		require.Equal(t, claims.Picture, u.Avatar.String)
+		require.Equal(t, claims.Email, u.Email)
+		require.Equal(t, claims.Gender, u.Gender)
+		require.Equal(t, claims.ZoneInfo, "Asia/Tokyo")
+		require.Equal(t, claims.Locale, "ja-JP")
+		require.Equal(t, claims.UpdatedAt, u.UpdatedAt.Unix())
+
+		require.Equal(t, claims.BirthDate, "")
+	})
+
+	t.Run("BirthDateが設定されている", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		birthDate := time.Now()
+
+		u.Birthdate = null.TimeFrom(birthDate)
+		_, err := u.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		claims, err := src.UserToStandardClaims(&u)
+		require.NoError(t, err)
+
+		require.Equal(t, claims.BirthDate, birthDate.Format(time.DateOnly))
 	})
 }
