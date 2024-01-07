@@ -174,7 +174,12 @@ type Config struct {
 	JWTKid                string
 
 	// OIDC
-	OIDCIssuer string
+	// ID Token の issuer
+	// `iss` に該当する
+	IDTokenIssuer string
+	// ID Token の有効期限
+	// `exp` に該当する
+	IDTokenExpire time.Duration
 }
 
 var configs = []*Config{
@@ -390,7 +395,8 @@ var LocalConfig = &Config{
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 
-	OIDCIssuer: "oreore-local",
+	IDTokenIssuer: "oreore-local",
+	IDTokenExpire: 1 * time.Hour,
 }
 
 var CloudRunConfig = &Config{
@@ -581,7 +587,8 @@ var CloudRunConfig = &Config{
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 
-	OIDCIssuer: "oreore-me",
+	IDTokenIssuer: "oreore-me",
+	IDTokenExpire: 1 * time.Hour,
 }
 
 var CloudRunStagingConfig = &Config{
@@ -774,7 +781,8 @@ var CloudRunStagingConfig = &Config{
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 
-	OIDCIssuer: "oreore-staging",
+	IDTokenIssuer: "oreore-staging",
+	IDTokenExpire: 1 * time.Hour,
 }
 
 var TestConfig = &Config{
@@ -948,7 +956,8 @@ var TestConfig = &Config{
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 
-	OIDCIssuer: "oreore-test",
+	IDTokenIssuer: "oreore-test",
+	IDTokenExpire: 1 * time.Hour,
 }
 
 func InitConfig(mode string) *Config {

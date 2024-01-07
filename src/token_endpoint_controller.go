@@ -166,11 +166,11 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 	// TODO: claims埋める
 	claims := AuthorizationCodeFlowClaims{
 		IDTokenClaimsBase: IDTokenClaimsBase{
-			Iss:      h.C.OIDCIssuer,
+			Iss:      h.C.IDTokenIssuer,
 			Sub:      oauthSession.UserID,
 			Aud:      client.ClientID,
-			Exp:      0, // TODO
-			Iat:      0, // TODO
+			Exp:      time.Now().Add(h.C.IDTokenExpire).Unix(),
+			Iat:      time.Now().Unix(),
 			AuthTime: time.Now().Unix(),
 			Nonce:    oauthSession.Nonce.String,
 		},
