@@ -3,6 +3,7 @@ package src_test
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -259,6 +260,52 @@ func TestFormValues(t *testing.T) {
 
 		err = handler(c)
 		require.EqualError(t, err, "code=400, message=key_2 is required")
+	})
+}
+
+func TestQueryBodyParam(t *testing.T) {
+	h := NewTestHandler(t)
+
+	t.Run("成功: URLのクエリパラメータから取得できる", func(t *testing.T) {
+		m, err := easy.NewMock("/?key=value", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		values, err := h.QueryBodyParam(c)
+		require.NoError(t, err)
+
+		require.Equal(t, values.Get("key"), "value")
+	})
+
+	t.Run("成功: x-www-form-urlencodedのBodyから取得できる", func(t *testing.T) {
+		query := url.Values{}
+		query.Set("key", "value")
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		values, err := h.QueryBodyParam(c)
+		require.NoError(t, err)
+
+		require.Equal(t, values.Get("key"), "value")
+	})
+
+	t.Run("失敗: form-dataからは取得できない", func(t *testing.T) {
+		form := easy.NewMultipart()
+		form.Insert("key", "value")
+
+		m, err := easy.NewFormData("/", http.MethodPost, form)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		values, err := h.QueryBodyParam(c)
+		require.NoError(t, err)
+
+		require.Empty(t, values)
 	})
 }
 

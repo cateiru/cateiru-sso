@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"strconv"
 
@@ -183,6 +184,20 @@ func (h *Handler) FormValues(c echo.Context, key string, optional ...bool) ([]st
 	}
 
 	return values, nil
+}
+
+// URLクエリパラメータ、またはBodyパラメータを取得する
+func (h *Handler) QueryBodyParam(c echo.Context) (url.Values, error) {
+	contentType := c.Request().Header.Get("Content-Type")
+	if contentType == "" {
+		return c.QueryParams(), nil
+	}
+
+	if contentType == "application/x-www-form-urlencoded" {
+		return c.FormParams()
+	}
+
+	return url.Values{}, nil
 }
 
 // ローカル環境ではメールを送信したくないのでモックする
