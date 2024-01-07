@@ -92,7 +92,7 @@ type StandardClaims struct {
 	PhoneNumber         string  `json:"phone_number,omitempty"`
 	PhoneNumberVerified bool    `json:"phone_number_verified,omitempty"`
 	Address             Address `json:"address,omitempty"`
-	UpdatedAt           string  `json:"updated_at,omitempty"`
+	UpdatedAt           int64   `json:"updated_at,omitempty"`
 }
 
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#AddressClaim

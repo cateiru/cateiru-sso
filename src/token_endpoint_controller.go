@@ -25,7 +25,7 @@ type TokenEndpointResponse struct {
 
 	// 推奨 (RECOMMENDED)。アクセストークンの有効期間を表す秒数。例えばこの値が 3600 であれば、そのアクセストークンは発行から1時間後に期限切れとなる。
 	// 省略された場合、認可サーバはドキュメントまたは他の手段によってデフォルトの有効期間を提示すべきである (SHOULD)。
-	ExpiresIn int `json:"expires_in"`
+	ExpiresIn int64 `json:"expires_in"`
 
 	// 任意 (OPTIONAL)。リフレッシュトークン。
 	// 同じ認可グラントを用いて新しいアクセストークンを取得するのに利用される。詳細は Section 6 を参照のこと。
@@ -162,10 +162,22 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 		return err
 	}
 
-	// XXX; authorization code flow だけで良い？
+	authUser, err := models.Users(
+		models.UserWhere.ID.EQ(oauthSession.UserID),
+	).One(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+
+	standardClaims, err := UserToStandardClaims(authUser)
+	if err != nil {
+		return err
+	}
+
+	// XXX: authorization code flow だけで良い？
 	claims := AuthorizationCodeFlowClaims{
 		IDTokenClaimsBase: IDTokenClaimsBase{
-			Iss:      h.C.IDTokenIssuer,
+			Iss:      h.C.SiteHost.String(),
 			Sub:      oauthSession.UserID,
 			Aud:      client.ClientID,
 			Exp:      time.Now().Add(h.C.IDTokenExpire).Unix(),
@@ -173,6 +185,8 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 			AuthTime: oauthSession.AuthTime.Unix(),
 			Nonce:    oauthSession.Nonce.String,
 		},
+
+		StandardClaims: *standardClaims,
 	}
 	idToken, err := lib.SignJwt(claims, h.C.JWTPrivateKeyFilePath)
 	if err != nil {
@@ -183,7 +197,7 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 		AccessToken:  "TODO",
 		TokenType:    "Bearer",
 		RefreshToken: "TODO",
-		ExpiresIn:    00, // TODO
+		ExpiresIn:    time.Now().Add(h.C.IDTokenExpire).Unix(),
 		IDToken:      idToken,
 	})
 }
@@ -192,4 +206,42 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#RefreshingAccessToken
 func (h *Handler) TokenEndpointRefreshToken(ctx context.Context, c echo.Context, client *models.Client) error {
 	return nil
+}
+
+// TODO: テスト
+func UserToStandardClaims(user *models.User) (*StandardClaims, error) {
+	standardClaims := &StandardClaims{
+		Name:              user.UserName,
+		Nickname:          user.UserName,
+		PreferredUsername: user.UserName,
+
+		Email:         user.Email,
+		EmailVerified: true, // 必ず確認しているのでtrue
+
+		Gender:   user.Gender,
+		ZoneInfo: "Asia/Tokyo", // 決め打ち
+		Locale:   "ja-JP",      // 決め打ち
+
+		UpdatedAt: user.UpdatedAt.Unix(),
+	}
+
+	if user.GivenName.Valid {
+		standardClaims.GivenName = user.GivenName.String
+	}
+	if user.FamilyName.Valid {
+		standardClaims.FamilyName = user.FamilyName.String
+	}
+	if user.MiddleName.Valid {
+		standardClaims.MiddleName = user.MiddleName.String
+	}
+
+	if user.Avatar.Valid {
+		standardClaims.Picture = user.Avatar.String
+	}
+
+	if user.Birthdate.Valid {
+		standardClaims.BirthDate = user.Birthdate.Time.Format(time.DateOnly)
+	}
+
+	return nil, nil
 }
