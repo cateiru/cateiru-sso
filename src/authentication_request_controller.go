@@ -280,7 +280,8 @@ func (a AuthenticationRequest) Submit(ctx context.Context, db *sql.DB, user *mod
 
 		ClientID: a.Client.ClientID,
 
-		Nonce: a.Nonce,
+		Nonce:    a.Nonce,
+		AuthTime: time.Now(),
 
 		Period: time.Now().Add(oauthSessionPeriod),
 	}

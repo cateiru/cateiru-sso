@@ -110,7 +110,7 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 	return nil, NewOIDCError(http.StatusUnauthorized, ErrTokenInvalidClient, "Invalid client authentication", "", "")
 }
 
-// TODO
+// TODO: テスト
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequest
 // validation: https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequestValidation
 func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Context, client *models.Client) error {
@@ -163,7 +163,6 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 	}
 
 	// XXX; authorization code flow だけで良い？
-	// TODO: claims埋める
 	claims := AuthorizationCodeFlowClaims{
 		IDTokenClaimsBase: IDTokenClaimsBase{
 			Iss:      h.C.IDTokenIssuer,
@@ -171,7 +170,7 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 			Aud:      client.ClientID,
 			Exp:      time.Now().Add(h.C.IDTokenExpire).Unix(),
 			Iat:      time.Now().Unix(),
-			AuthTime: time.Now().Unix(),
+			AuthTime: oauthSession.AuthTime.Unix(),
 			Nonce:    oauthSession.Nonce.String,
 		},
 	}
