@@ -17,6 +17,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/require"
@@ -634,4 +635,28 @@ func InviteUserInOrg(t *testing.T, ctx context.Context, orgId string, u *models.
 	require.NoError(t, err)
 
 	return orgUser.ID
+}
+
+func DecodeJWT(t *testing.T, idToken string, claims jwt.Claims) *jwt.Token {
+	publicKey, err := os.ReadFile(C.JWTPublicKeyFilePath)
+	require.NoError(t, err)
+
+	verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(publicKey)
+	require.NoError(t, err)
+
+	// JWTを有効にするため1秒待つ
+	time.Sleep(1 * time.Second)
+
+	token, err := jwt.ParseWithClaims(idToken, claims,
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			return verifyKey, nil
+		},
+	)
+	require.NoError(t, err)
+
+	return token
 }
