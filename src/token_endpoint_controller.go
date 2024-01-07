@@ -115,7 +115,7 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 	return nil, NewOIDCError(http.StatusUnauthorized, ErrTokenInvalidClient, "Invalid client authentication", "", "")
 }
 
-// TODO: テスト
+// TODO: AccessToken実装とそのテスト
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequest
 // validation: https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequestValidation
 func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Context, client *models.Client) error {
