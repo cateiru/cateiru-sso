@@ -405,9 +405,6 @@ CREATE TABLE `client_refresh` (
     -- クライアントのID
     `client_id` VARCHAR(31) NOT NULL,
 
-    -- スコープ
-    `scopes` JSON NOT NULL,
-
     -- client_sessionのid
     `session_id` VARCHAR(31) NOT NULL,
 

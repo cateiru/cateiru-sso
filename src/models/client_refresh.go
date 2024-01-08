@@ -18,20 +18,18 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
-	"github.com/volatiletech/sqlboiler/v4/types"
 	"github.com/volatiletech/strmangle"
 )
 
 // ClientRefresh is an object representing the database table.
 type ClientRefresh struct {
-	ID        string     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID    string     `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	ClientID  string     `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
-	Scopes    types.JSON `boil:"scopes" json:"scopes" toml:"scopes" yaml:"scopes"`
-	SessionID string     `boil:"session_id" json:"session_id" toml:"session_id" yaml:"session_id"`
-	Period    time.Time  `boil:"period" json:"period" toml:"period" yaml:"period"`
-	CreatedAt time.Time  `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt time.Time  `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	ClientID  string    `boil:"client_id" json:"client_id" toml:"client_id" yaml:"client_id"`
+	SessionID string    `boil:"session_id" json:"session_id" toml:"session_id" yaml:"session_id"`
+	Period    time.Time `boil:"period" json:"period" toml:"period" yaml:"period"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
 	R *clientRefreshR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L clientRefreshL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,7 +39,6 @@ var ClientRefreshColumns = struct {
 	ID        string
 	UserID    string
 	ClientID  string
-	Scopes    string
 	SessionID string
 	Period    string
 	CreatedAt string
@@ -50,7 +47,6 @@ var ClientRefreshColumns = struct {
 	ID:        "id",
 	UserID:    "user_id",
 	ClientID:  "client_id",
-	Scopes:    "scopes",
 	SessionID: "session_id",
 	Period:    "period",
 	CreatedAt: "created_at",
@@ -61,7 +57,6 @@ var ClientRefreshTableColumns = struct {
 	ID        string
 	UserID    string
 	ClientID  string
-	Scopes    string
 	SessionID string
 	Period    string
 	CreatedAt string
@@ -70,7 +65,6 @@ var ClientRefreshTableColumns = struct {
 	ID:        "client_refresh.id",
 	UserID:    "client_refresh.user_id",
 	ClientID:  "client_refresh.client_id",
-	Scopes:    "client_refresh.scopes",
 	SessionID: "client_refresh.session_id",
 	Period:    "client_refresh.period",
 	CreatedAt: "client_refresh.created_at",
@@ -79,32 +73,10 @@ var ClientRefreshTableColumns = struct {
 
 // Generated where
 
-type whereHelpertypes_JSON struct{ field string }
-
-func (w whereHelpertypes_JSON) EQ(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.EQ, x)
-}
-func (w whereHelpertypes_JSON) NEQ(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.NEQ, x)
-}
-func (w whereHelpertypes_JSON) LT(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpertypes_JSON) LTE(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpertypes_JSON) GT(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpertypes_JSON) GTE(x types.JSON) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var ClientRefreshWhere = struct {
 	ID        whereHelperstring
 	UserID    whereHelperstring
 	ClientID  whereHelperstring
-	Scopes    whereHelpertypes_JSON
 	SessionID whereHelperstring
 	Period    whereHelpertime_Time
 	CreatedAt whereHelpertime_Time
@@ -113,7 +85,6 @@ var ClientRefreshWhere = struct {
 	ID:        whereHelperstring{field: "`client_refresh`.`id`"},
 	UserID:    whereHelperstring{field: "`client_refresh`.`user_id`"},
 	ClientID:  whereHelperstring{field: "`client_refresh`.`client_id`"},
-	Scopes:    whereHelpertypes_JSON{field: "`client_refresh`.`scopes`"},
 	SessionID: whereHelperstring{field: "`client_refresh`.`session_id`"},
 	Period:    whereHelpertime_Time{field: "`client_refresh`.`period`"},
 	CreatedAt: whereHelpertime_Time{field: "`client_refresh`.`created_at`"},
@@ -158,8 +129,8 @@ func (r *clientRefreshR) GetSession() *ClientSession {
 type clientRefreshL struct{}
 
 var (
-	clientRefreshAllColumns            = []string{"id", "user_id", "client_id", "scopes", "session_id", "period", "created_at", "updated_at"}
-	clientRefreshColumnsWithoutDefault = []string{"id", "user_id", "client_id", "scopes", "session_id"}
+	clientRefreshAllColumns            = []string{"id", "user_id", "client_id", "session_id", "period", "created_at", "updated_at"}
+	clientRefreshColumnsWithoutDefault = []string{"id", "user_id", "client_id", "session_id"}
 	clientRefreshColumnsWithDefault    = []string{"period", "created_at", "updated_at"}
 	clientRefreshPrimaryKeyColumns     = []string{"id"}
 	clientRefreshGeneratedColumns      = []string{}
