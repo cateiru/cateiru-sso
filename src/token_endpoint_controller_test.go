@@ -203,7 +203,26 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 		require.NoError(t, m.Json(&response))
 
 		require.Equal(t, response.TokenType, "Bearer")
-		require.Equal(t, response.ExpiresIn, int64(h.C.IDTokenExpire)/10000000)
+		require.Equal(t, response.ExpiresIn, int64(h.C.OAuthAccessTokenPeriod)/10000000)
+
+		// アクセストークン有効確認
+		accessToken, err := models.ClientSessions(
+			models.ClientSessionWhere.ID.EQ(response.AccessToken),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, accessToken.ClientID, client.ClientID)
+		require.Equal(t, accessToken.UserID, u.ID)
+		require.True(t, accessToken.Period.After(time.Now()))
+
+		// リフレッシュトークン有効確認
+		refreshToken, err := models.ClientRefreshes(
+			models.ClientRefreshWhere.ID.EQ(response.RefreshToken),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, refreshToken.ClientID, client.ClientID)
+		require.Equal(t, refreshToken.UserID, u.ID)
+		require.Equal(t, refreshToken.SessionID, accessToken.ID)
+		require.True(t, refreshToken.Period.After(time.Now()))
 
 		// IDToken の検証
 		idToken := response.IDToken
@@ -259,7 +278,26 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 		require.NoError(t, m.Json(&response))
 
 		require.Equal(t, response.TokenType, "Bearer")
-		require.Equal(t, response.ExpiresIn, int64(h.C.IDTokenExpire)/10000000)
+		require.Equal(t, response.ExpiresIn, int64(h.C.OAuthAccessTokenPeriod)/10000000)
+
+		// アクセストークン有効確認
+		accessToken, err := models.ClientSessions(
+			models.ClientSessionWhere.ID.EQ(response.AccessToken),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, accessToken.ClientID, client.ClientID)
+		require.Equal(t, accessToken.UserID, u.ID)
+		require.True(t, accessToken.Period.After(time.Now()))
+
+		// リフレッシュトークン有効確認
+		refreshToken, err := models.ClientRefreshes(
+			models.ClientRefreshWhere.ID.EQ(response.RefreshToken),
+		).One(ctx, DB)
+		require.NoError(t, err)
+		require.Equal(t, refreshToken.ClientID, client.ClientID)
+		require.Equal(t, refreshToken.UserID, u.ID)
+		require.Equal(t, refreshToken.SessionID, accessToken.ID)
+		require.True(t, refreshToken.Period.After(time.Now()))
 
 		// IDToken の検証
 		idToken := response.IDToken

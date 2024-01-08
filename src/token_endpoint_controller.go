@@ -12,6 +12,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // トークンエンドポイントのレスポンス
@@ -179,6 +180,35 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 		return err
 	}
 
+	// トークン作成
+	refreshToken, err := lib.RandomStr(63)
+	if err != nil {
+		return err
+	}
+	sessionToken, err := lib.RandomStr(31)
+	if err != nil {
+		return err
+	}
+	clientSession := models.ClientSession{
+		ID:       sessionToken,
+		UserID:   authUser.ID,
+		ClientID: client.ClientID,
+		Period:   time.Now().Add(h.C.OAuthAccessTokenPeriod),
+	}
+	if err := clientSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+	clientRefresh := models.ClientRefresh{
+		ID:        refreshToken,
+		UserID:    authUser.ID,
+		ClientID:  client.ClientID,
+		SessionID: sessionToken,
+		Period:    time.Now().Add(h.C.OAuthRefreshTokenPeriod),
+	}
+	if err := clientRefresh.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
 	standardClaims, err := UserToStandardClaims(authUser)
 	if err != nil {
 		return err
@@ -206,10 +236,10 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 	}
 
 	return c.JSON(http.StatusOK, &TokenEndpointResponse{
-		AccessToken:  "TODO",
+		AccessToken:  sessionToken,
 		TokenType:    "Bearer",
-		RefreshToken: "TODO",
-		ExpiresIn:    int64(h.C.IDTokenExpire) / 10000000, // time.Duration はマイクロ秒なので秒に変換
+		RefreshToken: refreshToken,
+		ExpiresIn:    int64(h.C.OAuthAccessTokenPeriod) / 10000000, // time.Duration はマイクロ秒なので秒に変換
 		IDToken:      idToken,
 	})
 }
