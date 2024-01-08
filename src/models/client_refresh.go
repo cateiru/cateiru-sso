@@ -95,15 +95,18 @@ var ClientRefreshWhere = struct {
 var ClientRefreshRels = struct {
 	User    string
 	Session string
+	Client  string
 }{
 	User:    "User",
 	Session: "Session",
+	Client:  "Client",
 }
 
 // clientRefreshR is where relationships are stored.
 type clientRefreshR struct {
 	User    *User          `boil:"User" json:"User" toml:"User" yaml:"User"`
 	Session *ClientSession `boil:"Session" json:"Session" toml:"Session" yaml:"Session"`
+	Client  *Client        `boil:"Client" json:"Client" toml:"Client" yaml:"Client"`
 }
 
 // NewStruct creates a new relationship struct
@@ -123,6 +126,13 @@ func (r *clientRefreshR) GetSession() *ClientSession {
 		return nil
 	}
 	return r.Session
+}
+
+func (r *clientRefreshR) GetClient() *Client {
+	if r == nil {
+		return nil
+	}
+	return r.Client
 }
 
 // clientRefreshL is where Load methods for each relationship are stored.
@@ -436,6 +446,17 @@ func (o *ClientRefresh) Session(mods ...qm.QueryMod) clientSessionQuery {
 	return ClientSessions(queryMods...)
 }
 
+// Client pointed to by the foreign key.
+func (o *ClientRefresh) Client(mods ...qm.QueryMod) clientQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`client_id` = ?", o.ClientID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Clients(queryMods...)
+}
+
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (clientRefreshL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClientRefresh interface{}, mods queries.Applicator) error {
@@ -676,6 +697,126 @@ func (clientRefreshL) LoadSession(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
+// LoadClient allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (clientRefreshL) LoadClient(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClientRefresh interface{}, mods queries.Applicator) error {
+	var slice []*ClientRefresh
+	var object *ClientRefresh
+
+	if singular {
+		var ok bool
+		object, ok = maybeClientRefresh.(*ClientRefresh)
+		if !ok {
+			object = new(ClientRefresh)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClientRefresh)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClientRefresh))
+			}
+		}
+	} else {
+		s, ok := maybeClientRefresh.(*[]*ClientRefresh)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClientRefresh)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClientRefresh))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientRefreshR{}
+		}
+		args = append(args, object.ClientID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientRefreshR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`client`),
+		qm.WhereIn(`client.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Client")
+	}
+
+	var resultSlice []*Client
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Client")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for client")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for client")
+	}
+
+	if len(clientAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Client = foreign
+		if foreign.R == nil {
+			foreign.R = &clientR{}
+		}
+		foreign.R.ClientRefreshes = append(foreign.R.ClientRefreshes, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ClientID == foreign.ClientID {
+				local.R.Client = foreign
+				if foreign.R == nil {
+					foreign.R = &clientR{}
+				}
+				foreign.R.ClientRefreshes = append(foreign.R.ClientRefreshes, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetUser of the clientRefresh to the related item.
 // Sets o.R.User to related.
 // Adds o to related.R.ClientRefreshes.
@@ -765,6 +906,53 @@ func (o *ClientRefresh) SetSession(ctx context.Context, exec boil.ContextExecuto
 		}
 	} else {
 		related.R.SessionClientRefreshes = append(related.R.SessionClientRefreshes, o)
+	}
+
+	return nil
+}
+
+// SetClient of the clientRefresh to the related item.
+// Sets o.R.Client to related.
+// Adds o to related.R.ClientRefreshes.
+func (o *ClientRefresh) SetClient(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Client) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `client_refresh` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+		strmangle.WhereClause("`", "`", 0, clientRefreshPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ClientID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ClientID = related.ClientID
+	if o.R == nil {
+		o.R = &clientRefreshR{
+			Client: related,
+		}
+	} else {
+		o.R.Client = related
+	}
+
+	if related.R == nil {
+		related.R = &clientR{
+			ClientRefreshes: ClientRefreshSlice{o},
+		}
+	} else {
+		related.R.ClientRefreshes = append(related.R.ClientRefreshes, o)
 	}
 
 	return nil

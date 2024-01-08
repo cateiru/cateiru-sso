@@ -374,56 +374,6 @@ CREATE TABLE `otp_session` (
     INDEX `otp_session_user_id` (`user_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
 
--- SSOクライアントのセッショントークンテーブル
--- これを使用して UserInfo Endpoint を取得可能
-CREATE TABLE `client_session` (
-    `id` VARCHAR(31) NOT NULL,
-    `user_id` VARCHAR(32) NOT NULL,
-
-    -- クライアントのID
-    `client_id` VARCHAR(31) NOT NULL,
-
-    -- 有効期限
-    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    -- 管理用
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-
-    PRIMARY KEY(`id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
--- SSOクライアントのリフレッシュトークンテーブル
--- 更新は Token Endpoint を使用する
-CREATE TABLE `client_refresh` (
-    -- ランダムにトークンを生成する
-    `id` VARCHAR(63) NOT NULL,
-    `user_id` VARCHAR(32) NOT NULL,
-
-    -- クライアントのID
-    `client_id` VARCHAR(31) NOT NULL,
-
-    -- client_sessionのid
-    `session_id` VARCHAR(31) NOT NULL,
-
-    -- 有効期限
-    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    -- 管理用
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`session_id`) REFERENCES `client_session` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-
-    PRIMARY KEY(`id`),
-    INDEX `client_refresh_user_id` (`user_id`),
-    INDEX `client_refresh_session_id` (`session_id`),
-    INDEX `client_refresh_client_id` (`client_id`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
-
 -- WebAuthnを登録・ログインするときに保持する情報
 -- webauthn.SessionData を元にしています
 CREATE TABLE `webauthn_session` (
@@ -863,4 +813,57 @@ CREATE TABLE `operation_history` (
 
     PRIMARY KEY (`id`),
     INDEX `operation_history_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+
+-- SSOクライアントのセッショントークンテーブル
+-- これを使用して UserInfo Endpoint を取得可能
+CREATE TABLE `client_session` (
+    `id` VARCHAR(31) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- SSOクライアントのリフレッシュトークンテーブル
+-- 更新は Token Endpoint を使用する
+CREATE TABLE `client_refresh` (
+    -- ランダムにトークンを生成する
+    `id` VARCHAR(63) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    -- client_sessionのid
+    `session_id` VARCHAR(31) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`session_id`) REFERENCES `client_session` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    INDEX `client_refresh_user_id` (`user_id`),
+    INDEX `client_refresh_session_id` (`session_id`),
+    INDEX `client_refresh_client_id` (`client_id`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;

@@ -87,15 +87,18 @@ var ClientSessionWhere = struct {
 // ClientSessionRels is where relationship names are stored.
 var ClientSessionRels = struct {
 	User                   string
+	Client                 string
 	SessionClientRefreshes string
 }{
 	User:                   "User",
+	Client:                 "Client",
 	SessionClientRefreshes: "SessionClientRefreshes",
 }
 
 // clientSessionR is where relationships are stored.
 type clientSessionR struct {
 	User                   *User              `boil:"User" json:"User" toml:"User" yaml:"User"`
+	Client                 *Client            `boil:"Client" json:"Client" toml:"Client" yaml:"Client"`
 	SessionClientRefreshes ClientRefreshSlice `boil:"SessionClientRefreshes" json:"SessionClientRefreshes" toml:"SessionClientRefreshes" yaml:"SessionClientRefreshes"`
 }
 
@@ -109,6 +112,13 @@ func (r *clientSessionR) GetUser() *User {
 		return nil
 	}
 	return r.User
+}
+
+func (r *clientSessionR) GetClient() *Client {
+	if r == nil {
+		return nil
+	}
+	return r.Client
 }
 
 func (r *clientSessionR) GetSessionClientRefreshes() ClientRefreshSlice {
@@ -418,6 +428,17 @@ func (o *ClientSession) User(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
+// Client pointed to by the foreign key.
+func (o *ClientSession) Client(mods ...qm.QueryMod) clientQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`client_id` = ?", o.ClientID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Clients(queryMods...)
+}
+
 // SessionClientRefreshes retrieves all the client_refresh's ClientRefreshes with an executor via session_id column.
 func (o *ClientSession) SessionClientRefreshes(mods ...qm.QueryMod) clientRefreshQuery {
 	var queryMods []qm.QueryMod
@@ -542,6 +563,126 @@ func (clientSessionL) LoadUser(ctx context.Context, e boil.ContextExecutor, sing
 				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
+				}
+				foreign.R.ClientSessions = append(foreign.R.ClientSessions, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadClient allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (clientSessionL) LoadClient(ctx context.Context, e boil.ContextExecutor, singular bool, maybeClientSession interface{}, mods queries.Applicator) error {
+	var slice []*ClientSession
+	var object *ClientSession
+
+	if singular {
+		var ok bool
+		object, ok = maybeClientSession.(*ClientSession)
+		if !ok {
+			object = new(ClientSession)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeClientSession)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeClientSession))
+			}
+		}
+	} else {
+		s, ok := maybeClientSession.(*[]*ClientSession)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeClientSession)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeClientSession))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &clientSessionR{}
+		}
+		args = append(args, object.ClientID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &clientSessionR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ClientID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ClientID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`client`),
+		qm.WhereIn(`client.client_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Client")
+	}
+
+	var resultSlice []*Client
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Client")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for client")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for client")
+	}
+
+	if len(clientAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Client = foreign
+		if foreign.R == nil {
+			foreign.R = &clientR{}
+		}
+		foreign.R.ClientSessions = append(foreign.R.ClientSessions, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ClientID == foreign.ClientID {
+				local.R.Client = foreign
+				if foreign.R == nil {
+					foreign.R = &clientR{}
 				}
 				foreign.R.ClientSessions = append(foreign.R.ClientSessions, local)
 				break
@@ -704,6 +845,53 @@ func (o *ClientSession) SetUser(ctx context.Context, exec boil.ContextExecutor, 
 
 	if related.R == nil {
 		related.R = &userR{
+			ClientSessions: ClientSessionSlice{o},
+		}
+	} else {
+		related.R.ClientSessions = append(related.R.ClientSessions, o)
+	}
+
+	return nil
+}
+
+// SetClient of the clientSession to the related item.
+// Sets o.R.Client to related.
+// Adds o to related.R.ClientSessions.
+func (o *ClientSession) SetClient(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Client) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `client_session` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"client_id"}),
+		strmangle.WhereClause("`", "`", 0, clientSessionPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ClientID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ClientID = related.ClientID
+	if o.R == nil {
+		o.R = &clientSessionR{
+			Client: related,
+		}
+	} else {
+		o.R.Client = related
+	}
+
+	if related.R == nil {
+		related.R = &clientR{
 			ClientSessions: ClientSessionSlice{o},
 		}
 	} else {
