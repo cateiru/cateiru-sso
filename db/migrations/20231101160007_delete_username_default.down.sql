@@ -1,1 +1,0 @@
-ALTER TABLE `user` MODIFY `user_name` VARCHAR(15) NOT NULL DEFAULT (LEFT(UUID(), 8)) COLLATE utf8_general_ci;

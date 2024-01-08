@@ -197,6 +197,8 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 		},
 
 		StandardClaims: *standardClaims,
+
+		// AtHash: "", TODO: 埋める
 	}
 	idToken, err := lib.SignJwt(claims, h.C.JWTPrivateKeyFilePath)
 	if err != nil {
