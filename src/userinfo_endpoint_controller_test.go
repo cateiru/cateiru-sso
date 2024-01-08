@@ -171,5 +171,47 @@ func TestUserinfoAuthentication(t *testing.T) {
 }
 
 func TestResponseStandardClaims(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
 
+	t.Run("成功: レスポンスを作れる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		client := RegisterClient(t, ctx, nil, "openid", "profile", "email")
+
+		userinfo, err := h.ResponseStandardClaims(ctx, client.ClientID, u.ID)
+		require.NoError(t, err)
+
+		require.Equal(t, userinfo.Sub, u.ID)
+		require.Equal(t, userinfo.PreferredUsername, u.UserName)
+		require.Equal(t, userinfo.Email, u.Email)
+	})
+
+	t.Run("成功: スコープによって返る値が変わる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		client := RegisterClient(t, ctx, nil, "openid")
+
+		userinfo, err := h.ResponseStandardClaims(ctx, client.ClientID, u.ID)
+		require.NoError(t, err)
+
+		require.Equal(t, userinfo.Sub, u.ID)
+		require.Equal(t, userinfo.PreferredUsername, "")
+		require.Equal(t, userinfo.Email, "")
+	})
+
+	t.Run("失敗: clientが存在しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		_, err := h.ResponseStandardClaims(ctx, "invalid", u.ID)
+		require.EqualError(t, err, "code=400, error=invalid_request, message=Client not found")
+	})
+
+	t.Run("失敗: userが存在しない", func(t *testing.T) {
+		client := RegisterClient(t, ctx, nil, "openid")
+
+		_, err := h.ResponseStandardClaims(ctx, client.ClientID, "invalid")
+		require.EqualError(t, err, "code=400, error=invalid_request, message=User not found")
+	})
 }

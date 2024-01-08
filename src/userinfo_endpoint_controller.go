@@ -46,7 +46,6 @@ func (h *Handler) UserinfoAuthentication(ctx context.Context, c echo.Context) (*
 	return clientSession, nil
 }
 
-// TODO: テスト
 // userinfo のレスポンスを返す。JWTによる署名はしない
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#UserInfoResponse
 func (h *Handler) ResponseStandardClaims(ctx context.Context, clientId string, userId string) (*UserinfoResponse, error) {
