@@ -176,7 +176,9 @@ type Config struct {
 	// OIDC
 	// ID Token の有効期限
 	// `exp` に該当する
-	IDTokenExpire time.Duration
+	IDTokenExpire           time.Duration
+	OAuthAccessTokenPeriod  time.Duration
+	OAuthRefreshTokenPeriod time.Duration
 }
 
 var configs = []*Config{
@@ -392,7 +394,9 @@ var LocalConfig = &Config{
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 
-	IDTokenExpire: 1 * time.Hour,
+	IDTokenExpire:           1 * time.Hour,
+	OAuthAccessTokenPeriod:  12 * time.Hour,     // 12時間
+	OAuthRefreshTokenPeriod: 7 * 24 * time.Hour, // 7日
 }
 
 var CloudRunConfig = &Config{
@@ -583,7 +587,9 @@ var CloudRunConfig = &Config{
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 
-	IDTokenExpire: 1 * time.Hour,
+	IDTokenExpire:           1 * time.Hour,
+	OAuthAccessTokenPeriod:  12 * time.Hour,     // 12時間
+	OAuthRefreshTokenPeriod: 7 * 24 * time.Hour, // 7日
 }
 
 var CloudRunStagingConfig = &Config{
@@ -776,7 +782,9 @@ var CloudRunStagingConfig = &Config{
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 
-	IDTokenExpire: 1 * time.Hour,
+	IDTokenExpire:           1 * time.Hour,
+	OAuthAccessTokenPeriod:  12 * time.Hour,     // 12時間
+	OAuthRefreshTokenPeriod: 7 * 24 * time.Hour, // 7日
 }
 
 var TestConfig = &Config{
@@ -950,7 +958,9 @@ var TestConfig = &Config{
 
 	JWTKid: "9c6945f9-815f4a4eb891fae9e1359ada",
 
-	IDTokenExpire: 1 * time.Hour,
+	IDTokenExpire:           1 * time.Hour,
+	OAuthAccessTokenPeriod:  12 * time.Hour,     // 12時間
+	OAuthRefreshTokenPeriod: 7 * 24 * time.Hour, // 7日
 }
 
 func InitConfig(mode string) *Config {
