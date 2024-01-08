@@ -10,7 +10,7 @@ import (
 )
 
 type JwksResponse struct {
-	Keys jwk.Key `json:"keys"`
+	Keys []jwk.Key `json:"keys"`
 }
 
 // OpenID Connect Discovery 1.0 incorporating errata set 1 で定義されている、 `.well-known/openid-configuration` のエンドポイント
@@ -132,7 +132,9 @@ func (h *Handler) JwksJsonHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, &JwksResponse{
-		Keys: keySet,
+		Keys: []jwk.Key{
+			keySet,
+		},
 	})
 }
 

@@ -40,6 +40,6 @@ src.OpenidConfiguration{
 ---
 
 [TestJwksJsonHandler/取得可能 - 1]
-{"keys":{"alg":"RS256","e":"AQAB","kid":"9c6945f9-815f4a4eb891fae9e1359ada","kty":"RSA","n":"ojSXNrYgwQ_E5lQTEOued7e26vdIoi_lurRzQyZhdEiwW_ixm4VbXrrANRvuyE9KgahFodKOztAV87nX4PVrmW4jHKUTrOrqYPG5xBNQpbacvOUiiHTID2r8e_DZuuHVVf61Gvjl-f4aQKcY-CyZJZ_aY6MRbV7kkGrA8SiZ0YYgPOnEFKQinRhK-J6td6ufh12eGLlzdKzUZet1z05ZgUp1JAn1sIx_H2xpnqWUj8nU_mXdMSXkt-UH4KLlBhqgbwfLDWxR-o1BuQ0cBDxEv9gLJIyBb1mL6YOzhxAjEotPvUo3wQDsEr-SerBB2VcUOXzFZo4oD-zR3I49o88382v14InR_Rq3_bE8QhEDwVsAoVU1j7BkfBbCiGm3UfQl03Tcb5eDzSEN0RUaoPSQS_fj3zEcv1aKY0T31fvUKQ5o8aMS3eiM0XQXlK6V-ZLgH8o-dsFAS2OK9RFCU-anIeTfIPXEZHDamVi8yRj-VtCOKJj4aTmTQABYK0UQPYmp","use":"sig"}}
+{"keys":[{"alg":"RS256","e":"AQAB","kid":"9c6945f9-815f4a4eb891fae9e1359ada","kty":"RSA","n":"ojSXNrYgwQ_E5lQTEOued7e26vdIoi_lurRzQyZhdEiwW_ixm4VbXrrANRvuyE9KgahFodKOztAV87nX4PVrmW4jHKUTrOrqYPG5xBNQpbacvOUiiHTID2r8e_DZuuHVVf61Gvjl-f4aQKcY-CyZJZ_aY6MRbV7kkGrA8SiZ0YYgPOnEFKQinRhK-J6td6ufh12eGLlzdKzUZet1z05ZgUp1JAn1sIx_H2xpnqWUj8nU_mXdMSXkt-UH4KLlBhqgbwfLDWxR-o1BuQ0cBDxEv9gLJIyBb1mL6YOzhxAjEotPvUo3wQDsEr-SerBB2VcUOXzFZo4oD-zR3I49o88382v14InR_Rq3_bE8QhEDwVsAoVU1j7BkfBbCiGm3UfQl03Tcb5eDzSEN0RUaoPSQS_fj3zEcv1aKY0T31fvUKQ5o8aMS3eiM0XQXlK6V-ZLgH8o-dsFAS2OK9RFCU-anIeTfIPXEZHDamVi8yRj-VtCOKJj4aTmTQABYK0UQPYmp","use":"sig"}]}
 
 ---
