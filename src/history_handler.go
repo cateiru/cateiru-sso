@@ -15,7 +15,6 @@ import (
 )
 
 type ClientLoginResponse struct {
-	Scope     []string
 	CreatedAt time.Time `json:"created_at"`
 
 	Client *ClientHistoryResponse `json:"client"`
@@ -150,13 +149,7 @@ func (h *Handler) HistoryClientLoginHandler(c echo.Context) error {
 			return err
 		}
 
-		scope := []string{}
-		if err := r.Scopes.Unmarshal(&scope); err != nil {
-			return err
-		}
-
 		logins = append(logins, ClientLoginResponse{
-			Scope:     scope,
 			CreatedAt: r.CreatedAt,
 
 			Client: client,

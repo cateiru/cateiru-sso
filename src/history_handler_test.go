@@ -39,7 +39,6 @@ func TestHistoryClientLoginHandler(t *testing.T) {
 
 			ClientID: clientId,
 
-			Scopes: scopesJson,
 			Period: time.Now().Add(C.ClientRefreshPeriod),
 		}
 		err = refresh.Insert(ctx, DB, boil.Infer())
