@@ -1,451 +1,869 @@
-CREATE TABLE `brand` (
-  `id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `name` text COLLATE utf8mb4_bin NOT NULL,
-  `description` text COLLATE utf8mb4_bin,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `broadcast_entry` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `create_user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `title` text COLLATE utf8mb4_bin NOT NULL,
-  `body` text COLLATE utf8mb4_bin,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `broadcast_entry_create_user_id` (`create_user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `broadcast_notice` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `entry_id` int unsigned NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `is_read` tinyint(1) NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `broadcast_notice_entry_id_user_id` (`entry_id`,`user_id`),
-  KEY `broadcast_notice_entry_id` (`entry_id`),
-  KEY `broadcast_notice_user_id` (`user_id`),
-  KEY `broadcast_notice_user_id_is_read` (`user_id`,`is_read`),
-  CONSTRAINT `broadcast_notice_ibfk_1` FOREIGN KEY (`entry_id`) REFERENCES `broadcast_entry` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `broadcast_notice_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `certificate_session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `identifier` tinyint NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `certificate_session_user_id` (`user_id`),
-  CONSTRAINT `certificate_session_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `client` (
-  `client_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `name` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `description` text COLLATE utf8mb4_bin,
-  `image` text COLLATE utf8mb4_bin,
-  `org_id` varchar(32) COLLATE utf8mb4_bin DEFAULT NULL,
-  `org_member_only` tinyint(1) NOT NULL DEFAULT '0',
-  `is_allow` tinyint(1) NOT NULL DEFAULT '0',
-  `prompt` enum('login','2fa_login') COLLATE utf8mb4_bin DEFAULT NULL,
-  `owner_user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `client_secret` varchar(63) COLLATE utf8mb4_bin NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`client_id`),
-  KEY `client_owner_user_id` (`owner_user_id`),
-  KEY `client_owner_user_id_client_id` (`owner_user_id`,`client_id`),
-  KEY `client_org_id` (`org_id`),
-  KEY `client_org_id_client_id` (`org_id`,`client_id`),
-  KEY `client_org_id_client_id_owner_user_id` (`org_id`,`client_id`,`owner_user_id`),
-  CONSTRAINT `client_ibfk_1` FOREIGN KEY (`owner_user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `client_allow_rule` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin DEFAULT NULL,
-  `email_domain` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `client_allow_rule_user_id_client_id` (`client_id`,`user_id`),
-  UNIQUE KEY `client_allow_rule_email_domain_client_id` (`client_id`,`email_domain`),
-  UNIQUE KEY `client_allow_rule_user_id_email_domain_client_id` (`client_id`,`user_id`,`email_domain`),
-  KEY `client_allow_rule_client_id` (`client_id`),
-  CONSTRAINT `client_allow_rule_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `client_redirect` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `host` varchar(128) COLLATE utf8mb4_bin NOT NULL,
-  `url` text COLLATE utf8mb4_bin NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `client_redirect_client_id` (`client_id`),
-  CONSTRAINT `client_redirect_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `client_referrer` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `host` varchar(128) COLLATE utf8mb4_bin NOT NULL,
-  `url` text COLLATE utf8mb4_bin NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `client_redirect_client_id` (`client_id`),
-  CONSTRAINT `client_referrer_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `client_refresh` (
-  `id` varchar(63) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `scopes` json NOT NULL,
-  `session_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `client_refresh_user_id` (`user_id`),
-  KEY `client_refresh_session_id` (`session_id`),
-  KEY `client_refresh_client_id` (`client_id`),
-  CONSTRAINT `client_refresh_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `client_refresh_ibfk_2` FOREIGN KEY (`session_id`) REFERENCES `client_session` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `client_scope` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `scope` varchar(15) COLLATE utf8mb4_bin NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `client_scope_client_id` (`client_id`),
-  CONSTRAINT `client_scope_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `client_session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `client_session_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `email_verify_session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `new_email` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `verify_code` char(6) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `retry_count` tinyint unsigned NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `email_verify_user_id` (`user_id`),
-  CONSTRAINT `email_verify_session_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `invite_org_session` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `token` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `org_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `invite_org_session_token` (`token`),
-  KEY `invite_email_session_email` (`email`),
-  KEY `invite_email_session_org_id` (`org_id`),
-  CONSTRAINT `invite_org_session_ibfk_1` FOREIGN KEY (`org_id`) REFERENCES `organization` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `login_client_history` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `device` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `os` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `browser` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `is_mobile` tinyint(1) DEFAULT NULL,
-  `ip` varbinary(16) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `login_client_history_client_id` (`client_id`),
-  KEY `login_client_history_user_id` (`user_id`),
-  KEY `login_client_history_client_id_user_id` (`client_id`,`user_id`),
-  CONSTRAINT `login_client_history_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `login_client_history_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `login_history` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `refresh_id` varbinary(16) NOT NULL,
-  `device` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `os` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `browser` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `is_mobile` tinyint(1) DEFAULT NULL,
-  `ip` varbinary(16) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `login_history_user_id` (`user_id`),
-  KEY `login_history_refresh_id` (`refresh_id`),
-  CONSTRAINT `login_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `login_try_history` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `device` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `os` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `browser` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `is_mobile` tinyint(1) DEFAULT NULL,
-  `ip` varbinary(16) NOT NULL,
-  `identifier` tinyint NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `login_try_history_user_id` (`user_id`),
-  CONSTRAINT `login_try_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `oauth_login_session` (
-  `token` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `referrer_host` varchar(128) COLLATE utf8mb4_bin DEFAULT NULL,
-  `login_ok` tinyint(1) NOT NULL DEFAULT '0',
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`token`),
-  KEY `client_id` (`client_id`),
-  CONSTRAINT `oauth_login_session_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `oauth_session` (
-  `code` varchar(63) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `client_id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `nonce` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `auth_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`code`),
-  KEY `oauth_session_user_id` (`user_id`),
-  KEY `oauth_session_client_id` (`client_id`),
-  CONSTRAINT `oauth_session_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `oauth_session_ibfk_2` FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `operation_history` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `device` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `os` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `browser` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `is_mobile` tinyint(1) DEFAULT NULL,
-  `ip` varbinary(16) NOT NULL,
-  `identifier` tinyint NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `operation_history_user_id` (`user_id`),
-  CONSTRAINT `operation_history_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `organization` (
-  `id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `name` varchar(128) COLLATE utf8mb4_bin NOT NULL,
-  `image` text COLLATE utf8mb4_bin,
-  `link` text COLLATE utf8mb4_bin,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `organization_user` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `organization_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `role` enum('owner','member','guest') COLLATE utf8mb4_bin NOT NULL DEFAULT 'guest',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `organization_user_organization_id_user_id` (`organization_id`,`user_id`),
-  KEY `organization_user_organization_id` (`organization_id`),
-  KEY `organization_user_user_id` (`user_id`),
-  CONSTRAINT `organization_user_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `organization` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `organization_user_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `otp` (
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `secret` text COLLATE utf8mb4_bin NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`),
-  CONSTRAINT `otp_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `otp_backup` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `code` varchar(15) COLLATE utf8mb4_bin NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `otp_backup_user_code` (`user_id`,`code`),
-  KEY `otp_backup_user_id` (`user_id`),
-  CONSTRAINT `otp_backup_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `otp_session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `retry_count` tinyint unsigned NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `otp_session_user_id` (`user_id`),
-  CONSTRAINT `otp_session_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `password` (
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `salt` varbinary(32) NOT NULL,
-  `hash` varbinary(32) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`),
-  CONSTRAINT `password_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `refresh` (
-  `id` varchar(63) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `history_id` varbinary(16) NOT NULL DEFAULT (uuid_to_bin(uuid())),
-  `session_id` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `refresh_history_id` (`history_id`),
-  UNIQUE KEY `refresh_session_id` (`session_id`),
-  KEY `refresh_user_id` (`user_id`),
-  KEY `refresh_id_period` (`id`,`period`),
-  CONSTRAINT `refresh_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `register_otp_session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `public_key` text COLLATE utf8mb4_bin NOT NULL,
-  `secret` text COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `retry_count` tinyint unsigned NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `register_otp_session_user_id` (`user_id`),
-  CONSTRAINT `register_otp_session_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `register_session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `email_verified` tinyint(1) NOT NULL DEFAULT '0',
-  `send_count` tinyint unsigned NOT NULL DEFAULT '1',
-  `verify_code` char(6) COLLATE utf8mb4_bin NOT NULL,
-  `retry_count` tinyint unsigned NOT NULL DEFAULT '0',
-  `org_id` varchar(32) COLLATE utf8mb4_bin DEFAULT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `register_session_email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `reregistration_password_session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `period_clear` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `completed` tinyint(1) NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `reregistration_password_session_email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `session_user_id` (`user_id`),
-  CONSTRAINT `session_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `setting` (
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `notice_email` tinyint(1) NOT NULL DEFAULT '0',
-  `notice_webpush` tinyint(1) NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`),
-  CONSTRAINT `setting_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-CREATE TABLE `staff` (
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `memo` text COLLATE utf8mb4_bin,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`),
-  CONSTRAINT `staff_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+-- CateiruSSOのDDL
+
+-- ユーザテーブル
 CREATE TABLE `user` (
-  `id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `user_name` varchar(15) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `family_name` text COLLATE utf8mb4_bin,
-  `middle_name` text COLLATE utf8mb4_bin,
-  `given_name` text COLLATE utf8mb4_bin,
-  `gender` char(1) COLLATE utf8mb4_bin NOT NULL DEFAULT '0',
-  `birthdate` date DEFAULT NULL,
-  `avatar` text COLLATE utf8mb4_bin,
-  `locale_id` varchar(15) COLLATE utf8mb4_bin NOT NULL DEFAULT 'ja-JP',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_user_name` (`user_name`),
-  UNIQUE KEY `user_email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+    -- ユーザIDはULIDを使用して一意にする
+    `id` VARCHAR(32) NOT NULL,
+
+    -- ユーザ名はユーザごとに一意なIDとなる
+    -- ログイン時にメールアドレスの代替としてログインできる
+    -- アカウント登録時に、デフォルトはUUIDからランダムな文字列を作って入れる
+    -- 検索する際にはutf8mb4_general_ciのコレクションを使用する
+    `user_name` VARCHAR(15) NOT NULL COLLATE utf8_general_ci,
+
+    -- Email
+    `email` VARCHAR(255) NOT NULL,
+
+    -- 名前
+    `family_name` TEXT DEFAULT NULL,
+    `middle_name` TEXT DEFAULT NULL,
+    `given_name` TEXT DEFAULT NULL,
+
+    -- 性別
+    -- 0: 不明、1: 男性、2: 女性、9: 適用不能
+    `gender` CHAR(1) NOT NULL DEFAULT '0',
+
+    `birthdate` DATE DEFAULT NULL,
+    `avatar` TEXT DEFAULT NULL,
+
+    -- ロケールID
+    -- デフォルトは日本(ja_JP)
+    -- CharGPT:
+    -- スクリプトタグや変種タグが含まれる場合、BCP 47のタグの最大文字列長は最大で15文字程度になる可能性があります。
+    -- これは、言語タグが2文字、地域タグが2文字、スクリプトタグが4文字、変種タグが最大で7文字まで許容されるためです。
+    -- ただし、スクリプトタグや変種タグが必ずしもすべての場合に必要とされるわけではないため、必要に応じて長さを調整する必要があります。
+    -- また、BCP 47のタグは将来的に変更や追加がある可能性があるため、データベースの設計には余裕を持たせておくことが望ましいです。
+    `locale_id` VARCHAR(15) DEFAULT 'ja-JP' NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    UNIQUE INDEX `user_user_name` (`user_name`),
+    UNIQUE INDEX `user_email` (`email`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- ユーザ設定テーブル
+CREATE TABLE `setting` (
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 通知設定
+    `notice_email` BOOLEAN NOT NULL DEFAULT 0,
+    `notice_webpush` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- ブランドテーブル
+CREATE TABLE `brand` (
+    `id` VARCHAR(32) NOT NULL,
+
+    `name` TEXT NOT NULL,
+
+    `description` TEXT DEFAULT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
 CREATE TABLE `user_brand` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `brand_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `brand_user_brand` (`user_id`,`brand_id`),
-  KEY `brand_user_id` (`user_id`),
-  KEY `brand_brand_id` (`brand_id`),
-  CONSTRAINT `user_brand_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `user_brand_ibfk_2` FOREIGN KEY (`brand_id`) REFERENCES `brand` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- ブランドID
+    `brand_id` VARCHAR(32) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`brand_id`) REFERENCES `brand` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `brand_user_id` (`user_id`),
+    INDEX `brand_brand_id` (`brand_id`),
+    UNIQUE INDEX `brand_user_brand` (`user_id`, `brand_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- スタッフテーブル
+-- ここに存在するユーザはスタッフとなる
+CREATE TABLE `staff` (
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- メモ
+    -- なぜスタッフなのかみたいなのを書くスペース
+    `memo` TEXT DEFAULT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- ユーザー名保存
 CREATE TABLE `user_name` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(15) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `user_name_user_name_id_period` (`user_name`,`user_id`,`period`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `user_name` VARCHAR(15) NOT NULL COLLATE utf8_general_ci,
+
+    `user_id` VARCHAR(32) NOT NULL,
+
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `user_name_user_name_id_period` (`user_name`, `user_id`, `period`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- WebAuthnを保存するテーブル
 CREATE TABLE `webauthn` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `credential` json NOT NULL,
-  `device` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `os` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `browser` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `is_mobile` tinyint(1) DEFAULT NULL,
-  `ip` varbinary(16) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `webauthn_user_id` (`user_id`),
-  CONSTRAINT `webauthn_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- webauthn.Credentialのオブジェクト
+    `credential` JSON NOT NULL,
+
+    -- 登録した端末の情報
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `webauthn_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- パスワードを保存するテーブル
+CREATE TABLE `password` (
+    `user_id` VARCHAR(32) NOT NULL,
+
+    `salt` VARBINARY(32) NOT NULL,
+    `hash` VARBINARY(32) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- アプリを使用したOTPを保存するテーブル
+CREATE TABLE `otp` (
+    `user_id` VARCHAR(32) NOT NULL,
+
+    `secret` TEXT NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- OTPのバックアップコードを保存するテーブル
+CREATE TABLE `otp_backup` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    `code` VARCHAR(15) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `otp_backup_user_id` (`user_id`),
+    UNIQUE INDEX `otp_backup_user_code` (`user_id`, `code`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- アカウント登録時に使用するセッションを保存するテーブル
+CREATE TABLE `register_session` (
+    `id` VARCHAR(31) NOT NULL,
+
+    `email` VARCHAR(255) NOT NULL,
+    `email_verified` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- メール送信回数
+    `send_count` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+
+    -- 認証コード
+    `verify_code` CHAR(6) NOT NULL,
+
+    -- コードを入力した回数
+    `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+
+    -- orgの招待を受けてアカウントを作成する場合に使用する
+    `org_id` VARCHAR(32) DEFAULT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    UNIQUE INDEX `register_session_email` (`email`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- アプリを使用したOTPを新規に登録する際に使用するセッションテーブル
+CREATE TABLE `register_otp_session` (
+    `id` VARCHAR(31) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    `public_key` TEXT NOT NULL,
+    `secret` TEXT NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- コードを入力した回数
+    `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    INDEX `register_otp_session_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- Emailを更新したときに確認に使用するテーブル
+CREATE TABLE `email_verify_session` (
+    `id` VARCHAR(31) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+    `new_email` VARCHAR(255) NOT NULL,
+
+    -- 認証コード
+    `verify_code` CHAR(6) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- コードを入力した回数
+    `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    INDEX `email_verify_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- パスワード再登録用
+CREATE TABLE `reregistration_password_session` (
+    `id` VARCHAR(31) NOT NULL,
+
+    `email` VARCHAR(255) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 疲労攻撃を回避するため有効期限と別のレコード削除期限を設ける
+    `period_clear` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `completed` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `reregistration_password_session_email` (`email`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- セッション維持用のテーブル
+CREATE TABLE `session` (
+    -- ランダムにトークンを生成する
+    `id` VARCHAR(31) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    INDEX `session_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- セッショントークンを更新するためのリフレッシュトークン用テーブル
+-- 同時ログインでは、このトークンのみcookieに入れっぱなしにしておく
+CREATE TABLE `refresh` (
+    -- ランダムにトークンを生成する
+    `id` VARCHAR(63) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- ログイン履歴と紐づけるためのID
+    `history_id` VARBINARY(16) NOT NULL DEFAULT (UUID_TO_BIN(UUID())),
+
+    -- sessionのid
+    -- 複数ログインを可能にするためNULLABLE
+    `session_id` VARCHAR(31) DEFAULT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    INDEX `refresh_user_id` (`user_id`),
+    UNIQUE INDEX `refresh_history_id` (`history_id`),
+    UNIQUE INDEX `refresh_session_id` (`session_id`),
+    INDEX `refresh_id_period` (`id`, `period`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- パスワードによる認証は成功して次にOTPを求める場合のセッションを保存するテーブル
+CREATE TABLE `otp_session` (
+    `id` VARCHAR(31) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- コードを入力した回数
+    `retry_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    INDEX `otp_session_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- SSOクライアントのセッショントークンテーブル
+-- これを使用して UserInfo Endpoint を取得可能
+CREATE TABLE `client_session` (
+    `id` VARCHAR(31) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- SSOクライアントのリフレッシュトークンテーブル
+-- 更新は Token Endpoint を使用する
+CREATE TABLE `client_refresh` (
+    -- ランダムにトークンを生成する
+    `id` VARCHAR(63) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    -- スコープ
+    `scopes` JSON NOT NULL,
+
+    -- client_sessionのid
+    `session_id` VARCHAR(31) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`session_id`) REFERENCES `client_session` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    INDEX `client_refresh_user_id` (`user_id`),
+    INDEX `client_refresh_session_id` (`session_id`),
+    INDEX `client_refresh_client_id` (`client_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- WebAuthnを登録・ログインするときに保持する情報
+-- webauthn.SessionData を元にしています
 CREATE TABLE `webauthn_session` (
-  `id` varchar(31) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(32) COLLATE utf8mb4_bin DEFAULT NULL,
-  `row` json NOT NULL,
-  `period` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `identifier` tinyint NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `webauthn_session_user_id` (`user_id`),
-  KEY `webauthn_session_identifier` (`identifier`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+    -- ランダムにトークンを生成する
+    `id` VARCHAR(31) NOT NULL,
+
+    -- 紐付けられるユーザ
+    `user_id` VARCHAR(32) DEFAULT NULL,
+
+    -- webauthn.SessionData のjsonデータ
+    `row` JSON NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 識別子
+    `identifier` TINYINT NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY(`id`),
+    INDEX `webauthn_session_user_id` (`user_id`),
+    INDEX `webauthn_session_identifier` (`identifier`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- パスワード変更時など、認証しているユーザーに対してさらに認証を求めるときのセッション
+CREATE TABLE `certificate_session` (
+    -- ランダムにトークンを生成する
+    `id` VARCHAR(31) NOT NULL,
+
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 識別子
+    `identifier` TINYINT NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    INDEX `certificate_session_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- ODICのクライアント
+CREATE TABLE `client` (
+    -- OAuth2.0のClient ID
+    `client_id` VARCHAR(32) NOT NULL,
+
+    -- クライアント名
+    `name` VARCHAR(31) NOT NULL,
+    -- 説明
+    `description` TEXT DEFAULT NULL,
+    -- クライアントのイメージ
+    `image` TEXT DEFAULT NULL,
+
+    -- orgで作成したものであれば、ここにorgのIDが入る
+    -- 個人で作成したものはnullになる
+    `org_id` VARCHAR(32) DEFAULT NULL,
+
+    -- org_idが設定されている場合にこのフラグがtrueだと、orgのメンバーのみが利用できるようになる
+    `org_member_only` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- ホワイトリストを使用するかどうか
+    `is_allow` BOOLEAN NOT NULL DEFAULT 0,
+    -- OAuthの認証リクエスト時にログイン、2faログインを求めることを強制する
+    `prompt` ENUM('login', '2fa_login') DEFAULT NULL,
+
+    -- 作成者
+    `owner_user_id` VARCHAR(32) NOT NULL,
+
+    -- OAuth2.0のClient Secret
+    `client_secret` VARCHAR(63) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`owner_user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`client_id`),
+    INDEX `client_owner_user_id` (`owner_user_id`),
+    INDEX `client_owner_user_id_client_id` (`owner_user_id`, `client_id`),
+    INDEX `client_org_id` (`org_id`),
+    INDEX `client_org_id_client_id` (`org_id`, `client_id`),
+    INDEX `client_org_id_client_id_owner_user_id` (`org_id`, `client_id`, `owner_user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- クライアントのリダイレクトURLを設定するテーブル
+CREATE TABLE `client_redirect` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    `host` VARCHAR(128) NOT NULL,
+    `url` TEXT NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `client_redirect_client_id` (`client_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- クライアントのリファラーURLを設定するテーブル
+CREATE TABLE `client_referrer` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    `host` VARCHAR(128) NOT NULL,
+    `url` TEXT NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `client_redirect_client_id` (`client_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- OAuthで接続したときのセッション
+-- nonceとかを保存しておく
+CREATE TABLE `oauth_session` (
+    `code` VARCHAR(63) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- クライアントのID
+    `client_id` VARCHAR(31) NOT NULL,
+
+    -- CSRF, XSRFで使用される`nonce.`を格納するやつ
+    `nonce` VARCHAR(31) DEFAULT NULL,
+
+    -- 認証が発生した時刻
+    `auth_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`code`),
+    INDEX `oauth_session_user_id` (`user_id`),
+    INDEX `oauth_session_client_id` (`client_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- SSOクライアントのスコープを保存するテーブル
+CREATE TABLE `client_scope` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `client_id` VARCHAR(31) NOT NULL,
+
+    -- スコープ名
+    -- ref. https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes
+    `scope` VARCHAR(15) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `client_scope_client_id` (`client_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- クライアントのis_allowが1のときのホワイトリストルール
+CREATE TABLE `client_allow_rule` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `client_id` VARCHAR(31) NOT NULL,
+
+    -- user_idが指定されている場合、そのユーザのみを通過させる
+    `user_id` VARCHAR(32) DEFAULT NULL,
+
+    -- email_domainが指定されている場合、そのドメインと一致するユーザのみを通過させる
+    `email_domain` VARCHAR(31) DEFAULT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `client_allow_rule_client_id` (`client_id`),
+    UNIQUE INDEX `client_allow_rule_user_id_client_id` (`client_id`, `user_id`),
+    UNIQUE INDEX `client_allow_rule_email_domain_client_id` (`client_id`, `email_domain`),
+    UNIQUE INDEX `client_allow_rule_user_id_email_domain_client_id` (`client_id`, `user_id`, `email_domain`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 過去にログインしたSSOクライアントのテーブル
+CREATE TABLE `login_client_history` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `client_id` VARCHAR(31) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    -- INET6_ATON、INET6_NTOAを使用して格納する
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `login_client_history_client_id` (`client_id`),
+    INDEX `login_client_history_user_id` (`user_id`),
+    INDEX `login_client_history_client_id_user_id` (`client_id`, `user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- ログイン履歴
+CREATE TABLE `login_history` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- リフレッシュトークンと紐づけたID
+    -- refreshテーブルに参照することでユーザがどの端末でログインしているかを調べることができる
+    `refresh_id` VARBINARY(16) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    -- INET6_ATON、INET6_NTOAを使用して格納する
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `login_history_user_id` (`user_id`),
+    INDEX `login_history_refresh_id` (`refresh_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- ログインを試みた履歴
+CREATE TABLE `login_try_history` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    -- INET6_ATON、INET6_NTOAを使用して格納する
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 識別子
+    `identifier` TINYINT NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `login_try_history_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 全ユーザー一斉通知用のエントリ
+CREATE TABLE `broadcast_entry` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `create_user_id` VARCHAR(32) NOT NULL,
+
+    `title` TEXT NOT NULL,
+    `body` TEXT DEFAULT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    INDEX `broadcast_entry_create_user_id` (`create_user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 全ユーザー一斉通知のユーザごとの既読状況を保存するテーブル
+CREATE TABLE `broadcast_notice` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `entry_id` INT UNSIGNED NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 既読状況
+    `is_read` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`entry_id`) REFERENCES `broadcast_entry` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `broadcast_notice_entry_id` (`entry_id`),
+    INDEX `broadcast_notice_user_id` (`user_id`),
+    INDEX `broadcast_notice_user_id_is_read` (`user_id`, `is_read`),
+    UNIQUE INDEX `broadcast_notice_entry_id_user_id` (`entry_id`, `user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 組織
+CREATE TABLE `organization` (
+    `id` VARCHAR(32) NOT NULL,
+
+    -- 組織名
+    `name` VARCHAR(128) NOT NULL,
+    `image` TEXT DEFAULT NULL,
+    `link` TEXT DEFAULT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 組織に所属するユーザー
+CREATE TABLE `organization_user` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `organization_id` VARCHAR(32) NOT NULL,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- owner: 管理者。このユーザーは組織から脱退することができない。
+    -- member: クライアントの作成・編集が可能なユーザー
+    -- guest: クライアントにログインすることのみが可能なユーザー
+    `role` ENUM('owner', 'member', 'guest') NOT NULL DEFAULT 'guest',
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`organization_id`) REFERENCES `organization` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `organization_user_organization_id` (`organization_id`),
+    INDEX `organization_user_user_id` (`user_id`),
+    UNIQUE INDEX `organization_user_organization_id_user_id` (`organization_id`, `user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- Org招待メールのセッション
+CREATE TABLE `invite_org_session` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+
+    `token` VARCHAR(31) NOT NULL,
+
+    -- 同一ユーザーに複数メールを送信できるようにUNIQUEではない
+    `email` VARCHAR(255) NOT NULL,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- orgの招待の場合はorg_idが付与される
+    -- 現状、orgの招待しかないのでNOT NULLにしている
+    `org_id` VARCHAR(32) NOT NULL,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`org_id`) REFERENCES `organization` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`id`),
+    UNIQUE INDEX `invite_org_session_token` (`token`),
+    INDEX `invite_email_session_email` (`email`),
+    INDEX `invite_email_session_org_id` (`org_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- oauth 未ログインや `prompt=login` 時の一次保存セッション
+CREATE TABLE `oauth_login_session` (
+    `token` VARCHAR(31) NOT NULL,
+
+    `client_id` VARCHAR(31) NOT NULL,
+
+    `referrer_host` VARCHAR(128) DEFAULT NULL,
+
+    `login_ok` BOOLEAN NOT NULL DEFAULT 0,
+
+    -- 有効期限
+    `period` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`client_id`) REFERENCES `client` (`client_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY(`token`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
+
+-- 行動履歴
+CREATE TABLE `operation_history` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` VARCHAR(32) NOT NULL,
+
+    -- 使用した端末のUA
+    `device` VARCHAR(31) DEFAULT NULL,
+    `os` VARCHAR(31) DEFAULT NULL,
+    `browser` VARCHAR(31) DEFAULT NULL,
+    `is_mobile` BOOLEAN DEFAULT NULL,
+
+    -- INET6_ATON、INET6_NTOAを使用して格納する
+    `ip` VARBINARY(16) NOT NULL,
+
+    -- 識別子
+    `identifier` TINYINT NOT NULL DEFAULT 0,
+
+    -- 管理用
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    PRIMARY KEY (`id`),
+    INDEX `operation_history_user_id` (`user_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ENGINE=InnoDB;
