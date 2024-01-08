@@ -238,6 +238,54 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 		require.Equal(t, claims.StandardClaims.PreferredUsername, u.UserName)
 	})
 
+	t.Run("成功: スコープが無いとその情報は取得できない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		client := RegisterClient(t, ctx, nil, "openid") // profile と email が無い
+
+		redirectUri, err := url.Parse("https://example.test/hogehoge")
+		require.NoError(t, err)
+		redirect := models.ClientRedirect{
+			ClientID: client.ClientID,
+			Host:     redirectUri.Host,
+			URL:      redirectUri.String(),
+		}
+		err = redirect.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		oauthSession := RegisterOauthSession(t, ctx, client.ClientID, &u)
+
+		query := url.Values{}
+		query.Set("code", oauthSession.Code)
+		query.Set("redirect_uri", redirectUri.String())
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.TokenEndpointAuthorizationCode(ctx, c, client)
+		require.NoError(t, err)
+
+		response := src.TokenEndpointResponse{}
+		require.NoError(t, m.Json(&response))
+
+		// IDToken の検証
+		idToken := response.IDToken
+		require.NotEmpty(t, idToken)
+
+		claims := src.AuthorizationCodeFlowClaims{}
+		token := DecodeJWT(t, idToken, &claims)
+		require.True(t, token.Valid)
+
+		require.Equal(t, claims.Iss, h.C.SiteHost.String())
+		require.Equal(t, claims.Sub, u.ID)
+		require.Equal(t, claims.Nonce, oauthSession.Nonce.String)
+
+		require.Equal(t, claims.StandardClaims.PreferredUsername, "", "profile スコープが無いので取得できない")
+		require.Equal(t, claims.StandardClaims.Email, "", "email スコープが無いので取得できない")
+	})
+
 	t.Run("失敗: codeが存在しない値", func(t *testing.T) {
 		client := RegisterClient(t, ctx, nil)
 
