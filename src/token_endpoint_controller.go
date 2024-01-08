@@ -116,7 +116,6 @@ func (h *Handler) ClientAuthentication(ctx context.Context, c echo.Context) (*mo
 	return nil, NewOIDCError(http.StatusUnauthorized, ErrTokenInvalidClient, "Invalid client authentication", "", "")
 }
 
-// TODO: AccessToken実装とそのテスト
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequest
 // validation: https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenRequestValidation
 func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Context, client *models.Client) error {
@@ -127,7 +126,6 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 
 	code := param.Get("code")
 	redirectUri := param.Get("redirect_uri")
-	clientId := param.Get("client_id")
 
 	parsedRedirectUri, redirectUriOk := lib.ValidateURL(redirectUri)
 	if !redirectUriOk {
@@ -143,17 +141,6 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 	}
 	if !existRedirect {
 		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid redirect_uri", "", "")
-	}
-
-	// `client_id` が指定されている場合は、検証する
-	// https://openid-foundation-japan.github.io/rfc6749.ja.html#token-req では、「認可サーバーよってクライアントが認証されていなければ必須 」
-	// となっているが、本プロジェクトではクライアントは認証されているはずなのでオプショナルとしている
-	// 認証: https://openid-foundation-japan.github.io/rfc6749.ja.html#token-endpoint-auth
-	// XXX: 本当に？
-	if clientId != "" {
-		if clientId != client.ClientID {
-			return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid client_id", "", "")
-		}
 	}
 
 	// code の検証
@@ -209,6 +196,19 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 		return err
 	}
 
+	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+		if err := clientSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+		if err := clientRefresh.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
 	standardClaims, err := UserToStandardClaims(authUser)
 	if err != nil {
 		return err
@@ -244,10 +244,104 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 	})
 }
 
-// TODO
+// リフレッシュトークンの更新
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#RefreshingAccessToken
 func (h *Handler) TokenEndpointRefreshToken(ctx context.Context, c echo.Context, client *models.Client) error {
-	return nil
+	param, err := h.QueryBodyParam(c)
+	if err != nil {
+		return err
+	}
+
+	refreshToken := param.Get("refresh_token")
+	if refreshToken == "" {
+		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid refresh_token", "", "")
+	}
+
+	clientRefresh, err := models.ClientRefreshes(
+		models.ClientRefreshWhere.ID.EQ(refreshToken),
+		models.ClientRefreshWhere.Period.GT(time.Now()),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid refresh_token", "", "")
+	}
+	if err != nil {
+		return err
+	}
+
+	// ユーザー、クライアントの存在チェックをしておく
+	existUser, err := models.Users(
+		models.UserWhere.ID.EQ(clientRefresh.UserID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !existUser {
+		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid refresh_token", "", "")
+	}
+
+	existClient, err := models.Clients(
+		models.ClientWhere.ClientID.EQ(clientRefresh.ClientID),
+	).Exists(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	if !existClient {
+		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid refresh_token", "", "")
+	}
+
+	// 新しいセッショントークンとリフレッシュトークンを用意
+	newRefreshToken, err := lib.RandomStr(63)
+	if err != nil {
+		return err
+	}
+	newSessionToken, err := lib.RandomStr(31)
+	if err != nil {
+		return err
+	}
+
+	newClientSession := models.ClientSession{
+		ID:       newSessionToken,
+		UserID:   clientRefresh.UserID,
+		ClientID: client.ClientID,
+		Period:   time.Now().Add(h.C.OAuthAccessTokenPeriod),
+	}
+	newClientRefresh := models.ClientRefresh{
+		ID:        newRefreshToken,
+		UserID:    clientRefresh.UserID,
+		ClientID:  clientRefresh.ClientID,
+		SessionID: newSessionToken,
+		Period:    time.Now().Add(h.C.OAuthRefreshTokenPeriod),
+	}
+	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
+		// セッション・リフレッシュは削除しておく
+		if _, err := models.ClientSessions(
+			models.ClientSessionWhere.ID.EQ(clientRefresh.SessionID),
+		).DeleteAll(ctx, h.DB); err != nil {
+			return err
+		}
+		if _, err := clientRefresh.Delete(ctx, h.DB); err != nil {
+			return err
+		}
+
+		// 新たに作成
+		if err := newClientSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+		if err := newClientRefresh.Insert(ctx, h.DB, boil.Infer()); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &TokenEndpointResponse{
+		AccessToken:  newSessionToken,
+		TokenType:    "Bearer",
+		RefreshToken: newRefreshToken,
+		ExpiresIn:    int64(h.C.OAuthAccessTokenPeriod) / 10000000, // time.Duration はマイクロ秒なので秒に変換
+	})
 }
 
 func UserToStandardClaims(user *models.User) (*StandardClaims, error) {

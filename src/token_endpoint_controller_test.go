@@ -238,72 +238,6 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 		require.Equal(t, claims.StandardClaims.PreferredUsername, u.UserName)
 	})
 
-	t.Run("成功: クライアントIDが空の場合はチェックを行わない", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, nil)
-
-		redirectUri, err := url.Parse("https://example.test/hogehoge")
-		require.NoError(t, err)
-		redirect := models.ClientRedirect{
-			ClientID: client.ClientID,
-			Host:     redirectUri.Host,
-			URL:      redirectUri.String(),
-		}
-		err = redirect.Insert(ctx, DB, boil.Infer())
-		require.NoError(t, err)
-
-		oauthSession := RegisterOauthSession(t, ctx, client.ClientID, &u)
-
-		query := url.Values{}
-		query.Set("code", oauthSession.Code)
-		query.Set("redirect_uri", redirectUri.String())
-
-		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
-		require.NoError(t, err)
-
-		c := m.Echo()
-
-		err = h.TokenEndpointAuthorizationCode(ctx, c, client)
-		require.NoError(t, err)
-
-		// oauthSession は削除されている
-		existOauthSession, err := models.OauthSessions(
-			models.OauthSessionWhere.Code.EQ(oauthSession.Code),
-		).Exists(ctx, DB)
-		require.NoError(t, err)
-		require.False(t, existOauthSession)
-
-		response := src.TokenEndpointResponse{}
-		require.NoError(t, m.Json(&response))
-
-		require.Equal(t, response.TokenType, "Bearer")
-		require.Equal(t, response.ExpiresIn, int64(h.C.OAuthAccessTokenPeriod)/10000000)
-
-		// アクセストークン有効確認
-		accessToken, err := models.ClientSessions(
-			models.ClientSessionWhere.ID.EQ(response.AccessToken),
-		).One(ctx, DB)
-		require.NoError(t, err)
-		require.Equal(t, accessToken.ClientID, client.ClientID)
-		require.Equal(t, accessToken.UserID, u.ID)
-		require.True(t, accessToken.Period.After(time.Now()))
-
-		// リフレッシュトークン有効確認
-		refreshToken, err := models.ClientRefreshes(
-			models.ClientRefreshWhere.ID.EQ(response.RefreshToken),
-		).One(ctx, DB)
-		require.NoError(t, err)
-		require.Equal(t, refreshToken.ClientID, client.ClientID)
-		require.Equal(t, refreshToken.UserID, u.ID)
-		require.Equal(t, refreshToken.SessionID, accessToken.ID)
-		require.True(t, refreshToken.Period.After(time.Now()))
-
-		// IDToken の検証
-		idToken := response.IDToken
-		require.NotEmpty(t, idToken)
-	})
-
 	t.Run("失敗: codeが存在しない値", func(t *testing.T) {
 		client := RegisterClient(t, ctx, nil)
 
@@ -416,39 +350,6 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 		err = h.TokenEndpointAuthorizationCode(ctx, c, client)
 		require.EqualError(t, err, "code=400, error=invalid_grant, message=Invalid redirect_uri")
 	})
-
-	t.Run("失敗: クライアントIDが不正", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, nil)
-		client2 := RegisterClient(t, ctx, nil)
-
-		redirectUri, err := url.Parse("https://example.test/hogehoge")
-		require.NoError(t, err)
-		redirect := models.ClientRedirect{
-			ClientID: client.ClientID,
-			Host:     redirectUri.Host,
-			URL:      redirectUri.String(),
-		}
-		err = redirect.Insert(ctx, DB, boil.Infer())
-		require.NoError(t, err)
-
-		oauthSession := RegisterOauthSession(t, ctx, client.ClientID, &u)
-
-		query := url.Values{}
-		query.Set("code", oauthSession.Code)
-		query.Set("redirect_uri", redirectUri.String())
-		query.Set("client_id", client2.ClientID)
-
-		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
-		require.NoError(t, err)
-
-		c := m.Echo()
-
-		err = h.TokenEndpointAuthorizationCode(ctx, c, client)
-		require.EqualError(t, err, "code=400, error=invalid_grant, message=Invalid client_id")
-	})
-
 }
 
 func TestUserToStandardClaims(t *testing.T) {
