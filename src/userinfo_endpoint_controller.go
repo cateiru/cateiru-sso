@@ -17,7 +17,6 @@ type UserinfoResponse struct {
 	StandardClaims
 }
 
-// TODO: テスト
 // userinfo endpoint の認証
 func (h *Handler) UserinfoAuthentication(ctx context.Context, c echo.Context) (*models.ClientSession, error) {
 	authHeader := c.Request().Header.Get("Authorization")
