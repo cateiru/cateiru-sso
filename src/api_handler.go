@@ -136,6 +136,7 @@ func (h *Handler) JwksJsonHandler(c echo.Context) error {
 	})
 }
 
+// TODO: テスト
 // OIDC Token Endpoint
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#TokenEndpoint
 func (h *Handler) TokenEndpointHandler(c echo.Context) error {
@@ -173,6 +174,7 @@ func (h *Handler) TokenEndpointHandler(c echo.Context) error {
 	}
 }
 
+// TODO: テスト
 // OIDC Userinfo Endpoint
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#UserInfoRequest
 func (h *Handler) UserinfoEndpointHandler(c echo.Context) error {
