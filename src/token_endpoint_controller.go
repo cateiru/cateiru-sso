@@ -260,33 +260,13 @@ func (h *Handler) TokenEndpointRefreshToken(ctx context.Context, c echo.Context,
 	clientRefresh, err := models.ClientRefreshes(
 		models.ClientRefreshWhere.ID.EQ(refreshToken),
 		models.ClientRefreshWhere.Period.GT(time.Now()),
+		models.ClientRefreshWhere.ClientID.EQ(client.ClientID),
 	).One(ctx, h.DB)
 	if errors.Is(err, sql.ErrNoRows) {
 		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid refresh_token", "", "")
 	}
 	if err != nil {
 		return err
-	}
-
-	// ユーザー、クライアントの存在チェックをしておく
-	existUser, err := models.Users(
-		models.UserWhere.ID.EQ(clientRefresh.UserID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	if !existUser {
-		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid refresh_token", "", "")
-	}
-
-	existClient, err := models.Clients(
-		models.ClientWhere.ClientID.EQ(clientRefresh.ClientID),
-	).Exists(ctx, h.DB)
-	if err != nil {
-		return err
-	}
-	if !existClient {
-		return NewOIDCError(http.StatusBadRequest, ErrTokenInvalidGrant, "Invalid refresh_token", "", "")
 	}
 
 	// 新しいセッショントークンとリフレッシュトークンを用意

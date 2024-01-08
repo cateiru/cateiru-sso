@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/cateiru/cateiru-sso/src"
+	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/cateiru/go-http-easy-test/v2/easy"
 	"github.com/stretchr/testify/require"
@@ -349,6 +350,192 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 
 		err = h.TokenEndpointAuthorizationCode(ctx, c, client)
 		require.EqualError(t, err, "code=400, error=invalid_grant, message=Invalid redirect_uri")
+	})
+}
+
+func TestTokenEndpointRefreshToken(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	t.Run("成功: 更新できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		client := RegisterClient(t, ctx, nil)
+
+		refreshToken, err := lib.RandomStr(63)
+		require.NoError(t, err)
+		sessionToken, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		clientSession := models.ClientSession{
+			ID:       sessionToken,
+			UserID:   u.ID,
+			ClientID: client.ClientID,
+			Period:   time.Now().Add(h.C.OAuthAccessTokenPeriod),
+		}
+		clientRefresh := models.ClientRefresh{
+			ID:        refreshToken,
+			UserID:    u.ID,
+			ClientID:  client.ClientID,
+			SessionID: sessionToken,
+			Period:    time.Now().Add(h.C.OAuthRefreshTokenPeriod),
+		}
+		err = clientSession.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+		err = clientRefresh.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		query := url.Values{}
+		query.Set("refresh_token", refreshToken)
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.TokenEndpointRefreshToken(ctx, c, client)
+		require.NoError(t, err)
+
+		response := src.TokenEndpointResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Equal(t, response.TokenType, "Bearer")
+		require.Equal(t, response.ExpiresIn, int64(h.C.OAuthAccessTokenPeriod)/10000000)
+
+		// トークンが生成されているかチェック
+		existNewClientSession, err := models.ClientSessions(
+			models.ClientSessionWhere.ID.EQ(response.AccessToken),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existNewClientSession)
+		existNewClientRefresh, err := models.ClientRefreshes(
+			models.ClientRefreshWhere.ID.EQ(response.RefreshToken),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.True(t, existNewClientRefresh)
+
+		// 古いトークンは削除されているかチェック
+		existOldClientSession, err := models.ClientSessions(
+			models.ClientSessionWhere.ID.EQ(sessionToken),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existOldClientSession)
+		existOldClientRefresh, err := models.ClientRefreshes(
+			models.ClientRefreshWhere.ID.EQ(refreshToken),
+		).Exists(ctx, DB)
+		require.NoError(t, err)
+		require.False(t, existOldClientRefresh)
+	})
+
+	t.Run("失敗: リフレッシュトークンのクライアントが一致しない", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		client := RegisterClient(t, ctx, nil)
+		client2 := RegisterClient(t, ctx, nil)
+
+		refreshToken, err := lib.RandomStr(63)
+		require.NoError(t, err)
+		sessionToken, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		clientSession := models.ClientSession{
+			ID:       sessionToken,
+			UserID:   u.ID,
+			ClientID: client.ClientID,
+			Period:   time.Now().Add(h.C.OAuthAccessTokenPeriod),
+		}
+		clientRefresh := models.ClientRefresh{
+			ID:        refreshToken,
+			UserID:    u.ID,
+			ClientID:  client.ClientID,
+			SessionID: sessionToken,
+			Period:    time.Now().Add(h.C.OAuthRefreshTokenPeriod),
+		}
+		err = clientSession.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+		err = clientRefresh.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		query := url.Values{}
+		query.Set("refresh_token", refreshToken)
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.TokenEndpointRefreshToken(ctx, c, client2)
+		require.EqualError(t, err, "code=400, error=invalid_grant, message=Invalid refresh_token")
+	})
+
+	t.Run("失敗: リフレッシュトークンが存在しない値", func(t *testing.T) {
+		client := RegisterClient(t, ctx, nil)
+
+		query := url.Values{}
+		query.Set("refresh_token", "invalid")
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.TokenEndpointRefreshToken(ctx, c, client)
+		require.EqualError(t, err, "code=400, error=invalid_grant, message=Invalid refresh_token")
+	})
+
+	t.Run("失敗: リフレッシュトークンが空", func(t *testing.T) {
+		client := RegisterClient(t, ctx, nil)
+
+		query := url.Values{}
+		query.Set("refresh_token", "")
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.TokenEndpointRefreshToken(ctx, c, client)
+		require.EqualError(t, err, "code=400, error=invalid_grant, message=Invalid refresh_token")
+	})
+
+	t.Run("失敗: リフレッシュトークンの有効期限が切れている", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		client := RegisterClient(t, ctx, nil)
+
+		refreshToken, err := lib.RandomStr(63)
+		require.NoError(t, err)
+		sessionToken, err := lib.RandomStr(31)
+		require.NoError(t, err)
+
+		clientSession := models.ClientSession{
+			ID:       sessionToken,
+			UserID:   u.ID,
+			ClientID: client.ClientID,
+			Period:   time.Now().Add(h.C.OAuthAccessTokenPeriod),
+		}
+		clientRefresh := models.ClientRefresh{
+			ID:        refreshToken,
+			UserID:    u.ID,
+			ClientID:  client.ClientID,
+			SessionID: sessionToken,
+			Period:    time.Now().Add(-1 * time.Hour), // 有効期限切れ
+		}
+		err = clientSession.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+		err = clientRefresh.Insert(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		query := url.Values{}
+		query.Set("refresh_token", refreshToken)
+
+		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.TokenEndpointRefreshToken(ctx, c, client)
+		require.EqualError(t, err, "code=400, error=invalid_grant, message=Invalid refresh_token")
 	})
 }
 
