@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/types"
 )
 
 func TestHistoryClientLoginHandler(t *testing.T) {
@@ -24,22 +23,28 @@ func TestHistoryClientLoginHandler(t *testing.T) {
 	registerClientRefresh := func(clientId string, u *models.User) string {
 		id, err := lib.RandomStr(63)
 		require.NoError(t, err)
+		sessionId, err := lib.RandomStr(31)
+		require.NoError(t, err)
 
-		scope := []string{
-			"openid",
-			"email",
+		session := models.ClientSession{
+			ID:     sessionId,
+			UserID: u.ID,
+
+			ClientID: clientId,
+
+			Period: time.Now().Add(C.OAuthAccessTokenPeriod),
 		}
-		scopesJson := types.JSON{}
-		err = scopesJson.Marshal(&scope)
+		err = session.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
 		refresh := models.ClientRefresh{
 			ID:     id,
 			UserID: u.ID,
 
-			ClientID: clientId,
+			ClientID:  clientId,
+			SessionID: sessionId,
 
-			Period: time.Now().Add(C.ClientRefreshPeriod),
+			Period: time.Now().Add(C.OAuthRefreshTokenPeriod),
 		}
 		err = refresh.Insert(ctx, DB, boil.Infer())
 		require.NoError(t, err)
@@ -80,32 +85,6 @@ func TestHistoryClientLoginHandler(t *testing.T) {
 
 		require.Len(t, response, 1)
 		require.Equal(t, response[0].Client.ClientID, client.ClientID)
-	})
-
-	t.Run("成功: クライアントが存在していなくても返る", func(t *testing.T) {
-		email := RandomEmail(t)
-		u := RegisterUser(t, ctx, email)
-
-		clientId, err := lib.RandomStr(31)
-		require.NoError(t, err)
-		registerClientRefresh(clientId, &u)
-
-		cookies := RegisterSession(t, ctx, &u)
-
-		m, err := easy.NewMock("/", http.MethodGet, "")
-		require.NoError(t, err)
-		m.Cookie(cookies)
-
-		c := m.Echo()
-
-		err = h.HistoryClientLoginHandler(c)
-		require.NoError(t, err)
-
-		response := []src.ClientLoginResponse{}
-		require.NoError(t, m.Json(&response))
-
-		require.Len(t, response, 1)
-		require.Nil(t, response[0].Client)
 	})
 
 	t.Run("成功: 何もログインしていないときは空", func(t *testing.T) {

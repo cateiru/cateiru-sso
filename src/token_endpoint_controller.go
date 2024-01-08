@@ -13,6 +13,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"golang.org/x/exp/slices"
 )
 
 // トークンエンドポイントのレスポンス
@@ -182,18 +183,12 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 		ClientID: client.ClientID,
 		Period:   time.Now().Add(h.C.OAuthAccessTokenPeriod),
 	}
-	if err := clientSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
-		return err
-	}
 	clientRefresh := models.ClientRefresh{
 		ID:        refreshToken,
 		UserID:    authUser.ID,
 		ClientID:  client.ClientID,
 		SessionID: sessionToken,
 		Period:    time.Now().Add(h.C.OAuthRefreshTokenPeriod),
-	}
-	if err := clientRefresh.Insert(ctx, h.DB, boil.Infer()); err != nil {
-		return err
 	}
 
 	err = TxDB(ctx, h.DB, func(tx *sql.Tx) error {
@@ -209,7 +204,18 @@ func (h *Handler) TokenEndpointAuthorizationCode(ctx context.Context, c echo.Con
 		return err
 	}
 
-	standardClaims, err := UserToStandardClaims(authUser)
+	clientScopes, err := models.ClientScopes(
+		models.ClientScopeWhere.ClientID.EQ(client.ClientID),
+	).All(ctx, h.DB)
+	if err != nil {
+		return err
+	}
+	scopes := make([]string, len(clientScopes))
+	for i, clientScope := range clientScopes {
+		scopes[i] = clientScope.Scope
+	}
+
+	standardClaims, err := UserToStandardClaims(authUser, scopes)
 	if err != nil {
 		return err
 	}
@@ -324,28 +330,33 @@ func (h *Handler) TokenEndpointRefreshToken(ctx context.Context, c echo.Context,
 	})
 }
 
-func UserToStandardClaims(user *models.User) (*StandardClaims, error) {
+func UserToStandardClaims(user *models.User, scopes []string) (*StandardClaims, error) {
 	standardClaims := &StandardClaims{
-		Name:              user.UserName,
-		GivenName:         user.GivenName.String,
-		FamilyName:        user.FamilyName.String,
-		MiddleName:        user.MiddleName.String,
-		Nickname:          user.UserName,
-		PreferredUsername: user.UserName,
-		Picture:           user.Avatar.String,
-
-		Email:         user.Email,
-		EmailVerified: true, // 必ず確認しているのでtrue
-
-		Gender:   user.Gender,
 		ZoneInfo: "Asia/Tokyo", // 決め打ち
 		Locale:   "ja-JP",      // 決め打ち
-
-		UpdatedAt: user.UpdatedAt.Unix(),
 	}
 
-	if user.Birthdate.Valid {
-		standardClaims.BirthDate = user.Birthdate.Time.Format(time.DateOnly)
+	// scopes に profile が含まれていたらユーザープロフィールを含める
+	if slices.Contains(scopes, "profile") {
+		standardClaims.Name = user.UserName
+		standardClaims.GivenName = user.GivenName.String
+		standardClaims.FamilyName = user.FamilyName.String
+		standardClaims.MiddleName = user.MiddleName.String
+		standardClaims.Nickname = user.UserName
+		standardClaims.PreferredUsername = user.UserName
+		standardClaims.Picture = user.Avatar.String
+		standardClaims.Gender = user.Gender
+		standardClaims.UpdatedAt = user.UpdatedAt.Unix()
+
+		if user.Birthdate.Valid {
+			standardClaims.BirthDate = user.Birthdate.Time.Format(time.DateOnly)
+		}
+	}
+
+	// scopes に email が含まれていたら email を含める
+	if slices.Contains(scopes, "email") {
+		standardClaims.Email = user.Email
+		standardClaims.EmailVerified = true // 必ず確認しているのでtrue
 	}
 
 	return standardClaims, nil

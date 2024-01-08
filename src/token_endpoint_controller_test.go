@@ -166,7 +166,7 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 	t.Run("成功: レスポンスを受け取れる", func(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
-		client := RegisterClient(t, ctx, nil)
+		client := RegisterClient(t, ctx, nil, "openid", "email", "profile")
 
 		redirectUri, err := url.Parse("https://example.test/hogehoge")
 		require.NoError(t, err)
@@ -183,7 +183,6 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 		query := url.Values{}
 		query.Set("code", oauthSession.Code)
 		query.Set("redirect_uri", redirectUri.String())
-		query.Set("client_id", client.ClientID)
 
 		m, err := easy.NewURLEncoded("/", http.MethodPost, query)
 		require.NoError(t, err)
@@ -545,7 +544,7 @@ func TestUserToStandardClaims(t *testing.T) {
 		email := RandomEmail(t)
 		u := RegisterUser(t, ctx, email)
 
-		claims, err := src.UserToStandardClaims(&u)
+		claims, err := src.UserToStandardClaims(&u, []string{"openid", "profile", "email"})
 		require.NoError(t, err)
 
 		require.NotNil(t, claims)
@@ -558,6 +557,7 @@ func TestUserToStandardClaims(t *testing.T) {
 		require.Equal(t, claims.PreferredUsername, u.UserName)
 		require.Equal(t, claims.Picture, u.Avatar.String)
 		require.Equal(t, claims.Email, u.Email)
+		require.True(t, claims.EmailVerified)
 		require.Equal(t, claims.Gender, u.Gender)
 		require.Equal(t, claims.ZoneInfo, "Asia/Tokyo")
 		require.Equal(t, claims.Locale, "ja-JP")
@@ -577,9 +577,53 @@ func TestUserToStandardClaims(t *testing.T) {
 		_, err := u.Update(ctx, DB, boil.Infer())
 		require.NoError(t, err)
 
-		claims, err := src.UserToStandardClaims(&u)
+		claims, err := src.UserToStandardClaims(&u, []string{"openid", "profile", "email"})
 		require.NoError(t, err)
 
 		require.Equal(t, claims.BirthDate, birthDate.Format(time.DateOnly))
+	})
+
+	t.Run("scopesにemailが含まれていない場合はemailは空", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		birthDate := time.Now()
+
+		u.Birthdate = null.TimeFrom(birthDate)
+		_, err := u.Update(ctx, DB, boil.Infer())
+		require.NoError(t, err)
+
+		claims, err := src.UserToStandardClaims(&u, []string{"openid", "profile"})
+		require.NoError(t, err)
+
+		require.Equal(t, claims.Email, "")
+		require.False(t, claims.EmailVerified)
+	})
+
+	t.Run("scopesにprofileが含まれていない場合はプロフィールは空", func(t *testing.T) {
+		ctx := context.Background()
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		claims, err := src.UserToStandardClaims(&u, []string{"openid", "email"})
+		require.NoError(t, err)
+
+		require.NotNil(t, claims)
+
+		require.Equal(t, claims.Name, "")
+		require.Equal(t, claims.GivenName, "")
+		require.Equal(t, claims.FamilyName, "")
+		require.Equal(t, claims.MiddleName, "")
+		require.Equal(t, claims.Nickname, "")
+		require.Equal(t, claims.PreferredUsername, "")
+		require.Equal(t, claims.Picture, "")
+		require.Equal(t, claims.Email, u.Email)
+		require.True(t, claims.EmailVerified)
+		require.Equal(t, claims.Gender, "")
+		require.Equal(t, claims.ZoneInfo, "Asia/Tokyo")
+		require.Equal(t, claims.Locale, "ja-JP")
+		require.Equal(t, claims.UpdatedAt, int64(0))
+		require.Equal(t, claims.BirthDate, "")
 	})
 }

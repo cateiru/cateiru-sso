@@ -115,6 +115,25 @@ const (
 	ErrTokenInvalidScope = "invalid_scope"
 )
 
+// userinfo endpoint のエラーコード
+// https://openid-foundation-japan.github.io/rfc6750.ja.html#resource-error-codes
+const (
+	// リクエストに必要なパラメータが不足している、対応していないパラメータもしくはパラメータの値が含まれている、
+	// 同じパラメータが複数回現れている、1つのアクセストークンを含むために複数の方法を用いている、もしくはリクエストがその他不正な形式になっている。
+	// リソースサーバはHTTPステータスコード400 (Bad Request) の応答を返すべきである (SHOULD)。
+	ErrUserinfoInvalidRequest = "invalid_request"
+
+	// 提供されたアクセストークンが期限切れである、取り消されている、不正な値である、もしくはその他の理由により無効である。
+	// リソースサーバはHTTPステータスコード401 (Unauthorized) の応答を返すべきである (SHOULD)。
+	// クライアントは新しいアクセストークンを要求して保護されたリソースへのアクセスを再試行してもよい (MAY)。
+	ErrUserinfoInvalidToken = "invalid_token"
+
+	// リクエストにはアクセストークンにより提供されるよりも高い権限が必要である。
+	// リソースサーバはHTTPステータスコード403 (Forbidden) の応答を返すべき (SHOULD) であり、
+	// 保護されたリソースへのアクセスに必要となるスコープを示した scope 属性を含めてもよい (MAY)。
+	ErrUserinfoInsufficientScope = "insufficient_scope"
+)
+
 type HTTPError struct {
 	Code       int         `json:"-"`
 	Message    interface{} `json:"message"`

@@ -145,11 +145,6 @@ type Config struct {
 
 	// ---- Clientの設定
 
-	// クライアントのセッション有効期限
-	ClientSessionPeriod time.Duration
-	// クライアントのリフレッシュトークン有効期限
-	ClientRefreshPeriod time.Duration
-
 	// クライアントの最大作成数
 	ClientMaxCreated int
 	// Orgでのクライアント最大作成数
@@ -375,9 +370,6 @@ var LocalConfig = &Config{
 		IsValid: true,
 	},
 
-	ClientSessionPeriod: 1 * time.Hour,  // 1hour
-	ClientRefreshPeriod: 24 * time.Hour, // 1days
-
 	ClientMaxCreated:            10,
 	OrgClientMaxCreated:         100,
 	ClientRedirectURLMaxCreated: 10,
@@ -567,9 +559,6 @@ var CloudRunConfig = &Config{
 		Value:   "",
 		IsValid: false,
 	},
-
-	ClientSessionPeriod: 1 * time.Hour,  // 1hour
-	ClientRefreshPeriod: 24 * time.Hour, // 1days
 
 	ClientMaxCreated:            10,
 	OrgClientMaxCreated:         100,
@@ -763,9 +752,6 @@ var CloudRunStagingConfig = &Config{
 		IsValid: false,
 	},
 
-	ClientSessionPeriod: 1 * time.Hour,  // 1hour
-	ClientRefreshPeriod: 24 * time.Hour, // 1days
-
 	ClientMaxCreated:            10,
 	OrgClientMaxCreated:         100,
 	ClientRedirectURLMaxCreated: 10,
@@ -938,9 +924,6 @@ var TestConfig = &Config{
 		Value:   "localhost:4443",
 		IsValid: true,
 	},
-
-	ClientSessionPeriod: 1 * time.Hour,  // 1hour
-	ClientRefreshPeriod: 24 * time.Hour, // 1days
 
 	ClientMaxCreated:            5, // テスト時のinsertを削減するために小さくしている
 	OrgClientMaxCreated:         6, // テスト時のinsertを削減するために小さくしている

@@ -176,5 +176,12 @@ func (h *Handler) TokenEndpointHandler(c echo.Context) error {
 // OIDC Userinfo Endpoint
 // ref. https://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#UserInfoRequest
 func (h *Handler) UserinfoEndpointHandler(c echo.Context) error {
+	// ctx := c.Request().Context()
+
+	// clientSession, err := h.UserinfoAuthentication(ctx, c)
+	// if err != nil {
+	// 	return err
+	// }
+
 	return nil
 }
