@@ -1,9 +1,9 @@
 CREATE TABLE `operation_history` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL,
-  `device` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `os` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
-  `browser` varchar(31) COLLATE utf8mb4_bin DEFAULT NULL,
+  `user_id` varchar(32) NOT NULL,
+  `device` varchar(31) DEFAULT NULL,
+  `os` varchar(31) DEFAULT NULL,
+  `browser` varchar(31) DEFAULT NULL,
   `is_mobile` tinyint(1) DEFAULT NULL,
   `ip` varbinary(16) NOT NULL,
   `identifier` tinyint NOT NULL DEFAULT '0',
