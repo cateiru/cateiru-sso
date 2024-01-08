@@ -176,8 +176,10 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// token endpoint
 	api.GET("/token", h.TokenEndpointHandler)
 	api.POST("/token", h.TokenEndpointHandler)
+	// userinfo endpoint
+	api.GET("/userinfo", h.UserinfoEndpointHandler)
+	api.POST("/userinfo", h.UserinfoEndpointHandler)
 
-	api.POST("/userinfo", h.Root)
 	// Client Registration Endpoint
 	api.POST("/register", h.Root)
 }
