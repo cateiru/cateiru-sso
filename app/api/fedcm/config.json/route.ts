@@ -3,6 +3,9 @@ import {serverApi} from '../../../../utils/api';
 export const GET = async () => {
   const response = await fetch(serverApi('/v2/fedcm/config.json'), {
     cache: 'no-store',
+    headers: {
+      'Sec-Fetch-Dest': 'webidentity',
+    },
   });
 
   const data = await response.json();
