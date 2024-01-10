@@ -651,6 +651,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 	// リフレッシュトークンの値が不正な場合はログインしない
 	refresh, err := models.Refreshes(
 		models.RefreshWhere.ID.EQ(newRefreshCookie.Value),
+		models.RefreshWhere.Period.GT(time.Now()),
 	).One(ctx, s.DB)
 	if errors.Is(err, sql.ErrNoRows) {
 		refreshCookie := &http.Cookie{
@@ -684,7 +685,7 @@ func (s *Session) SwitchAccount(ctx context.Context, cookies []*http.Cookie, use
 
 			Value: "",
 		}
-		return []*http.Cookie{refreshCookie}, err
+		return []*http.Cookie{refreshCookie}, NewHTTPError(http.StatusBadRequest, "refresh token is invalid")
 	}
 
 	newCookie = append(newCookie, &http.Cookie{
@@ -805,4 +806,52 @@ func (s *Session) IsLoggedIn(ctx context.Context, cookies []*http.Cookie, u *mod
 	}
 
 	return refreshToken != nil
+}
+
+// 指定したユーザーIDとリフレッシュトークンからユーザーを返す
+// FedCM用
+func (s *Session) GetUserFromUserIDAndCookie(ctx context.Context, cookies []*http.Cookie, userId string) (*models.User, error) {
+	// ユーザIDのユーザが存在するかチェック
+	user, err := models.Users(
+		models.UserWhere.ID.EQ(userId),
+	).One(ctx, s.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, NewHTTPError(http.StatusBadRequest, "user not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// 対象ユーザーのリフレッシュトークンを取得
+	newUserRefreshTokenName := fmt.Sprintf("%s-%s", s.RefreshCookie.Name, userId)
+	var newRefreshCookie *http.Cookie = nil
+	for _, cookie := range cookies {
+		if cookie.Name == newUserRefreshTokenName {
+			newRefreshCookie = cookie
+			break
+		}
+	}
+	// 新規にログインするリフレッシュCookieが存在しないのでそもそもログインできない
+	if newRefreshCookie == nil {
+		return nil, NewHTTPUniqueError(http.StatusForbidden, ErrLoginFailed, "login failed")
+	}
+
+	// リフレッシュトークンの値が不正な場合はログインしない
+	refresh, err := models.Refreshes(
+		models.RefreshWhere.ID.EQ(newRefreshCookie.Value),
+		models.RefreshWhere.Period.GT(time.Now()),
+	).One(ctx, s.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, NewHTTPError(http.StatusBadRequest, "refresh token is invalid")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// リフレッシュトークンのユーザが違う場合はエラー
+	if string(refresh.UserID) != user.ID {
+		return nil, NewHTTPError(http.StatusBadRequest, "refresh token is invalid")
+	}
+
+	return user, nil
 }

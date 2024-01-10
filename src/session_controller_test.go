@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -891,6 +892,35 @@ func TestSwitchAccount(t *testing.T) {
 		require.Equal(t, newCookies[0].Name, refreshTokenCookieName)
 		require.Equal(t, newCookies[0].MaxAge, -1)
 	})
+
+	t.Run("失敗: リフレッシュトークンの有効期限が切れている", func(t *testing.T) {
+		ctx := context.Background()
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+
+		// 一瞬リフレッシュトークンの有効期限を負の値にする
+		refreshPeriod := C.RefreshDBPeriod
+		C.RefreshDBPeriod = -10 * time.Hour
+		cookies := RegisterSession(t, ctx, &u1)
+		C.RefreshDBPeriod = refreshPeriod
+
+		noLoginStateCookies := []*http.Cookie{}
+		refreshCookieName := fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u1.ID)
+		for _, c := range cookies {
+			switch c.Name {
+			case refreshCookieName:
+				noLoginStateCookies = append(noLoginStateCookies, c)
+			}
+		}
+
+		newCookies, err := s.SwitchAccount(ctx, noLoginStateCookies, string(u1.ID))
+		require.EqualError(t, err, "code=400, message=refresh token is invalid")
+
+		// リフレッシュトークンは削除
+		require.Len(t, newCookies, 1)
+		require.Equal(t, newCookies[0].Name, refreshCookieName)
+		require.Equal(t, newCookies[0].MaxAge, -1)
+	})
 }
 
 func TestLoggedInAccounts(t *testing.T) {
@@ -1041,5 +1071,94 @@ func TestIsLoggedIn(t *testing.T) {
 
 		ok := s.IsLoggedIn(ctx, cookies, &u2)
 		require.False(t, ok)
+	})
+}
+
+func TestGetUserFromUserIDAndCookie(t *testing.T) {
+	ctx := context.Background()
+	s := src.NewSession(C, DB)
+
+	t.Run("成功: セッショントークンとuserIdからuserを返せる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+
+		cookies := RegisterSession(t, ctx, &u)
+
+		responseUser, err := s.GetUserFromUserIDAndCookie(ctx, cookies, u.ID)
+		require.NoError(t, err)
+
+		require.Equal(t, responseUser.ID, u.ID)
+	})
+
+	t.Run("成功: セッショントークンが複数あってもuserを返せる", func(t *testing.T) {
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1, &u2)
+
+		responseUser, err := s.GetUserFromUserIDAndCookie(ctx, cookies, u1.ID)
+		require.NoError(t, err)
+
+		require.Equal(t, responseUser.ID, u1.ID)
+	})
+
+	t.Run("失敗: 指定したユーザーIDのユーザーが存在しない", func(t *testing.T) {
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+
+		cookies := RegisterSession(t, ctx, &u1)
+
+		_, err := s.GetUserFromUserIDAndCookie(ctx, cookies, "invalid")
+		require.EqualError(t, err, "code=400, message=user not found")
+	})
+
+	t.Run("失敗: Cookieはあるけど値が不正", func(t *testing.T) {
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+
+		cookies := []*http.Cookie{
+			{
+				Name:  fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u1.ID),
+				Value: "invalid",
+			},
+		}
+
+		_, err := s.GetUserFromUserIDAndCookie(ctx, cookies, u1.ID)
+		require.EqualError(t, err, "code=400, message=refresh token is invalid")
+	})
+
+	t.Run("失敗: リフレッシュトークンの有効期限切れ", func(t *testing.T) {
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+
+		// 一瞬リフレッシュトークンの有効期限を負の値にする
+		refreshPeriod := C.RefreshDBPeriod
+		C.RefreshDBPeriod = -10 * time.Hour
+		cookies := RegisterSession(t, ctx, &u1)
+		C.RefreshDBPeriod = refreshPeriod
+
+		_, err := s.GetUserFromUserIDAndCookie(ctx, cookies, u1.ID)
+		require.EqualError(t, err, "code=400, message=refresh token is invalid")
+	})
+
+	t.Run("失敗: リフレッシュトークンのユーザーとuserIdが違う", func(t *testing.T) {
+		email1 := RandomEmail(t)
+		u1 := RegisterUser(t, ctx, email1)
+		email2 := RandomEmail(t)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u2) // u1 は存在しない
+
+		// リフレッシュトークンのユーザー名を変える
+		for _, cookie := range cookies {
+			if strings.HasPrefix(cookie.Name, C.RefreshCookie.Name) {
+				cookie.Name = fmt.Sprintf("%s-%s", C.RefreshCookie.Name, u1.ID)
+			}
+		}
+
+		_, err := s.GetUserFromUserIDAndCookie(ctx, cookies, u1.ID)
+		require.EqualError(t, err, "code=400, message=refresh token is invalid")
 	})
 }
