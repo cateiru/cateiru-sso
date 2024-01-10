@@ -344,6 +344,7 @@ func TestTokenEndpointAuthorizationCode(t *testing.T) {
 		client := RegisterClient(t, ctx, nil)
 
 		redirectUri, err := url.Parse("https://example.test/hogehoge")
+		require.NoError(t, err)
 
 		oauthSession := RegisterOauthSession(t, ctx, client.ClientID, &u)
 
