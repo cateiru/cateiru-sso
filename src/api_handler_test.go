@@ -101,6 +101,7 @@ func TestFedCMAccountsHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.FedCMAccountsHandler(c)
+		require.NoError(t, err)
 
 		response := src.FedCMAccountsResponse{}
 		require.NoError(t, m.Json(&response))
