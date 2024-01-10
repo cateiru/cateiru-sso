@@ -182,4 +182,11 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	// Client Registration Endpoint
 	api.POST("/register", h.Root)
+
+	// FedCM エンドポイント
+	api.GET("/.well-known/web-identity", h.WebIdentityHandler)
+	api.GET("/fedcm/config.json", h.Root)
+	api.GET("/fedcm/accounts_list", h.Root)
+	api.GET("/fedcm/client_metadata", h.Root)
+	api.POST("/fedcm/id_assertion", h.Root)
 }

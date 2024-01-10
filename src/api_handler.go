@@ -13,6 +13,12 @@ type JwksResponse struct {
 	Keys []jwk.Key `json:"keys"`
 }
 
+// FedCM の well-known レスポンス
+// ref. https://developer.mozilla.org/en-US/docs/Web/API/FedCM_API#provide_a_well-known_file
+type WebIdentityResponse struct {
+	ProvidersUrl string `json:"provider_urls"`
+}
+
 // OpenID Connect Discovery 1.0 incorporating errata set 1 で定義されている、 `.well-known/openid-configuration` のエンドポイント
 // ref. https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest
 func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
@@ -193,4 +199,21 @@ func (h *Handler) UserinfoEndpointHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response)
+}
+
+// FedCM の well-known レスポンス
+func (h *Handler) WebIdentityHandler(c echo.Context) error {
+	// キャッシュしたいのでサイトURL
+	pageUrl := h.C.SiteHost.String()
+
+	providersUrl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+
+	providersUrl.Path = "/api/fedcm/config.json"
+
+	return c.JSON(http.StatusOK, &WebIdentityResponse{
+		ProvidersUrl: providersUrl.String(),
+	})
 }
