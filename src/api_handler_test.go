@@ -69,16 +69,6 @@ func TestWebIdentityHandler(t *testing.T) {
 
 		snaps.MatchSnapshot(t, response.ProvidersUrl)
 	})
-
-	t.Run("失敗: Sec-Fetch-Destがwebidentityでない", func(t *testing.T) {
-		m, err := easy.NewMock("/", http.MethodGet, "")
-		require.NoError(t, err)
-
-		c := m.Echo()
-
-		err = h.WebIdentityHandler(c)
-		require.EqualError(t, err, "code=400, message=invalid request")
-	})
 }
 
 func TestFedCMConfigHandler(t *testing.T) {

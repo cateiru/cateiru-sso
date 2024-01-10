@@ -257,10 +257,6 @@ func (h *Handler) UserinfoEndpointHandler(c echo.Context) error {
 
 // FedCM の well-known レスポンス
 func (h *Handler) WebIdentityHandler(c echo.Context) error {
-	if !lib.CheckFedCMHeaders(c.Request().Header) {
-		return NewHTTPError(http.StatusBadRequest, "invalid request")
-	}
-
 	apiUrl := h.C.Host.String()
 
 	providersUrl, err := url.Parse(apiUrl)
