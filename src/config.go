@@ -19,7 +19,9 @@ import (
 type Config struct {
 	Mode string
 
-	BrandName string
+	BrandName            string
+	BrandBackgroundColor string
+	BrandColor           string
 
 	// ログ設定
 	LogConfig func() zap.Config
@@ -202,7 +204,9 @@ type CookieConfig struct {
 var LocalConfig = &Config{
 	Mode: "local",
 
-	BrandName: "oreore.me local",
+	BrandName:            "oreore.me local",
+	BrandBackgroundColor: "#ffffff",
+	BrandColor:           "#2bc4cf",
 
 	LogConfig: func() zap.Config {
 		logConfig := zap.NewDevelopmentConfig()
@@ -394,7 +398,9 @@ var LocalConfig = &Config{
 var CloudRunConfig = &Config{
 	Mode: "cloudrun",
 
-	BrandName: "oreore.me",
+	BrandName:            "oreore.me",
+	BrandBackgroundColor: "#ffffff",
+	BrandColor:           "#2bc4cf",
 
 	LogConfig: func() zap.Config {
 		logConfig := zap.NewProductionConfig()
@@ -584,7 +590,9 @@ var CloudRunConfig = &Config{
 var CloudRunStagingConfig = &Config{
 	Mode: "cloudrun-staging",
 
-	BrandName: "oreore.me staging",
+	BrandName:            "oreore.me staging",
+	BrandBackgroundColor: "#ffffff",
+	BrandColor:           "#2bc4cf",
 
 	LogConfig: func() zap.Config {
 		logConfig := zap.NewProductionConfig()
@@ -776,7 +784,9 @@ var CloudRunStagingConfig = &Config{
 var TestConfig = &Config{
 	Mode: "test",
 
-	BrandName: "oreore.me test",
+	BrandName:            "oreore.me test",
+	BrandBackgroundColor: "#ffffff",
+	BrandColor:           "#2bc4cf",
 
 	LogConfig: func() zap.Config {
 		logConfig := zap.NewDevelopmentConfig()
