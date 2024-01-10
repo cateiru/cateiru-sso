@@ -261,8 +261,16 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
 
+	apiUrl := h.C.Host.String()
+
+	providersUrl, err := url.Parse(apiUrl)
+	if err != nil {
+		return err
+	}
+	providersUrl.Path = "/v2/fedcm/config.json"
+
 	return c.JSON(http.StatusOK, &WebIdentityResponse{
-		ProvidersUrl: "/v2/fedcm/config.json",
+		ProvidersUrl: providersUrl.String(),
 	})
 }
 

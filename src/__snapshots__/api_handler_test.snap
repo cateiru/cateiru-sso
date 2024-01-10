@@ -1,6 +1,6 @@
 
 [TestWebIdentityHandler/取得可能 - 1]
-/v2/fedcm/config.json
+http://localhost:8080/v2/fedcm/config.json
 ---
 
 [TestJwksJsonHandler/取得可能 - 1]
