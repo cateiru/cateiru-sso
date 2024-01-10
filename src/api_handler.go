@@ -261,18 +261,8 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
 
-	// キャッシュしたいのでサイトURL
-	pageUrl := h.C.SiteHost.String()
-
-	providersUrl, err := url.Parse(pageUrl)
-	if err != nil {
-		return err
-	}
-
-	providersUrl.Path = "/api/fedcm/config.json"
-
 	return c.JSON(http.StatusOK, &WebIdentityResponse{
-		ProvidersUrl: providersUrl.String(),
+		ProvidersUrl: "/v2/fedcm/config.json",
 	})
 }
 
@@ -282,32 +272,10 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 		return NewHTTPError(http.StatusBadRequest, "invalid request")
 	}
 
-	pageUrl := h.C.SiteHost.String()
-	apiUrl := h.C.Host.String()
-
-	accountsEndpointUrl, err := url.Parse(apiUrl)
-	if err != nil {
-		return err
-	}
-	accountsEndpointUrl.Path = "/v2/fedcm/accounts"
-
-	// メタデータはキャッシュしたいのでページURL
-	clientMetadataEndpointUrl, err := url.Parse(pageUrl)
-	if err != nil {
-		return err
-	}
-	clientMetadataEndpointUrl.Path = "/api/fedcm/client_metadata"
-
-	idAssertionEndpointUrl, err := url.Parse(apiUrl)
-	if err != nil {
-		return err
-	}
-	idAssertionEndpointUrl.Path = "/v2/fedcm/id_assertion"
-
 	return c.JSON(http.StatusOK, &FedCMConfigResponse{
-		AccountsEndpoint:       accountsEndpointUrl.String(),
-		ClientMetadataEndpoint: clientMetadataEndpointUrl.String(),
-		IdAssertionEndpoint:    idAssertionEndpointUrl.String(),
+		AccountsEndpoint:       "/v2/fedcm/accounts",
+		ClientMetadataEndpoint: "/v2/fedcm/client_metadata",
+		IdAssertionEndpoint:    "/v2/fedcm/id_assertion",
 		Branding: &FedCMConfigBranding{
 			BackgroundColor: h.C.BrandBackgroundColor,
 			Color:           h.C.BrandColor,

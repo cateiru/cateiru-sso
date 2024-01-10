@@ -1,12 +1,9 @@
 import {serverApi} from '../../../utils/api';
 
 export const GET = async () => {
-  const response = await fetch(
-    serverApi('/v2/.well-known/openid-configuration'),
-    {
-      cache: 'no-store',
-    }
-  );
+  const response = await fetch(serverApi('/.well-known/openid-configuration'), {
+    cache: 'no-store',
+  });
 
   const data = await response.json();
 

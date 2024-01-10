@@ -1,7 +1,7 @@
 import {serverApi} from '../../../utils/api';
 
 export const GET = async () => {
-  const response = await fetch(serverApi('/v2/.well-known/web-identity'), {
+  const response = await fetch(serverApi('/.well-known/web-identity'), {
     cache: 'no-store',
     headers: {
       'Sec-Fetch-Dest': 'webidentity',

@@ -167,11 +167,14 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	internal.GET("/avatar/:key/:id", h.InternalAvatarHandler)
 	internal.GET("/worker", h.InternalWorkerHandler)
 
+	wellknown := e.Group("/.well-known")
+	wellknown.GET("/openid-configuration", h.ApiOpenidConfigurationHandler)
+	wellknown.GET("/jwks.json", h.JwksJsonHandler)
+	wellknown.GET("/web-identity", h.WebIdentityHandler)
+
 	// API
 	// APIにはCSRF設定をつけたくないので別で定義している
 	api := e.Group("/v2")
-	api.GET("/.well-known/openid-configuration", h.ApiOpenidConfigurationHandler)
-	api.GET("/.well-known/jwks.json", h.JwksJsonHandler)
 
 	// token endpoint
 	api.GET("/token", h.TokenEndpointHandler)
@@ -184,7 +187,6 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	api.POST("/register", h.Root)
 
 	// FedCM エンドポイント
-	api.GET("/.well-known/web-identity", h.WebIdentityHandler)
 	api.GET("/fedcm/config.json", h.FedCMConfigHandler)
 	api.GET("/fedcm/accounts", h.FedCMAccountsHandler)
 	api.GET("/fedcm/client_metadata", h.FedCMClientMetadataHandler)

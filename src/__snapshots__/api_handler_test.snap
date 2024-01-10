@@ -1,4 +1,13 @@
 
+[TestWebIdentityHandler/取得可能 - 1]
+/v2/fedcm/config.json
+---
+
+[TestJwksJsonHandler/取得可能 - 1]
+{"keys":[{"alg":"RS256","e":"AQAB","kid":"9c6945f9-815f4a4eb891fae9e1359ada","kty":"RSA","n":"ojSXNrYgwQ_E5lQTEOued7e26vdIoi_lurRzQyZhdEiwW_ixm4VbXrrANRvuyE9KgahFodKOztAV87nX4PVrmW4jHKUTrOrqYPG5xBNQpbacvOUiiHTID2r8e_DZuuHVVf61Gvjl-f4aQKcY-CyZJZ_aY6MRbV7kkGrA8SiZ0YYgPOnEFKQinRhK-J6td6ufh12eGLlzdKzUZet1z05ZgUp1JAn1sIx_H2xpnqWUj8nU_mXdMSXkt-UH4KLlBhqgbwfLDWxR-o1BuQ0cBDxEv9gLJIyBb1mL6YOzhxAjEotPvUo3wQDsEr-SerBB2VcUOXzFZo4oD-zR3I49o88382v14InR_Rq3_bE8QhEDwVsAoVU1j7BkfBbCiGm3UfQl03Tcb5eDzSEN0RUaoPSQS_fj3zEcv1aKY0T31fvUKQ5o8aMS3eiM0XQXlK6V-ZLgH8o-dsFAS2OK9RFCU-anIeTfIPXEZHDamVi8yRj-VtCOKJj4aTmTQABYK0UQPYmp","use":"sig"}]}
+
+---
+
 [TestApiOpenidConfigurationHandler/取得可能 - 1]
 src.OpenidConfiguration{
     Issuer:                                     "http://cateiru.test",
@@ -37,15 +46,6 @@ src.OpenidConfiguration{
     OpPolicyUri:                                "http://cateiru.test/policy",
     OpTosUri:                                   "http://cateiru.test/policy",
 }
----
-
-[TestJwksJsonHandler/取得可能 - 1]
-{"keys":[{"alg":"RS256","e":"AQAB","kid":"9c6945f9-815f4a4eb891fae9e1359ada","kty":"RSA","n":"ojSXNrYgwQ_E5lQTEOued7e26vdIoi_lurRzQyZhdEiwW_ixm4VbXrrANRvuyE9KgahFodKOztAV87nX4PVrmW4jHKUTrOrqYPG5xBNQpbacvOUiiHTID2r8e_DZuuHVVf61Gvjl-f4aQKcY-CyZJZ_aY6MRbV7kkGrA8SiZ0YYgPOnEFKQinRhK-J6td6ufh12eGLlzdKzUZet1z05ZgUp1JAn1sIx_H2xpnqWUj8nU_mXdMSXkt-UH4KLlBhqgbwfLDWxR-o1BuQ0cBDxEv9gLJIyBb1mL6YOzhxAjEotPvUo3wQDsEr-SerBB2VcUOXzFZo4oD-zR3I49o88382v14InR_Rq3_bE8QhEDwVsAoVU1j7BkfBbCiGm3UfQl03Tcb5eDzSEN0RUaoPSQS_fj3zEcv1aKY0T31fvUKQ5o8aMS3eiM0XQXlK6V-ZLgH8o-dsFAS2OK9RFCU-anIeTfIPXEZHDamVi8yRj-VtCOKJj4aTmTQABYK0UQPYmp","use":"sig"}]}
-
----
-
-[TestWebIdentityHandler/取得可能 - 1]
-http://cateiru.test/api/fedcm/config.json
 ---
 
 [TestFedCMClientMetadataHandler/取得可能 - 1]
