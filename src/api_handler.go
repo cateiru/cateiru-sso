@@ -41,6 +41,23 @@ type FedCMConfigIcons struct {
 	Size uint64 `json:"size,omitempty"`
 }
 
+// ref. https://fedidcg.github.io/FedCM/#dictdef-identityprovideraccountlist
+type FedCMAccountsResponse struct {
+	Accounts []FedCMAccount `json:"accounts"`
+}
+
+// ref. https://fedidcg.github.io/FedCM/#dictdef-identityprovideraccount
+type FedCMAccount struct {
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	Email           string   `json:"email"`
+	GivenName       string   `json:"given_name,omitempty"`
+	Picture         string   `json:"picture,omitempty"`
+	ApprovedClients []string `json:"approved_clients,omitempty"`
+	LoginHints      []string `json:"login_hints,omitempty"`
+	DomainHints     []string `json:"domain_hints,omitempty"`
+}
+
 // OpenID Connect Discovery 1.0 incorporating errata set 1 で定義されている、 `.well-known/openid-configuration` のエンドポイント
 // ref. https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest
 func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
@@ -274,5 +291,31 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 			Name:            h.C.BrandName,
 			Icons:           []FedCMConfigIcons{}, // TODO: アイコン埋める
 		},
+	})
+}
+
+// FedCM のログイン可能なアカウントリストを取得する
+func (h *Handler) FedCMAccountsHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	users, err := h.Session.LoggedInAccounts(ctx, c.Cookies())
+	if err != nil {
+		return err
+	}
+
+	accounts := make([]FedCMAccount, len(users))
+
+	for i, user := range users {
+		accounts[i] = FedCMAccount{
+			ID:        user.ID,
+			Name:      user.UserName,
+			Email:     user.Email,
+			GivenName: user.GivenName.String,
+			Picture:   user.Avatar.String,
+		}
+	}
+
+	return c.JSON(http.StatusOK, &FedCMAccountsResponse{
+		Accounts: accounts,
 	})
 }

@@ -1,6 +1,7 @@
 package src_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -88,5 +89,72 @@ func TestFedCMConfigHandler(t *testing.T) {
 		require.Equal(t, response.Branding.BackgroundColor, C.BrandBackgroundColor)
 		require.Equal(t, response.Branding.Color, C.BrandColor)
 		require.Equal(t, response.Branding.Name, C.BrandName)
+	})
+}
+
+func TestFedCMAccountsHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+	t.Run("ユーザー数0", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		c := m.Echo()
+
+		err = h.FedCMAccountsHandler(c)
+
+		response := src.FedCMAccountsResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response.Accounts, 0)
+	})
+
+	t.Run("ユーザー数1", func(t *testing.T) {
+		email1 := RandomEmail(t)
+
+		u1 := RegisterUser(t, ctx, email1)
+
+		cookies := RegisterSession(t, ctx, &u1)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.FedCMAccountsHandler(c)
+		require.NoError(t, err)
+
+		response := src.FedCMAccountsResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response.Accounts, 1)
+
+		require.Equal(t, response.Accounts[0].ID, u1.ID)
+		require.Equal(t, response.Accounts[0].Name, u1.UserName)
+		require.Equal(t, response.Accounts[0].Email, u1.Email)
+		require.Equal(t, response.Accounts[0].GivenName, u1.GivenName.String)
+		require.Equal(t, response.Accounts[0].Picture, u1.Avatar.String)
+	})
+
+	t.Run("ユーザー数2", func(t *testing.T) {
+		email1 := RandomEmail(t)
+		email2 := RandomEmail(t)
+
+		u1 := RegisterUser(t, ctx, email1)
+		u2 := RegisterUser(t, ctx, email2)
+
+		cookies := RegisterSession(t, ctx, &u1, &u2)
+
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookies)
+		c := m.Echo()
+
+		err = h.FedCMAccountsHandler(c)
+		require.NoError(t, err)
+
+		response := src.FedCMAccountsResponse{}
+		require.NoError(t, m.Json(&response))
+
+		require.Len(t, response.Accounts, 2)
 	})
 }
