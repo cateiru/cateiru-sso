@@ -46,6 +46,11 @@ type FedCMAccountsResponse struct {
 	Accounts []FedCMAccount `json:"accounts"`
 }
 
+type FedCMClientMetadataResponse struct {
+	PrivacyPolicyUrl  string `json:"privacy_policy_url,omitempty"`
+	TermsOfServiceUrl string `json:"terms_of_service_url,omitempty"`
+}
+
 // ref. https://fedidcg.github.io/FedCM/#dictdef-identityprovideraccount
 type FedCMAccount struct {
 	ID              string   `json:"id"`
@@ -317,5 +322,27 @@ func (h *Handler) FedCMAccountsHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, &FedCMAccountsResponse{
 		Accounts: accounts,
+	})
+}
+
+// FedCM のクライアントメタデータを返す
+func (h *Handler) FedCMClientMetadataHandler(c echo.Context) error {
+	pageUrl := h.C.SiteHost.String()
+
+	privacyPolicyUrl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	privacyPolicyUrl.Path = "/policy" // TODO: プライバシーポリシーのページ作ったら見直す
+
+	termsUrl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	termsUrl.Path = "/terms" // TODO: 利用規約のページ作ったら見直す
+
+	return c.JSON(http.StatusOK, &FedCMClientMetadataResponse{
+		PrivacyPolicyUrl:  privacyPolicyUrl.String(),
+		TermsOfServiceUrl: termsUrl.String(),
 	})
 }

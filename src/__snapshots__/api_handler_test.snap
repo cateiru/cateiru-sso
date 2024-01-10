@@ -47,3 +47,7 @@ src.OpenidConfiguration{
 [TestWebIdentityHandler/取得可能 - 1]
 http://cateiru.test/api/fedcm/config.json
 ---
+
+[TestFedCMClientMetadataHandler/取得可能 - 1]
+src.FedCMClientMetadataResponse{PrivacyPolicyUrl:"http://cateiru.test/policy", TermsOfServiceUrl:"http://cateiru.test/terms"}
+---

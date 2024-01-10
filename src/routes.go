@@ -187,6 +187,6 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	api.GET("/.well-known/web-identity", h.WebIdentityHandler)
 	api.GET("/fedcm/config.json", h.FedCMConfigHandler)
 	api.GET("/fedcm/accounts", h.FedCMAccountsHandler)
-	api.GET("/fedcm/client_metadata", h.Root)
+	api.GET("/fedcm/client_metadata", h.FedCMClientMetadataHandler)
 	api.POST("/fedcm/id_assertion", h.Root)
 }
