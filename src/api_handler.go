@@ -359,7 +359,6 @@ func (h *Handler) FedCMClientMetadataHandler(c echo.Context) error {
 
 // FedCM の認証
 // 返すtokenは一旦OIDCの code にする
-// TODO: テスト
 func (h *Handler) FedCMIdAssertionHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -372,6 +371,9 @@ func (h *Handler) FedCMIdAssertionHandler(c echo.Context) error {
 
 	if userId == "" {
 		return NewHTTPError(http.StatusBadRequest, "account_id is required")
+	}
+	if clientId == "" {
+		return NewHTTPError(http.StatusBadRequest, "client_id is required")
 	}
 
 	user, err := h.Session.GetUserFromUserIDAndCookie(ctx, c.Cookies(), userId)
