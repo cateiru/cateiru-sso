@@ -281,7 +281,7 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	accountsEndpointUrl.Path = "/v2/fedcm/accounts_list"
+	accountsEndpointUrl.Path = "/v2/fedcm/accounts"
 
 	// メタデータはキャッシュしたいのでページURL
 	clientMetadataEndpointUrl, err := url.Parse(pageUrl)
