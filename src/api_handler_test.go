@@ -57,6 +57,7 @@ func TestWebIdentityHandler(t *testing.T) {
 	t.Run("取得可能", func(t *testing.T) {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 
 		c := m.Echo()
 
@@ -68,6 +69,16 @@ func TestWebIdentityHandler(t *testing.T) {
 
 		snaps.MatchSnapshot(t, response.ProvidersUrl)
 	})
+
+	t.Run("失敗: Sec-Fetch-Destがwebidentityでない", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.WebIdentityHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid request")
+	})
 }
 
 func TestFedCMConfigHandler(t *testing.T) {
@@ -76,6 +87,7 @@ func TestFedCMConfigHandler(t *testing.T) {
 	t.Run("取得可能", func(t *testing.T) {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 
 		c := m.Echo()
 
@@ -93,6 +105,16 @@ func TestFedCMConfigHandler(t *testing.T) {
 		require.Equal(t, response.Branding.Color, C.BrandColor)
 		require.Equal(t, response.Branding.Name, C.BrandName)
 	})
+
+	t.Run("失敗: Sec-Fetch-Destがwebidentityでない", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.FedCMConfigHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid request")
+	})
 }
 
 func TestFedCMAccountsHandler(t *testing.T) {
@@ -101,6 +123,8 @@ func TestFedCMAccountsHandler(t *testing.T) {
 	t.Run("ユーザー数0", func(t *testing.T) {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
+
 		c := m.Echo()
 
 		err = h.FedCMAccountsHandler(c)
@@ -121,6 +145,7 @@ func TestFedCMAccountsHandler(t *testing.T) {
 
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 		m.Cookie(cookies)
 		c := m.Echo()
 
@@ -150,6 +175,7 @@ func TestFedCMAccountsHandler(t *testing.T) {
 
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 		m.Cookie(cookies)
 		c := m.Echo()
 
@@ -161,6 +187,16 @@ func TestFedCMAccountsHandler(t *testing.T) {
 
 		require.Len(t, response.Accounts, 2)
 	})
+
+	t.Run("失敗: Sec-Fetch-Destがwebidentityでない", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.FedCMAccountsHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid request")
+	})
 }
 
 func TestFedCMClientMetadataHandler(t *testing.T) {
@@ -169,6 +205,7 @@ func TestFedCMClientMetadataHandler(t *testing.T) {
 	t.Run("取得可能", func(t *testing.T) {
 		m, err := easy.NewMock("/", http.MethodGet, "")
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 
 		c := m.Echo()
 
@@ -179,6 +216,16 @@ func TestFedCMClientMetadataHandler(t *testing.T) {
 		require.NoError(t, m.Json(&response))
 
 		snaps.MatchSnapshot(t, response)
+	})
+
+	t.Run("失敗: Sec-Fetch-Destがwebidentityでない", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.FedCMClientMetadataHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid request")
 	})
 }
 
@@ -199,6 +246,7 @@ func TestFedCMIdAssertionHandler(t *testing.T) {
 
 		m, err := easy.NewURLEncoded("/", http.MethodPost, param)
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 		m.Cookie(cookies)
 
 		c := m.Echo()
@@ -238,6 +286,7 @@ func TestFedCMIdAssertionHandler(t *testing.T) {
 
 		m, err := easy.NewURLEncoded("/", http.MethodPost, param)
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 		m.Cookie(cookies)
 
 		c := m.Echo()
@@ -278,6 +327,7 @@ func TestFedCMIdAssertionHandler(t *testing.T) {
 
 		m, err := easy.NewURLEncoded("/", http.MethodPost, param)
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 		m.Cookie(cookies)
 
 		c := m.Echo()
@@ -303,6 +353,7 @@ func TestFedCMIdAssertionHandler(t *testing.T) {
 
 		m, err := easy.NewURLEncoded("/", http.MethodPost, param)
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 		m.Cookie(cookies)
 
 		c := m.Echo()
@@ -326,6 +377,7 @@ func TestFedCMIdAssertionHandler(t *testing.T) {
 
 		m, err := easy.NewURLEncoded("/", http.MethodPost, param)
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 
 		c := m.Echo()
 
@@ -349,6 +401,7 @@ func TestFedCMIdAssertionHandler(t *testing.T) {
 
 		m, err := easy.NewURLEncoded("/", http.MethodPost, param)
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 		m.Cookie(cookies)
 
 		c := m.Echo()
@@ -373,11 +426,22 @@ func TestFedCMIdAssertionHandler(t *testing.T) {
 
 		m, err := easy.NewURLEncoded("/", http.MethodPost, param)
 		require.NoError(t, err)
+		m.R.Header.Set("Sec-Fetch-Dest", "webidentity")
 		m.Cookie(cookies)
 
 		c := m.Echo()
 
 		err = h.FedCMIdAssertionHandler(c)
 		require.EqualError(t, err, "code=400, message=client_id is invalid")
+	})
+
+	t.Run("失敗: Sec-Fetch-Destがwebidentityでない", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.FedCMIdAssertionHandler(c)
+		require.EqualError(t, err, "code=400, message=invalid request")
 	})
 }

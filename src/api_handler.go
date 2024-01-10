@@ -257,6 +257,10 @@ func (h *Handler) UserinfoEndpointHandler(c echo.Context) error {
 
 // FedCM の well-known レスポンス
 func (h *Handler) WebIdentityHandler(c echo.Context) error {
+	if !lib.CheckFedCMHeaders(c.Request().Header) {
+		return NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+
 	// キャッシュしたいのでサイトURL
 	pageUrl := h.C.SiteHost.String()
 
@@ -274,6 +278,10 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 
 // FedCM の設定レスポンス
 func (h *Handler) FedCMConfigHandler(c echo.Context) error {
+	if !lib.CheckFedCMHeaders(c.Request().Header) {
+		return NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+
 	pageUrl := h.C.SiteHost.String()
 	apiUrl := h.C.Host.String()
 
@@ -311,6 +319,10 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 
 // FedCM のログイン可能なアカウントリストを取得する
 func (h *Handler) FedCMAccountsHandler(c echo.Context) error {
+	if !lib.CheckFedCMHeaders(c.Request().Header) {
+		return NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+
 	ctx := c.Request().Context()
 
 	users, err := h.Session.LoggedInAccounts(ctx, c.Cookies())
@@ -337,6 +349,10 @@ func (h *Handler) FedCMAccountsHandler(c echo.Context) error {
 
 // FedCM のクライアントメタデータを返す
 func (h *Handler) FedCMClientMetadataHandler(c echo.Context) error {
+	if !lib.CheckFedCMHeaders(c.Request().Header) {
+		return NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+
 	pageUrl := h.C.SiteHost.String()
 
 	privacyPolicyUrl, err := url.Parse(pageUrl)
@@ -360,6 +376,10 @@ func (h *Handler) FedCMClientMetadataHandler(c echo.Context) error {
 // FedCM の認証
 // 返すtokenは一旦OIDCの code にする
 func (h *Handler) FedCMIdAssertionHandler(c echo.Context) error {
+	if !lib.CheckFedCMHeaders(c.Request().Header) {
+		return NewHTTPError(http.StatusBadRequest, "invalid request")
+	}
+
 	ctx := c.Request().Context()
 
 	clientId := c.FormValue("client_id")
