@@ -1,12 +1,18 @@
 package src
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/cateiru/cateiru-sso/src/lib"
+	"github.com/cateiru/cateiru-sso/src/models"
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type JwksResponse struct {
@@ -61,6 +67,10 @@ type FedCMAccount struct {
 	ApprovedClients []string `json:"approved_clients,omitempty"`
 	LoginHints      []string `json:"login_hints,omitempty"`
 	DomainHints     []string `json:"domain_hints,omitempty"`
+}
+
+type FedCMIdAssertionResponse struct {
+	Token string `json:"token"`
 }
 
 // OpenID Connect Discovery 1.0 incorporating errata set 1 で定義されている、 `.well-known/openid-configuration` のエンドポイント
@@ -344,5 +354,67 @@ func (h *Handler) FedCMClientMetadataHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, &FedCMClientMetadataResponse{
 		PrivacyPolicyUrl:  privacyPolicyUrl.String(),
 		TermsOfServiceUrl: termsUrl.String(),
+	})
+}
+
+// FedCM の認証
+// 返すtokenは一旦OIDCの code にする
+// TODO: テスト
+func (h *Handler) FedCMIdAssertionHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	clientId := c.FormValue("client_id")
+	nonce := c.FormValue("nonce")
+	userId := c.FormValue("account_id")
+
+	// 一旦使わないのでコメントアウト
+	// disclosureTextShown := c.FormValue("disclosure_text_shown")
+
+	if userId == "" {
+		return NewHTTPError(http.StatusBadRequest, "account_id is required")
+	}
+
+	user, err := h.Session.GetUserFromUserIDAndCookie(ctx, c.Cookies(), userId)
+	if err != nil {
+		return err
+	}
+
+	code, err := lib.RandomStr(63)
+	if err != nil {
+		return err
+	}
+
+	// クライアントの存在チェック
+	client, err := models.Clients(
+		models.ClientWhere.ClientID.EQ(clientId),
+	).One(ctx, h.DB)
+	if errors.Is(err, sql.ErrNoRows) {
+		return NewHTTPError(http.StatusBadRequest, "client_id is invalid")
+	}
+	if err != nil {
+		return err
+	}
+
+	oauthSession := models.OauthSession{
+		Code:   code,
+		UserID: user.ID,
+
+		ClientID: client.ClientID,
+
+		Nonce:    null.NewString(nonce, nonce != ""),
+		AuthTime: time.Now(),
+
+		Period: time.Now().Add(h.C.OauthLoginSessionPeriod),
+	}
+	if err := oauthSession.Insert(ctx, h.DB, boil.Infer()); err != nil {
+		return err
+	}
+
+	if err := h.SaveOperationHistory(ctx, c, user, 30); err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, &FedCMIdAssertionResponse{
+		Token: code,
 	})
 }

@@ -28,6 +28,7 @@ type SessionInterface interface {
 	LoggedInAccounts(ctx context.Context, cookies []*http.Cookie) ([]*models.User, error)
 	RequireStaff(ctx context.Context, user *models.User) error
 	IsLoggedIn(ctx context.Context, cookies []*http.Cookie, u *models.User) bool
+	GetUserFromUserIDAndCookie(ctx context.Context, cookies []*http.Cookie, userId string) (*models.User, error)
 }
 
 type RegisterSession struct {

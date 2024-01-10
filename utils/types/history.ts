@@ -78,4 +78,6 @@ export const OPERATION_HISTORY_IDENTIFIER: {[key: number]: string} = {
   20: 'クライアント作成',
   21: '組織クライアント作成',
   22: 'クライアント削除',
+
+  30: 'FedCMによるログイン許可',
 };
