@@ -379,11 +379,6 @@ func (h *Handler) FedCMIdAssertionHandler(c echo.Context) error {
 		return err
 	}
 
-	code, err := lib.RandomStr(63)
-	if err != nil {
-		return err
-	}
-
 	// クライアントの存在チェック
 	client, err := models.Clients(
 		models.ClientWhere.ClientID.EQ(clientId),
@@ -391,6 +386,11 @@ func (h *Handler) FedCMIdAssertionHandler(c echo.Context) error {
 	if errors.Is(err, sql.ErrNoRows) {
 		return NewHTTPError(http.StatusBadRequest, "client_id is invalid")
 	}
+	if err != nil {
+		return err
+	}
+
+	code, err := lib.RandomStr(63)
 	if err != nil {
 		return err
 	}
