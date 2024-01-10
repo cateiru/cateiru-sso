@@ -19,6 +19,28 @@ type WebIdentityResponse struct {
 	ProvidersUrl string `json:"provider_urls"`
 }
 
+// ref. https://fedidcg.github.io/FedCM/#dictdef-identityproviderapiconfig
+type FedCMConfigResponse struct {
+	AccountsEndpoint       string               `json:"accounts_endpoint"`
+	ClientMetadataEndpoint string               `json:"client_metadata_endpoint"`
+	IdAssertionEndpoint    string               `json:"id_assertion_endpoint"`
+	DisconnectEndpoint     string               `json:"disconnect_endpoint,omitempty"`
+	Branding               *FedCMConfigBranding `json:"branding,omitempty"`
+}
+
+// ref. https://fedidcg.github.io/FedCM/#dictdef-identityproviderbranding
+type FedCMConfigBranding struct {
+	BackgroundColor string             `json:"background_color,omitempty"`
+	Color           string             `json:"color,omitempty"`
+	Name            string             `json:"name,omitempty"`
+	Icons           []FedCMConfigIcons `json:"icons"`
+}
+
+type FedCMConfigIcons struct {
+	Url  string `json:"url"`
+	Size uint64 `json:"size,omitempty"`
+}
+
 // OpenID Connect Discovery 1.0 incorporating errata set 1 で定義されている、 `.well-known/openid-configuration` のエンドポイント
 // ref. https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest
 func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
@@ -215,5 +237,42 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, &WebIdentityResponse{
 		ProvidersUrl: providersUrl.String(),
+	})
+}
+
+// FedCM の設定レスポンス
+func (h *Handler) FedCMConfigHandler(c echo.Context) error {
+	pageUrl := h.C.SiteHost.String()
+	apiUrl := h.C.Host.String()
+
+	accountsEndpointUrl, err := url.Parse(apiUrl)
+	if err != nil {
+		return err
+	}
+	accountsEndpointUrl.Path = "/v2/fedcm/accounts_list"
+
+	// メタデータはキャッシュしたいのでページURL
+	clientMetadataEndpointUrl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	clientMetadataEndpointUrl.Path = "/api/fedcm/client_metadata"
+
+	idAssertionEndpointUrl, err := url.Parse(apiUrl)
+	if err != nil {
+		return err
+	}
+	idAssertionEndpointUrl.Path = "/v2/fedcm/id_assertion"
+
+	return c.JSON(http.StatusOK, &FedCMConfigResponse{
+		AccountsEndpoint:       accountsEndpointUrl.String(),
+		ClientMetadataEndpoint: clientMetadataEndpointUrl.String(),
+		IdAssertionEndpoint:    idAssertionEndpointUrl.String(),
+		Branding: &FedCMConfigBranding{
+			BackgroundColor: h.C.BrandBackgroundColor,
+			Color:           h.C.BrandColor,
+			Name:            h.C.BrandName,
+			Icons:           []FedCMConfigIcons{}, // TODO: アイコン埋める
+		},
 	})
 }
