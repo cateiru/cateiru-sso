@@ -2,7 +2,6 @@ package src
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 func Routes(e *echo.Echo, h *Handler, c *Config) {
@@ -156,14 +155,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
 	internal := e.Group("/internal")
-	internal.Use(
-		middleware.BasicAuth(func(userName, password string, ctx echo.Context) (bool, error) {
-			if userName == c.InternalBasicAuthUserName && password == c.InternalBasicAuthPassword {
-				return true, nil
-			}
-			return false, nil
-		}),
-	)
+	internal.Use(BasicAuthMiddleware(c))
 	internal.GET("/avatar/:key/:id", h.InternalAvatarHandler)
 	internal.GET("/worker", h.InternalWorkerHandler)
 

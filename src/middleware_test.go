@@ -10,6 +10,39 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestBasicAuthMiddleware(t *testing.T) {
+	handler := func(c echo.Context) error {
+		return nil
+	}
+	t.Run("ユーザーパスワードが一致する場合は通る", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		// user:password
+		m.R.Header.Set("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
+
+		e := m.Echo()
+
+		middleware := src.BasicAuthMiddleware(C)
+		err = middleware(handler)(e)
+		require.NoError(t, err)
+	})
+
+	t.Run("ユーザーパスワードが一致しない場合は401", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		// hoge:dummy
+		m.R.Header.Set("Authorization", "Basic aG9nZTpkdW1teQ==")
+
+		e := m.Echo()
+
+		middleware := src.BasicAuthMiddleware(C)
+		err = middleware(handler)(e)
+		require.EqualError(t, err, "code=401, message=Unauthorized")
+	})
+}
+
 func TestCSRFMiddleware(t *testing.T) {
 	handler := func(c echo.Context) error {
 		return nil

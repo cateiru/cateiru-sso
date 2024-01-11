@@ -45,6 +45,16 @@ func ServerMiddleWare(e *echo.Echo, c *Config) {
 	}))
 }
 
+// Basic認証
+func BasicAuthMiddleware(c *Config) echo.MiddlewareFunc {
+	return middleware.BasicAuth(func(userName, password string, ctx echo.Context) (bool, error) {
+		if userName == c.InternalBasicAuthUserName && password == c.InternalBasicAuthPassword {
+			return true, nil
+		}
+		return false, nil
+	})
+}
+
 // CSRF対策で`Sec-Fetch-Site`ヘッダを検証する
 func CSRFMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
