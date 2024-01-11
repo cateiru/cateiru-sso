@@ -179,9 +179,11 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	api.POST("/register", h.Root)
 
 	// FedCM エンドポイント
+	fedcmNoHeaderCheck := e.Group("/fedcm")
+	fedcmNoHeaderCheck.GET("/config.json", h.FedCMConfigHandler) // config.json は Sec-Fetch-Dest ヘッダーをチェックしない
+
 	fedcm := e.Group("/fedcm")
 	fedcm.Use(FedCMMiddleware)
-	fedcm.GET("/config.json", h.FedCMConfigHandler)
 	fedcm.GET("/accounts", h.FedCMAccountsHandler)
 	fedcm.GET("/client_metadata", h.FedCMClientMetadataHandler)
 	fedcm.POST("/id_assertion", h.FedCMIdAssertionHandler)
