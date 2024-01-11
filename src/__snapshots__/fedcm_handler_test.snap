@@ -1,0 +1,8 @@
+
+[TestWebIdentityHandler/取得可能 - 1]
+http://localhost:8080/v2/fedcm/config.json
+---
+
+[TestFedCMClientMetadataHandler/取得可能 - 1]
+src.FedCMClientMetadataResponse{PrivacyPolicyUrl:"http://cateiru.test/policy", TermsOfServiceUrl:"http://cateiru.test/terms"}
+---
