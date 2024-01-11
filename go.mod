@@ -2,7 +2,7 @@ module github.com/cateiru/cateiru-sso
 
 go 1.21.0
 
-toolchain go1.21.4
+toolchain go1.21.6
 
 require (
 	cloud.google.com/go/storage v1.33.0
