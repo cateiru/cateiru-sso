@@ -33,7 +33,7 @@ require (
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.18.0
 	golang.org/x/exp v0.0.0-20240110193028-0dcbfd608b1e
-	golang.org/x/image v0.13.0
+	golang.org/x/image v0.15.0
 	golang.org/x/net v0.19.0
 	golang.org/x/text v0.14.0
 )
