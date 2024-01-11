@@ -12,7 +12,7 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gkampitakis/go-snaps v0.4.12
 	github.com/go-sql-driver/mysql v1.7.1
-	github.com/go-webauthn/webauthn v0.8.6
+	github.com/go-webauthn/webauthn v0.10.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.5.0
 	github.com/jarcoal/httpmock v1.3.1
@@ -31,7 +31,7 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.14.1
 	github.com/volatiletech/strmangle v0.0.4
 	go.uber.org/zap v1.26.0
-	golang.org/x/crypto v0.16.0
+	golang.org/x/crypto v0.17.0
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	golang.org/x/image v0.13.0
 	golang.org/x/net v0.17.0
@@ -56,15 +56,15 @@ require (
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
 	github.com/gkampitakis/ciinfo v0.3.0 // indirect
 	github.com/gkampitakis/go-diff v1.3.2 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
-	github.com/go-webauthn/x v0.1.4 // indirect
+	github.com/go-webauthn/x v0.1.6 // indirect
 	github.com/gobuffalo/envy v1.10.2 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
-	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.0 // indirect
 	github.com/golang/geo v0.0.0-20190812012225-f41920e961ce // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
