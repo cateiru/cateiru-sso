@@ -13,7 +13,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// CSRF設定
 	// APIにはつけたくないのでここで定義している
 	if c.EnableCSRFMeasures {
-		version.Use(CSRFHandler)
+		version.Use(CSRFMiddleware)
 	}
 
 	// アカウント登録
@@ -187,8 +187,10 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	api.POST("/register", h.Root)
 
 	// FedCM エンドポイント
-	api.GET("/fedcm/config.json", h.FedCMConfigHandler)
-	api.GET("/fedcm/accounts", h.FedCMAccountsHandler)
-	api.GET("/fedcm/client_metadata", h.FedCMClientMetadataHandler)
-	api.POST("/fedcm/id_assertion", h.FedCMIdAssertionHandler)
+	fedcm := e.Group("/fedcm")
+	fedcm.Use(FedCMMiddleware)
+	fedcm.GET("/config.json", h.FedCMConfigHandler)
+	fedcm.GET("/accounts", h.FedCMAccountsHandler)
+	fedcm.GET("/client_metadata", h.FedCMClientMetadataHandler)
+	fedcm.POST("/id_assertion", h.FedCMIdAssertionHandler)
 }
