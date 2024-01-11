@@ -78,7 +78,7 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	providersUrl.Path = "/v2/fedcm/config.json"
+	providersUrl.Path = "/fedcm/config.json"
 
 	return c.JSON(http.StatusOK, &WebIdentityResponse{
 		ProvidersUrl: providersUrl.String(),
