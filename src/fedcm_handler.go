@@ -16,6 +16,14 @@ import (
 
 // ref. https://fedidcg.github.io/FedCM/#dictdef-identityproviderapiconfig
 type FedCMConfigResponse struct {
+	// Googleの実装を真似
+	// ref. https://accounts.google.com/gsi/fedcm.json
+	IDTokenEndpoint          string `json:"idtoken_endpoint,omitempty"`
+	IDTokenEndpoint2         string `json:"id_token_endpoint,omitempty"`
+	ClientIdMetadataEndpoint string `json:"client_id_metadata_endpoint,omitempty"`
+	SignInUrl                string `json:"signin_url,omitempty"`
+	LoginUrl                 string `json:"login_url,omitempty"`
+
 	AccountsEndpoint       string               `json:"accounts_endpoint"`
 	ClientMetadataEndpoint string               `json:"client_metadata_endpoint"`
 	IdAssertionEndpoint    string               `json:"id_assertion_endpoint"`
@@ -79,6 +87,14 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 
 // FedCM の設定レスポンス
 func (h *Handler) FedCMConfigHandler(c echo.Context) error {
+	pageUrl := h.C.SiteHost.String()
+
+	signInUrl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	signInUrl.Path = "/login"
+
 	return c.JSON(http.StatusOK, &FedCMConfigResponse{
 		AccountsEndpoint:       "/v2/fedcm/accounts",
 		ClientMetadataEndpoint: "/v2/fedcm/client_metadata",
@@ -87,8 +103,14 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 			BackgroundColor: h.C.BrandBackgroundColor,
 			Color:           h.C.BrandColor,
 			Name:            h.C.BrandName,
-			Icons:           []FedCMConfigIcons{}, // TODO: アイコン埋める
+			// TODO: アイコン埋める
 		},
+
+		IDTokenEndpoint:          "/v2/fedcm/id_assertion",
+		IDTokenEndpoint2:         "/v2/fedcm/id_assertion",
+		ClientIdMetadataEndpoint: "/v2/fedcm/client_metadata",
+		SignInUrl:                signInUrl.String(),
+		LoginUrl:                 signInUrl.String(),
 	})
 }
 

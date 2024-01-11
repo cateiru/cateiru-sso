@@ -48,13 +48,7 @@ func TestFedCMConfigHandler(t *testing.T) {
 		response := src.FedCMConfigResponse{}
 		require.NoError(t, m.Json(&response))
 
-		require.NotEmpty(t, response.AccountsEndpoint)
-		require.NotEmpty(t, response.ClientMetadataEndpoint)
-		require.NotEmpty(t, response.IdAssertionEndpoint)
-
-		require.Equal(t, response.Branding.BackgroundColor, C.BrandBackgroundColor)
-		require.Equal(t, response.Branding.Color, C.BrandColor)
-		require.Equal(t, response.Branding.Name, C.BrandName)
+		snaps.MatchSnapshot(t, response)
 	})
 }
 
