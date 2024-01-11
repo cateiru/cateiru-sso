@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18.17.0
 
@@ -53,9 +53,9 @@ jobs:
       TZ: 'Asia/Tokyo'
       STORAGE_URL: 'localhost:4443'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: setup go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: '1.21'
       - name: start database
