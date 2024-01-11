@@ -36,7 +36,7 @@ type FedCMConfigBranding struct {
 	BackgroundColor string             `json:"background_color,omitempty"`
 	Color           string             `json:"color,omitempty"`
 	Name            string             `json:"name,omitempty"`
-	Icons           []FedCMConfigIcons `json:"icons"`
+	Icons           []FedCMConfigIcons `json:"icons,omitempty"`
 }
 
 type FedCMConfigIcons struct {
@@ -87,6 +87,7 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 
 // FedCM の設定レスポンス
 func (h *Handler) FedCMConfigHandler(c echo.Context) error {
+	apiUrl := h.C.Host.String()
 	pageUrl := h.C.SiteHost.String()
 
 	signInUrl, err := url.Parse(pageUrl)
@@ -95,10 +96,28 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 	}
 	signInUrl.Path = "/login"
 
+	accountsEndpoint, err := url.Parse(apiUrl)
+	if err != nil {
+		return err
+	}
+	accountsEndpoint.Path = "/fedcm/accounts"
+
+	clientMetadataEndpoint, err := url.Parse(apiUrl)
+	if err != nil {
+		return err
+	}
+	clientMetadataEndpoint.Path = "/fedcm/client_metadata"
+
+	idAssertionEndpoint, err := url.Parse(apiUrl)
+	if err != nil {
+		return err
+	}
+	idAssertionEndpoint.Path = "/fedcm/id_assertion"
+
 	return c.JSON(http.StatusOK, &FedCMConfigResponse{
-		AccountsEndpoint:       "/v2/fedcm/accounts",
-		ClientMetadataEndpoint: "/v2/fedcm/client_metadata",
-		IdAssertionEndpoint:    "/v2/fedcm/id_assertion",
+		AccountsEndpoint:       accountsEndpoint.String(),
+		ClientMetadataEndpoint: clientMetadataEndpoint.String(),
+		IdAssertionEndpoint:    idAssertionEndpoint.String(),
 		Branding: &FedCMConfigBranding{
 			BackgroundColor: h.C.BrandBackgroundColor,
 			Color:           h.C.BrandColor,
@@ -106,9 +125,9 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 			// TODO: アイコン埋める
 		},
 
-		IDTokenEndpoint:          "/v2/fedcm/id_assertion",
-		IDTokenEndpoint2:         "/v2/fedcm/id_assertion",
-		ClientIdMetadataEndpoint: "/v2/fedcm/client_metadata",
+		IDTokenEndpoint:          idAssertionEndpoint.String(),
+		IDTokenEndpoint2:         idAssertionEndpoint.String(),
+		ClientIdMetadataEndpoint: clientMetadataEndpoint.String(),
 		SignInUrl:                signInUrl.String(),
 		LoginUrl:                 signInUrl.String(),
 	})
