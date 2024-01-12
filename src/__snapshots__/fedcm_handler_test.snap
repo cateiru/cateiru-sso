@@ -12,6 +12,8 @@ src.FedCMConfigResponse{
     IDTokenEndpoint:          "http://localhost:8080/fedcm/id_assertion",
     IDTokenEndpoint2:         "http://localhost:8080/fedcm/id_assertion",
     ClientIdMetadataEndpoint: "http://localhost:8080/fedcm/client_metadata",
+    SignInUrl:                "http://localhost:8080/fedcm/signin",
+    LoginUrl:                 "http://localhost:8080/fedcm/signin",
     AccountsEndpoint:         "http://localhost:8080/fedcm/accounts",
     ClientMetadataEndpoint:   "http://localhost:8080/fedcm/client_metadata",
     IdAssertionEndpoint:      "http://localhost:8080/fedcm/id_assertion",
