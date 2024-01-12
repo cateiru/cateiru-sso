@@ -182,7 +182,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// Sec-Fetch-Dest ヘッダーをチェックしない
 	fedcmNoHeaderCheck := e.Group("/fedcm")
 	fedcmNoHeaderCheck.GET("/config.json", h.FedCMConfigHandler)
-	fedcmNoHeaderCheck.GET("/signin", h.FedCMSignInHandler)
+	fedcmNoHeaderCheck.GET("/login", h.FedCMSignInHandler)
 
 	// Sec-Fetch-Dest ヘッダーをチェックする
 	fedcm := e.Group("/fedcm")

@@ -79,12 +79,7 @@ func TestFedCMAccountsHandler(t *testing.T) {
 		c := m.Echo()
 
 		err = h.FedCMAccountsHandler(c)
-		require.NoError(t, err)
-
-		response := src.FedCMAccountsResponse{}
-		require.NoError(t, m.Json(&response))
-
-		require.Len(t, response.Accounts, 0)
+		require.EqualError(t, err, "code=401, message=no logged in accounts")
 	})
 
 	t.Run("ユーザー数1", func(t *testing.T) {

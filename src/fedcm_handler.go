@@ -89,7 +89,7 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	loginUrl.Path = "/fedcm/signin"
+	loginUrl.Path = "/fedcm/login"
 
 	accountsEndpoint, err := url.Parse(apiUrl)
 	if err != nil {
@@ -143,6 +143,10 @@ func (h *Handler) FedCMAccountsHandler(c echo.Context) error {
 	users, err := h.Session.LoggedInAccounts(ctx, c.Cookies())
 	if err != nil {
 		return err
+	}
+
+	if len(users) == 0 {
+		return NewHTTPError(http.StatusUnauthorized, "no logged in accounts")
 	}
 
 	accounts := make([]FedCMAccount, len(users))
