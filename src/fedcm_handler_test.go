@@ -52,6 +52,23 @@ func TestFedCMConfigHandler(t *testing.T) {
 	})
 }
 
+func TestFedCMSignInHandler(t *testing.T) {
+	h := NewTestHandler(t)
+
+	t.Run("取得可能", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.FedCMSignInHandler(c)
+		require.NoError(t, err)
+
+		require.Equal(t, m.Response().StatusCode, http.StatusFound)
+		require.Equal(t, m.Response().Header.Get("Location"), "http://cateiru.test/login")
+	})
+}
+
 func TestFedCMAccountsHandler(t *testing.T) {
 	ctx := context.Background()
 	h := NewTestHandler(t)

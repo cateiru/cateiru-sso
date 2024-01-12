@@ -88,13 +88,12 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 // FedCM の設定レスポンス
 func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 	apiUrl := h.C.Host.String()
-	pageUrl := h.C.SiteHost.String()
 
-	signInUrl, err := url.Parse(pageUrl)
+	signInUrl, err := url.Parse(apiUrl)
 	if err != nil {
 		return err
 	}
-	signInUrl.Path = "/login"
+	signInUrl.Path = "/fedcm/signin"
 
 	accountsEndpoint, err := url.Parse(apiUrl)
 	if err != nil {
@@ -131,6 +130,19 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 		SignInUrl:                signInUrl.String(),
 		LoginUrl:                 signInUrl.String(),
 	})
+}
+
+// サインイン（ログイン）URLにリダイレクトする
+func (h *Handler) FedCMSignInHandler(c echo.Context) error {
+	pageUrl := h.C.SiteHost.String()
+
+	signInUrl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	signInUrl.Path = "/login"
+
+	return c.Redirect(http.StatusFound, signInUrl.String())
 }
 
 // FedCM のログイン可能なアカウントリストを取得する
