@@ -14,21 +14,17 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// ref. https://fedidcg.github.io/FedCM/#dictdef-identityproviderapiconfig
+// ref. https://developers.google.com/privacy-sandbox/3pcd/fedcm-developer-guide?hl=ja
 type FedCMConfigResponse struct {
-	// Googleの実装を真似
-	// ref. https://accounts.google.com/gsi/fedcm.json
-	IDTokenEndpoint          string `json:"idtoken_endpoint,omitempty"`
-	IDTokenEndpoint2         string `json:"id_token_endpoint,omitempty"`
-	ClientIdMetadataEndpoint string `json:"client_id_metadata_endpoint,omitempty"`
-	SignInUrl                string `json:"signin_url,omitempty"`
-	LoginUrl                 string `json:"login_url,omitempty"`
-
-	AccountsEndpoint       string               `json:"accounts_endpoint"`
-	ClientMetadataEndpoint string               `json:"client_metadata_endpoint"`
-	IdAssertionEndpoint    string               `json:"id_assertion_endpoint"`
-	DisconnectEndpoint     string               `json:"disconnect_endpoint,omitempty"`
-	Branding               *FedCMConfigBranding `json:"branding,omitempty"`
+	// ユーザーが IdP にログインするためのログインページの URL。
+	LoginUrl string `json:"login_url,omitempty"`
+	// アカウント リスト エンドポイントの URL。
+	AccountsEndpoint string `json:"accounts_endpoint"`
+	// クライアント メタデータ エンドポイントの URL。
+	ClientMetadataEndpoint string `json:"client_metadata_endpoint,omitempty"`
+	// ID アサーション エンドポイントの URL。
+	IdAssertionEndpoint string               `json:"id_assertion_endpoint"`
+	Branding            *FedCMConfigBranding `json:"branding,omitempty"`
 }
 
 // ref. https://fedidcg.github.io/FedCM/#dictdef-identityproviderbranding
@@ -89,11 +85,11 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 	apiUrl := h.C.Host.String()
 
-	signInUrl, err := url.Parse(apiUrl)
+	loginUrl, err := url.Parse(apiUrl)
 	if err != nil {
 		return err
 	}
-	signInUrl.Path = "/fedcm/signin"
+	loginUrl.Path = "/fedcm/signin"
 
 	accountsEndpoint, err := url.Parse(apiUrl)
 	if err != nil {
@@ -123,12 +119,7 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 			Name:            h.C.BrandName,
 			// TODO: アイコン埋める
 		},
-
-		IDTokenEndpoint:          idAssertionEndpoint.String(),
-		IDTokenEndpoint2:         idAssertionEndpoint.String(),
-		ClientIdMetadataEndpoint: clientMetadataEndpoint.String(),
-		SignInUrl:                signInUrl.String(),
-		LoginUrl:                 signInUrl.String(),
+		LoginUrl: loginUrl.String(),
 	})
 }
 
@@ -136,13 +127,13 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 func (h *Handler) FedCMSignInHandler(c echo.Context) error {
 	pageUrl := h.C.SiteHost.String()
 
-	signInUrl, err := url.Parse(pageUrl)
+	loginUrl, err := url.Parse(pageUrl)
 	if err != nil {
 		return err
 	}
-	signInUrl.Path = "/login"
+	loginUrl.Path = "/login"
 
-	return c.Redirect(http.StatusFound, signInUrl.String())
+	return c.Redirect(http.StatusFound, loginUrl.String())
 }
 
 // FedCM のログイン可能なアカウントリストを取得する
