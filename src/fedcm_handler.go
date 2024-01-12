@@ -88,6 +88,13 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 // FedCM の設定レスポンス
 func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 	apiUrl := h.C.Host.String()
+	pageUrl := h.C.SiteHost.String()
+
+	signInUrl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	signInUrl.Path = "/login"
 
 	accountsEndpoint, err := url.Parse(apiUrl)
 	if err != nil {
@@ -121,6 +128,8 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 		IDTokenEndpoint:          idAssertionEndpoint.String(),
 		IDTokenEndpoint2:         idAssertionEndpoint.String(),
 		ClientIdMetadataEndpoint: clientMetadataEndpoint.String(),
+		SignInUrl:                signInUrl.String(),
+		LoginUrl:                 signInUrl.String(),
 	})
 }
 
