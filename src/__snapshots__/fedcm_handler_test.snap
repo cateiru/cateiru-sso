@@ -9,7 +9,7 @@ src.FedCMClientMetadataResponse{PrivacyPolicyUrl:"http://cateiru.test/policy", T
 
 [TestFedCMConfigHandler/取得可能 - 1]
 src.FedCMConfigResponse{
-    LoginUrl:               "http://localhost:8080/fedcm/signin",
+    LoginUrl:               "http://localhost:8080/fedcm/login",
     AccountsEndpoint:       "http://localhost:8080/fedcm/accounts",
     ClientMetadataEndpoint: "http://localhost:8080/fedcm/client_metadata",
     IdAssertionEndpoint:    "http://localhost:8080/fedcm/id_assertion",
