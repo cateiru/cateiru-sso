@@ -186,6 +186,7 @@ func (h *Handler) FedCMClientMetadataHandler(c echo.Context) error {
 
 // FedCM の認証
 // 返すtokenは一旦OIDCの code にする
+// TODO: https://developers.google.com/privacy-sandbox/3pcd/fedcm-developer-guide?hl=ja#error-response に従ってエラーレスポンスを返す
 func (h *Handler) FedCMIdAssertionHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
