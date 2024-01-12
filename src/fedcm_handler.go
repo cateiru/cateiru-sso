@@ -16,15 +16,22 @@ import (
 
 // ref. https://developers.google.com/privacy-sandbox/3pcd/fedcm-developer-guide?hl=ja
 type FedCMConfigResponse struct {
-	// ユーザーが IdP にログインするためのログインページの URL。
-	LoginUrl string `json:"login_url,omitempty"`
 	// アカウント リスト エンドポイントの URL。
 	AccountsEndpoint string `json:"accounts_endpoint"`
 	// クライアント メタデータ エンドポイントの URL。
-	ClientMetadataEndpoint string `json:"client_metadata_endpoint,omitempty"`
+	ClientMetadataEndpoint   string `json:"client_metadata_endpoint,omitempty"`
+	ClientIdMetadataEndpoint string `json:"client_id_metadata_endpoint,omitempty"`
+
 	// ID アサーション エンドポイントの URL。
-	IdAssertionEndpoint string               `json:"id_assertion_endpoint"`
-	Branding            *FedCMConfigBranding `json:"branding,omitempty"`
+	IdAssertionEndpoint string `json:"id_assertion_endpoint"`
+	IDTokenEndpoint     string `json:"idtoken_endpoint,omitempty"`
+	IDTokenEndpoint2    string `json:"id_token_endpoint,omitempty"`
+
+	// ユーザーが IdP にログインするためのログインページの URL。
+	LoginUrl  string `json:"login_url,omitempty"`
+	SignInUrl string `json:"signin_url,omitempty"`
+
+	Branding *FedCMConfigBranding `json:"branding,omitempty"`
 }
 
 // ref. https://fedidcg.github.io/FedCM/#dictdef-identityproviderbranding
@@ -110,16 +117,24 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 	idAssertionEndpoint.Path = "/fedcm/id_assertion"
 
 	return c.JSON(http.StatusOK, &FedCMConfigResponse{
-		AccountsEndpoint:       accountsEndpoint.String(),
-		ClientMetadataEndpoint: clientMetadataEndpoint.String(),
-		IdAssertionEndpoint:    idAssertionEndpoint.String(),
+		AccountsEndpoint: accountsEndpoint.String(),
+
+		ClientMetadataEndpoint:   clientMetadataEndpoint.String(),
+		ClientIdMetadataEndpoint: clientMetadataEndpoint.String(),
+
+		IdAssertionEndpoint: idAssertionEndpoint.String(),
+		IDTokenEndpoint:     idAssertionEndpoint.String(),
+		IDTokenEndpoint2:    idAssertionEndpoint.String(),
+
+		LoginUrl:  loginUrl.String(),
+		SignInUrl: loginUrl.String(),
+
 		Branding: &FedCMConfigBranding{
 			BackgroundColor: h.C.BrandColor,
 			Color:           h.C.BrandTextColor,
 			Name:            h.C.BrandName,
 			// TODO: アイコン埋める
 		},
-		LoginUrl: loginUrl.String(),
 	})
 }
 
