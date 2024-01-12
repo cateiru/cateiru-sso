@@ -19,8 +19,8 @@ src.FedCMConfigResponse{
     IdAssertionEndpoint:      "http://localhost:8080/fedcm/id_assertion",
     DisconnectEndpoint:       "",
     Branding:                 &src.FedCMConfigBranding{
-        BackgroundColor: "#ffffff",
-        Color:           "#2bc4cf",
+        BackgroundColor: "#2bc4cf",
+        Color:           "#ffffff",
         Name:            "oreore.me test",
         Icons:           nil,
     },

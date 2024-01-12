@@ -118,8 +118,8 @@ func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 		ClientMetadataEndpoint: clientMetadataEndpoint.String(),
 		IdAssertionEndpoint:    idAssertionEndpoint.String(),
 		Branding: &FedCMConfigBranding{
-			BackgroundColor: h.C.BrandBackgroundColor,
-			Color:           h.C.BrandColor,
+			BackgroundColor: h.C.BrandColor,
+			Color:           h.C.BrandTextColor,
 			Name:            h.C.BrandName,
 			// TODO: アイコン埋める
 		},
