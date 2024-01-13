@@ -16,6 +16,11 @@ services:
         RUN curl -OL https://github.com/k0kubun/sqldef/releases/download/v0.16.9/mysqldef_linux_amd64.tar.gz \
           && tar xf mysqldef_linux_amd64.tar.gz -C /usr/bin/
     container_name: db
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
     environment:
       MYSQL_USER: docker
       MYSQL_ROOT_PASSWORD: root

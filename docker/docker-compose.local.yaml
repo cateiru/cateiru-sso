@@ -23,8 +23,10 @@ services:
     volumes:
       - ..:/app
     depends_on:
-      - db
-      - gcs
+      db:
+        condition: service_healthy
+      gcs:
+        condition: service_started
     command: air -c .air.toml
   frontend:
     container_name: frontend_app
@@ -48,8 +50,10 @@ services:
       - oreore-pnpm-store:/app/.pnpm-store
       - ..:/app
     depends_on:
-      - db
-      - gcs
+      db:
+        condition: service_healthy
+      gcs:
+        condition: service_started
     command: sh -c "pnpm i --frozen-lockfile && pnpm dev"
 volumes:
   oreore-next-cache:
