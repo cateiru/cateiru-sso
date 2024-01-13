@@ -7,18 +7,15 @@ http://localhost:8080/fedcm/config.json
 src.FedCMClientMetadataResponse{PrivacyPolicyUrl:"http://cateiru.test/policy", TermsOfServiceUrl:"http://cateiru.test/terms"}
 ---
 
-
 [TestFedCMConfigHandler/取得可能 - 1]
 src.FedCMConfigResponse{
-    AccountsEndpoint:         "http://localhost:8080/fedcm/accounts",
-    ClientMetadataEndpoint:   "http://localhost:8080/fedcm/client_metadata",
-    ClientIdMetadataEndpoint: "http://localhost:8080/fedcm/client_metadata",
-    IdAssertionEndpoint:      "http://localhost:8080/fedcm/id_assertion",
-    IDTokenEndpoint:          "http://localhost:8080/fedcm/id_assertion",
-    IDTokenEndpoint2:         "http://localhost:8080/fedcm/id_assertion",
-    LoginUrl:                 "http://localhost:8080/fedcm/login",
-    SignInUrl:                "http://localhost:8080/fedcm/login",
-    Branding:                 &src.FedCMConfigBranding{
+    AccountsEndpoint:       "/fedcm/accounts",
+    ClientMetadataEndpoint: "/fedcm/client_metadata",
+    IdAssertionEndpoint:    "/fedcm/id_assertion",
+    RevocationEndpoint:     "/fedcm/revocation",
+    LoginUrl:               "/fedcm/login",
+    SignInUrl:              "/fedcm/login",
+    Branding:               &src.FedCMConfigBranding{
         BackgroundColor: "#2bc4cf",
         Color:           "#ffffff",
         Name:            "oreore.me test",

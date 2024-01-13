@@ -19,13 +19,12 @@ type FedCMConfigResponse struct {
 	// アカウント リスト エンドポイントの URL。
 	AccountsEndpoint string `json:"accounts_endpoint"`
 	// クライアント メタデータ エンドポイントの URL。
-	ClientMetadataEndpoint   string `json:"client_metadata_endpoint,omitempty"`
-	ClientIdMetadataEndpoint string `json:"client_id_metadata_endpoint,omitempty"`
+	ClientMetadataEndpoint string `json:"client_metadata_endpoint,omitempty"`
 
 	// ID アサーション エンドポイントの URL。
 	IdAssertionEndpoint string `json:"id_assertion_endpoint"`
-	IDTokenEndpoint     string `json:"idtoken_endpoint,omitempty"`
-	IDTokenEndpoint2    string `json:"id_token_endpoint,omitempty"`
+
+	RevocationEndpoint string `json:"revocation_endpoint,omitempty"`
 
 	// ユーザーが IdP にログインするためのログインページの URL。
 	LoginUrl  string `json:"login_url,omitempty"`
@@ -90,44 +89,17 @@ func (h *Handler) WebIdentityHandler(c echo.Context) error {
 
 // FedCM の設定レスポンス
 func (h *Handler) FedCMConfigHandler(c echo.Context) error {
-	apiUrl := h.C.Host.String()
-
-	loginUrl, err := url.Parse(apiUrl)
-	if err != nil {
-		return err
-	}
-	loginUrl.Path = "/fedcm/login"
-
-	accountsEndpoint, err := url.Parse(apiUrl)
-	if err != nil {
-		return err
-	}
-	accountsEndpoint.Path = "/fedcm/accounts"
-
-	clientMetadataEndpoint, err := url.Parse(apiUrl)
-	if err != nil {
-		return err
-	}
-	clientMetadataEndpoint.Path = "/fedcm/client_metadata"
-
-	idAssertionEndpoint, err := url.Parse(apiUrl)
-	if err != nil {
-		return err
-	}
-	idAssertionEndpoint.Path = "/fedcm/id_assertion"
-
 	return c.JSON(http.StatusOK, &FedCMConfigResponse{
-		AccountsEndpoint: accountsEndpoint.String(),
+		AccountsEndpoint: "/fedcm/accounts",
 
-		ClientMetadataEndpoint:   clientMetadataEndpoint.String(),
-		ClientIdMetadataEndpoint: clientMetadataEndpoint.String(),
+		ClientMetadataEndpoint: "/fedcm/client_metadata",
 
-		IdAssertionEndpoint: idAssertionEndpoint.String(),
-		IDTokenEndpoint:     idAssertionEndpoint.String(),
-		IDTokenEndpoint2:    idAssertionEndpoint.String(),
+		IdAssertionEndpoint: "/fedcm/id_assertion",
 
-		LoginUrl:  loginUrl.String(),
-		SignInUrl: loginUrl.String(),
+		LoginUrl:  "/fedcm/login",
+		SignInUrl: "/fedcm/login",
+
+		RevocationEndpoint: "/fedcm/revocation", // TODO: 未実装
 
 		Branding: &FedCMConfigBranding{
 			BackgroundColor: h.C.BrandColor,
