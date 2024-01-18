@@ -274,7 +274,7 @@ func TestAccountLogoutHandler(t *testing.T) {
 		err = h.AccountLogoutHandler(c)
 		require.NoError(t, err)
 
-		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-out")
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "", "遠隔でログアウトであり、現在のブラウザはログイン状態なはずなので、Set-Loginヘッダーは空")
 
 		// このCookieは削除しない
 		cookies := m.Response().Cookies()
