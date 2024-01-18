@@ -183,6 +183,10 @@ func (h *Handler) AccountLogoutHandler(c echo.Context) error {
 		return err
 	}
 
+	// TODO: 他にログインできるアカウントが存在するならこのヘッダーは付与しない
+	// ref. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja#login-status-api
+	c.Response().Header().Set("Set-Login", "logged-out")
+
 	return nil
 }
 

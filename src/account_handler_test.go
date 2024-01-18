@@ -240,6 +240,8 @@ func TestAccountLogoutHandler(t *testing.T) {
 		err = h.AccountLogoutHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-out")
+
 		// すべてのCookieが削除されている
 		cookies := m.Response().Cookies()
 		for _, cookie := range cookies {
@@ -271,6 +273,8 @@ func TestAccountLogoutHandler(t *testing.T) {
 
 		err = h.AccountLogoutHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-out")
 
 		// このCookieは削除しない
 		cookies := m.Response().Cookies()

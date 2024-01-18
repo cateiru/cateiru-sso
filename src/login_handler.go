@@ -155,6 +155,9 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 			return err
 		}
 		if userMe != nil {
+			// ref. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja#login-status-api
+			c.Response().Header().Set("Set-Login", "logged-in")
+
 			return c.JSON(http.StatusOK, LoginResponse{
 				User: userMe,
 				OTP:  nil,
@@ -193,6 +196,9 @@ func (h *Handler) LoginWebauthnHandler(c echo.Context) error {
 		IsStaff:            isStaff,
 		JoinedOrganization: JoinedOrganization,
 	}
+
+	// ref. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja#login-status-api
+	c.Response().Header().Set("Set-Login", "logged-in")
 
 	return c.JSON(http.StatusOK, LoginResponse{
 		User: &userMe,
@@ -289,6 +295,9 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 			return err
 		}
 		if userMe != nil {
+			// ref. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja#login-status-api
+			c.Response().Header().Set("Set-Login", "logged-in")
+
 			return c.JSON(http.StatusOK, LoginResponse{
 				User: userMe,
 				OTP:  nil, // FIXME: OTPも使えるようにする
@@ -363,6 +372,9 @@ func (h *Handler) LoginPasswordHandler(c echo.Context) error {
 		IsStaff:            isStaff,
 		JoinedOrganization: JoinedOrganization,
 	}
+
+	// ref. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja#login-status-api
+	c.Response().Header().Set("Set-Login", "logged-in")
 
 	return c.JSON(http.StatusOK, LoginResponse{
 		User: &userMe,
@@ -502,6 +514,9 @@ func (h *Handler) LoginOTPHandler(c echo.Context) error {
 		IsStaff:            isStaff,
 		JoinedOrganization: JoinedOrganization,
 	}
+
+	// ref. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja#login-status-api
+	c.Response().Header().Set("Set-Login", "logged-in")
 
 	return c.JSON(http.StatusOK, LoginResponse{
 		User: &userMe,

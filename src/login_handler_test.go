@@ -228,6 +228,8 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		err = h.LoginWebauthnHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		response := new(src.LoginResponse)
 		require.NoError(t, m.Json(response))
@@ -287,6 +289,8 @@ func TestLoginWebauthnHandler(t *testing.T) {
 		err = h.LoginWebauthnHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		response := new(src.LoginResponse)
 		require.NoError(t, m.Json(response))
@@ -316,6 +320,8 @@ func TestLoginWebauthnHandler(t *testing.T) {
 
 		err = h.LoginWebauthnHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		// userが返ってきているか
 		response := new(src.LoginResponse)
@@ -357,6 +363,8 @@ func TestLoginWebauthnHandler(t *testing.T) {
 
 		err = h.LoginWebauthnHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		updatedSession, err := models.OauthLoginSessions(
 			models.OauthLoginSessionWhere.Token.EQ(token),
@@ -408,6 +416,8 @@ func TestLoginWebauthnHandler(t *testing.T) {
 
 		err = h.LoginWebauthnHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		updatedSession, err := models.OauthLoginSessions(
 			models.OauthLoginSessionWhere.Token.EQ(token),
@@ -533,6 +543,8 @@ func TestLoginPasswordHandler(t *testing.T) {
 		err = h.LoginPasswordHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		response := new(src.LoginResponse)
 		require.NoError(t, m.Json(response))
@@ -582,6 +594,8 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		err = h.LoginPasswordHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		// userが返ってきているか
 		response := new(src.LoginResponse)
@@ -635,6 +649,8 @@ func TestLoginPasswordHandler(t *testing.T) {
 		err = h.LoginPasswordHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		response := new(src.LoginResponse)
 		require.NoError(t, m.Json(response))
@@ -687,6 +703,8 @@ func TestLoginPasswordHandler(t *testing.T) {
 		err = h.LoginPasswordHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "", "OTPが設定されてから付与されるので今は無い")
+
 		response := new(src.LoginResponse)
 		require.NoError(t, m.Json(response))
 		require.NotNil(t, response)
@@ -731,6 +749,8 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		err = h.LoginPasswordHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		updatedSession, err := models.OauthLoginSessions(
 			models.OauthLoginSessionWhere.Token.EQ(token),
@@ -779,6 +799,8 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		err = h.LoginPasswordHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		updatedSession, err := models.OauthLoginSessions(
 			models.OauthLoginSessionWhere.Token.EQ(token),
@@ -830,6 +852,8 @@ func TestLoginPasswordHandler(t *testing.T) {
 
 		err = h.LoginPasswordHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		response := new(src.LoginResponse)
 		require.NoError(t, m.Json(response))
@@ -987,6 +1011,8 @@ func TestLoginOTPHandler(t *testing.T) {
 		err = h.LoginOTPHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		response := new(src.LoginResponse)
 		require.NoError(t, m.Json(response))
@@ -1035,6 +1061,8 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		err = h.LoginOTPHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		// userが返ってきているか
 		response := new(src.LoginResponse)
@@ -1094,6 +1122,8 @@ func TestLoginOTPHandler(t *testing.T) {
 		err = h.LoginOTPHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		response := new(src.LoginResponse)
 		require.NoError(t, m.Json(response))
@@ -1146,6 +1176,8 @@ func TestLoginOTPHandler(t *testing.T) {
 
 		err = h.LoginOTPHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		// userが返ってきているか
 		response := new(src.LoginResponse)

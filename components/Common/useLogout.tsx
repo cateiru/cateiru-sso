@@ -18,6 +18,14 @@ export const useLogout = (): Returns => {
     });
 
     if (res) {
+      // FedCMのために、ブラウザにログアウト状態を伝える
+      // まだ提案段階の使用なのでanyで無理やり適用している
+      // ref. https://github.com/fedidcg/login-status
+      // ref2. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja
+      if (typeof (navigator as any).login !== 'undefined') {
+        (navigator as any).login.setStatus('logged-out');
+      }
+
       setUser(null);
     }
   };

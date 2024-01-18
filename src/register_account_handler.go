@@ -540,6 +540,9 @@ func (h *Handler) RegisterWebAuthnHandler(c echo.Context) error {
 		JoinedOrganization: joinedOrganization,
 	}
 
+	// ref. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja#login-status-api
+	c.Response().Header().Set("Set-Login", "logged-in")
+
 	return c.JSON(http.StatusCreated, &response)
 }
 
@@ -672,6 +675,9 @@ func (h *Handler) RegisterPasswordHandler(c echo.Context) error {
 		IsStaff:            false, // 登録時はtrueになることはない
 		JoinedOrganization: joinedOrganization,
 	}
+
+	// ref. https://developers.google.com/privacy-sandbox/blog/fedcm-chrome-120-updates?hl=ja#login-status-api
+	c.Response().Header().Set("Set-Login", "logged-in")
 
 	return c.JSON(http.StatusCreated, &response)
 }

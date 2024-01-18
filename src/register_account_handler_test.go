@@ -701,6 +701,8 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		err = h.RegisterWebAuthnHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		responseUser := new(src.UserMeResponse)
 		require.NoError(t, m.Json(responseUser))
@@ -768,6 +770,8 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 		err = h.RegisterWebAuthnHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		responseUser := new(src.UserMeResponse)
 		require.NoError(t, m.Json(responseUser))
@@ -812,6 +816,8 @@ func TestRegisterWebAuthnHandler(t *testing.T) {
 
 		err = h.RegisterWebAuthnHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		// userが返ってきているか
 		responseUser := new(src.UserMeResponse)
@@ -1071,6 +1077,8 @@ func TestRegisterPasswordHandler(t *testing.T) {
 		err = h.RegisterPasswordHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		responseUser := &src.UserMeResponse{}
 		require.NoError(t, m.Json(responseUser))
@@ -1132,6 +1140,8 @@ func TestRegisterPasswordHandler(t *testing.T) {
 		err = h.RegisterPasswordHandler(c)
 		require.NoError(t, err)
 
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
+
 		// userが返ってきているか
 		responseUser := &src.UserMeResponse{}
 		require.NoError(t, m.Json(responseUser))
@@ -1175,6 +1185,8 @@ func TestRegisterPasswordHandler(t *testing.T) {
 
 		err = h.RegisterPasswordHandler(c)
 		require.NoError(t, err)
+
+		require.Equal(t, m.Response().Header.Get("Set-Login"), "logged-in")
 
 		// userが返ってきているか
 		responseUser := &src.UserMeResponse{}
