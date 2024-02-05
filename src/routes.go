@@ -7,12 +7,12 @@ import (
 func Routes(e *echo.Echo, h *Handler, c *Config) {
 	e.GET("/", h.Root)
 
-	version := e.Group("/v2")
+	common := e.Group("/v2")
 
 	// CSRF設定
 	// APIにはつけたくないのでここで定義している
 	if c.EnableCSRFMeasures {
-		version.Use(CSRFMiddleware)
+		common.Use(CSRFMiddleware)
 	}
 
 	// アカウント登録
@@ -20,7 +20,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// 1. `/v2/register/email/send`にEmailを渡して確認コードをEmailに送信
 	// 2. `/v2/register/email/verify`に確認コードを入力してEmailを認証
 	// 3. `/v2/register/webauthn`か`/v2/register/password`で認証を追加
-	register := version.Group("/register")
+	register := common.Group("/register")
 	register.POST("/email/send", h.SendEmailVerifyHandler)                     // 確認コードを送信
 	register.POST("/email/resend", h.ReSendVerifyEmailHandler)                 // メールの再送信
 	register.POST("/email/verify", h.RegisterVerifyEmailHandler)               // Emailの認証
@@ -30,7 +30,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	register.POST("/invite_generate_session", h.RegisterInviteRegisterSession) // 招待メールからアカウント作成セッションを構築する
 
 	// ログイン
-	login := version.Group("/login")
+	login := common.Group("/login")
 	login.POST("/user", h.LoginUserHandler)                    // emailでユーザのアバターとuser nameを返す
 	login.POST("/begin_webauthn", h.LoginBeginWebauthnHandler) // Passkeyの前処理
 	login.POST("/webathn", h.LoginWebauthnHandler)             // WebAuthnでログイン
@@ -38,7 +38,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	login.POST("/otp", h.LoginOTPHandler)                      // OTPで認証。設定している場合、/passwordでトークンが返るのでそれと一緒に送信する
 
 	// アカウントの認証周り操作
-	account := version.Group("/account")
+	account := common.Group("/account")
 	account.GET("/list", h.AccountListHandler)                      // ログインしているアカウント一覧
 	account.POST("/switch", h.AccountSwitchHandler)                 // ログインアカウントの変更
 	account.POST("/logout", h.AccountLogoutHandler)                 // ログアウト
@@ -60,7 +60,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	account.POST("/reregistration/password", h.AccountReRegisterPasswordHandler)              // パスワード更新
 
 	// ユーザ情報
-	user := version.Group("/user")
+	user := common.Group("/user")
 	user.GET("/me", h.UserMeHandler)
 	user.PUT("/", h.UserUpdateHandler)               // ユーザ情報の更新
 	user.POST("/user_name", h.UserUserNameHandler)   // ユーザー名のチェック
@@ -73,7 +73,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	user.POST("/client/logout", h.UserLogoutClientHandler) // TODO: クライアントからログアウト
 
 	// 履歴
-	history := version.Group("/history")
+	history := common.Group("/history")
 	history.GET("/client/login", h.HistoryClientLoginHandler)   // ログインしているSSOクライアント
 	history.GET("/client", h.HistoryClientHandler)              // クライアントのログイン履歴
 	history.GET("/login_devices", h.HistoryLoginDeviceHandler)  // 現在ログインしているデバイス
@@ -82,12 +82,12 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	history.GET("/operation", h.HistoryOperationHistoryHandler) // 操作履歴
 
 	// 通知
-	notice := version.Group("/notice")
+	notice := common.Group("/notice")
 	notice.GET("", h.Root)
 	notice.POST("/read", h.Root) // 既読にする
 
 	// SSOクライアント
-	client := version.Group("/client")
+	client := common.Group("/client")
 	client.GET("", h.ClientHandler)
 	client.POST("", h.ClientCreateHandler) // クライアント新規作成
 	client.PUT("", h.ClientUpdateHandler)  // クライアントの編集
@@ -99,7 +99,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	client.DELETE("/allow_user", h.ClientDeleteAllowUserHandler)
 	client.GET("/login_users", h.ClientLoginUsersHandler) // ログインしているユーザ一覧
 
-	org := version.Group("/org")
+	org := common.Group("/org")
 	org.GET("/list", h.OrgGetHandler)
 	org.GET("/list/simple", h.OrgGetSimpleListHandler) // クライアント一覧で使用するorgのリスト
 	org.GET("/detail", h.OrgGetDetailHandler)
@@ -113,13 +113,13 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	org.DELETE("/member/invite", h.OrgInviteMemberDeleteHandler) // 招待のキャンセル
 
 	// OIDC
-	oidc := version.Group("/oidc")
+	oidc := common.Group("/oidc")
 	oidc.POST("/require", h.OIDCRequireHandler)
 	oidc.POST("/login", h.OIDCLoginHandler)
 	oidc.POST("/cancel", h.OIDCCancelHandler)
 
 	// 管理者用
-	admin := version.Group("/admin")
+	admin := common.Group("/admin")
 	admin.GET("/users", h.AdminUsersHandler) // ユーザ一覧
 	admin.GET("/user_detail", h.AdminUserDetailHandler)
 	admin.POST("/user/brand", h.AdminUserBrandHandler)         // ブランドの付与
