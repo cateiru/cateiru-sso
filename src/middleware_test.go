@@ -119,3 +119,48 @@ func TestFedCMMiddleware(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestCacheMiddleware(t *testing.T) {
+	handler := func(c echo.Context) error {
+		return nil
+	}
+
+	t.Run("CacheTypeNoCache の場合はCache-Control: no-cache", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		e := m.Echo()
+
+		h := src.CacheMiddleware(src.CacheTypeNoCache)
+		err = h(handler)(e)
+		require.NoError(t, err)
+
+		require.Equal(t, "no-store", e.Response().Header().Get("Cache-Control"))
+	})
+
+	t.Run("CacheType15Min の場合はCache-Control: public", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		e := m.Echo()
+
+		h := src.CacheMiddleware(src.CacheType15Min)
+		err = h(handler)(e)
+		require.NoError(t, err)
+
+		require.Equal(t, "public, s-maxage=900", e.Response().Header().Get("Cache-Control"))
+	})
+
+	t.Run("CacheType1Hour の場合はCache-Control: public", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		e := m.Echo()
+
+		h := src.CacheMiddleware(src.CacheType1Hour)
+		err = h(handler)(e)
+		require.NoError(t, err)
+
+		require.Equal(t, "public, s-maxage=3600", e.Response().Header().Get("Cache-Control"))
+	})
+}

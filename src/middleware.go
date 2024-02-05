@@ -8,6 +8,18 @@ import (
 	"go.uber.org/zap"
 )
 
+// キャッシュの種類
+type CacheType string
+
+const (
+	// キャッシュしない
+	CacheTypeNoCache CacheType = "no-store"
+	// 15分キャッシュ
+	CacheType15Min CacheType = "public, s-maxage=900"
+	// 1時間キャッシュ
+	CacheType1Hour CacheType = "public, s-maxage=3600"
+)
+
 // 共通のミドルウェア
 func ServerMiddleWare(e *echo.Echo, c *Config) {
 	// リクエストごとにログを出す
@@ -80,5 +92,16 @@ func FedCMMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		return next(c)
+	}
+}
+
+func CacheMiddleware(cacheType CacheType) echo.MiddlewareFunc {
+	cacheControlValue := string(cacheType)
+
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Header().Set("Cache-Control", cacheControlValue)
+			return next(c)
+		}
 	}
 }

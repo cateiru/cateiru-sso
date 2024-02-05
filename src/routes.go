@@ -15,6 +15,9 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 		common.Use(CSRFMiddleware)
 	}
 
+	// キャッシュ設定
+	common.Use(CacheMiddleware(CacheTypeNoCache))
+
 	// アカウント登録
 	// フロー:
 	// 1. `/v2/register/email/send`にEmailを渡して確認コードをEmailに送信
@@ -156,10 +159,12 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// Basic Auth使う
 	internal := e.Group("/internal")
 	internal.Use(BasicAuthMiddleware(c))
+	internal.Use(CacheMiddleware(CacheTypeNoCache))
 	internal.GET("/avatar/:key/:id", h.InternalAvatarHandler)
 	internal.GET("/worker", h.InternalWorkerHandler)
 
 	wellknown := e.Group("/.well-known")
+	wellknown.Use(CacheMiddleware(CacheType15Min))
 	wellknown.GET("/openid-configuration", h.ApiOpenidConfigurationHandler)
 	wellknown.GET("/jwks.json", h.JwksJsonHandler)
 	wellknown.GET("/web-identity", h.WebIdentityHandler)
@@ -168,6 +173,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// API
 	// APIにはCSRF設定をつけたくないので別で定義している
 	api := e.Group("/v2")
+	api.Use(CacheMiddleware(CacheTypeNoCache))
 
 	// token endpoint
 	api.GET("/token", h.TokenEndpointHandler)
@@ -182,12 +188,14 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// FedCM エンドポイント
 	// Sec-Fetch-Dest ヘッダーをチェックしない
 	fedcmNoHeaderCheck := e.Group("/fedcm")
+	fedcmNoHeaderCheck.Use(CacheMiddleware(CacheType15Min))
 	fedcmNoHeaderCheck.GET("/config.json", h.FedCMConfigHandler)
 	fedcmNoHeaderCheck.GET("/login", h.FedCMSignInHandler)
 
 	// Sec-Fetch-Dest ヘッダーをチェックする
 	fedcm := e.Group("/fedcm")
 	fedcm.Use(FedCMMiddleware)
+	fedcm.Use(CacheMiddleware(CacheTypeNoCache))
 	fedcm.GET("/accounts", h.FedCMAccountsHandler)
 	fedcm.GET("/client_metadata", h.FedCMClientMetadataHandler)
 	fedcm.POST("/id_assertion", h.FedCMIdAssertionHandler)
