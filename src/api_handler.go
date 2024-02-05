@@ -19,6 +19,13 @@ type WebIdentityResponse struct {
 	ProvidersUrl string `json:"provider_urls"`
 }
 
+// passkey-endpoint のレスポンス
+// ref. https://github.com/ms-id-standards/MSIdentityStandardsExplainers/blob/main/PasskeyEndpointsWellKnownUrl/explainer.md
+type PasskeyEndpointResponse struct {
+	Enroll string `json:"enroll"`
+	Mange  string `json:"manage"`
+}
+
 // OpenID Connect Discovery 1.0 incorporating errata set 1 で定義されている、 `.well-known/openid-configuration` のエンドポイント
 // ref. https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest
 func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
@@ -199,4 +206,25 @@ func (h *Handler) UserinfoEndpointHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) PasskeyEndpointHandler(c echo.Context) error {
+	pageUrl := h.C.SiteHost.String()
+
+	enroll, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	enroll.Path = "/settings"
+
+	manage, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	manage.Path = "/settings"
+
+	return c.JSON(http.StatusOK, &PasskeyEndpointResponse{
+		Enroll: enroll.String(),
+		Mange:  manage.String(),
+	})
 }

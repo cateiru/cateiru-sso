@@ -46,3 +46,22 @@ func TestJwksJsonHandler(t *testing.T) {
 		snaps.MatchSnapshot(t, string(data))
 	})
 }
+
+func TestPasskeyEndpointHandler(t *testing.T) {
+	h := NewTestHandler(t)
+
+	t.Run("取得可能", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.PasskeyEndpointHandler(c)
+		require.NoError(t, err)
+
+		response := src.PasskeyEndpointResponse{}
+		require.NoError(t, m.Json(&response))
+
+		snaps.MatchSnapshot(t, response)
+	})
+}

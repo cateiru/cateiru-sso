@@ -51,3 +51,7 @@ src.OpenidConfiguration{
 [TestFedCMClientMetadataHandler/取得可能 - 1]
 src.FedCMClientMetadataResponse{PrivacyPolicyUrl:"http://cateiru.test/policy", TermsOfServiceUrl:"http://cateiru.test/terms"}
 ---
+
+[TestPasskeyEndpointHandler/取得可能 - 1]
+src.PasskeyEndpointResponse{Enroll:"http://cateiru.test/settings", Mange:"http://cateiru.test/settings"}
+---
