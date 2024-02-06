@@ -12,7 +12,6 @@ IdP
 docker compose up
 
 # http://localhost:3000
-# （APIは http://localhost:8080 ）
 ```
 
 `docker compose`では、以下の4つのコンテナが立ち上がります。
@@ -20,7 +19,8 @@ docker compose up
 |name|種類|ポート|
 |:--|:--|:--:|
 |`backend_app`|Goのバックエンドサーバー|`8080`|
-|`frontend_app`|Next.jsサーバー|`3000`|
+|`frontend_app`|Next.jsサーバー|`3001`|
+|`nginx`|APIとNext.jsを同じポートで配信するためのプロキシ|`3000`|
 |`db`|MySQLサーバー|`3306`|
 |`gcs`|オブジェクトストレージサーバー|`4443`|
 

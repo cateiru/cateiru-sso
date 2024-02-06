@@ -39,7 +39,7 @@ services:
 
         WORKDIR /app
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - NEXT_PUBLIC_API_HOST=${NEXT_PUBLIC_API_HOST:-http://localhost:8080}
       - NEXT_PUBLIC_SERVER_API_HOST=${NEXT_PUBLIC_SERVER_API_HOST:-http://backend:8080}
@@ -55,6 +55,18 @@ services:
       gcs:
         condition: service_started
     command: sh -c "pnpm i --frozen-lockfile && pnpm dev"
+  nginx:
+    container_name: nginx_app
+    image: nginx
+    ports:
+      - "3000:80"
+    volumes:
+      - ../scripts/nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_started
 volumes:
   oreore-next-cache:
   oreore-node-modules:
