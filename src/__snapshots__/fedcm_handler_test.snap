@@ -1,12 +1,4 @@
 
-[TestWebIdentityHandler/取得可能 - 1]
-http://localhost:8080/fedcm/config.json
----
-
-[TestFedCMClientMetadataHandler/取得可能 - 1]
-src.FedCMClientMetadataResponse{PrivacyPolicyUrl:"http://cateiru.test/policy", TermsOfServiceUrl:"http://cateiru.test/terms"}
----
-
 [TestFedCMConfigHandler/取得可能 - 1]
 src.FedCMConfigResponse{
     AccountsEndpoint:       "/fedcm/accounts",
@@ -22,4 +14,8 @@ src.FedCMConfigResponse{
         Icons:           nil,
     },
 }
+---
+
+[TestFedCMClientMetadataHandler/取得可能 - 1]
+src.FedCMClientMetadataResponse{PrivacyPolicyUrl:"http://cateiru.test/policy", TermsOfServiceUrl:"http://cateiru.test/terms"}
 ---

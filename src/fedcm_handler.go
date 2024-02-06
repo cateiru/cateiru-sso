@@ -72,21 +72,6 @@ type FedCMIdAssertionResponse struct {
 	Token string `json:"token"`
 }
 
-// FedCM の well-known レスポンス
-func (h *Handler) WebIdentityHandler(c echo.Context) error {
-	apiUrl := h.C.Host.String()
-
-	providersUrl, err := url.Parse(apiUrl)
-	if err != nil {
-		return err
-	}
-	providersUrl.Path = "/fedcm/config.json"
-
-	return c.JSON(http.StatusOK, &WebIdentityResponse{
-		ProvidersUrl: providersUrl.String(),
-	})
-}
-
 // FedCM の設定レスポンス
 func (h *Handler) FedCMConfigHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, &FedCMConfigResponse{
