@@ -84,3 +84,20 @@ func TestPasskeyEndpointHandler(t *testing.T) {
 		snaps.MatchSnapshot(t, response)
 	})
 }
+
+func TestChangePasswordHandler(t *testing.T) {
+	h := NewTestHandler(t)
+
+	t.Run("リダイレクト可能", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		c := m.Echo()
+
+		err = h.ChangePasswordHandler(c)
+		require.NoError(t, err)
+
+		require.Equal(t, http.StatusFound, m.W.Code)
+		require.Equal(t, m.W.Header().Get("Location"), "http://cateiru.test/forget_password")
+	})
+}

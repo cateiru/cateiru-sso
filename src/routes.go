@@ -169,6 +169,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	wellknown.GET("/jwks.json", h.JwksJsonHandler)
 	wellknown.GET("/web-identity", h.WebIdentityHandler)
 	wellknown.GET("/passkey-endpoints", h.PasskeyEndpointHandler)
+	wellknown.GET("/change-password", h.ChangePasswordHandler)
 
 	// API
 	// APIにはCSRF設定をつけたくないので別で定義している

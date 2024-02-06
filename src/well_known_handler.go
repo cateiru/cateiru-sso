@@ -186,3 +186,15 @@ func (h *Handler) PasskeyEndpointHandler(c echo.Context) error {
 		Mange:  manage.String(),
 	})
 }
+
+func (h *Handler) ChangePasswordHandler(c echo.Context) error {
+	pageUrl := h.C.SiteHost.String()
+
+	changePasswordUrl, err := url.Parse(pageUrl)
+	if err != nil {
+		return err
+	}
+	changePasswordUrl.Path = "/forget_password"
+
+	return c.Redirect(http.StatusFound, changePasswordUrl.String())
+}
