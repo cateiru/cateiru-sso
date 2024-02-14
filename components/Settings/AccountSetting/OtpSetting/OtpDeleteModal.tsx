@@ -65,8 +65,6 @@ export const OtpDeleteModal: React.FC<Props> = props => {
 
     const res = await deleteOtp({
       method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
       body: form,
     });
 

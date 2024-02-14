@@ -22,8 +22,6 @@ export const OrgDeleteUser: React.FC<Props> = props => {
       const res = await request(
         {
           method: 'DELETE',
-          mode: 'cors',
-          credentials: 'include',
         },
         param
       );

@@ -80,8 +80,6 @@ export const RegisterClient = () => {
     const f = async () => {
       const res = await requestConfig({
         method: 'GET',
-        mode: 'cors',
-        credentials: 'include',
       });
 
       if (res) {
@@ -141,8 +139,6 @@ export const RegisterClient = () => {
 
     const res = await request({
       method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
       body: form,
     });
 

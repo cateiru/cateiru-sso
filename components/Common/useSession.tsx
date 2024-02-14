@@ -33,8 +33,6 @@ export const useSession = () => {
 
       fetch(api('/user/me'), {
         method: 'GET',
-        credentials: 'include',
-        mode: 'cors',
       })
         .then(async res => {
           if (res.ok) {

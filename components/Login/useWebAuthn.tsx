@@ -40,8 +40,6 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
 
     const f = async () => {
       const res = await getBeginKey({
-        mode: 'cors',
-        credentials: 'include',
         method: 'POST',
       });
       if (!res) return;
@@ -76,8 +74,6 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
       }
 
       const resCredential = await pushCredential({
-        mode: 'cors',
-        credentials: 'include',
         body: JSON.stringify(credential),
         headers: {
           'Content-Type': 'application/json',
@@ -112,8 +108,6 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
 
   const onClickWebAuthn = async () => {
     const res = await getBeginKey({
-      mode: 'cors',
-      credentials: 'include',
       method: 'POST',
     });
     if (!res) return;
@@ -145,8 +139,6 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
     }
 
     const resCredential = await pushCredential({
-      mode: 'cors',
-      credentials: 'include',
       body: JSON.stringify(credential),
       headers: {
         'Content-Type': 'application/json',

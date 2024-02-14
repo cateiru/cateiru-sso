@@ -39,8 +39,6 @@ export const UserDetailBrand: React.FC<Props> = props => {
     const res = await request(
       {
         method: 'DELETE',
-        mode: 'cors',
-        credentials: 'include',
       },
       param
     );

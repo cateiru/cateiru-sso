@@ -40,8 +40,6 @@ export const useUpdateProfile = (): Returns => {
     const res = await request({
       method: 'PUT',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

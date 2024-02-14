@@ -1,4 +1,4 @@
-import {api} from '../api';
+import {api, fetch} from '../api';
 import {HTTPError} from '../error';
 import {ErrorSchema} from '../types/error';
 import {
@@ -10,10 +10,7 @@ import {
 } from '../types/organization';
 
 export async function orgListFeather() {
-  const res = await fetch(api('/org/list'), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/org/list'));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -36,10 +33,7 @@ export async function orgDetailFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('org_id', id);
 
-  const res = await fetch(api('/org/detail', urlSearchParam), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/org/detail', urlSearchParam));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -62,10 +56,7 @@ export async function orgUsersFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('org_id', id);
 
-  const res = await fetch(api('/org/member', urlSearchParam), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/org/member', urlSearchParam));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -92,10 +83,7 @@ export async function orgSimpleListFeather(id?: string, isJoined?: boolean) {
     urlSearchParam.append('org_id', id);
   }
 
-  const res = await fetch(api('/org/list/simple', urlSearchParam), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/org/list/simple', urlSearchParam));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -118,10 +106,7 @@ export async function orgInviteMemberListFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('org_id', id);
 
-  const res = await fetch(api('/org/member/invite', urlSearchParam), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/org/member/invite', urlSearchParam));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());

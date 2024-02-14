@@ -19,8 +19,6 @@ export const LogoutDevice: React.FC<Props> = props => {
 
     const res = await request({
       method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
       body: form,
     });
 

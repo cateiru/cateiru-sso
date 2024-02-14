@@ -36,8 +36,6 @@ export const useSwitchAccount = (): Returns => {
 
       const res = await request({
         method: 'POST',
-        credentials: 'include',
-        mode: 'cors',
         body: form,
       });
 

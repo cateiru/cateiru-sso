@@ -37,8 +37,6 @@ export const BrandDetailContent: React.FC<Props> = ({brand}) => {
     const res = await request(
       {
         method: 'DELETE',
-        mode: 'cors',
-        credentials: 'include',
       },
       u
     );

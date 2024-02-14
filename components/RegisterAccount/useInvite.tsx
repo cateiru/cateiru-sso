@@ -38,8 +38,6 @@ export const useInvite = (
 
       const res = await request({
         method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
         body: form,
       });
 

@@ -55,8 +55,6 @@ export const EmailSetting = () => {
     const res = await updateEmail({
       method: 'POST',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {
@@ -78,8 +76,6 @@ export const EmailSetting = () => {
     const res = await verifyEmail({
       method: 'POST',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

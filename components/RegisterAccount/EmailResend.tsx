@@ -26,8 +26,6 @@ export const EmailResend: React.FC<Props> = props => {
 
     const res = await request({
       method: 'POST',
-      credentials: 'include',
-      mode: 'cors',
       body: form,
       headers: {
         'X-Register-Token': props.registerToken,

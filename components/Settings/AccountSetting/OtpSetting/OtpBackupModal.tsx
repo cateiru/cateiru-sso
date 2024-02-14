@@ -60,8 +60,6 @@ export const OtpBackupModal: React.FC<Props> = props => {
 
     const res = await backupsRequest({
       method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
       body: form,
     });
 

@@ -19,8 +19,6 @@ export const RegisterPassword = () => {
     const res = await request({
       method: 'POST',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

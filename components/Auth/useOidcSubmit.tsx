@@ -34,8 +34,6 @@ export const useOidcSubmit = (): Returns => {
     }
 
     const response = await submitRequest({
-      credentials: 'include',
-      mode: 'cors',
       method: 'POST',
       body: params,
       headers: {
@@ -67,8 +65,6 @@ export const useOidcSubmit = (): Returns => {
     }
 
     const response = await cancelRequest({
-      credentials: 'include',
-      mode: 'cors',
       method: 'POST',
       body: params,
       headers: {

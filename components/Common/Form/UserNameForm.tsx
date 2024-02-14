@@ -60,8 +60,6 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
 
     const res = await request({
       method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
       body: form,
     });
 

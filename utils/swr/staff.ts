@@ -16,10 +16,7 @@ import {
 } from '../types/staff';
 
 export async function orgsFeather() {
-  const res = await fetch(api('/admin/orgs'), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/orgs'));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -42,10 +39,7 @@ export async function adminOrgDetailFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('org_id', id);
 
-  const res = await fetch(api('/admin/org', urlSearchParam), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/org', urlSearchParam));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -65,10 +59,7 @@ export async function adminOrgDetailFeather(id: string) {
 }
 
 export async function staffUsersFeather() {
-  const res = await fetch(api('/admin/users'), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/users'));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -91,10 +82,7 @@ export async function staffUserDetailFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('user_id', id);
 
-  const res = await fetch(api('/admin/user_detail', urlSearchParam), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/user_detail', urlSearchParam));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -122,10 +110,7 @@ export async function brandFeather(id?: string): Promise<Brand | Brands> {
     urlSearchParam.append('brand_id', id);
   }
 
-  const res = await fetch(api('/admin/brand', urlSearchParam), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/brand', urlSearchParam));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -155,10 +140,7 @@ export async function brandFeather(id?: string): Promise<Brand | Brands> {
 }
 
 export async function staffClientsFeather() {
-  const res = await fetch(api('/admin/clients'), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/clients'));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -181,10 +163,7 @@ export async function staffClientDetailFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('client_id', id);
 
-  const res = await fetch(api('/admin/client_detail', urlSearchParam), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/client_detail', urlSearchParam));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -204,10 +183,7 @@ export async function staffClientDetailFeather(id: string) {
 }
 
 export async function staffRegisterSessionsFeather() {
-  const res = await fetch(api('/admin/register_session'), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/register_session'));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -227,10 +203,7 @@ export async function staffRegisterSessionsFeather() {
 }
 
 export async function staffUserNameFetcher() {
-  const res = await fetch(api('/admin/user_name'), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/admin/user_name'));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());

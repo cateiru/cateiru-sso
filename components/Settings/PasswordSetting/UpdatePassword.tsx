@@ -20,8 +20,6 @@ export const UpdatePassword = () => {
     const res = await request({
       method: 'PUT',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

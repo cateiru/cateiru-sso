@@ -4,6 +4,7 @@ interface Config {
   apiHost?: string;
   // APIのパスのプレフィックス
   apiPathPrefix?: string;
+  apiCors?: boolean;
   loginStateCookieName: string;
   emailCodeLength: number;
   mode: 'development' | 'production' | 'test';
@@ -17,6 +18,7 @@ interface Config {
 export const config: Config = {
   apiHost: process.env.NEXT_PUBLIC_API_HOST,
   apiPathPrefix: '/api/v2',
+  apiCors: false,
   loginStateCookieName: 'oreore-me-login-state',
   emailCodeLength: 6,
   mode: process.env.NODE_ENV ?? 'development',

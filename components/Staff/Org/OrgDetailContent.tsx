@@ -38,8 +38,6 @@ export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
     const res = await request(
       {
         method: 'DELETE',
-        mode: 'cors',
-        credentials: 'include',
       },
       params
     );

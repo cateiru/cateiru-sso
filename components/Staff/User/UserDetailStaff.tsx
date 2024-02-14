@@ -64,8 +64,6 @@ export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
     const res = await staffRequest({
       method: 'POST',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

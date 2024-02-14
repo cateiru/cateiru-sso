@@ -30,8 +30,6 @@ export const Forget = () => {
     const res = await request({
       method: 'POST',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

@@ -41,8 +41,6 @@ export const ReregistrationPassword = () => {
         const res = await availableToken({
           method: 'POST',
           body: form,
-          mode: 'cors',
-          credentials: 'include',
         });
 
         if (res) {
@@ -90,8 +88,6 @@ export const ReregistrationPassword = () => {
     const res = await updatePassword({
       method: 'POST',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

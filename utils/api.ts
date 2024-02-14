@@ -21,3 +21,20 @@ export function api(path: string, searchParams?: URLSearchParams): string {
 
   return url.toString();
 }
+
+// fetch APIのラッパー
+export async function fetch(
+  input: RequestInfo,
+  init?: RequestInit
+): Promise<Response> {
+  let c: RequestInit = {};
+  if (config.apiCors) {
+    c = {
+      credentials: 'include',
+      mode: 'cors',
+    };
+  }
+  c = {...c, ...init};
+
+  return await window.fetch(input, c);
+}

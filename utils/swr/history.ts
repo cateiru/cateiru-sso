@@ -1,4 +1,4 @@
-import {api} from '../api';
+import {api, fetch} from '../api';
 import {HTTPError} from '../error';
 import {ErrorSchema} from '../types/error';
 import {
@@ -8,10 +8,7 @@ import {
 } from '../types/history';
 
 export async function loginDeviceFeather(path: string) {
-  const res = await fetch(api(path), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api(path));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -31,10 +28,7 @@ export async function loginDeviceFeather(path: string) {
 }
 
 export async function loginTryHistoryFeather() {
-  const res = await fetch(api('/history/try_login'), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/history/try_login'));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -54,10 +48,7 @@ export async function loginTryHistoryFeather() {
 }
 
 export async function operationHistoryFeather() {
-  const res = await fetch(api('/history/operation'), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/history/operation'));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());

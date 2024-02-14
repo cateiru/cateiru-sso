@@ -91,8 +91,6 @@ export const EditClient = () => {
     const c = async () => {
       const res = await requestConfig({
         method: 'GET',
-        mode: 'cors',
-        credentials: 'include',
       });
 
       if (res) {
@@ -113,8 +111,6 @@ export const EditClient = () => {
       const res = await request(
         {
           method: 'GET',
-          mode: 'cors',
-          credentials: 'include',
         },
         param
       );
@@ -206,8 +202,6 @@ export const EditClient = () => {
 
     const res = await request({
       method: 'PUT',
-      mode: 'cors',
-      credentials: 'include',
       body: form,
     });
 
@@ -231,8 +225,6 @@ export const EditClient = () => {
     const res = await requestDeleteImage(
       {
         method: 'DELETE',
-        mode: 'cors',
-        credentials: 'include',
       },
       param
     );

@@ -35,8 +35,6 @@ export const useRegisterWebAuthn = (
   const registerWebAuthnHandle = async () => {
     const res = await beginWebauthnRequest({
       method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
     });
     if (!res) return;
 
@@ -61,8 +59,6 @@ export const useRegisterWebAuthn = (
     }
 
     const resCredential = await pushCredential({
-      mode: 'cors',
-      credentials: 'include',
       body: JSON.stringify(credential),
       headers: {
         'Content-Type': 'application/json',

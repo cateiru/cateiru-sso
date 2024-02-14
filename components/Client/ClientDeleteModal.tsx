@@ -21,8 +21,6 @@ export const ClientDeleteModal: React.FC<Props> = ({clientId, orgId}) => {
     const res = await request(
       {
         method: 'DELETE',
-        mode: 'cors',
-        credentials: 'include',
       },
       params
     );

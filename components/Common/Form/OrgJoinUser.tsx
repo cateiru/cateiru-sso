@@ -45,8 +45,6 @@ export const OrgJoinUser: React.FC<Props> = props => {
     const res = await request({
       method: 'POST',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

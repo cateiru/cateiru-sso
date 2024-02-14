@@ -97,8 +97,6 @@ export const UpdateAvatar = () => {
             const res = await request({
               method: 'POST',
               body: form,
-              mode: 'cors',
-              credentials: 'include',
             });
 
             if (res) {
@@ -150,8 +148,6 @@ export const UpdateAvatar = () => {
 
     const res = await request({
       method: 'DELETE',
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {

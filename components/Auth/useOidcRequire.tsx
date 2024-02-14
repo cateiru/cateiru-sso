@@ -1,6 +1,6 @@
 import {useRouter, useSearchParams} from 'next/navigation';
 import React from 'react';
-import {api} from '../../utils/api';
+import {api, fetch} from '../../utils/api';
 import {
   PublicAuthenticationLoginSessionSchema,
   PublicAuthenticationRequest,
@@ -47,8 +47,6 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
 
     try {
       res = await fetch(api('/oidc/require'), {
-        credentials: 'include',
-        mode: 'cors',
         method: 'POST',
         body: params,
         headers: {

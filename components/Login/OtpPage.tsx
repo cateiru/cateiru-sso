@@ -62,8 +62,6 @@ export const OtpPage: React.FC<Props> = props => {
     const res = await request({
       method: 'POST',
       body: form,
-      credentials: 'include',
-      mode: 'cors',
       headers: {
         ...oauthLoginSession(),
       },

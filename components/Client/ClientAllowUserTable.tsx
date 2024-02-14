@@ -42,8 +42,6 @@ export const ClientAllowUserTable: React.FC<{id: string | string[]}> = ({
     const res = await request(
       {
         method: 'DELETE',
-        mode: 'cors',
-        credentials: 'include',
       },
       param
     );

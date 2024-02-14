@@ -1,5 +1,5 @@
 import {useToast} from '@chakra-ui/react';
-import {api} from '../../utils/api';
+import {api, fetch} from '../../utils/api';
 import {
   ErrorSchema,
   ErrorType,
@@ -13,7 +13,7 @@ interface Options {
 
 interface Returns {
   request: (
-    data: RequestInit,
+    data?: RequestInit,
     urlParams?: URLSearchParams
   ) => Promise<Response | undefined>;
 }
@@ -21,7 +21,7 @@ interface Returns {
 export const useRequest = (path: string, options?: Options): Returns => {
   const toast = useToast();
 
-  const request = async (data: RequestInit, urlParams?: URLSearchParams) => {
+  const request = async (data?: RequestInit, urlParams?: URLSearchParams) => {
     try {
       const res = await fetch(api(path, urlParams), data);
 

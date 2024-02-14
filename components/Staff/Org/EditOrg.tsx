@@ -70,8 +70,6 @@ export const EditOrg: React.FC<Props> = ({id}) => {
 
     const res = await request({
       method: 'PUT',
-      mode: 'cors',
-      credentials: 'include',
       body: form,
     });
 
@@ -90,8 +88,6 @@ export const EditOrg: React.FC<Props> = ({id}) => {
         const res = await deleteImageRequest(
           {
             method: 'DELETE',
-            mode: 'cors',
-            credentials: 'include',
           },
           params
         );

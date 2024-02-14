@@ -80,8 +80,6 @@ export const OtpRegister = React.memo<Props>(props => {
   const getBeginToken = async () => {
     const res = await otpRequest({
       method: 'GET',
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {
@@ -104,8 +102,6 @@ export const OtpRegister = React.memo<Props>(props => {
 
     const res = await otpRequest({
       method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
       body: form,
     });
 

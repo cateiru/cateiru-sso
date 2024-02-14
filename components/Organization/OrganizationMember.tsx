@@ -114,8 +114,6 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
     const res = await request({
       method: 'PUT',
       body: form,
-      mode: 'cors',
-      credentials: 'include',
     });
 
     if (res) {
@@ -132,8 +130,6 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
     const res = await request(
       {
         method: 'DELETE',
-        mode: 'cors',
-        credentials: 'include',
       },
       param
     );
@@ -154,8 +150,6 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
     const res = await requestJoin(
       {
         method: 'DELETE',
-        mode: 'cors',
-        credentials: 'include',
       },
       param
     );

@@ -40,8 +40,6 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
 
     const res = await requestPassword({
       method: 'POST',
-      credentials: 'include',
-      mode: 'cors',
       body: form,
       headers: {
         'X-Register-Token': props.registerToken,
@@ -59,8 +57,6 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
   const onSubmitPasskey = async (data: RegistrationPublicKeyCredential) => {
     const res = await requestPasskey({
       method: 'POST',
-      credentials: 'include',
-      mode: 'cors',
       body: JSON.stringify(data),
       headers: {
         'X-Register-Token': props.registerToken,

@@ -1,4 +1,4 @@
-import {api} from '../api';
+import {api, fetch} from '../api';
 import {HTTPError} from '../error';
 import {
   ClientAllowUserListSchema,
@@ -34,10 +34,7 @@ export async function clientFetcher(
     param.append('org_id', orgId);
   }
 
-  const res = await fetch(api('/client', param), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/client', param));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());
@@ -71,10 +68,7 @@ export async function allowUserFetcher(clientId: string | string[]) {
   const param = new URLSearchParams();
   param.append('client_id', clientId);
 
-  const res = await fetch(api('/client/allow_user', param), {
-    credentials: 'include',
-    mode: 'cors',
-  });
+  const res = await fetch(api('/client/allow_user', param));
 
   if (!res.ok) {
     const data = ErrorSchema.safeParse(await res.json());

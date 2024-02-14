@@ -22,10 +22,7 @@ export const DeployData = () => {
 
   React.useEffect(() => {
     const f = async () => {
-      const res = await request({
-        credentials: 'include',
-        mode: 'cors',
-      });
+      const res = await request();
 
       if (res) {
         const mode = (await res.json()).mode;

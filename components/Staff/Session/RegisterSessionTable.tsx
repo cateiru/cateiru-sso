@@ -63,8 +63,6 @@ export const RegisterSessionTable = () => {
               const res = await request(
                 {
                   method: 'DELETE',
-                  mode: 'cors',
-                  credentials: 'include',
                 },
                 param
               );

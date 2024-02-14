@@ -23,8 +23,6 @@ export const RegisterPasskeyForm: React.FC<Props> = props => {
     const f = async () => {
       const res = await request({
         method: 'POST',
-        credentials: 'include',
-        mode: 'cors',
         headers: {
           'X-Register-Token': props.registerToken,
         },
