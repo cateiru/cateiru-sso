@@ -425,7 +425,7 @@ var CloudRunConfig = &Config{
 	DBDebugLog: false,
 
 	Host: &url.URL{
-		Host:   "api.sso.cateiru.com",
+		Host:   "sso.cateiru.com",
 		Scheme: "https",
 	},
 	SiteHost: &url.URL{
@@ -619,7 +619,7 @@ var CloudRunStagingConfig = &Config{
 	DBDebugLog: false,
 
 	Host: &url.URL{
-		Host:   "api.staging.oreore.me",
+		Host:   "staging.oreore.me",
 		Scheme: "https",
 	},
 	SiteHost: &url.URL{
@@ -811,7 +811,7 @@ var TestConfig = &Config{
 	DBDebugLog: false, // テストで詰まったときにtrueにすると便利。常にtrueにするとログが崩壊するので注意
 
 	Host: &url.URL{
-		Host:   "localhost:8080",
+		Host:   "cateiru.test",
 		Scheme: "http",
 	},
 	SiteHost: &url.URL{
