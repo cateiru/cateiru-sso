@@ -43,13 +43,13 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	tokenEndpointUrl.Path = "/v2/token"
+	tokenEndpointUrl.Path = "/api/v2/token"
 
 	userinfoEndpointUrl, err := url.Parse(apiUrl)
 	if err != nil {
 		return err
 	}
-	userinfoEndpointUrl.Path = "/v2/userinfo"
+	userinfoEndpointUrl.Path = "/api/v2/userinfo"
 
 	jwksUri, err := url.Parse(pageUrl)
 	if err != nil {
@@ -61,7 +61,7 @@ func (h *Handler) ApiOpenidConfigurationHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	registrationEndpointUrl.Path = "/v2/register"
+	registrationEndpointUrl.Path = "/api/v2/register"
 
 	policyUrl, err := url.Parse(pageUrl)
 	if err != nil {
