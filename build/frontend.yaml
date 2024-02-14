@@ -23,8 +23,6 @@ steps:
         '-f',
         '${_DOCKERFILE_PATH}',
         '--build-arg',
-        'NEXT_PUBLIC_API_HOST=${_NEXT_PUBLIC_API_HOST}',
-        '--build-arg',
         'NEXT_PUBLIC_RE_CAPTCHA=${_NEXT_PUBLIC_RE_CAPTCHA}',
         '--build-arg',
         'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${_NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}',

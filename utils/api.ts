@@ -21,19 +21,3 @@ export function api(path: string, searchParams?: URLSearchParams): string {
 
   return url.toString();
 }
-
-export function serverApi(
-  path: string,
-  searchParams?: URLSearchParams
-): string {
-  const url = new URL(config.serverSideApiHost);
-  url.pathname = path;
-
-  if (searchParams) {
-    searchParams.forEach((value, key) => {
-      url.searchParams.append(key, value);
-    });
-  }
-
-  return url.toString();
-}
