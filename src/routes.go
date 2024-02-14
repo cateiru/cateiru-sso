@@ -7,7 +7,7 @@ import (
 func Routes(e *echo.Echo, h *Handler, c *Config) {
 	e.GET("/", h.Root)
 
-	common := e.Group("/v2")
+	common := e.Group("/api/v2")
 
 	// CSRF設定
 	// APIにはつけたくないのでここで定義している
@@ -157,7 +157,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う
-	internal := e.Group("/internal")
+	internal := e.Group("/api/internal")
 	internal.Use(BasicAuthMiddleware(c))
 	internal.Use(CacheMiddleware(CacheTypeNoCache))
 	internal.GET("/avatar/:key/:id", h.InternalAvatarHandler)
@@ -173,7 +173,7 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 
 	// API
 	// APIにはCSRF設定をつけたくないので別で定義している
-	api := e.Group("/v2")
+	api := e.Group("/api/v2")
 	api.Use(CacheMiddleware(CacheTypeNoCache))
 
 	// token endpoint
