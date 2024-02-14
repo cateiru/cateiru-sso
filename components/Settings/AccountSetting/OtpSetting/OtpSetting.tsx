@@ -15,7 +15,7 @@ export const OtpSetting = () => {
 
   const Main = () => {
     const {data, error} = useSWR(
-      '/v2/account/certificates',
+      '/account/certificates',
       userAccountCertificatesFeather
     );
 

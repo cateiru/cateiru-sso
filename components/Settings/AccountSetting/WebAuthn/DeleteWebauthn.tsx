@@ -8,7 +8,7 @@ import {useRequest} from '../../../Common/useRequest';
 export const DeleteWebAuthn: React.FC<{id: number}> = ({id}) => {
   const toast = useToast();
 
-  const {request} = useRequest('/v2/account/webauthn');
+  const {request} = useRequest('/account/webauthn');
   const {mutate} = useSWRConfig();
 
   const onDeleteWebAuthn = async () => {
@@ -31,8 +31,7 @@ export const DeleteWebAuthn: React.FC<{id: number}> = ({id}) => {
       });
 
       mutate(
-        key =>
-          typeof key === 'string' && key.startsWith('/v2/account/webauthn'),
+        key => typeof key === 'string' && key.startsWith('/account/webauthn'),
         undefined,
         {revalidate: true}
       );

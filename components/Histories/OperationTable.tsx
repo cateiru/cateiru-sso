@@ -30,7 +30,7 @@ export const OperationTable = () => {
   );
 
   const {data, error} = useSWR<OperationHistoryList, ErrorType>(
-    '/v2/history/operation',
+    '/history/operation',
     operationHistoryFeather
   );
 

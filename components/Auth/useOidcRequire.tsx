@@ -46,7 +46,7 @@ export const useOidcRequire = (submit: () => Promise<void>) => {
     let res;
 
     try {
-      res = await fetch(api('/v2/oidc/require'), {
+      res = await fetch(api('/oidc/require'), {
         credentials: 'include',
         mode: 'cors',
         method: 'POST',

@@ -15,7 +15,7 @@ export const ClientList = () => {
   const {id} = useParams();
 
   const {data, error} = useSWR<ClientListResponse, ErrorType>(
-    id ? `/v2/client?org_id=${id}` : '/v2/client',
+    id ? `/v2/client?org_id=${id}` : '/client',
     () => clientFetcher(undefined, id)
   );
 

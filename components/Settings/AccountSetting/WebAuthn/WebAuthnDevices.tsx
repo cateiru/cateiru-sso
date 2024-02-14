@@ -19,7 +19,7 @@ import {DeleteWebAuthn} from './DeleteWebauthn';
 
 export const WebAuthnDevices = () => {
   const {data, error} = useSWR<AccountWebAuthnDevices, ErrorType>(
-    '/v2/account/webauthn',
+    '/account/webauthn',
     webAuthnDevicesFeather
   );
 

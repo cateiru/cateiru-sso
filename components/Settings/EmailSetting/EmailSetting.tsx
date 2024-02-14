@@ -23,8 +23,8 @@ export const EmailSetting = () => {
   const [disabled, setDisabled] = React.useState(false);
   const [token, setToken] = React.useState('');
 
-  const {request: updateEmail} = useRequest('/v2/user/email');
-  const {request: verifyEmail} = useRequest('/v2/user/email/register', {
+  const {request: updateEmail} = useRequest('/user/email');
+  const {request: verifyEmail} = useRequest('/user/email/register', {
     customError: error => {
       const message = error.unique_code
         ? ErrorUniqueMessage[error.unique_code] ?? error.message

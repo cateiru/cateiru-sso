@@ -39,7 +39,7 @@ interface Props {
 export const UserDetailStaff = React.memo<Props>(({staff, userId}) => {
   const textColor = useSecondaryColor();
 
-  const {request: staffRequest} = useRequest('/v2/admin/staff');
+  const {request: staffRequest} = useRequest('/admin/staff');
   const {mutate} = useSWRConfig();
   const user = useAtomValue(UserState);
 

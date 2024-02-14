@@ -11,7 +11,7 @@ interface Props {
 
 export const ClientDeleteModal: React.FC<Props> = ({clientId, orgId}) => {
   const deleteModal = useDisclosure();
-  const {request} = useRequest('/v2/client');
+  const {request} = useRequest('/client');
   const router = useRouter();
 
   const onDelete = async () => {

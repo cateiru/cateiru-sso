@@ -11,7 +11,7 @@ export const EmailResend: React.FC<Props> = props => {
   const toast = useToast();
   const {getRecaptchaToken} = useRecaptcha();
   const [isDisabled, setIsDisabled] = React.useState(false);
-  const {request} = useRequest('/v2/register/email/resend', {
+  const {request} = useRequest('/register/email/resend', {
     errorCallback: () => {},
   });
 

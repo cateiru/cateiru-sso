@@ -27,7 +27,7 @@ import {AgoTime} from '../Common/Time';
 
 export const OrgListTable = () => {
   const {data, error} = useSWR<PublicOrganizationList, ErrorType>(
-    '/v2/org/list',
+    '/org/list',
     orgListFeather
   );
 

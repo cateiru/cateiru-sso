@@ -17,7 +17,7 @@ interface Returns {
 
 export const useSwitchAccount = (): Returns => {
   const setUser = useSetAtom(UserState);
-  const {request} = useRequest('/v2/account/switch', {
+  const {request} = useRequest('/account/switch', {
     errorCallback: () => {
       nProgress.done();
     },

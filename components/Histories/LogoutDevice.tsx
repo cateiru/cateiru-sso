@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const LogoutDevice: React.FC<Props> = props => {
-  const {request} = useRequest('/v2/account/logout');
+  const {request} = useRequest('/account/logout');
   const {mutate} = useSWRConfig();
 
   const onLogout = async () => {
@@ -27,8 +27,7 @@ export const LogoutDevice: React.FC<Props> = props => {
     if (res) {
       mutate(
         key =>
-          typeof key === 'string' &&
-          key.startsWith('/v2/history/login_devices'),
+          typeof key === 'string' && key.startsWith('/history/login_devices'),
         undefined,
         {revalidate: true}
       );

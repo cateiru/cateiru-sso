@@ -19,7 +19,7 @@ import {Link} from '../../Common/Next/Link';
 import {AgoTime} from '../../Common/Time';
 
 export const BrandsTable = () => {
-  const {data, error} = useSWR<Brands, ErrorType>('/v2/admin/brand', () =>
+  const {data, error} = useSWR<Brands, ErrorType>('/admin/brand', () =>
     brandFeather()
   );
 

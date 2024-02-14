@@ -26,7 +26,7 @@ export const Default: Story = {
   parameters: {
     mockData: [
       {
-        url: api('/v2/admin/brand', param),
+        url: api('/admin/brand', param),
         method: 'GET',
         status: 200,
         response: [

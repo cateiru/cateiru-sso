@@ -44,8 +44,8 @@ export const EditOrg: React.FC<Props> = ({id}) => {
 
   const toast = useToast();
   const router = useRouter();
-  const {request} = useRequest('/v2/admin/org');
-  const {request: deleteImageRequest} = useRequest('/v2/admin/org/image');
+  const {request} = useRequest('/admin/org');
+  const {request: deleteImageRequest} = useRequest('/admin/org/image');
 
   React.useEffect(() => {
     if (data) {

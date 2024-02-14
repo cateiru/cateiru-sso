@@ -14,7 +14,7 @@ interface Props extends DefaultPageProps {
 
 export const EmailVerifyPage: React.FC<Props> = props => {
   const toast = useToast();
-  const {request} = useRequest('/v2/register/email/verify', {
+  const {request} = useRequest('/register/email/verify', {
     errorCallback: () => {
       props.setStatus('error');
     },

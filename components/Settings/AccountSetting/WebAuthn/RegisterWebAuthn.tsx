@@ -7,7 +7,7 @@ export const RegisterWebAuthn = () => {
   const {registerWebAuthn, load} = useRegisterWebAuthn(() => {
     // SWRのキャッシュ飛ばす
     mutate(
-      key => typeof key === 'string' && key.startsWith('/v2/account/webauthn'),
+      key => typeof key === 'string' && key.startsWith('/account/webauthn'),
       undefined,
       {revalidate: true}
     );

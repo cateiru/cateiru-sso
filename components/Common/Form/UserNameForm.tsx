@@ -40,7 +40,7 @@ export const UserNameForm: React.FC<Props> = ({userName}) => {
   const [loading, setLoading] = React.useState(false);
   const [name, setName] = React.useState('');
 
-  const {request} = useRequest('/v2/user/user_name', {
+  const {request} = useRequest('/user/user_name', {
     errorCallback: () => {
       setOk(false);
       setLoading(false);

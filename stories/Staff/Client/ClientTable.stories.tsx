@@ -21,7 +21,7 @@ export const Default: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/admin/clients'),
+        url: api('/admin/clients'),
         method: 'GET',
         status: 200,
         response: [
@@ -51,7 +51,7 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/admin/clients'),
+        url: api('/admin/clients'),
         method: 'GET',
         status: 200,
         delay: 10000,

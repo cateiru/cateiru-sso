@@ -29,7 +29,7 @@ export const OrgDetailContent: React.FC<OrganizationDetail> = data => {
   const deleteModal = useDisclosure();
   const router = useRouter();
 
-  const {request} = useRequest('/v2/admin/org');
+  const {request} = useRequest('/admin/org');
 
   const onDeleteOrg = async () => {
     const params = new URLSearchParams();

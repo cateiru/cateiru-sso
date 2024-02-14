@@ -39,7 +39,7 @@ export const UpdateAvatar = () => {
   const {isOpen, onOpen, onClose} = useDisclosure();
   const toast = useToast();
 
-  const {request} = useRequest('/v2/user/avatar', {
+  const {request} = useRequest('/user/avatar', {
     errorCallback: () => {
       // エラー起きたらモーダル閉じる
       closeModal();

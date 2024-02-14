@@ -232,7 +232,7 @@ var LocalConfig = &Config{
 	DBDebugLog: true,
 
 	Host: &url.URL{
-		Host:   "localhost:8080",
+		Host:   "localhost:3000",
 		Scheme: "http",
 	},
 	SiteHost: &url.URL{

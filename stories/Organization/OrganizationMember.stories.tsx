@@ -30,7 +30,7 @@ export const Default: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/org/member', urlParam),
+        url: api('/org/member', urlParam),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -78,7 +78,7 @@ export const Default: Story = {
         ] as OrganizationUserList,
       },
       {
-        url: api('/v2/org/member/invite', urlParam),
+        url: api('/org/member/invite', urlParam),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -102,14 +102,14 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/org/member', urlParam),
+        url: api('/org/member', urlParam),
         method: 'GET',
         status: 200,
         delay: 10000,
         response: [],
       },
       {
-        url: api('/v2/org/member/invite', urlParam),
+        url: api('/org/member/invite', urlParam),
         method: 'GET',
         status: 200,
         delay: 10000,

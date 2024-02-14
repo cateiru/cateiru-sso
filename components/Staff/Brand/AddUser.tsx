@@ -27,7 +27,7 @@ export const AddUser: React.FC<Props> = props => {
     reset,
     formState: {isSubmitting, errors},
   } = useForm<AddUserData>();
-  const {request} = useRequest('/v2/admin/user/brand');
+  const {request} = useRequest('/admin/user/brand');
 
   const onSubmit = async (data: AddUserData) => {
     const form = new FormData();

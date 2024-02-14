@@ -37,7 +37,7 @@ export const AccountList: React.FC<Props> = ({isOauth}) => {
   const [userState, setUserState] = React.useState(false);
   const {mutate} = useSWRConfig();
   const {data, error} = useSWR<AccountUserList, ErrorType>(
-    '/v2/account/list',
+    '/account/list',
     accountUserFeather
   );
   const {switch: s, loading, redirect} = useSwitchAccount();
@@ -47,7 +47,7 @@ export const AccountList: React.FC<Props> = ({isOauth}) => {
     if (user === null) {
       if (userState) {
         mutate(
-          key => typeof key === 'string' && key.startsWith('/v2/account/list'),
+          key => typeof key === 'string' && key.startsWith('/account/list'),
           undefined,
           {revalidate: true}
         );

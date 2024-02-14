@@ -9,7 +9,7 @@ import {UpdatePassword} from './UpdatePassword';
 
 export const PasswordSetting = () => {
   const {data, error} = useSWR(
-    '/v2/account/certificates',
+    '/account/certificates',
     userAccountCertificatesFeather
   );
 

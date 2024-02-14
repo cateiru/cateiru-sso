@@ -23,7 +23,7 @@ export const UserNameTable = () => {
   const textColor = useSecondaryColor();
 
   const {data, error} = useSWR<UserNames, ErrorType>(
-    '/v2/admin/user_name',
+    '/admin/user_name',
     staffUserNameFetcher
   );
 

@@ -15,10 +15,8 @@ export const useRegisterWebAuthn = (
   afterRegisterHandler?: () => void
 ): Returns => {
   const toast = useToast();
-  const {request: beginWebauthnRequest} = useRequest(
-    '/v2/account/begin_webauthn'
-  );
-  const {request: pushCredential} = useRequest('/v2/account/webauthn');
+  const {request: beginWebauthnRequest} = useRequest('/account/begin_webauthn');
+  const {request: pushCredential} = useRequest('/account/webauthn');
 
   const [load, setLoad] = React.useState(false);
   const abortRef = React.useRef<AbortController>();

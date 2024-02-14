@@ -26,7 +26,7 @@ export const RegisterOrg = () => {
     formState: {errors, isSubmitting},
   } = methods;
   const router = useRouter();
-  const {request} = useRequest('/v2/admin/org');
+  const {request} = useRequest('/admin/org');
 
   const onSubmit = async (data: RegisterOrgFromData) => {
     const form = new FormData();

@@ -23,12 +23,12 @@ export const RegisterCertificatePage: React.FC<Props> = props => {
   const [certType, setCertType] = React.useState<'passkey' | 'password'>(
     'passkey'
   );
-  const {request: requestPassword} = useRequest('/v2/register/password', {
+  const {request: requestPassword} = useRequest('/register/password', {
     errorCallback: () => {
       props.setStatus('error');
     },
   });
-  const {request: requestPasskey} = useRequest('/v2/register/webauthn', {
+  const {request: requestPasskey} = useRequest('/register/webauthn', {
     errorCallback: () => {
       props.setStatus('error');
     },

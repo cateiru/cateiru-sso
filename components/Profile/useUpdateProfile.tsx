@@ -18,7 +18,7 @@ interface Returns {
 export const useUpdateProfile = (): Returns => {
   const [user, setUser] = useAtom(UserState);
   const toast = useToast();
-  const {request} = useRequest('/v2/user/');
+  const {request} = useRequest('/user/');
 
   const updateProfile = async (data: ProfileFormData) => {
     const form = new FormData();

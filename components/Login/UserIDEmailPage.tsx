@@ -27,7 +27,7 @@ export const UserIDEmailPage: React.FC<Props> = props => {
   const toast = useToast();
   const getOauthLoginSession = useGetOauthLoginSession();
 
-  const {request} = useRequest('/v2/login/password', {
+  const {request} = useRequest('/login/password', {
     customError: e => {
       const message = e.unique_code
         ? ErrorUniqueMessage[e.unique_code] ?? e.message

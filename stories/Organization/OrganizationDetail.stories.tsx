@@ -27,7 +27,7 @@ export const Default: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/org/detail', urlParam),
+        url: api('/org/detail', urlParam),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -53,7 +53,7 @@ export const NotLink: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/org/detail', urlParam),
+        url: api('/org/detail', urlParam),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -79,7 +79,7 @@ export const Member: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/org/detail', urlParam),
+        url: api('/org/detail', urlParam),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -105,7 +105,7 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/org/detail', urlParam),
+        url: api('/org/detail', urlParam),
         method: 'GET',
         status: 200,
         delay: 10000,

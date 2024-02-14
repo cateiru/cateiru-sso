@@ -33,7 +33,7 @@ export const Default: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/account/list'),
+        url: api('/account/list'),
         method: 'GET',
         status: 200,
         response: [
@@ -61,7 +61,7 @@ export const Oauth: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/account/list'),
+        url: api('/account/list'),
         method: 'GET',
         status: 200,
         response: [
@@ -100,7 +100,7 @@ export const ManyUser: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/account/list'),
+        url: api('/account/list'),
         method: 'GET',
         status: 200,
         response: [
@@ -128,7 +128,7 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/account/list'),
+        url: api('/account/list'),
         method: 'GET',
         status: 200,
         delay: 10000,

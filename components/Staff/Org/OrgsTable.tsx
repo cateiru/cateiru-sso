@@ -22,7 +22,7 @@ import {AgoTime} from '../../Common/Time';
 
 export const OrgsTable = () => {
   const {data, error} = useSWR<Organizations, ErrorType>(
-    '/v2/admin/orgs',
+    '/admin/orgs',
     orgsFeather
   );
 

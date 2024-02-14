@@ -27,10 +27,10 @@ export const RegisterSessionTable = () => {
   const {mutate} = useSWRConfig();
 
   const {data, error} = useSWR<RegisterSessions, ErrorType>(
-    '/v2/admin/register_session',
+    '/admin/register_session',
     staffRegisterSessionsFeather
   );
-  const {request} = useRequest('/v2/admin/register_session');
+  const {request} = useRequest('/admin/register_session');
 
   if (error) {
     return <Error {...error} />;
@@ -78,7 +78,7 @@ export const RegisterSessionTable = () => {
                 mutate(
                   key =>
                     typeof key === 'string' &&
-                    key.startsWith('/v2/admin/register_session'),
+                    key.startsWith('/admin/register_session'),
                   undefined,
                   {revalidate: true}
                 );

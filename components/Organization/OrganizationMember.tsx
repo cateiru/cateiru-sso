@@ -72,8 +72,8 @@ export const OrganizationMember: React.FC<Props> = ({id}) => {
     ErrorType
   >(`/v2/org/member/invite?org_id=${id}`, () => orgInviteMemberListFeather(id));
 
-  const {request} = useRequest('/v2/org/member');
-  const {request: requestJoin} = useRequest('/v2/org/member/invite');
+  const {request} = useRequest('/org/member');
+  const {request: requestJoin} = useRequest('/org/member/invite');
 
   const {mutate} = useSWRConfig();
   const editMemberModal = useDisclosure();

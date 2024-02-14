@@ -18,7 +18,7 @@ export const Default: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/account/webauthn'),
+        url: api('/account/webauthn'),
         method: 'GET',
         status: 200,
         response: [
@@ -59,7 +59,7 @@ export const TooMany: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/account/webauthn'),
+        url: api('/account/webauthn'),
         method: 'GET',
         status: 200,
         response: Array(100)
@@ -82,7 +82,7 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/account/webauthn'),
+        url: api('/account/webauthn'),
         method: 'GET',
         status: 200,
         delay: 10000,

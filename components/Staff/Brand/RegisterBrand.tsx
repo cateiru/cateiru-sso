@@ -25,7 +25,7 @@ export const RegisterBrand = () => {
     formState: {errors, isSubmitting},
   } = useForm<RegisterBrandFromData>();
   const router = useRouter();
-  const {request} = useRequest('/v2/admin/brand');
+  const {request} = useRequest('/admin/brand');
 
   const onSubmit = async (data: RegisterBrandFromData) => {
     const form = new FormData();

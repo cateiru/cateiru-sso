@@ -8,7 +8,7 @@ import {
 import {ErrorSchema} from '../types/error';
 
 export async function accountUserFeather() {
-  const res = await fetch(api('/v2/account/list'), {
+  const res = await fetch(api('/account/list'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -31,7 +31,7 @@ export async function accountUserFeather() {
 }
 
 export async function userAccountCertificatesFeather() {
-  const res = await fetch(api('/v2/account/certificates'), {
+  const res = await fetch(api('/account/certificates'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -54,7 +54,7 @@ export async function userAccountCertificatesFeather() {
 }
 
 export async function webAuthnDevicesFeather() {
-  const res = await fetch(api('/v2/account/webauthn'), {
+  const res = await fetch(api('/account/webauthn'), {
     credentials: 'include',
     mode: 'cors',
   });

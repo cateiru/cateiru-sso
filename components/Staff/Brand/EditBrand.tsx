@@ -40,7 +40,7 @@ export const EditBrand: React.FC<Props> = ({id}) => {
     formState: {errors, isSubmitting},
   } = useForm<EditBrandFromData>();
   const router = useRouter();
-  const {request} = useRequest('/v2/admin/brand');
+  const {request} = useRequest('/admin/brand');
 
   React.useEffect(() => {
     if (data) {

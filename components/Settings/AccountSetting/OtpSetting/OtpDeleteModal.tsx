@@ -30,7 +30,7 @@ export const OtpDeleteModal: React.FC<Props> = props => {
   const toast = useToast();
   const {mutate} = useSWRConfig();
 
-  const {request: deleteOtp} = useRequest('/v2/account/otp/delete', {
+  const {request: deleteOtp} = useRequest('/account/otp/delete', {
     customError: e => {
       if (e.unique_code === 8) {
         toast({
@@ -79,7 +79,7 @@ export const OtpDeleteModal: React.FC<Props> = props => {
       // パージする
       mutate(
         key =>
-          typeof key === 'string' && key.startsWith('/v2/account/certificates'),
+          typeof key === 'string' && key.startsWith('/account/certificates'),
         undefined,
         {revalidate: true}
       );

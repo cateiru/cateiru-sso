@@ -32,7 +32,7 @@ export const OtpBackupModal: React.FC<Props> = props => {
 
   const [backups, setBackups] = React.useState<string[]>([]);
 
-  const {request: backupsRequest} = useRequest('/v2/account/otp/backups', {
+  const {request: backupsRequest} = useRequest('/account/otp/backups', {
     customError: e => {
       if (e.unique_code === 8) {
         toast({

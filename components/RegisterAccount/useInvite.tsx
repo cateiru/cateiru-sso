@@ -13,7 +13,7 @@ export const useInvite = (
   const prams = useSearchParams();
   const router = useRouter();
 
-  const {request} = useRequest('/v2/register/invite_generate_session');
+  const {request} = useRequest('/register/invite_generate_session');
 
   const [isInvite, setIsInvite] = React.useState<boolean>(false);
 

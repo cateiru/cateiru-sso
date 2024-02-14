@@ -24,7 +24,7 @@ import {LogoutDevice} from './LogoutDevice';
 export const LoginDevice = () => {
   const checkMarkColor = useColorModeValue('#68D391', '#38A169');
   const {data, error} = useSWR<LoginDeviceList, ErrorType>(
-    '/v2/history/login_devices',
+    '/history/login_devices',
     loginDeviceFeather
   );
 

@@ -10,7 +10,7 @@ export const RegisterPassword = () => {
   const toast = useToast();
   const {mutate} = useSWRConfig();
 
-  const {request} = useRequest('/v2/account/password');
+  const {request} = useRequest('/account/password');
 
   const onSubmitPassword = async (data: RegisterPasswordFormContextData) => {
     const form = new FormData();
@@ -32,7 +32,7 @@ export const RegisterPassword = () => {
       // キャッシュ飛ばす
       mutate(
         key =>
-          typeof key === 'string' && key.startsWith('/v2/account/certificates'),
+          typeof key === 'string' && key.startsWith('/account/certificates'),
         undefined,
         {revalidate: true}
       );

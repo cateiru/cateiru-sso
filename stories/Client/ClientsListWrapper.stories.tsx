@@ -27,7 +27,7 @@ export const Default: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/org/list/simple'),
+        url: api('/org/list/simple'),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -61,7 +61,7 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/org/list/simple'),
+        url: api('/org/list/simple'),
         method: 'GET',
         status: 200,
         delay: 10000,

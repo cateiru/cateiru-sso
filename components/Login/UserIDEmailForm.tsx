@@ -44,7 +44,7 @@ export const UserIDEmailForm: React.FC<Props> = ({
   const [user, setUser] = React.useState<LoginUser | null>(null);
   const [userName, setUserName] = React.useState<string>('');
 
-  const {request} = useRequest('/v2/login/user', {
+  const {request} = useRequest('/login/user', {
     errorCallback: () => {
       setUser(null);
     },

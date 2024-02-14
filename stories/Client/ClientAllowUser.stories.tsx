@@ -24,7 +24,7 @@ export const Default: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/client/allow_user', param),
+        url: api('/client/allow_user', param),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -79,7 +79,7 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/client/allow_user', param),
+        url: api('/client/allow_user', param),
         method: 'GET',
         status: 200,
         delay: 10000,

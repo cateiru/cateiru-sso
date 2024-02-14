@@ -30,7 +30,7 @@ export const LoginTryTable = () => {
   );
 
   const {data, error} = useSWR<LoginTryHistoryList, ErrorType>(
-    '/v2/history/try_login',
+    '/history/try_login',
     loginTryHistoryFeather
   );
 

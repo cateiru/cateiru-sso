@@ -35,7 +35,7 @@ export const OtpRegister = React.memo<Props>(props => {
   const [token, setToken] = React.useState<AccountOTPPublic | null>(null);
   const [backups, setBackups] = React.useState<string[]>([]);
 
-  const {request: otpRequest} = useRequest('/v2/account/otp', {
+  const {request: otpRequest} = useRequest('/account/otp', {
     customError: e => {
       const message = e.unique_code
         ? ErrorUniqueMessage[e.unique_code] ?? e.message
@@ -117,8 +117,7 @@ export const OtpRegister = React.memo<Props>(props => {
 
         mutate(
           key =>
-            typeof key === 'string' &&
-            key.startsWith('/v2/account/certificates'),
+            typeof key === 'string' && key.startsWith('/account/certificates'),
           undefined,
           {revalidate: true}
         );

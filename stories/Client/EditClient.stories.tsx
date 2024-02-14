@@ -27,7 +27,7 @@ export const Org: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/client', param),
+        url: api('/client', param),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -54,7 +54,7 @@ export const Org: Story = {
         } as ClientDetailType,
       },
       {
-        url: api('/v2/client/config'),
+        url: api('/client/config'),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -79,7 +79,7 @@ export const NoOrg: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/client', param),
+        url: api('/client', param),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -104,7 +104,7 @@ export const NoOrg: Story = {
         } as ClientDetailType,
       },
       {
-        url: api('/v2/client/config'),
+        url: api('/client/config'),
         method: 'GET',
         status: 200,
         delay: 1000,
@@ -129,14 +129,14 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/client', param),
+        url: api('/client', param),
         method: 'GET',
         status: 200,
         delay: 10000,
         response: {},
       },
       {
-        url: api('/v2/client/config'),
+        url: api('/client/config'),
         method: 'GET',
         status: 200,
         delay: 1000,

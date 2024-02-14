@@ -27,7 +27,7 @@ export const OtpPage: React.FC<Props> = props => {
   const toast = useToast();
   const oauthLoginSession = useGetOauthLoginSession();
 
-  const {request} = useRequest('/v2/login/otp', {
+  const {request} = useRequest('/login/otp', {
     customError: e => {
       const message = e.unique_code
         ? ErrorUniqueMessage[e.unique_code] ?? e.message

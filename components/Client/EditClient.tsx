@@ -61,9 +61,9 @@ export const EditClient = () => {
   const textColor = useSecondaryColor();
   const toast = useToast();
 
-  const {request: requestConfig} = useRequest('/v2/client/config');
-  const {request: requestDeleteImage} = useRequest('/v2/client/image');
-  const {request} = useRequest('/v2/client');
+  const {request: requestConfig} = useRequest('/client/config');
+  const {request: requestDeleteImage} = useRequest('/client/image');
+  const {request} = useRequest('/client');
 
   const [config, setConfig] = React.useState<ClientConfig | undefined>();
   const [orgId, setOrgId] = React.useState<string | null | undefined>(

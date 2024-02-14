@@ -57,7 +57,7 @@ const InviteForm: React.FC<InviteFormProps> = ({
     },
   });
 
-  const {request} = useRequest('/v2/org/member/invite');
+  const {request} = useRequest('/org/member/invite');
 
   const onSubmit = async (data: InviteFormData) => {
     const form = new FormData();
@@ -120,7 +120,7 @@ const JoinForm: React.FC<JoinFormProps> = ({
 }) => {
   const toast = useToast();
 
-  const {request} = useRequest('/v2/org/member', {
+  const {request} = useRequest('/org/member', {
     customError: e => {
       // 10 = NotFoundUser の場合は別のフォームを開く
       if (e.unique_code === 10) {

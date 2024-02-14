@@ -45,7 +45,7 @@ export const ClientAllowUser = () => {
   const textBoldColor = useColorModeValue('gray.100', 'gray.800');
 
   const {isOpen, onOpen, onClose} = useDisclosure();
-  const {request} = useRequest('/v2/client/allow_user');
+  const {request} = useRequest('/client/allow_user');
   const {mutate} = useSWRConfig();
 
   const [tabIndex, setTabIndex] = React.useState(0);

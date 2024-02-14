@@ -7,8 +7,11 @@ import {config} from './config';
  * @returns APIのURL
  */
 export function api(path: string, searchParams?: URLSearchParams): string {
-  const url = new URL(config.apiHost);
-  url.pathname = path;
+  const url = new URL(
+    config.apiHost ?? '',
+    typeof config.apiHost === 'undefined' ? location.href : undefined
+  );
+  url.pathname = config.apiPathPrefix + path;
 
   if (searchParams) {
     searchParams.forEach((value, key) => {

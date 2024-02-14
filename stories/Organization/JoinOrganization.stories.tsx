@@ -24,7 +24,7 @@ export const Default: Story = {
   parameters: {
     mockData: [
       {
-        url: api('/v2/org/member'),
+        url: api('/org/member'),
         method: 'POST',
         status: 200,
         delay: 1000,
@@ -42,7 +42,7 @@ export const NotFoundUser: Story = {
   parameters: {
     mockData: [
       {
-        url: api('/v2/org/member'),
+        url: api('/org/member'),
         method: 'POST',
         status: 400,
         delay: 1000,
@@ -52,7 +52,7 @@ export const NotFoundUser: Story = {
         } as ErrorType,
       },
       {
-        url: api('/v2/org/member/invite'),
+        url: api('/org/member/invite'),
         method: 'POST',
         status: 200,
         delay: 1000,

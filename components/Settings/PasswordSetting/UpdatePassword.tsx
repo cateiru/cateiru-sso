@@ -10,7 +10,7 @@ export const UpdatePassword = () => {
   const textColor = useSecondaryColor();
   const toast = useToast();
 
-  const {request} = useRequest('/v2/account/password/update');
+  const {request} = useRequest('/account/password/update');
 
   const onSubmit = async (data: UpdatePasswordFormData) => {
     const form = new FormData();

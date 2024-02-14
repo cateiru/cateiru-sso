@@ -29,7 +29,7 @@ interface Props {
 export const UserDetailBrand: React.FC<Props> = props => {
   const textColor = useSecondaryColor();
   const {mutate} = useSWRConfig();
-  const {request} = useRequest('/v2/admin/user/brand');
+  const {request} = useRequest('/admin/user/brand');
 
   const onDelete = async (brandId: string) => {
     const param = new URLSearchParams();

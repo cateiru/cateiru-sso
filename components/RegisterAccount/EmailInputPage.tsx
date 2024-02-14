@@ -13,7 +13,7 @@ interface Props extends DefaultPageProps {
 
 export const EmailInputPage: React.FC<Props> = props => {
   const {getRecaptchaToken} = useRecaptcha();
-  const {request} = useRequest('/v2/register/email/send', {
+  const {request} = useRequest('/register/email/send', {
     errorCallback: () => {
       props.setStatus('error');
     },

@@ -21,7 +21,7 @@ import {Link} from '../../Common/Next/Link';
 
 export const ClientsTable = () => {
   const {data, error} = useSWR<StaffClients, ErrorType>(
-    '/v2/admin/clients',
+    '/admin/clients',
     staffClientsFeather
   );
 

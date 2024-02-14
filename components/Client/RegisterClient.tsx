@@ -57,8 +57,8 @@ export const RegisterClient = () => {
 
   const textColor = useSecondaryColor();
 
-  const {request: requestConfig} = useRequest('/v2/client/config');
-  const {request} = useRequest('/v2/client');
+  const {request: requestConfig} = useRequest('/client/config');
+  const {request} = useRequest('/client');
 
   const [config, setConfig] = React.useState<ClientConfig | undefined>();
 

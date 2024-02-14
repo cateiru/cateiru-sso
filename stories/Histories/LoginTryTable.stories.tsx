@@ -18,7 +18,7 @@ export const Default: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/history/try_login'),
+        url: api('/history/try_login'),
         method: 'GET',
         status: 200,
         response: [
@@ -66,7 +66,7 @@ export const TooMany: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/history/try_login'),
+        url: api('/history/try_login'),
         method: 'GET',
         status: 200,
         response: Array(100)
@@ -92,7 +92,7 @@ export const Loading: Story = {
     layout: 'fullscreen',
     mockData: [
       {
-        url: api('/v2/history/try_login'),
+        url: api('/history/try_login'),
         method: 'GET',
         status: 200,
         delay: 10000,

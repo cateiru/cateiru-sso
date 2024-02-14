@@ -31,7 +31,7 @@ export const useSession = () => {
         return;
       }
 
-      fetch(api('/v2/user/me'), {
+      fetch(api('/user/me'), {
         method: 'GET',
         credentials: 'include',
         mode: 'cors',

@@ -7,7 +7,7 @@ interface Returns {
 }
 
 export const useLogout = (): Returns => {
-  const {request} = useRequest('/v2/account/logout');
+  const {request} = useRequest('/account/logout');
   const setUser = useSetAtom(UserState);
 
   const logout = async () => {

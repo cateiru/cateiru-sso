@@ -28,7 +28,7 @@ export const LoginHistoriesTable = () => {
   );
 
   const {data, error} = useSWR<LoginDeviceList, ErrorType>(
-    '/v2/history/login',
+    '/history/login',
     loginDeviceFeather
   );
 

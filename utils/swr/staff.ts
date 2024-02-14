@@ -16,7 +16,7 @@ import {
 } from '../types/staff';
 
 export async function orgsFeather() {
-  const res = await fetch(api('/v2/admin/orgs'), {
+  const res = await fetch(api('/admin/orgs'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -42,7 +42,7 @@ export async function adminOrgDetailFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('org_id', id);
 
-  const res = await fetch(api('/v2/admin/org', urlSearchParam), {
+  const res = await fetch(api('/admin/org', urlSearchParam), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -65,7 +65,7 @@ export async function adminOrgDetailFeather(id: string) {
 }
 
 export async function staffUsersFeather() {
-  const res = await fetch(api('/v2/admin/users'), {
+  const res = await fetch(api('/admin/users'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -91,7 +91,7 @@ export async function staffUserDetailFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('user_id', id);
 
-  const res = await fetch(api('/v2/admin/user_detail', urlSearchParam), {
+  const res = await fetch(api('/admin/user_detail', urlSearchParam), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -122,7 +122,7 @@ export async function brandFeather(id?: string): Promise<Brand | Brands> {
     urlSearchParam.append('brand_id', id);
   }
 
-  const res = await fetch(api('/v2/admin/brand', urlSearchParam), {
+  const res = await fetch(api('/admin/brand', urlSearchParam), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -155,7 +155,7 @@ export async function brandFeather(id?: string): Promise<Brand | Brands> {
 }
 
 export async function staffClientsFeather() {
-  const res = await fetch(api('/v2/admin/clients'), {
+  const res = await fetch(api('/admin/clients'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -181,7 +181,7 @@ export async function staffClientDetailFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('client_id', id);
 
-  const res = await fetch(api('/v2/admin/client_detail', urlSearchParam), {
+  const res = await fetch(api('/admin/client_detail', urlSearchParam), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -204,7 +204,7 @@ export async function staffClientDetailFeather(id: string) {
 }
 
 export async function staffRegisterSessionsFeather() {
-  const res = await fetch(api('/v2/admin/register_session'), {
+  const res = await fetch(api('/admin/register_session'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -227,7 +227,7 @@ export async function staffRegisterSessionsFeather() {
 }
 
 export async function staffUserNameFetcher() {
-  const res = await fetch(api('/v2/admin/user_name'), {
+  const res = await fetch(api('/admin/user_name'), {
     credentials: 'include',
     mode: 'cors',
   });

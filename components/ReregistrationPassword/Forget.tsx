@@ -11,7 +11,7 @@ import {SendMainSuccess} from './SendMailSuccess';
 
 export const Forget = () => {
   const descriptionColor = useSecondaryColor();
-  const {request} = useRequest('/v2/account/forget/password');
+  const {request} = useRequest('/account/forget/password');
   const {getRecaptchaToken} = useRecaptcha();
 
   const [isSuccess, setIsSuccess] = React.useState(false);

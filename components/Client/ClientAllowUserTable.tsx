@@ -28,7 +28,7 @@ export const ClientAllowUserTable: React.FC<{id: string | string[]}> = ({
   const {data, error} = useSWR(`/v2/client/allow_user?client_id=${id}`, () =>
     allowUserFetcher(id)
   );
-  const {request} = useRequest('/v2/client/allow_user');
+  const {request} = useRequest('/client/allow_user');
 
   const deleteModal = useDisclosure();
   const [deleteId, setDeleteId] = React.useState<number | undefined>(undefined);

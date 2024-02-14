@@ -9,8 +9,8 @@ interface Returns {
 }
 
 export const useOidcSubmit = (): Returns => {
-  const {request: submitRequest} = useRequest('/v2/oidc/login');
-  const {request: cancelRequest} = useRequest('/v2/oidc/cancel');
+  const {request: submitRequest} = useRequest('/oidc/login');
+  const {request: cancelRequest} = useRequest('/oidc/cancel');
 
   const {getFormParams} = useOidc();
   const getOauthLoginSession = useGetOauthLoginSession();

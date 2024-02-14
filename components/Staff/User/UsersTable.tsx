@@ -23,7 +23,7 @@ export const UsersTable = () => {
   const textColor = useSecondaryColor();
 
   const {data, error} = useSWR<StaffUsers, ErrorType>(
-    '/v2/admin/users',
+    '/admin/users',
     staffUsersFeather
   );
 

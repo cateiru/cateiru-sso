@@ -15,10 +15,10 @@ export const ReregistrationPassword = () => {
   const router = useRouter();
   const params = useSearchParams();
   const {request: availableToken} = useRequest(
-    '/v2/account/reregistration/available_token'
+    '/account/reregistration/available_token'
   );
   const {request: updatePassword} = useRequest(
-    '/v2/account/reregistration/password'
+    '/account/reregistration/password'
   );
   const {getRecaptchaToken} = useRecaptcha();
 

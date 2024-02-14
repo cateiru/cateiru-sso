@@ -31,7 +31,7 @@ export async function loginDeviceFeather(path: string) {
 }
 
 export async function loginTryHistoryFeather() {
-  const res = await fetch(api('/v2/history/try_login'), {
+  const res = await fetch(api('/history/try_login'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -54,7 +54,7 @@ export async function loginTryHistoryFeather() {
 }
 
 export async function operationHistoryFeather() {
-  const res = await fetch(api('/v2/history/operation'), {
+  const res = await fetch(api('/history/operation'), {
     credentials: 'include',
     mode: 'cors',
   });

@@ -28,7 +28,7 @@ export const BrandDetailContent: React.FC<Props> = ({brand}) => {
   const deleteModal = useDisclosure();
   const textColor = useSecondaryColor();
 
-  const {request} = useRequest('/v2/admin/brand');
+  const {request} = useRequest('/admin/brand');
 
   const onDelete = async () => {
     const u = new URLSearchParams();

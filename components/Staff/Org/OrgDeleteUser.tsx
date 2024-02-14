@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const OrgDeleteUser: React.FC<Props> = props => {
-  const {request} = useRequest('/v2/admin/org/member');
+  const {request} = useRequest('/admin/org/member');
 
   const onDelete = () => {
     const f = async () => {

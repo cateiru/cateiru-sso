@@ -10,7 +10,7 @@ import {
 } from '../types/organization';
 
 export async function orgListFeather() {
-  const res = await fetch(api('/v2/org/list'), {
+  const res = await fetch(api('/org/list'), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -36,7 +36,7 @@ export async function orgDetailFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('org_id', id);
 
-  const res = await fetch(api('/v2/org/detail', urlSearchParam), {
+  const res = await fetch(api('/org/detail', urlSearchParam), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -62,7 +62,7 @@ export async function orgUsersFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('org_id', id);
 
-  const res = await fetch(api('/v2/org/member', urlSearchParam), {
+  const res = await fetch(api('/org/member', urlSearchParam), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -92,7 +92,7 @@ export async function orgSimpleListFeather(id?: string, isJoined?: boolean) {
     urlSearchParam.append('org_id', id);
   }
 
-  const res = await fetch(api('/v2/org/list/simple', urlSearchParam), {
+  const res = await fetch(api('/org/list/simple', urlSearchParam), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -118,7 +118,7 @@ export async function orgInviteMemberListFeather(id: string) {
   const urlSearchParam = new URLSearchParams();
   urlSearchParam.append('org_id', id);
 
-  const res = await fetch(api('/v2/org/member/invite', urlSearchParam), {
+  const res = await fetch(api('/org/member/invite', urlSearchParam), {
     credentials: 'include',
     mode: 'cors',
   });

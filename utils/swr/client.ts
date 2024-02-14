@@ -34,7 +34,7 @@ export async function clientFetcher(
     param.append('org_id', orgId);
   }
 
-  const res = await fetch(api('/v2/client', param), {
+  const res = await fetch(api('/client', param), {
     credentials: 'include',
     mode: 'cors',
   });
@@ -71,7 +71,7 @@ export async function allowUserFetcher(clientId: string | string[]) {
   const param = new URLSearchParams();
   param.append('client_id', clientId);
 
-  const res = await fetch(api('/v2/client/allow_user', param), {
+  const res = await fetch(api('/client/allow_user', param), {
     credentials: 'include',
     mode: 'cors',
   });

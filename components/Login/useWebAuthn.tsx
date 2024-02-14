@@ -20,8 +20,8 @@ export const useWebAuthn = (loginSuccess: (user: UserMe) => void): Returns => {
   const [isConditionSupported, setIsConditionSupported] = React.useState(true);
   const abortRef = React.useRef<AbortController>();
 
-  const {request: getBeginKey} = useRequest('/v2/login/begin_webauthn');
-  const {request: pushCredential} = useRequest('/v2/login/webathn');
+  const {request: getBeginKey} = useRequest('/login/begin_webauthn');
+  const {request: pushCredential} = useRequest('/login/webathn');
 
   const getOauthLoginSession = useGetOauthLoginSession();
 

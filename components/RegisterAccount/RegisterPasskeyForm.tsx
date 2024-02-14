@@ -14,7 +14,7 @@ interface Props {
 
 export const RegisterPasskeyForm: React.FC<Props> = props => {
   const toast = useToast();
-  const {request} = useRequest('/v2/register/begin_webauthn');
+  const {request} = useRequest('/register/begin_webauthn');
   const [credential, setCredential] = React.useState<
     CredentialCreationOptions | undefined
   >();
