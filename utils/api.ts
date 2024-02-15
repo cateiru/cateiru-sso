@@ -7,18 +7,27 @@ import {config} from './config';
  * @returns APIのURL
  */
 export function api(path: string, searchParams?: URLSearchParams): string {
-  const url = new URL(
-    config.apiPathPrefix + path,
-    config.apiHost ?? location.href
-  );
+  if (config.apiHost) {
+    const url = new URL(
+      config.apiPathPrefix + path,
+      config.apiHost ?? location.href
+    );
 
-  if (searchParams) {
-    searchParams.forEach((value, key) => {
-      url.searchParams.append(key, value);
-    });
+    if (searchParams) {
+      searchParams.forEach((value, key) => {
+        url.searchParams.append(key, value);
+      });
+    }
+
+    return url.toString();
   }
 
-  return url.toString();
+  const mergedPath = `${config.apiPathPrefix}${path}`;
+
+  if (searchParams) {
+    return `${mergedPath}?${searchParams.toString()}`;
+  }
+  return mergedPath;
 }
 
 // fetch APIのラッパー
