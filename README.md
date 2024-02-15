@@ -79,7 +79,7 @@ pnpm storybook
 ```env
 # APIのホスト
 # Next.js側でAPIに接続する際に使用
-# 未指定時はデフォルトで location.href
+# 未指定時はデフォルトで相対パスになります
 NEXT_PUBLIC_API_HOST=[API host]
 
 # reCAPTCHAのトークン

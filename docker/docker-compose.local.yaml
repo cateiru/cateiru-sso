@@ -4,7 +4,7 @@ services:
     build:
       context: ..
       dockerfile_inline: |
-        FROM golang:1.21.4-alpine
+        FROM golang:1.22.0-alpine
 
         RUN apk update && apk add --no-cache ca-certificates tar curl && update-ca-certificates
         RUN go install github.com/cosmtrek/air@v1.49.0
@@ -60,6 +60,8 @@ services:
       - "3000:80"
     volumes:
       - ../scripts/nginx/nginx.conf:/etc/nginx/nginx.conf
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       frontend:
         condition: service_started
