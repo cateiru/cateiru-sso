@@ -67,7 +67,7 @@ jobs:
       - name: build
         run: go build -v ./...
       - name: test
-        run: ./scripts/test.sh -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic -json | tee ./go-test.out | tparse
+        run: ./scripts/test.sh -cover -json | tee ./go-test.out | tparse
       - name: add job summary
         if: always()
         run: |

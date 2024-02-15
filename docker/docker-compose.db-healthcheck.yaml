@@ -1,0 +1,9 @@
+services:
+  healthcheck:
+    image: alpine:latest
+    command: echo "I'm healthy"
+    depends_on:
+      db:
+        condition: service_healthy
+      gcs:
+        condition: service_started
