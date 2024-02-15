@@ -17,7 +17,7 @@ services:
           && tar xf mysqldef_linux_amd64.tar.gz -C /usr/bin/
     container_name: db
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping"]
+      test: "mysqladmin ping"
       interval: 5s
       timeout: 10s
       retries: 5

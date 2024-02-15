@@ -22,6 +22,12 @@ services:
       - "8080:8080"
     volumes:
       - ..:/app
+    healthcheck:
+      test: "curl --fail http://localhost:8080 || exit 1"
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
@@ -35,6 +41,7 @@ services:
       dockerfile_inline: |
         FROM node:18-alpine
 
+        RUN apk update && apk add --no-cache curl
         RUN npm i -g pnpm
 
         WORKDIR /app
@@ -47,6 +54,12 @@ services:
       - oreore-node-modules:/app/node_modules
       - oreore-pnpm-store:/app/.pnpm-store
       - ..:/app
+    healthcheck:
+      test: "curl --fail -I http://localhost:3000 || exit 1"
+      interval: 60s
+      timeout: 30s
+      retries: 10
+      start_period: 60s
     depends_on:
       db:
         condition: service_healthy
@@ -64,9 +77,9 @@ services:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       frontend:
-        condition: service_started
+        condition: service_healthy
       backend:
-        condition: service_started
+        condition: service_healthy
 volumes:
   oreore-next-cache:
   oreore-node-modules:
