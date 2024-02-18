@@ -73,6 +73,10 @@ export const DeployData = () => {
             </Td>
           </Tr>
           <Tr>
+            <Td fontWeight="bold">CORS設定</Td>
+            <Td>{config.apiCors ? '有効' : '無効'}</Td>
+          </Tr>
+          <Tr>
             <Td fontWeight="bold">タイトル</Td>
             <Td>{config.title}</Td>
           </Tr>
