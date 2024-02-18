@@ -10,6 +10,7 @@ import (
 	"github.com/cateiru/cateiru-sso/src/lib"
 	"github.com/go-sql-driver/mysql"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -42,6 +43,9 @@ type Config struct {
 
 	// CORS設定
 	CorsConfig *middleware.CORSConfig
+	// IP設定
+	// ref. https://echo.labstack.com/docs/ip-address
+	IPExtractor echo.IPExtractor
 
 	// CSRF対策
 	// `Sec-Fetch-Site` ヘッダを検証する
@@ -239,7 +243,8 @@ var LocalConfig = &Config{
 		Scheme: "http",
 	},
 
-	CorsConfig: nil,
+	CorsConfig:  nil,
+	IPExtractor: echo.ExtractIPFromXFFHeader(),
 
 	EnableCSRFMeasures: false, // crulから叩きたいケースがあるので無効化する
 
@@ -427,7 +432,8 @@ var CloudRunConfig = &Config{
 		Scheme: "https",
 	},
 
-	CorsConfig: nil,
+	CorsConfig:  nil,
+	IPExtractor: echo.ExtractIPFromXFFHeader(),
 
 	EnableCSRFMeasures: true,
 
@@ -617,6 +623,9 @@ var CloudRunStagingConfig = &Config{
 	},
 
 	CorsConfig: nil,
+	IPExtractor: echo.ExtractIPFromXFFHeader(
+		FastlyTrust()...,
+	),
 
 	EnableCSRFMeasures: true,
 
@@ -803,7 +812,8 @@ var TestConfig = &Config{
 		Scheme: "http",
 	},
 
-	CorsConfig: nil,
+	CorsConfig:  nil,
+	IPExtractor: echo.ExtractIPFromXFFHeader(),
 
 	EnableCSRFMeasures: false,
 
