@@ -358,7 +358,7 @@ var LocalConfig = &Config{
 
 	UseCDN: false,
 	CDNHost: &url.URL{
-		Host:   "localhost:4443",
+		Host:   "localhost:3002",
 		Path:   "/oreore-me",
 		Scheme: "http",
 	},

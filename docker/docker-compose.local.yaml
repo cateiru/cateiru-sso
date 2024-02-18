@@ -70,7 +70,8 @@ services:
     container_name: nginx_app
     image: nginx
     ports:
-      - "3000:80"
+      - "3000:3000"
+      - "3002:3002"
     volumes:
       - ../scripts/nginx/nginx.conf:/etc/nginx/nginx.conf
     environment:
@@ -80,6 +81,8 @@ services:
         condition: service_healthy
       backend:
         condition: service_healthy
+      gcs:
+        condition: service_started
 volumes:
   oreore-next-cache:
   oreore-node-modules:
