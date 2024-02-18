@@ -27,8 +27,8 @@ export const config: Config = {
       ? `${process.env.NEXT_PUBLIC_PUBLICATION_TYPE}.`
       : ''
   }oreore.me`,
-  revision: process.env.NEXT_PUBLIC_REVISION ?? 'unknown',
-  branchName: process.env.NEXT_PUBLIC_BRANCH_NAME,
+  revision: process.env.NEXT_PUBLIC_REVISION ?? '-',
+  branchName: process.env.NEXT_PUBLIC_BRANCH_NAME ?? '-',
   reCaptchaKey: process.env.NEXT_PUBLIC_RE_CAPTCHA,
   gaTracingId: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID,
 };

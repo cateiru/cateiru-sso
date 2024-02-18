@@ -3,6 +3,7 @@
 import {
   Badge,
   Link,
+  Skeleton,
   Table,
   TableContainer,
   Tbody,
@@ -16,7 +17,7 @@ import {useRequest} from '../Common/useRequest';
 
 export const DeployData = () => {
   const [apiConnectOk, setSpiConnectOk] = React.useState(false);
-  const [apiMode, setApiMode] = React.useState('');
+  const [apiMode, setApiMode] = React.useState<string | undefined | null>();
 
   const {request} = useRequest('/debug');
 
@@ -28,7 +29,10 @@ export const DeployData = () => {
         const mode = (await res.json()).mode;
         setApiMode(mode);
         setSpiConnectOk(true);
+        return;
       }
+
+      setApiMode(null);
     };
     f();
   }, []);
@@ -43,7 +47,15 @@ export const DeployData = () => {
           </Tr>
           <Tr>
             <Td fontWeight="bold">APIモード</Td>
-            <Td>{apiMode}</Td>
+            <Td>
+              {apiMode === null ? (
+                <>No Connected</>
+              ) : apiMode ? (
+                apiMode
+              ) : (
+                <Skeleton h="1.2rem" w="3rem" />
+              )}
+            </Td>
           </Tr>
           <Tr>
             <Td fontWeight="bold">リビジョン</Td>
@@ -66,7 +78,7 @@ export const DeployData = () => {
                   </Badge>
                 ) : (
                   <Badge colorScheme="red" verticalAlign="top">
-                    Not Connect
+                    No Connect
                   </Badge>
                 )}
               </Text>
