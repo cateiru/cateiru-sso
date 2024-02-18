@@ -48,7 +48,7 @@ func Main(mode string, path string) {
 // サーバを実行する
 func Server(c *Config, path string) error {
 	e := echo.New()
-	e.IPExtractor = echo.ExtractIPFromXFFHeader()
+	e.IPExtractor = c.IPExtractor
 	e.HTTPErrorHandler = CustomHTTPErrorHandler
 
 	ServerMiddleWare(e, c)
