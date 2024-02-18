@@ -29,6 +29,37 @@ func TestNewHandler(t *testing.T) {
 	require.NotNil(t, h.ReCaptcha)
 }
 
+func TestRootHandler(t *testing.T) {
+	h := NewTestHandler(t)
+
+	m, err := easy.NewMock("/", http.MethodGet, "")
+	require.NoError(t, err)
+
+	c := m.Echo()
+
+	err = h.Root(c)
+	require.NoError(t, err)
+
+	require.Equal(t, c.Response().Status, http.StatusOK)
+}
+
+func TestDebugHandler(t *testing.T) {
+	h := NewTestHandler(t)
+
+	m, err := easy.NewMock("/debug", http.MethodGet, "")
+	require.NoError(t, err)
+
+	c := m.Echo()
+
+	err = h.DebugHandler(c)
+	require.NoError(t, err)
+
+	require.Equal(t, c.Response().Status, http.StatusOK)
+	response := src.DebugResponse{}
+	require.NoError(t, m.Json(&response))
+	require.Equal(t, response.Mode, "test")
+}
+
 func TestParseUA(t *testing.T) {
 	h := NewTestHandler(t)
 	t.Run("UA-CH", func(t *testing.T) {

@@ -28,6 +28,10 @@ type UserData struct {
 	IsMobile bool
 }
 
+type DebugResponse struct {
+	Mode string `json:"mode"`
+}
+
 type Handler struct {
 	DB        *sql.DB
 	C         *Config
@@ -93,8 +97,12 @@ func NewHandler(db *sql.DB, config *Config, path string) (*Handler, error) {
 }
 
 func (h *Handler) Root(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{
-		"mode": h.C.Mode,
+	return c.String(http.StatusOK, "")
+}
+
+func (h *Handler) DebugHandler(c echo.Context) error {
+	return c.JSON(http.StatusOK, DebugResponse{
+		Mode: h.C.Mode,
 	})
 }
 

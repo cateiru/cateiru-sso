@@ -18,6 +18,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// キャッシュ設定
 	common.Use(CacheMiddleware(CacheTypeNoCache))
 
+	common.GET("/debug", h.DebugHandler)
+
 	// アカウント登録
 	// フロー:
 	// 1. `/v2/register/email/send`にEmailを渡して確認コードをEmailに送信

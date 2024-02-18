@@ -18,7 +18,7 @@ export const DeployData = () => {
   const [apiConnectOk, setSpiConnectOk] = React.useState(false);
   const [apiMode, setApiMode] = React.useState('');
 
-  const {request} = useRequest('/');
+  const {request} = useRequest('/debug');
 
   React.useEffect(() => {
     const f = async () => {
