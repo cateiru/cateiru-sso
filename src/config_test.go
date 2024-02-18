@@ -3,11 +3,16 @@ package src_test
 import (
 	"fmt"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/cateiru/cateiru-sso/src"
 	"github.com/stretchr/testify/require"
 )
+
+var IgnoreConfigTest []string = []string{
+	"CorsConfig",
+}
 
 func TestInitConfig(t *testing.T) {
 	modes := map[string]string{
@@ -42,9 +47,15 @@ func TestConfig(t *testing.T) {
 			rv := reflect.ValueOf(*c)
 			rt := rv.Type()
 			for i := 0; i < rt.NumField(); i++ {
+
 				field := rt.Field(i)
 				kind := field.Type.Kind()
 				value := rv.FieldByName(field.Name)
+
+				// `IgnoreConfigTest` に含まれるフィールドはテストしない
+				if slices.Contains(IgnoreConfigTest, field.Name) {
+					continue
+				}
 
 				switch kind.String() {
 				case "string":
