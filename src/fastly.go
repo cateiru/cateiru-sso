@@ -33,9 +33,9 @@ var fastlyIpAddresses []string = []string{
 
 func FastlyTrust() []echo.TrustOption {
 	options := []echo.TrustOption{
-		echo.TrustLoopback(false),   // e.g. ipv4 start with 127.
-		echo.TrustLinkLocal(false),  // e.g. ipv4 start with 169.254
-		echo.TrustPrivateNet(false), // e.g. ipv4 start with 10. or 192.168
+		echo.TrustLoopback(true),   // e.g. ipv4 start with 127.
+		echo.TrustLinkLocal(true),  // e.g. ipv4 start with 169.254
+		echo.TrustPrivateNet(true), // e.g. ipv4 start with 10. or 192.168
 	}
 
 	for _, fastlyIp := range fastlyIpAddresses {
