@@ -25,6 +25,47 @@ docker compose up
 |`gcs`|オブジェクトストレージサーバー|`4443`|
 |`gcs(via nginx)`|オブジェクトストレージサーバー|`3002`|
 
+### ローカル環境構成図
+
+```mermaid
+flowchart LR
+    U([User]) -->|:3000| N[nginx]
+    T([Go Test]) -->|:3306| D
+    T -->|:4443| C
+
+    subgraph docker-compose
+
+    N -->|:8080| A[backend_app]
+    N -->|:3001| B[frontend_app]
+    N -->|:4443| C[(gcs)]
+
+    A -->|:3306| D[(db)]
+    end
+```
+
+### 本番環境構成図
+
+```mermaid
+flowchart LR
+    U([User]) -->|oreore.me| N1
+    U -->|cdn.oreore.me| N2
+
+    subgraph Fastly
+    N1[Fastly 1]
+    N2[Fastly 2]
+    end
+
+    subgraph Google Cloud
+    N1 -->|/api,/.well-known,/fedcm| A[backend_app CloudRun]
+    N1 -->|other| B[frontend_app CloudRun]
+
+    N2 -->|internal| A
+    A --> C[(Cloud Storage)]
+
+    A --> D[(Cloud SQL)]
+    end
+```
+
 ### 管理画面に入る方法
 
 > [!WARNING]
