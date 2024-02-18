@@ -56,8 +56,8 @@ export const DeployData = () => {
           <Tr>
             <Td fontWeight="bold">APIホスト</Td>
             <Td>
-              <Link isExternal href={config.apiHost}>
-                {config.apiHost}
+              <Link isExternal href={config.apiHost ?? config.apiPathPrefix}>
+                {config.apiHost ?? config.apiPathPrefix}
               </Link>
               <Text ml="1rem" as="span">
                 {apiConnectOk ? (
