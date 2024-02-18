@@ -49,7 +49,9 @@ func ServerMiddleWare(e *echo.Echo, c *Config) {
 	}))
 
 	// CORS設定
-	e.Use(middleware.CORSWithConfig(*c.CorsConfig))
+	if c.CorsConfig != nil {
+		e.Use(middleware.CORSWithConfig(*c.CorsConfig))
+	}
 
 	// gzip設定
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
