@@ -20,24 +20,23 @@ docker compose up
 |:--|:--|:--:|
 |`backend_app`|Goのバックエンドサーバー|`8080`|
 |`frontend_app`|Next.jsサーバー|`3001`|
-|`nginx`|APIとNext.jsを同じポートで配信するためのプロキシ|`3000`|
+|`nginx`|APIとNext.jsを同じポートで配信するためのプロキシ|`3000`, `3002`|
 |`db`|MySQLサーバー|`3306`|
 |`gcs`|オブジェクトストレージサーバー|`4443`|
-|`gcs(via nginx)`|オブジェクトストレージサーバー|`3002`|
 
 ### ローカル環境構成図
 
 ```mermaid
 flowchart LR
-    U([User]) -->|:3000| N[nginx]
+    U([User]) -->|:3000, :3002| N[nginx]
     T([Go Test]) -->|:3306| D
     T -->|:4443| C
 
     subgraph docker-compose
 
-    N -->|:8080| A[backend_app]
-    N -->|:3001| B[frontend_app]
-    N -->|:4443| C[(gcs)]
+    N -->|:3000 -> :8080| A[backend_app]
+    N -->|:3000 -> :3001| B[frontend_app]
+    N -->|:3002 -> :4443| C[(gcs)]
 
     A -->|:3306| D[(db)]
     end
