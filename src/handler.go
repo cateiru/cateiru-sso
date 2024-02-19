@@ -29,7 +29,9 @@ type UserData struct {
 }
 
 type DebugResponse struct {
-	Mode string `json:"mode"`
+	Mode      string `json:"mode"`
+	XFF       string `json:"xff"`
+	IPAddress string `json:"ip_address"`
 }
 
 type Handler struct {
@@ -101,8 +103,12 @@ func (h *Handler) Root(c echo.Context) error {
 }
 
 func (h *Handler) DebugHandler(c echo.Context) error {
+	xff := c.Request().Header.Get("X-Forwarded-For")
+
 	return c.JSON(http.StatusOK, DebugResponse{
-		Mode: h.C.Mode,
+		Mode:      h.C.Mode,
+		IPAddress: c.RealIP(),
+		XFF:       xff,
 	})
 }
 

@@ -134,3 +134,10 @@ export type UserName = z.infer<typeof UserNameSchema>;
 
 export const UsernamesSchema = z.array(UserNameSchema);
 export type UserNames = z.infer<typeof UsernamesSchema>;
+
+export const DeployDataSchema = z.object({
+  mode: z.string(),
+  xff: z.string(),
+  ip_address: z.string(),
+});
+export type DeployData = z.infer<typeof DeployDataSchema>;

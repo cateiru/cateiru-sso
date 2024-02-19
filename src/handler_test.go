@@ -49,6 +49,8 @@ func TestDebugHandler(t *testing.T) {
 	m, err := easy.NewMock("/debug", http.MethodGet, "")
 	require.NoError(t, err)
 
+	m.R.Header.Add("X-Forwarded-For", "203.0.113.1")
+
 	c := m.Echo()
 
 	err = h.DebugHandler(c)
@@ -58,6 +60,8 @@ func TestDebugHandler(t *testing.T) {
 	response := src.DebugResponse{}
 	require.NoError(t, m.Json(&response))
 	require.Equal(t, response.Mode, "test")
+	require.Equal(t, response.XFF, "203.0.113.1")
+	require.Equal(t, response.IPAddress, "203.0.113.1")
 }
 
 func TestParseUA(t *testing.T) {

@@ -13,11 +13,17 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import {config} from '../../utils/config';
+import {
+  DeployData as DeployDataType,
+  DeployDataSchema,
+} from '../../utils/types/staff';
 import {useRequest} from '../Common/useRequest';
 
 export const DeployData = () => {
   const [apiConnectOk, setSpiConnectOk] = React.useState(false);
-  const [apiMode, setApiMode] = React.useState<string | undefined | null>();
+  const [apiData, setApiData] = React.useState<
+    DeployDataType | undefined | null
+  >();
 
   const {request} = useRequest('/debug');
 
@@ -26,13 +32,15 @@ export const DeployData = () => {
       const res = await request();
 
       if (res) {
-        const mode = (await res.json()).mode;
-        setApiMode(mode);
-        setSpiConnectOk(true);
-        return;
+        const data = DeployDataSchema.safeParse(await res.json());
+        if (data.success) {
+          setApiData(data.data);
+          setSpiConnectOk(true);
+          return;
+        }
       }
 
-      setApiMode(null);
+      setApiData(null);
     };
     f();
   }, []);
@@ -48,10 +56,34 @@ export const DeployData = () => {
           <Tr>
             <Td fontWeight="bold">APIモード</Td>
             <Td>
-              {apiMode === null ? (
+              {apiData === null ? (
                 <>No Connected</>
-              ) : apiMode ? (
-                apiMode
+              ) : apiData ? (
+                apiData.mode
+              ) : (
+                <Skeleton h="1.2rem" w="3rem" />
+              )}
+            </Td>
+          </Tr>
+          <Tr>
+            <Td fontWeight="bold">クライアントIPアドレス</Td>
+            <Td>
+              {apiData === null ? (
+                <>No Connected</>
+              ) : apiData ? (
+                apiData.ip_address
+              ) : (
+                <Skeleton h="1.2rem" w="3rem" />
+              )}
+            </Td>
+          </Tr>
+          <Tr>
+            <Td fontWeight="bold">X-Forwarded-For</Td>
+            <Td>
+              {apiData === null ? (
+                <>No Connected</>
+              ) : apiData ? (
+                apiData.xff
               ) : (
                 <Skeleton h="1.2rem" w="3rem" />
               )}
