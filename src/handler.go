@@ -28,12 +28,6 @@ type UserData struct {
 	IsMobile bool
 }
 
-type DebugResponse struct {
-	Mode      string `json:"mode"`
-	XFF       string `json:"xff"`
-	IPAddress string `json:"ip_address"`
-}
-
 type Handler struct {
 	DB        *sql.DB
 	C         *Config
@@ -100,16 +94,6 @@ func NewHandler(db *sql.DB, config *Config, path string) (*Handler, error) {
 
 func (h *Handler) Root(c echo.Context) error {
 	return c.String(http.StatusOK, "")
-}
-
-func (h *Handler) DebugHandler(c echo.Context) error {
-	xff := c.Request().Header.Get("X-Forwarded-For")
-
-	return c.JSON(http.StatusOK, DebugResponse{
-		Mode:      h.C.Mode,
-		IPAddress: c.RealIP(),
-		XFF:       xff,
-	})
 }
 
 // User-Agent または UA-CH からユーザ情報を取得する

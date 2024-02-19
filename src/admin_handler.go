@@ -70,6 +70,12 @@ type RegisterSessionResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type DebugResponse struct {
+	Mode      string              `json:"mode"`
+	IPAddress string              `json:"ip_address"`
+	Headers   map[string][]string `json:"headers"`
+}
+
 // すべてのユーザー一覧を取得する
 // `?offset=0` 指定可能。
 // 一度に返すユーザーの件数は50件
@@ -1316,4 +1322,22 @@ func (h *Handler) AdminUserNameHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, userNames)
+}
+
+func (h *Handler) AdminDebugHandler(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	u, err := h.Session.SimpleLogin(ctx, c)
+	if err != nil {
+		return err
+	}
+	if err := h.Session.RequireStaff(ctx, u); err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, DebugResponse{
+		Mode:      h.C.Mode,
+		IPAddress: c.RealIP(),
+		Headers:   c.Request().Header,
+	})
 }

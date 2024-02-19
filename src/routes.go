@@ -18,8 +18,6 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	// キャッシュ設定
 	common.Use(CacheMiddleware(CacheTypeNoCache))
 
-	common.GET("/debug", h.DebugHandler)
-
 	// アカウント登録
 	// フロー:
 	// 1. `/v2/register/email/send`にEmailを渡して確認コードをEmailに送信
@@ -156,6 +154,8 @@ func Routes(e *echo.Echo, h *Handler, c *Config) {
 	admin.DELETE("/register_session", h.AdminDeleteRegisterSessionHandler) // 登録のセッションを削除する
 
 	admin.GET("/user_name", h.AdminUserNameHandler) // 予約されているユーザー名の一覧を返す
+
+	admin.GET("/debug", h.AdminDebugHandler)
 
 	// CDN通したり、バッチ処理したり
 	// Basic Auth使う

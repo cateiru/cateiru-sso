@@ -43,27 +43,6 @@ func TestRootHandler(t *testing.T) {
 	require.Equal(t, c.Response().Status, http.StatusOK)
 }
 
-func TestDebugHandler(t *testing.T) {
-	h := NewTestHandler(t)
-
-	m, err := easy.NewMock("/debug", http.MethodGet, "")
-	require.NoError(t, err)
-
-	m.R.Header.Add("X-Forwarded-For", "203.0.113.1")
-
-	c := m.Echo()
-
-	err = h.DebugHandler(c)
-	require.NoError(t, err)
-
-	require.Equal(t, c.Response().Status, http.StatusOK)
-	response := src.DebugResponse{}
-	require.NoError(t, m.Json(&response))
-	require.Equal(t, response.Mode, "test")
-	require.Equal(t, response.XFF, "203.0.113.1")
-	require.Equal(t, response.IPAddress, "203.0.113.1")
-}
-
 func TestParseUA(t *testing.T) {
 	h := NewTestHandler(t)
 	t.Run("UA-CH", func(t *testing.T) {

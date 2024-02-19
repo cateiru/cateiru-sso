@@ -2201,3 +2201,42 @@ func TestAdminUserNameHandler(t *testing.T) {
 		require.NotEqual(t, len(response), 0)
 	})
 }
+
+func TestAdminDebugHandler(t *testing.T) {
+	ctx := context.Background()
+	h := NewTestHandler(t)
+
+	StaffAndSessionTest(t, h.AdminDebugHandler, func(ctx context.Context, u *models.User) *easy.MockHandler {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+		return m
+	}, func(c echo.Context) echo.Context {
+		return c
+	})
+
+	t.Run("成功: デバッグ情報を取得できる", func(t *testing.T) {
+		email := RandomEmail(t)
+		u := RegisterUser(t, ctx, email)
+		ToStaff(t, ctx, &u)
+
+		cookie := RegisterSession(t, ctx, &u)
+
+		m, err := easy.NewMock("/debug", http.MethodGet, "")
+		require.NoError(t, err)
+		m.Cookie(cookie)
+
+		m.R.Header.Add("X-Forwarded-For", "203.0.113.1")
+
+		c := m.Echo()
+
+		err = h.AdminDebugHandler(c)
+		require.NoError(t, err)
+
+		require.Equal(t, c.Response().Status, http.StatusOK)
+		response := src.DebugResponse{}
+		require.NoError(t, m.Json(&response))
+		require.Equal(t, response.Mode, "test")
+		require.Equal(t, response.IPAddress, "203.0.113.1")
+		require.EqualValues(t, response.Headers, m.R.Header)
+	})
+}
