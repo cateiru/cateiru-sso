@@ -622,10 +622,8 @@ var CloudRunStagingConfig = &Config{
 		Scheme: "https",
 	},
 
-	CorsConfig: nil,
-	IPExtractor: echo.ExtractIPFromXFFHeader(
-		FastlyTrust()...,
-	),
+	CorsConfig:  nil,
+	IPExtractor: ExtractIPFromFastlyHeader,
 
 	EnableCSRFMeasures: true,
 

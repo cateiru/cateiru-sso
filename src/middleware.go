@@ -1,6 +1,7 @@
 package src
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -106,4 +107,18 @@ func CacheMiddleware(cacheType CacheType) echo.MiddlewareFunc {
 			return next(c)
 		}
 	}
+}
+
+var extractIpFromXFFHeader = echo.ExtractIPFromXFFHeader()
+
+// `Fastly-Client-IP` から IPアドレスを取得する
+// ref. https://www.fastly.com/documentation/reference/http/http-headers/Fastly-Client-IP/
+func ExtractIPFromFastlyHeader(req *http.Request) string {
+	fastlyClientIp := req.Header.Get("Fastly-Client-IP")
+
+	if fastlyClientIp != "" {
+		return fastlyClientIp
+	}
+
+	return extractIpFromXFFHeader(req)
 }

@@ -164,3 +164,27 @@ func TestCacheMiddleware(t *testing.T) {
 		require.Equal(t, "public, s-maxage=3600", e.Response().Header().Get("Cache-Control"))
 	})
 }
+
+func TestExtractIPFromFastlyHeader(t *testing.T) {
+	t.Run("Fastly-Client-IP がある場合はそれを返す", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		m.R.Header.Add("Fastly-Client-IP", "0.0.0.0")
+		m.R.Header.Add("X-Forwarded-For", "203.0.113.1")
+		m.R.RemoteAddr = "203.0.113.1:8080"
+
+		ip := src.ExtractIPFromFastlyHeader(m.R)
+		require.Equal(t, ip, "0.0.0.0")
+	})
+
+	t.Run("Fastly-Client-IP がない場合は extractIpFromXFFHeader が使われる", func(t *testing.T) {
+		m, err := easy.NewMock("/", http.MethodGet, "")
+		require.NoError(t, err)
+
+		m.R.RemoteAddr = "203.0.113.1:8080"
+
+		ip := src.ExtractIPFromFastlyHeader(m.R)
+		require.Equal(t, ip, "203.0.113.1")
+	})
+}
