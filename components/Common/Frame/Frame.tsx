@@ -13,7 +13,7 @@ export const Frame = React.memo<Props>(props => {
 
   return (
     <Flex flexDirection="column" minHeight="100vh">
-      <Box w="100%">
+      <Box w="100%" position="relative">
         <Header />
         {props.children}
       </Box>

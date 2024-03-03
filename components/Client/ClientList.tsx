@@ -1,7 +1,8 @@
 'use client';
 
-import {Button} from '@chakra-ui/react';
+import {Box, IconButton} from '@chakra-ui/react';
 import {useParams} from 'next/navigation';
+import {TbPlus} from 'react-icons/tb';
 import useSWR from 'swr';
 import {clientFetcher} from '../../utils/swr/client';
 import type {ClientListResponse} from '../../utils/types/client';
@@ -25,25 +26,32 @@ export const ClientList = () => {
 
   return (
     <>
-      <Tooltip
-        placement="top"
-        label={
-          data?.can_register_client
-            ? `あと、${data?.remaining_creatable_quantity}件のクライアントが作成可能です`
-            : 'クライアントの作成上限を超えています'
-        }
+      <Box
+        position="fixed"
+        bottom="5rem"
+        right={{base: '1rem', md: '4rem'}}
+        zIndex="100"
       >
-        <Button
-          w="100%"
-          my=".5rem"
-          colorScheme="cateiru"
-          isDisabled={!data?.can_register_client}
-          as={Link}
-          href={id ? `/client/register?org_id=${id}` : '/client/register'}
+        <Tooltip
+          placement="top-end"
+          label={
+            data?.can_register_client
+              ? `あと、${data?.remaining_creatable_quantity}件のクライアントが作成可能です`
+              : 'クライアントの作成上限を超えています'
+          }
         >
-          クライアントを新規作成
-        </Button>
-      </Tooltip>
+          <IconButton
+            icon={<TbPlus size="30px" />}
+            aria-label="クライアント新規追加"
+            borderRadius="50%"
+            size="lg"
+            colorScheme="cateiru"
+            isDisabled={!data?.can_register_client}
+            as={Link}
+            href={id ? `/client/register?org_id=${id}` : '/client/register'}
+          />
+        </Tooltip>
+      </Box>
       <ClientListTable clients={data?.clients} />
     </>
   );
