@@ -1,9 +1,9 @@
 'use client';
 
-import {Heading, Select, Text} from '@chakra-ui/react';
-import {usePathname, useRouter} from 'next/navigation';
+import {Box, Heading, Tab, TabList, Tabs, Text} from '@chakra-ui/react';
+import Link from 'next/link';
+import {usePathname} from 'next/navigation';
 import React from 'react';
-import {routeChangeStart} from '../../utils/event';
 import {Margin} from '../Common/Margin';
 import {UserName} from '../Common/UserName';
 import {useSecondaryColor} from '../Common/useColor';
@@ -50,7 +50,6 @@ export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
   children,
 }) => {
   const pathname = usePathname();
-  const router = useRouter();
 
   const textColor = useSecondaryColor();
 
@@ -58,11 +57,48 @@ export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
     return histories.find(v => v.path === pathname);
   }, [pathname]);
 
+  const settingIndex = React.useMemo(() => {
+    return histories.findIndex(v => v.path === pathname);
+  }, [pathname]);
+
   return (
     <Margin>
       <Heading mt="3rem" mb="1rem" textAlign="center">
         {history?.title ?? 'ログイン履歴'}
       </Heading>
+
+      <UserName />
+      <Box
+        overflowX={{base: 'auto', md: 'visible'}}
+        pb=".1rem"
+        px=".5rem"
+        mb="1rem"
+      >
+        <Tabs
+          isFitted
+          index={settingIndex}
+          mt="1rem"
+          minW={{base: '650px', md: '100%'}}
+          colorScheme="cateiru"
+          fontWeight="bold"
+        >
+          <TabList>
+            {histories.map(v => {
+              return (
+                <Tab
+                  value={v.path}
+                  key={`history-${v.path}`}
+                  as={Link}
+                  replace={true}
+                  href={v.path}
+                >
+                  {v.title}
+                </Tab>
+              );
+            })}
+          </TabList>
+        </Tabs>
+      </Box>
       {history?.description ? (
         <Text color={textColor} textAlign="center" mb=".5rem">
           {history?.description}
@@ -70,26 +106,6 @@ export const LoginHistoryHeader: React.FC<{children: React.ReactNode}> = ({
       ) : (
         ''
       )}
-      <UserName />
-      <Select
-        w={{base: '100%', md: '300px'}}
-        mb="1rem"
-        size="md"
-        mx="auto"
-        onChange={v => {
-          routeChangeStart();
-          router.replace(v.target.value);
-        }}
-        defaultValue={pathname}
-      >
-        {histories.map(v => {
-          return (
-            <option value={v.path} key={`history-${v.path}`}>
-              {v.title}
-            </option>
-          );
-        })}
-      </Select>
       {children}
     </Margin>
   );
