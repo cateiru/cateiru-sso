@@ -12,7 +12,7 @@ import useSWR from 'swr';
 import {webAuthnDevicesFeather} from '../../../../utils/swr/account';
 import {AccountWebAuthnDevices} from '../../../../utils/types/account';
 import {ErrorType} from '../../../../utils/types/error';
-import {Error, ErrorText} from '../../../Common/Error/Error';
+import {ErrorText} from '../../../Common/Error/Error';
 import {AgoTime} from '../../../Common/Time';
 import {Device} from '../../../Histories/Device';
 import {DeleteWebAuthn} from './DeleteWebauthn';
