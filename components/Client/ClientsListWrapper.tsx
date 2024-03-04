@@ -5,7 +5,6 @@ import {
   Center,
   Heading,
   Link,
-  Skeleton,
   Tab,
   TabList,
   Tabs,
