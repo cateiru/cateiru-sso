@@ -106,49 +106,45 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
       </Center>
       {error ? (
         <></>
-      ) : data ? (
-        data.length === 0 ? (
-          <></>
-        ) : (
-          <Box overflowX="auto" pb=".1rem" px=".5rem" mb="1.5rem">
-            <Tabs
-              isFitted
-              index={settingIndex}
-              mt="1rem"
-              minW={{base: '650px', md: '100%'}}
-              colorScheme="cateiru"
-              fontWeight="bold"
-            >
-              <TabList>
-                <Tab
-                  value={'/clients'}
-                  as={NextLink}
-                  replace={true}
-                  href="/clients"
-                >
-                  クライアント
-                </Tab>
-                {data.map(v => {
-                  return (
-                    <Tab
-                      value={`/clients/org/${v.id}`}
-                      key={`client-menu-${v.id}`}
-                      as={NextLink}
-                      replace={true}
-                      href={`/clients/org/${v.id}`}
-                    >
-                      {v.name}
-                    </Tab>
-                  );
-                })}
-              </TabList>
-            </Tabs>
-          </Box>
-        )
+      ) : !data ? (
+        <></>
+      ) : data.length === 0 ? (
+        <></>
       ) : (
-        <Center mb="1rem">
-          <Skeleton h="40px" w="400px" borderRadius="7px" />
-        </Center>
+        <Box overflowX="auto" pb=".1rem" px=".5rem" mb="1.5rem">
+          <Tabs
+            isFitted
+            index={settingIndex}
+            mt="1rem"
+            minW={{base: '650px', md: '100%'}}
+            colorScheme="cateiru"
+            fontWeight="bold"
+          >
+            <TabList>
+              <Tab
+                value={'/clients'}
+                as={NextLink}
+                replace={true}
+                href="/clients"
+              >
+                クライアント
+              </Tab>
+              {data.map(v => {
+                return (
+                  <Tab
+                    value={`/clients/org/${v.id}`}
+                    key={`client-menu-${v.id}`}
+                    as={NextLink}
+                    replace={true}
+                    href={`/clients/org/${v.id}`}
+                  >
+                    {v.name}
+                  </Tab>
+                );
+              })}
+            </TabList>
+          </Tabs>
+        </Box>
       )}
       {children}
     </Margin>
