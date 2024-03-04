@@ -1,0 +1,52 @@
+FROM node:18-alpine AS base
+
+FROM base AS builder
+RUN apk add --no-cache libc6-compat
+RUN npm i -g pnpm
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm i --frozen-lockfile
+
+COPY . .
+
+ARG NEXT_PUBLIC_API_HOST
+ENV NEXT_PUBLIC_API_HOST ${NEXT_PUBLIC_API_HOST}
+
+ARG NEXT_PUBLIC_RE_CAPTCHA
+ENV NEXT_PUBLIC_RE_CAPTCHA=${NEXT_PUBLIC_RE_CAPTCHA}
+
+ARG NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
+ENV NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=${NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}
+
+ARG NEXT_PUBLIC_PUBLICATION_TYPE
+ENV NEXT_PUBLIC_PUBLICATION_TYPE=${NEXT_PUBLIC_PUBLICATION_TYPE}
+
+ARG NEXT_PUBLIC_REVISION
+ENV NEXT_PUBLIC_REVISION=${NEXT_PUBLIC_REVISION}
+
+ARG NEXT_PUBLIC_BRANCH_NAME
+ENV NEXT_PUBLIC_BRANCH_NAME=${NEXT_PUBLIC_BRANCH_NAME}
+
+RUN pnpm build
+
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV TZ Asia/Tokyo
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+
+CMD ["node", "server.js"]

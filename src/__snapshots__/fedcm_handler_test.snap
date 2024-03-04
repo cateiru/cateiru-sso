@@ -1,0 +1,21 @@
+
+[TestFedCMConfigHandler/取得可能 - 1]
+src.FedCMConfigResponse{
+    AccountsEndpoint:       "/fedcm/accounts",
+    ClientMetadataEndpoint: "/fedcm/client_metadata",
+    IdAssertionEndpoint:    "/fedcm/id_assertion",
+    RevocationEndpoint:     "/fedcm/revocation",
+    LoginUrl:               "/fedcm/login",
+    SignInUrl:              "/fedcm/login",
+    Branding:               &src.FedCMConfigBranding{
+        BackgroundColor: "#2bc4cf",
+        Color:           "#ffffff",
+        Name:            "oreore.me test",
+        Icons:           nil,
+    },
+}
+---
+
+[TestFedCMClientMetadataHandler/取得可能 - 1]
+src.FedCMClientMetadataResponse{PrivacyPolicyUrl:"http://cateiru.test/policy", TermsOfServiceUrl:"http://cateiru.test/terms"}
+---

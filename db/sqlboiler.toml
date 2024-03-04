@@ -1,0 +1,8 @@
+[mysql]
+dbname = "local"
+host = "127.0.0.1"
+port = 3306
+user = "docker"
+pass = "docker"
+sslmode = "PREFERRED"
+blacklist = ["schema_migrations"]

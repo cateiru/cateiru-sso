@@ -1,0 +1,42 @@
+# Go バックエンドのビルド定義
+#
+# 設定が必要な環境変数:
+#   _SERVICE_NAME: サービス名
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-docker-image'
+    args:
+      [
+        'build',
+        '-t',
+        'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA',
+        '.',
+        '-f',
+        '${_DOCKERFILE_PATH}',
+        '--build-arg',
+        'MODE=${_MODE}',
+      ]
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-docker-image'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA']
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloud-run'
+    entrypoint: gcloud
+    args:
+      [
+        'run',
+        'deploy',
+        '${_SERVICE_NAME}',
+        '--image',
+        'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA',
+        '--region',
+        '${_REGION}',
+      ]
+substitutions:
+  _REGION: asia-northeast1
+  _MODE: 'production'
+  _DOCKERFILE_PATH: './docker/Dockerfile.go-app'
+images:
+  - gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$COMMIT_SHA

@@ -1,0 +1,8 @@
+User-agent: *
+
+Disallow: /staff/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /histories/
+Disallow: /clients/
+Disallow: /switch_account/

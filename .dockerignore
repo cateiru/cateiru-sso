@@ -1,0 +1,16 @@
+.github/
+.git
+
+# storybook
+.storybook/
+storybook-static/
+stories/
+
+# other
+scripts/
+
+.storage/
+db/
+.next/
+.swc/
+.data/
