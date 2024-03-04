@@ -1,4 +1,4 @@
-import {SkeletonText, Text, useDisclosure} from '@chakra-ui/react';
+import {SkeletonText, useDisclosure} from '@chakra-ui/react';
 import React from 'react';
 import useSWR from 'swr';
 import {userAccountCertificatesFeather} from '../../../../utils/swr/account';
