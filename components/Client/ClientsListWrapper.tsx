@@ -146,26 +146,6 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
           </Box>
         )
       ) : (
-        // <Select
-        //   w={{base: '100%', md: '400px'}}
-        //   mb="1rem"
-        //   size="md"
-        //   mx="auto"
-        //   onChange={v => {
-        //     routeChangeStart();
-        //     router.replace(v.target.value);
-        //   }}
-        //   defaultValue={pathname}
-        // >
-        //   <option value="/clients">クライアント一覧</option>
-        //   {data.map(v => {
-        //     return (
-        //       <option value={`/clients/org/${v.id}`} key={v.id}>
-        //         {v.name} のクライアント一覧
-        //       </option>
-        //     );
-        //   })}
-        // </Select>
         <Center mb="1rem">
           <Skeleton h="40px" w="400px" borderRadius="7px" />
         </Center>
