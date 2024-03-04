@@ -1,8 +1,8 @@
-import {SkeletonText, useDisclosure} from '@chakra-ui/react';
+import {SkeletonText, Text, useDisclosure} from '@chakra-ui/react';
 import React from 'react';
 import useSWR from 'swr';
 import {userAccountCertificatesFeather} from '../../../../utils/swr/account';
-import {Error} from '../../../Common/Error/Error';
+import {ErrorText} from '../../../Common/Error/Error';
 import {SettingCard} from '../../SettingCard';
 import {OtpDisableText} from './OtpDisableText';
 import {OtpEnableText} from './OtpEnableText';
@@ -18,11 +18,11 @@ export const OtpSetting = () => {
       userAccountCertificatesFeather
     );
 
-    if (error) {
-      return <Error {...error} />;
-    }
-
     const C = () => {
+      if (error) {
+        return <ErrorText {...error} />;
+      }
+
       if (!data) {
         return <SkeletonText title="二段階認証" />;
       }

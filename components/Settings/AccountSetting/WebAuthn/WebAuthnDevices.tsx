@@ -12,7 +12,7 @@ import useSWR from 'swr';
 import {webAuthnDevicesFeather} from '../../../../utils/swr/account';
 import {AccountWebAuthnDevices} from '../../../../utils/types/account';
 import {ErrorType} from '../../../../utils/types/error';
-import {Error} from '../../../Common/Error/Error';
+import {Error, ErrorText} from '../../../Common/Error/Error';
 import {AgoTime} from '../../../Common/Time';
 import {Device} from '../../../Histories/Device';
 import {DeleteWebAuthn} from './DeleteWebauthn';
@@ -24,7 +24,7 @@ export const WebAuthnDevices = () => {
   );
 
   if (error) {
-    return <Error {...error} />;
+    return <ErrorText {...error} />;
   }
 
   // 何も登録していないときにはなにも表示しない

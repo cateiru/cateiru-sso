@@ -25,6 +25,16 @@ export const Error: React.FC<ErrorType> = props => {
   );
 };
 
+export const ErrorText: React.FC<ErrorType> = props => {
+  return (
+    <Text>
+      {props.unique_code
+        ? ErrorUniqueMessage[props.unique_code] ?? props.message
+        : props.message}
+    </Text>
+  );
+};
+
 export const OidcError: React.FC<OidcErrorType> = props => {
   const secondaryColor = useSecondaryColor();
 
