@@ -4,7 +4,7 @@ import {theme} from '../utils/theme';
 import {GoogleReCaptchaProvider} from 'react-google-recaptcha-v3';
 import {UserState} from '../utils/state/atom';
 import {faker} from '@faker-js/faker';
-import {useSetAtom} from 'jotai';
+import {useAtom, useSetAtom} from 'jotai';
 
 interface ProviderProps<T> {
   value: T;
@@ -31,7 +31,7 @@ function JotaiUser(
     | 'loginAdmin'
   >
 ) {
-  const setUser = useSetAtom(UserState);
+  const [user, setUser] = useAtom(UserState);
 
   React.useEffect(() => {
     switch (props.value) {
@@ -126,6 +126,9 @@ function JotaiUser(
         setUser(undefined);
     }
   }, [props.value]);
+
+  // ロード中はコンポーネントを表示させない
+  if (typeof user === 'undefined') return null;
 
   return props.children;
 }
