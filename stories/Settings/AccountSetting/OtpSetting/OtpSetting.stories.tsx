@@ -37,7 +37,7 @@ export const Disable: Story = {
   parameters: {
     mockData: [
       {
-        url: api('/user/otp'),
+        url: api('/account/certificates'),
         method: 'GET',
         status: 200,
         response: {
@@ -54,7 +54,7 @@ export const Impossible: Story = {
   parameters: {
     mockData: [
       {
-        url: api('/user/otp'),
+        url: api('/account/certificates'),
         method: 'GET',
         status: 200,
         response: {
@@ -71,7 +71,7 @@ export const Loading: Story = {
   parameters: {
     mockData: [
       {
-        url: api('/user/otp'),
+        url: api('/account/certificates'),
         method: 'GET',
         status: 200,
         delay: 10000,
