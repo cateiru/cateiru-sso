@@ -15,6 +15,7 @@ import PasswordStrengthBar from 'react-password-strength-bar';
 
 const PasswordChecklist = dynamic(() => import('react-password-checklist'), {
   ssr: false,
+  loading: () => <Skeleton h="110px" />,
 });
 
 export interface RegisterPasswordFormContextData {
