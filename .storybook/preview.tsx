@@ -23,7 +23,12 @@ function ColorMode(props: ProviderProps<'light' | 'dark'>) {
 
 function JotaiUser(
   props: ProviderProps<
-    'noLogin' | 'login' | 'loading' | 'loginNoAvatar' | 'loginAdmin'
+    | 'noLogin'
+    | 'login'
+    | 'loginAndJoinedOrg'
+    | 'loading'
+    | 'loginNoAvatar'
+    | 'loginAdmin'
   >
 ) {
   const setUser = useSetAtom(UserState);
@@ -52,6 +57,27 @@ function JotaiUser(
           },
           is_staff: false,
           joined_organization: false,
+        });
+        break;
+      case 'loginAndJoinedOrg':
+        setUser({
+          user: {
+            id: '123',
+            user_name: faker.internet.userName(),
+            email: faker.internet.email(),
+            family_name: faker.person.lastName(),
+            middle_name: null,
+            given_name: faker.person.firstName(),
+            gender: '1',
+            birthdate: null,
+            avatar: faker.image.avatar(),
+            locale_id: 'ja_JP',
+
+            created_at: faker.date.past().toString(),
+            updated_at: faker.date.past().toString(),
+          },
+          is_staff: false,
+          joined_organization: true,
         });
         break;
       case 'loginNoAvatar':
@@ -139,6 +165,7 @@ export const globalTypes = {
       items: [
         {title: 'NoLogin', value: 'noLogin'},
         {title: 'Login', value: 'login'},
+        {title: 'LoginAndJoinedOrg', value: 'loginAndJoinedOrg'},
         {title: 'LoginNoAvatar', value: 'loginNoAvatar'},
         {title: 'LoginWithAdmin', value: 'loginAdmin'},
         {title: 'Loading', value: 'loading'},

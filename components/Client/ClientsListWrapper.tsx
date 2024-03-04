@@ -1,12 +1,21 @@
 'use client';
 
-import {Center, Heading, Link, Select, Skeleton, Text} from '@chakra-ui/react';
+import {
+  Box,
+  Center,
+  Heading,
+  Link,
+  Skeleton,
+  Tab,
+  TabList,
+  Tabs,
+  Text,
+} from '@chakra-ui/react';
 import {useAtomValue} from 'jotai';
-import {useParams, usePathname, useRouter} from 'next/navigation';
+import {useParams, usePathname} from 'next/navigation';
 import React from 'react';
 import {TbExternalLink} from 'react-icons/tb';
 import useSWR from 'swr';
-import {routeChangeStart} from '../../utils/event';
 import {UserState} from '../../utils/state/atom';
 import {orgSimpleListFeather} from '../../utils/swr/organization';
 import {ErrorType, ErrorUniqueMessage} from '../../utils/types/error';
@@ -23,7 +32,6 @@ interface Props {
 export const ClientsListWrapper: React.FC<Props> = ({children}) => {
   const textColor = useSecondaryColor();
   const pathname = usePathname();
-  const router = useRouter();
   const params = useParams();
 
   const id: string | undefined =
@@ -54,6 +62,15 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
     return 'あなたの作成したクライアントの一覧が表示されます。';
   }, [pathname, error]);
 
+  const settingIndex = React.useMemo(() => {
+    if (!data) return 0;
+
+    const i = data.findIndex(v => `/clients/org/${v.id}` === pathname);
+    if (i === -1) return 0;
+
+    return i + 1;
+  }, [pathname, data]);
+
   return (
     <Margin>
       <Heading textAlign="center" mt="3rem">
@@ -62,7 +79,7 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
       <Text color={textColor} mt=".5rem" textAlign="center" mb=".5rem">
         {description}
       </Text>
-      <Center mb="1rem">
+      <Center mb=".5rem">
         <UserName mb="0" />
         {error || !id ? (
           <></>
@@ -90,27 +107,65 @@ export const ClientsListWrapper: React.FC<Props> = ({children}) => {
       {error ? (
         <></>
       ) : data ? (
-        <Select
-          w={{base: '100%', md: '400px'}}
-          mb="1rem"
-          size="md"
-          mx="auto"
-          onChange={v => {
-            routeChangeStart();
-            router.replace(v.target.value);
-          }}
-          defaultValue={pathname}
-        >
-          <option value="/clients">クライアント一覧</option>
-          {data.map(v => {
-            return (
-              <option value={`/clients/org/${v.id}`} key={v.id}>
-                {v.name} のクライアント一覧
-              </option>
-            );
-          })}
-        </Select>
+        data.length === 0 ? (
+          <></>
+        ) : (
+          <Box overflowX="auto" pb=".1rem" px=".5rem" mb="1.5rem">
+            <Tabs
+              isFitted
+              index={settingIndex}
+              mt="1rem"
+              minW={{base: '650px', md: '100%'}}
+              colorScheme="cateiru"
+              fontWeight="bold"
+            >
+              <TabList>
+                <Tab
+                  value={'/clients'}
+                  as={NextLink}
+                  replace={true}
+                  href="/clients"
+                >
+                  クライアント
+                </Tab>
+                {data.map(v => {
+                  return (
+                    <Tab
+                      value={`/clients/org/${v.id}`}
+                      key={`client-menu-${v.id}`}
+                      as={NextLink}
+                      replace={true}
+                      href={`/clients/org/${v.id}`}
+                    >
+                      {v.name}
+                    </Tab>
+                  );
+                })}
+              </TabList>
+            </Tabs>
+          </Box>
+        )
       ) : (
+        // <Select
+        //   w={{base: '100%', md: '400px'}}
+        //   mb="1rem"
+        //   size="md"
+        //   mx="auto"
+        //   onChange={v => {
+        //     routeChangeStart();
+        //     router.replace(v.target.value);
+        //   }}
+        //   defaultValue={pathname}
+        // >
+        //   <option value="/clients">クライアント一覧</option>
+        //   {data.map(v => {
+        //     return (
+        //       <option value={`/clients/org/${v.id}`} key={v.id}>
+        //         {v.name} のクライアント一覧
+        //       </option>
+        //     );
+        //   })}
+        // </Select>
         <Center mb="1rem">
           <Skeleton h="40px" w="400px" borderRadius="7px" />
         </Center>
