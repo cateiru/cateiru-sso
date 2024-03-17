@@ -119,9 +119,9 @@ export const Profile = () => {
           </Tooltip>
         )}
         {user?.is_staff && (
-          <Tooltip label="スッタフ管理画面">
+          <Tooltip label="スタッフ管理画面">
             <IconButton
-              aria-label="スッタフ管理画面"
+              aria-label="スタッフ管理画面"
               icon={<TbTool size="25px" />}
               colorScheme="cateiru"
               variant="outline"
