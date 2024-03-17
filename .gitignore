@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/go,vim,node,rust,linux,macos,react,windows,visualstudiocode,storybookjs
-# Edit at https://www.toptal.com/developers/gitignore?templates=go,vim,node,rust,linux,macos,react,windows,visualstudiocode,storybookjs
+# Created by https://www.toptal.com/developers/gitignore/api/go,vim,node,rust,linux,macos,react,windows,storybookjs,visualstudiocode,terraform
+# Edit at https://www.toptal.com/developers/gitignore?templates=go,vim,node,rust,linux,macos,react,windows,storybookjs,visualstudiocode,terraform
 
 ### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
@@ -247,6 +247,42 @@ Cargo.lock
 
 storybook-static/
 
+### Terraform ###
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files, which are likely to contain sensitive data, such as
+# password, private keys, and other secrets. These should not be part of version
+# control as they are data points which are potentially sensitive and subject
+# to change depending on the environment.
+*.tfvars
+*.tfvars.json
+
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include override files you do wish to add to version control using negated pattern
+# !example_override.tf
+
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+# example: *tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
 ### Vim ###
 # Swap
 [._]*.s[a-v][a-z]
@@ -312,7 +348,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/go,vim,node,rust,linux,macos,react,windows,visualstudiocode,storybookjs
+# End of https://www.toptal.com/developers/gitignore/api/go,vim,node,rust,linux,macos,react,windows,storybookjs,visualstudiocode,terraform
 
 certificates/*
 !certificates/.gitkeep
@@ -326,4 +362,3 @@ db/.dump_data/**
 !db/.dump_data/.gitkeep
 tmp/*
 .pnpm-store
-
