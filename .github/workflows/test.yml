@@ -1,14 +1,10 @@
-
-name: Lint
+name: ci
 
 on:
   push:
-    branches: [ main ]
-    paths:
-      - 'api/**'
-      - 'front/**'
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   nextjs:
@@ -16,35 +12,65 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v1
-      - name: yarn install
-        working-directory: ./front
-        run: yarn install --dev
-      - name: Run gts
-        working-directory: ./front
-        run: yarn lint
-      - name: Build
-        working-directory: ./front
-        run: yarn build
+      - uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.17.0
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 8
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: pnpm install
+        run: pnpm i --frozen-lockfile
+      - name: run gts
+        run: pnpm lint
+      - name: build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SERVER_API_HOST: 'https://api.staging.oreore.me'
   go:
     name: go test
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      TZ: 'Asia/Tokyo'
+      STORAGE_URL: 'localhost:4443'
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.18
-    - name: Build
-      working-directory: ./api
-      run: go build -v ./...
-
-    - name: Test
-      working-directory: ./api
-      run: |
-        docker-compose up -d
-        go test ./... -v -coverpkg=./... -race -coverprofile=coverage.out -covermode=atomic
-    - name: Upload coverage to Codecov
-      working-directory: ./api
-      run: bash <(curl -s https://codecov.io/bash)
+      - uses: actions/checkout@v4
+      - name: setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: start database
+        run: ./scripts/docker-compose-db.sh up -d
+      - name: go module download
+        run: go mod download
+      - name: install tparse
+        run: go install github.com/mfridman/tparse@latest
+      - name: build
+        run: go build -v ./...
+      - name: test
+        run: ./scripts/test.sh -cover -json | tee ./go-test.out | tparse
+      - name: add job summary
+        if: always()
+        run: |
+          tparse -all -file ./go-test.out -format markdown >> $GITHUB_STEP_SUMMARY
+      - name: upload coverage to codecov
+        uses: codecov/codecov-action@v3

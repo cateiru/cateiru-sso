@@ -1,0 +1,54 @@
+services:
+  db:
+    platform: linux/amd64
+    build:
+      context: ..
+      dockerfile_inline: |
+        FROM mysql:8.0-debian
+
+        RUN apt update && apt install -y curl
+
+        # Install https://github.com/golang-migrate/migrate
+        RUN curl -s https://packagecloud.io/install/repositories/golang-migrate/migrate/script.deb.sh | bash \
+          && apt install -y migrate
+
+        # Install https://github.com/k0kubun/sqldef/tree/v0.17.11
+        RUN curl -OL https://github.com/k0kubun/sqldef/releases/download/v0.17.11/mysqldef_linux_amd64.tar.gz \
+          && tar xf mysqldef_linux_amd64.tar.gz -C /usr/bin/
+    container_name: db
+    healthcheck:
+      test: "mysqladmin ping"
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    environment:
+      MYSQL_USER: docker
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: docker
+      MYSQL_DATABASE: local
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ../db/.data:/var/lib/mysql
+      - ../db/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ../db/setup:/docker-entrypoint-initdb.d
+      - ../db/migrations:/migrations
+      - ../scripts/docker:/scripts
+      - ../db/schema.sql:/schema.sql
+      - ../db/.dump_data/:/dump_data
+    ports:
+      - "127.0.0.1:3306:3306"
+  gcs:
+    image: fsouza/fake-gcs-server
+    tty: true
+    stdin_open: true
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - 4443:4443
+    volumes:
+      - ../.data:/data/oreore-me:cached
+      - ../.data:/data/test-oreore-me:cached
+      - ../.storage:/storage
+    command: -scheme http -public-host localhost:4443

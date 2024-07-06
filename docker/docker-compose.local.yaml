@@ -1,0 +1,89 @@
+services:
+  backend:
+    container_name: backend_app
+    build:
+      context: ..
+      dockerfile_inline: |
+        FROM golang:1.22.0-alpine
+
+        RUN apk update && apk add --no-cache ca-certificates tar curl && update-ca-certificates
+        RUN go install github.com/cosmtrek/air@v1.52.3
+
+        WORKDIR /app
+
+        RUN apk add openssh-client && \
+            mkdir -p /jwt && \
+            ssh-keygen -t rsa -f /jwt/jwt -N "" -m pem && \
+            ssh-keygen -f /jwt/jwt.pub -e -m pkcs8 > /jwt/jwt.pub.pkcs8
+
+        COPY go.mod go.sum ./
+        RUN go mod download
+    ports:
+      - "8080:8080"
+    volumes:
+      - ..:/app
+    healthcheck:
+      test: "curl --fail http://localhost:8080 || exit 1"
+      interval: 5s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      db:
+        condition: service_healthy
+      gcs:
+        condition: service_started
+    command: air -c .air.toml
+  frontend:
+    container_name: frontend_app
+    build:
+      context: ..
+      dockerfile_inline: |
+        FROM node:18-alpine
+
+        RUN apk update && apk add --no-cache curl
+        RUN npm i -g pnpm
+
+        WORKDIR /app
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_PUBLICATION_TYPE=local
+    volumes:
+      - oreore-next-cache:/app/.next
+      - oreore-node-modules:/app/node_modules
+      - oreore-pnpm-store:/app/.pnpm-store
+      - ..:/app
+    healthcheck:
+      test: "curl --fail -I http://localhost:3000 || exit 1"
+      interval: 60s
+      timeout: 30s
+      retries: 10
+      start_period: 60s
+    depends_on:
+      db:
+        condition: service_healthy
+      gcs:
+        condition: service_started
+    command: sh -c "pnpm i --frozen-lockfile && pnpm dev"
+  nginx:
+    container_name: nginx_app
+    image: nginx
+    ports:
+      - "3000:3000"
+      - "3002:3002"
+    volumes:
+      - ../scripts/nginx/nginx.conf:/etc/nginx/nginx.conf
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+      gcs:
+        condition: service_started
+volumes:
+  oreore-next-cache:
+  oreore-node-modules:
+  oreore-pnpm-store:

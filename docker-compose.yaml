@@ -1,0 +1,5 @@
+include:
+  # DB関連はGo Testで単体で実行したいので分離されている
+  # compose v2.20.0 以降ではないと動かないことに注意
+  - ./docker/docker-compose.db.yaml
+  - ./docker/docker-compose.local.yaml

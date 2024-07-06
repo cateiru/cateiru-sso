@@ -1,0 +1,17 @@
+build/
+next.config.js
+.data/
+.github/
+.next/
+.storage/
+.swc/
+src/
+db/
+scripts/
+public/
+storybook-static/
+
+!stories/**/*.stories.tsx
+
+# app以下は.well-knownなどデフォルトでignoreされてしまう場合があるので、明示的にignoreしないようにする
+!app/**/*.tsx

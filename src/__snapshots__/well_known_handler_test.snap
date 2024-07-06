@@ -1,0 +1,53 @@
+
+[TestApiOpenidConfigurationHandler/取得可能 - 1]
+src.OpenidConfiguration{
+    Issuer:                                     "http://cateiru.test",
+    AuthorizationEndpoint:                      "http://cateiru.test/oidc",
+    TokenEndpoint:                              "http://cateiru.test/api/v2/token",
+    UserinfoEndpoint:                           "http://cateiru.test/api/v2/userinfo",
+    JwksUri:                                    "http://cateiru.test/.well-known/jwks.json",
+    RegistrationEndpoint:                       "http://cateiru.test/api/v2/register",
+    ScopesSupported:                            {"openid", "profile", "email"},
+    ResponseTypesSupported:                     {"code"},
+    ResponseModesSupported:                     nil,
+    GrantTypesSupported:                        nil,
+    AcrValuesSupported:                         nil,
+    SubjectTypesSupported:                      {"public", "pairwise"},
+    IdTokenSigningAlgValuesSupported:           {"RS256"},
+    IdTokenEncryptionAlgValuesSupported:        nil,
+    IdTokenEncryptionEncValuesSupported:        nil,
+    UserinfoSigningAlgValuesSupported:          nil,
+    UserinfoEncryptionAlgValuesSupported:       nil,
+    UserinfoEncryptionEncValuesSupported:       nil,
+    RequestObjectSigningAlgValuesSupported:     nil,
+    RequestObjectEncryptionAlgValuesSupported:  nil,
+    RequestObjectEncryptionEncValuesSupported:  nil,
+    TokenEndpointAuthMethodsSupported:          {"client_secret_basic", "client_secret_post"},
+    TokenEndpointAuthSigningAlgValuesSupported: nil,
+    DisplayValuesSupported:                     nil,
+    ClaimTypesSupported:                        nil,
+    ClaimsSupported:                            {"iss", "sub", "aud", "exp", "iat", "auth_time", "nonce", "acr", "azp", "name", "given_name", "family_name", "middle_name", "nickname", "preferred_username", "picture", "email", "email_verified", "gender", "birthdate", "zoneinfo", "locale", "updated_at"},
+    ServiceDocumentation:                       "https://github.com/cateiru/cateiru-sso",
+    ClaimsLocalesSupported:                     {"ja-JP"},
+    UiLocalesSupported:                         {"ja-JP"},
+    ClaimsParameterSupported:                   false,
+    RequestParameterSupported:                  false,
+    RequestUriParameterSupported:               false,
+    RequireRequestUriRegistration:              false,
+    OpPolicyUri:                                "http://cateiru.test/policy",
+    OpTosUri:                                   "http://cateiru.test/policy",
+}
+---
+
+[TestJwksJsonHandler/取得可能 - 1]
+{"keys":[{"alg":"RS256","e":"AQAB","kid":"9c6945f9-815f4a4eb891fae9e1359ada","kty":"RSA","n":"ojSXNrYgwQ_E5lQTEOued7e26vdIoi_lurRzQyZhdEiwW_ixm4VbXrrANRvuyE9KgahFodKOztAV87nX4PVrmW4jHKUTrOrqYPG5xBNQpbacvOUiiHTID2r8e_DZuuHVVf61Gvjl-f4aQKcY-CyZJZ_aY6MRbV7kkGrA8SiZ0YYgPOnEFKQinRhK-J6td6ufh12eGLlzdKzUZet1z05ZgUp1JAn1sIx_H2xpnqWUj8nU_mXdMSXkt-UH4KLlBhqgbwfLDWxR-o1BuQ0cBDxEv9gLJIyBb1mL6YOzhxAjEotPvUo3wQDsEr-SerBB2VcUOXzFZo4oD-zR3I49o88382v14InR_Rq3_bE8QhEDwVsAoVU1j7BkfBbCiGm3UfQl03Tcb5eDzSEN0RUaoPSQS_fj3zEcv1aKY0T31fvUKQ5o8aMS3eiM0XQXlK6V-ZLgH8o-dsFAS2OK9RFCU-anIeTfIPXEZHDamVi8yRj-VtCOKJj4aTmTQABYK0UQPYmp","use":"sig"}]}
+
+---
+
+[TestWebIdentityHandler/取得可能 - 1]
+http://cateiru.test/fedcm/config.json
+---
+
+[TestPasskeyEndpointHandler/取得可能 - 1]
+src.PasskeyEndpointResponse{Enroll:"http://cateiru.test/settings", Mange:"http://cateiru.test/settings"}
+---
