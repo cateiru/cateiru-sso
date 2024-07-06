@@ -7,7 +7,7 @@ services:
         FROM golang:1.22.0-alpine
 
         RUN apk update && apk add --no-cache ca-certificates tar curl && update-ca-certificates
-        RUN go install github.com/cosmtrek/air@v1.49.0
+        RUN go install github.com/cosmtrek/air@v1.52.3
 
         WORKDIR /app
 

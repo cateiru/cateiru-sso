@@ -12,8 +12,8 @@ services:
         RUN curl -s https://packagecloud.io/install/repositories/golang-migrate/migrate/script.deb.sh | bash \
           && apt install -y migrate
 
-        # Install https://github.com/k0kubun/sqldef/tree/v0.16.9
-        RUN curl -OL https://github.com/k0kubun/sqldef/releases/download/v0.16.9/mysqldef_linux_amd64.tar.gz \
+        # Install https://github.com/k0kubun/sqldef/tree/v0.17.11
+        RUN curl -OL https://github.com/k0kubun/sqldef/releases/download/v0.17.11/mysqldef_linux_amd64.tar.gz \
           && tar xf mysqldef_linux_amd64.tar.gz -C /usr/bin/
     container_name: db
     healthcheck:
